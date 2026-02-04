@@ -94,34 +94,6 @@ install_system_packages:
     - require:
       - file: fix_containers_policy
 
-# Установка RPM пакетов AmneziaWG (Tools и DKMS)
-# Эти пакеты должны быть предварительно собраны скриптом build_amnezia.sh
-install_amneziawg_rpms:
-  cmd.run:
-    - name: |
-        {% raw %}
-        rpms=(/var/home/neg/src/amnezia_build/amneziawg-tools-*.rpm /var/home/neg/src/amnezia_build/amneziawg-dkms-*.rpm)
-        to_install=()
-        layered=$(rpm-ostree status --json | jq -r '.deployments[]."requested-packages"[]?' | sort -u)
-        
-        # Check tools
-        if ! rpm -q amneziawg-tools &>/dev/null && ! echo "$layered" | grep -Fqx "amneziawg-tools"; then
-           to_install+=(/var/home/neg/src/amnezia_build/amneziawg-tools-*.rpm)
-        fi
-        # Check dkms
-        if ! rpm -q amneziawg-dkms &>/dev/null && ! echo "$layered" | grep -Fqx "amneziawg-dkms"; then
-           to_install+=(/var/home/neg/src/amnezia_build/amneziawg-dkms-*.rpm)
-        fi
-
-        if [ ${#to_install[@]} -gt 0 ]; then
-          rpm-ostree install -y --allow-inactive "${to_install[@]}"
-        fi
-        {% endraw %}
-    - onlyif: ls /var/home/neg/src/amnezia_build/amneziawg-tools-*.rpm && ls /var/home/neg/src/amnezia_build/amneziawg-dkms-*.rpm
-    - require:
-      - cmd: install_system_packages
-      - cmd: build_amnezia_vpn
-
 running_services:
   service.running:
     - names:

@@ -67,20 +67,26 @@ install_amneziawg_tools:
       - cmd: build_amneziawg_tools
 
 # Build Amnezia-VPN Client (GUI)
-/var/home/neg/src/salt/build_amnezia.sh:
-  file.managed:
-    - mode: '0755'
-    - replace: False
-
 build_amnezia_vpn:
   cmd.run:
-    - name: /var/home/neg/src/salt/build_amnezia.sh
+    - name: |
+        podman run --rm -v /var/home/neg/src/amnezia_build:/build:Z registry.fedoraproject.org/fedora-toolbox:43 bash -c "
+        dnf install -y git cmake make gcc-c++ qt6-qtbase-devel qt6-qtsvg-devel \
+            qt6-qtdeclarative-devel qt6-qttools-devel libmnl-devel libmount-devel \
+            qt6-qt5compat-devel qt6-qtshadertools-devel qt6-qtmultimedia-devel \
+            qt6-qtbase-static qt6-qtdeclarative-static && \
+        rm -rf /build/amnezia-client-src && \
+        git clone --recursive https://github.com/amnezia-vpn/amnezia-client.git /build/amnezia-client-src && \
+        mkdir -p /build/amnezia-client-src/build && cd /build/amnezia-client-src/build && \
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DVERSION=2.1.2 && \
+        make -j\$(nproc) && \
+        cp AmneziaVPN /build/AmneziaVPN-bin
+        "
     - creates: /var/home/neg/src/amnezia_build/AmneziaVPN-bin
     - timeout: 3600
     - output_loglevel: info
     - require:
       - file: /var/home/neg/src/amnezia_build
-      - file: /var/home/neg/src/salt/build_amnezia.sh
 
 install_amnezia_vpn:
   file.managed:
