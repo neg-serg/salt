@@ -17,10 +17,12 @@ if [[ "$1" == "--dry-run" ]]; then
   echo "--- Запуск в режиме тестирования (изменения не будут применены) ---"
   python3.14 /var/home/neg/src/salt/run_salt.py \
     --config-dir="${CONFIG_DIR}" \
+    -l info \
     --local ${ACTION} ${STATE} test=True
 else
   echo "--- Применение конфигурации ---"
   python3.14 /var/home/neg/src/salt/run_salt.py \
     --config-dir="${CONFIG_DIR}" \
+    -l info \
     --local ${ACTION} ${STATE}
 fi
