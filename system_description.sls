@@ -61,6 +61,7 @@ mount_zero:
     - fstype: xfs
     - mkmnt: True
     - opts: defaults
+    - persist: True
 
 /mnt/one:
   file.directory:
@@ -73,3 +74,4 @@ mount_one:
     - fstype: xfs
     - mkmnt: True
     - opts: defaults
+    - persist: True
