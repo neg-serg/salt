@@ -49,3 +49,27 @@ running_services:
       - dbus-broker
       - bluetooth
     - enable: True
+
+/mnt/zero:
+  file.directory:
+    - makedirs: True
+
+mount_zero:
+  mount.mounted:
+    - name: /mnt/zero
+    - device: /dev/mapper/argon-zero
+    - fstype: xfs
+    - mkmnt: True
+    - opts: defaults
+
+/mnt/one:
+  file.directory:
+    - makedirs: True
+
+mount_one:
+  mount.mounted:
+    - name: /mnt/one
+    - device: /dev/mapper/xenon-one
+    - fstype: xfs
+    - mkmnt: True
+    - opts: defaults
