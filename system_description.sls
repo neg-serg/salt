@@ -28,17 +28,8 @@ ensure_pkg_{{ pkg }}:
     - unless: rpm -q {{ pkg }}
 {% endfor %}
 
-amnezia_wg_repo:
-  cmd.run:
-    - name: dnf copr enable amneziavpn/amneziawg -y
-    - unless: test -f /etc/yum.repos.d/_copr_amneziavpn-amneziawg.repo
-
-ensure_amnezia_wg:
-  cmd.run:
-    - name: rpm-ostree cleanup -m && rpm-ostree install amneziawg-dkms amneziawg-tools
-    - unless: rpm -q amneziawg-tools
-    - require:
-      - cmd: amnezia_wg_repo
+include:
+  - amnezia
 
 running_services:
   service.running:
