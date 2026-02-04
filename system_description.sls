@@ -21,15 +21,26 @@ user_neg:
 
 # Для Silverblue используем rpm-ostree через cmd.run, 
 # так как нативного модуля в этой версии Salt нет.
-{% for pkg in ['salt', 'ripgrep', 'tig', 'zsh', 'tree-sitter-cli', 'xsel', 'yt-dlp'] %}
+{% set cli_packages = [
+    'salt', 'ripgrep', 'tig', 'zsh', 'tree-sitter-cli', 'xsel', 'yt-dlp',
+    'git', 'git-delta', 'fd-find', 'zoxide', 'ncdu', 'htop', 'fastfetch',
+    'jq', 'aria2', 'p7zip', 'unzip', 'zip', 'xz', 'lsof', 'procps-ng',
+    'psmisc', 'pv', 'parallel', 'perl-Image-ExifTool', 'chafa', 'convmv',
+    'dos2unix', 'moreutils', 'duf', 'rmlint', 'ouch', 'nnn', 'stow',
+    'dust', 'eza', 'pwgen', 'par', 'entr', 'inotify-tools', 'progress',
+    'reptyr', 'goaccess', 'lnav', 'qrencode', 'asciinema', 'sox', 'zbar',
+    'libnotify'
+] %}
+
+include:
+  - amnezia
+
+{% for pkg in cli_packages %}
 ensure_pkg_{{ pkg }}:
   cmd.run:
     - name: rpm-ostree install {{ pkg }}
     - unless: rpm -q {{ pkg }}
 {% endfor %}
-
-include:
-  - amnezia
 
 running_services:
   service.running:
