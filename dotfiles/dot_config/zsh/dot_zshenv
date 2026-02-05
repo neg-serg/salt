@@ -1,0 +1,57 @@
+# --- XDG Base Directory Specification ---
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_CACHE_HOME="$HOME/.cache"
+export XDG_DATA_HOME="$HOME/.local/share"
+export XDG_STATE_HOME="$HOME/.local/state"
+
+# --- XDG User Directories ---
+export XDG_DESKTOP_DIR="$HOME/.local/desktop"
+export XDG_DOCUMENTS_DIR="$HOME/doc"
+export XDG_DOWNLOAD_DIR="$HOME/dw"
+export XDG_MUSIC_DIR="$HOME/music"
+export XDG_PICTURES_DIR="$HOME/pic"
+export XDG_VIDEOS_DIR="$HOME/vid"
+export XDG_PUBLICSHARE_DIR="$HOME/.local/public"
+export XDG_TEMPLATES_DIR="$HOME/.local/templates"
+
+# --- Shell ---
+export ZDOTDIR="$HOME/.config/zsh"
+export WORDCHARS='*/?_-.[]~&;!#$%^(){}<>~` '
+export KEYTIMEOUT=10
+export REPORTTIME=60
+export ESCDELAY=1
+export HISTSIZE=100000
+export SAVEHIST=100000
+
+# --- Tools & Paths ---
+export TERMINAL="kitty"
+export EDITOR="nvim"
+export MANWIDTH="80"
+export PASSWORD_STORE_DIR="$XDG_DATA_HOME/pass"
+export PASSWORD_STORE_ENABLE_EXTENSIONS_DEFAULT="true"
+export GNUPGHOME="$XDG_DATA_HOME/gnupg"
+export ANDROID_USER_HOME="$XDG_DATA_HOME/android"
+export PYTHON_HISTORY="$XDG_DATA_HOME/python/history"
+export WINEPREFIX="$XDG_DATA_HOME/wineprefixes/default"
+export XAUTHORITY="$XDG_RUNTIME_DIR/Xauthority"
+
+# --- Appearance & UI ---
+export GREP_COLOR="37;45"
+export GREP_COLORS="ms=0;32:mc=1;33:sl=:cx=:fn=1;32:ln=1;36:bn=36:se=1;30"
+export GTK2_RC_FILES="$XDG_CONFIG_HOME/gtk-2.0/gtkrc"
+
+# --- Performance & System ---
+export __GL_VRR_ALLOWED="1"
+export XZ_DEFAULTS="-T 0"
+export LIBSEAT_BACKEND="logind"
+
+# --- Cleanup/Ensure ~/tmp ---
+[[ $(readlink -e ~/tmp) == "" ]] && rm -f ~/tmp
+if [[ ! -L ${HOME}/tmp ]]; then
+  rm -f ~/tmp
+  tmp_loc=$(mktemp -d)
+  ln -fs "${tmp_loc}" "${HOME}/tmp"
+fi
+
+# Set path to local binaries
+export PATH="$HOME/.local/bin:$PATH"
