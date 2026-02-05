@@ -14,7 +14,7 @@ BuildRequires:  ttfautohint
 BuildRequires:  python3-pip
 BuildRequires:  python3-wheel
 BuildRequires:  python3-setuptools
-BuildRequires:  python3-fonttools # dependency of nerd-font-patcher
+BuildRequires:  python3-fonttools
 
 %description
 This package provides a custom build of the Iosevka typeface,
