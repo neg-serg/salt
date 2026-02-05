@@ -1,0 +1,153 @@
+# Aliae configuration ported from nixos-config
+alias:
+  # Core eza/ls aliases
+  - name: ls
+    value: eza --icons=auto --hyperlink
+  - name: l
+    value: eza --icons=auto --hyperlink -lbF --git
+  - name: ll
+    value: eza --icons=auto --hyperlink -lbGF --git
+  - name: llm
+    value: eza --icons=auto --hyperlink -lbGF --git --sort=modified
+  - name: la
+    value: eza --icons=auto --hyperlink -lbhHigUmuSa --time-style=long-iso --git --color-scale
+  - name: lx
+    value: eza --icons=auto --hyperlink -lbhHigUmuSa@ --time-style=long-iso --git --color-scale
+  - name: lt
+    value: eza --icons=auto --hyperlink --tree --level=2
+  - name: eza
+    value: eza --icons=auto --hyperlink
+  - name: lS
+    value: eza --icons=auto --hyperlink -1
+  - name: lcr
+    value: eza --icons=auto --hyperlink -al --sort=created --color=always
+  - name: lsd
+    value: eza --icons=auto --hyperlink -alD --sort=created --color=always
+
+  # Core tools
+  - name: cat
+    value: bat -pp
+  - name: g
+    value: git
+  - name: gs
+    value: git status -sb
+  - name: als
+    value: ls
+
+  # Git shortcuts
+  - name: add
+    value: git add
+  - name: checkout
+    value: git checkout
+  - name: commit
+    value: git commit
+  - name: ga
+    value: git add
+  - name: gaa
+    value: git add --all
+  - name: gb
+    value: git branch
+  - name: gbD
+    value: git branch -D
+  - name: gba
+    value: git branch -a
+  - name: gbd
+    value: git branch -d
+  - name: gc
+    value: git commit -v
+  - name: "gc!"
+    value: git commit -v --amend
+  - name: gca
+    value: git commit -v -a
+  - name: "gca!"
+    value: git commit -v -a --amend
+  - name: gcb
+    value: git checkout -b
+  - name: gco
+    value: git checkout
+  - name: gd
+    value: git diff -w -U0 --word-diff-regex=[^[:space:]]
+  - name: gds
+    value: git diff --staged
+  - name: gl
+    value: git log -n 4 --oneline
+  - name: gp
+    value: git push
+  - name: "gpf!"
+    value: git push --force
+  - name: grb
+    value: git rebase
+  - name: grbi
+    value: git rebase -i
+  - name: gstaa
+    value: git stash apply
+  - name: gstl
+    value: git stash list
+  - name: gstp
+    value: git stash pop
+  - name: gsw
+    value: git switch
+  - name: gswc
+    value: git switch -c
+  - name: status
+    value: git status
+
+  # Misc
+  - name: cp
+    value: cp --reflink=auto
+  - name: mv
+    value: mv -i
+  - name: mk
+    value: mkdir -p
+  - name: rd
+    value: rmdir
+  - name: x
+    value: xargs
+  - name: ":q"
+    value: exit
+  - name: s
+    value: sudo 
+  - name: j
+    value: journalctl
+  - name: scp
+    value: scp -r
+  - name: ip
+    value: ip -c
+  - name: ctl
+    value: systemctl
+  - name: stl
+    value: sudo systemctl
+  - name: utl
+    value: systemctl --user
+  - name: up
+    value: systemctl --user start
+  - name: un
+    value: systemctl --user stop
+
+  # Optional tools
+  - name: mpv
+    value: mpv
+  - name: rg
+    value: rg --max-columns=0 --max-columns-preview --glob '!*.git*' --glob '!*.obsidian' --colors=match:fg:25 --colors=match:style:underline --colors=line:fg:cyan --colors=line:style:bold --colors=path:fg:249 --colors=path:style:bold --smart-case --hidden
+  - name: df
+    value: duf --style plain --no-header --bar-style modern --hide special
+  - name: sp
+    value: dust -r
+  - name: se
+    value: ouch decompress
+  - name: pk
+    value: ouch compress
+  - name: yt
+    value: yt-dlp --downloader aria2c --embed-metadata --embed-thumbnail --embed-subs --sub-langs=all
+  - name: fd
+    value: fd -H --ignore-vcs
+
+function:
+  - name: y
+    value: |
+      local tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
+      yazi "$@" --cwd-file="$tmp"
+      if cwd="$(cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+        builtin cd -- "$cwd"
+      fi
+      rm -f -- "$tmp"
