@@ -43,6 +43,35 @@ if [[ $# -eq 0 || "$1" == "duf" ]]; then
     fi
 fi
 
+# --- Build Massren RPM ---
+MASSREN_VERSION="1.5.6"
+MASSREN_RPM_NAME="massren-${MASSREN_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "massren" ]]; then
+    echo "--- Preparing Massren ---"
+    if [ -f "/build/rpms/${MASSREN_RPM_NAME}" ]; then
+        echo "Massren RPM (${MASSREN_RPM_NAME}) already exists, skipping."
+    else
+        # Install massren build dependencies (same as duf)
+        dnf install -y --skip-broken git rpm-build tar golang
+
+        MASSREN_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/massren-${MASSREN_VERSION}"
+        if [ ! -d "${MASSREN_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 https://github.com/laurent22/massren.git "${MASSREN_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/massren-${MASSREN_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "massren-${MASSREN_VERSION}"
+        cp /build/salt/specs/massren.spec "${SPECS_DIR}/massren.spec"
+
+        echo "--- Building Massren RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/massren.spec"
+
+        echo "--- Copying Massren RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "massren-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
 # --- Build Iosevka RPM ---
 IOSEVKA_RPM_NAME="iosevka-neg-fonts-${IOSEVKA_VERSION}-1.fc43.noarch.rpm"
 if [[ $# -eq 0 || "$1" == "iosevka" ]]; then

@@ -82,7 +82,6 @@ sudo_timeout:
         {'name': 'dos2unix',            'desc': 'Text file format converters'},
         {'name': 'du-dust',             'desc': 'More intuitive version of du'},
         {'name': 'fd-find',             'desc': 'Fd is a simple, fast and user-friendly alternative to find'},
-        {'name': 'massren',             'desc': 'Mass rename utility using your favorite text editor'},
         {'name': 'ncdu',                'desc': 'Text-based disk usage viewer'},
         {'name': 'rmlint',              'desc': 'Find space waste and other broken things on your filesystem'},
         {'name': 'stow',                'desc': 'Manage the installation of software packages from source'}
