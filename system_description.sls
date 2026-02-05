@@ -1,7 +1,7 @@
-# Salt state для Fedora Silverblue
-# Учитывает иммутабельность файловой системы
+# Salt state for Fedora Silverblue
+# Handles filesystem immutability
 
-# Исправляем политику контейнеров, чтобы podman мог скачивать образы
+# Fix containers policy to allow podman to pull images
 fix_containers_policy:
   file.managed:
     - name: /etc/containers/policy.json
@@ -48,8 +48,8 @@ user_neg:
       - neg
       - wheel
 
-# Для Silverblue используем rpm-ostree.
-# Батчим пакеты для ускорения и корректного разрешения зависимостей.
+# Use rpm-ostree for Silverblue.
+# Batch packages for speed and correct dependency resolution.
 {% set cli_packages = [
     'salt', 'ripgrep', 'tig', 'zsh', 'tree-sitter-cli', 'xsel', 'yt-dlp',
     'git', 'git-delta', 'fd-find', 'zoxide', 'ncdu', 'htop', 'fastfetch',
@@ -64,7 +64,7 @@ user_neg:
 include:
   - amnezia
 
-# Установка всех пакетов одной транзакцией.
+# Install all packages in a single transaction.
 install_system_packages:
   cmd.run:
     - name: |

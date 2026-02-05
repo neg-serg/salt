@@ -2,14 +2,14 @@ import sys
 import os
 import importlib.util
 
-# 1. Настройка PATH для dnf
+# 1. Setup PATH for dnf
 os.environ["PATH"] = "/var/home/neg/.gemini/tmp/salt_deps:" + os.environ.get("PATH", "")
 
-# 2. Локальные зависимости
+# 2. Local dependencies
 sys.path.insert(0, "/var/home/neg/.gemini/tmp/salt_deps")
 sys.path.insert(0, "/var/home/neg/.local/lib/python3.14/site-packages")
 
-# 3. Эмуляция удаленного модуля 'crypt'
+# 3. Emulate removed 'crypt' module
 class MockCrypt:
     def __init__(self):
         try:
@@ -18,7 +18,7 @@ class MockCrypt:
         except ImportError:
             self.hash = None
         
-        # Эмулируем методы для Salt
+        # Emulate methods for Salt
         class Method:
             def __init__(self, name, ident):
                 self.name = name
@@ -40,17 +40,17 @@ class MockCrypt:
 
 sys.modules['crypt'] = MockCrypt()
 
-# 4. Эмуляция удаленного модуля 'spwd'
+# 4. Emulate removed 'spwd' module
 class MockSpwd:
     def getspnam(self, name):
-        # В идеале тут должно быть чтение /etc/shadow, но для dry-run и базовых проверок
-        # Salt часто просто проверяет наличие функции.
-        # Если реально нужно менять пароли - это сложнее.
+        # Ideally this should read /etc/shadow, but for dry-run and basic checks
+        # Salt often just checks for function existence.
+        # Implementation of real password changes would be more complex.
         raise KeyError(f"spwd.getspnam emulation: user {name} lookup failed or not implemented")
 
 sys.modules['spwd'] = MockSpwd()
 
-# 5. Принудительный патч salt.utils.pycrypto
+# 5. Force patch salt.utils.pycrypto
 try:
     import salt.utils
     patch_path = "/var/home/neg/.gemini/tmp/salt_deps/salt/utils/pycrypto.py"
@@ -62,7 +62,7 @@ try:
 except Exception as e:
     pass
 
-# 6. Запускаем Salt
+# 6. Run Salt
 import salt.scripts
 if __name__ == "__main__":
     salt.scripts.salt_call()
