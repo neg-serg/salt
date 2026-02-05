@@ -68,7 +68,8 @@ sudo_timeout:
     'dos2unix', 'moreutils', 'duf', 'rmlint', 'nnn', 'stow',
     'du-dust', 'pwgen', 'par', 'entr', 'inotify-tools', 'progress',
     'reptyr', 'goaccess', 'lnav', 'qrencode', 'asciinema', 'sox', 'zbar',
-    'libnotify', 'kernel-devel', 'dkms', 'gcc', 'make', 'python3-devel'
+    'libnotify', 'kernel-devel', 'dkms', 'gcc', 'make', 'python3-devel',
+    'chezmoi'
 ] %}
 
 include:
