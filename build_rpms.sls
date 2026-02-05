@@ -11,9 +11,12 @@
 build_custom_rpms:
   cmd.run:
     - name: |
-        podman run --rm -v /var/home/neg/src/salt:/build:Z \
+        podman run --rm \
+        -v /var/home/neg/src/salt/salt:/build/salt:z \
+        -v /var/home/neg/src/salt/rpms:/build/rpms:z \
+        -v /var/home/neg/src/salt/iosevka-neg.toml:/build/iosevka-neg.toml:z \
         registry.fedoraproject.org/fedora-toolbox:43 \
-        /build/build-rpm.sh
+        bash /build/salt/build-rpm.sh
     - runas: neg # Run as user 'neg' for rootless podman and user ownership of files
     - creates: /var/home/neg/src/salt/rpms/iosevka-neg-fonts-*.rpm # Indicate creation of Iosevka RPM
     - creates: /var/home/neg/src/salt/rpms/duf-*.rpm # Indicate creation of Duf RPM

@@ -86,6 +86,9 @@ sudo_timeout:
         {'name': 'rmlint',              'desc': 'Find space waste and other broken things on your filesystem'},
         {'name': 'stow',                'desc': 'Manage the installation of software packages from source'}
     ],
+    'Fonts': [
+        {'name': 'material-icons-fonts', 'desc': 'Material Design icons fonts'}
+    ],
     'Media': [
         {'name': 'cava',                'desc': 'Console audio visualizer'},
         {'name': 'chafa',               'desc': 'Image-to-text converter for terminal'},

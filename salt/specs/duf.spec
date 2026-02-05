@@ -29,5 +29,5 @@ install -m 0755 duf-bin %{buildroot}%{_bindir}/duf
 %{_bindir}/duf
 
 %changelog
-* %{__date} neg-serg <neg-serg@example.com> - 0.2.0-1
+* Thu Feb 05 2026 neg-serg <neg-serg@example.com> - 0.9.1-1
 - Initial custom RPM build
