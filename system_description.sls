@@ -168,14 +168,44 @@ install_system_packages:
       - file: fix_containers_policy
 
 zsh_config_dir:
+  file.directory:
+    - name: /etc/zsh
+    - user: root
+    - group: root
+    - mode: '0755'
+
+/etc/zshenv:
   file.managed:
-    - name: /etc/zshenv
     - contents: |
         # System-wide Zsh environment
         export ZDOTDIR="${XDG_CONFIG_HOME:-$HOME/.config}/zsh"
     - user: root
     - group: root
     - mode: '0644'
+
+/etc/zsh/zshrc:
+  file.managed:
+    - contents: |
+        # System-wide zshrc
+        # If ZDOTDIR is set, zsh will source it from there.
+        # This ensures ZDOTDIR is respected even if set in /etc/zshenv
+        [[ -f "$ZDOTDIR/.zshrc" ]] && source "$ZDOTDIR/.zshrc"
+    - user: root
+    - group: root
+    - mode: '0644'
+    - require:
+      - file: zsh_config_dir
+
+# Force shell update for users (rpm-ostree might be tricky with user.present)
+force_zsh_neg:
+  cmd.run:
+    - name: usermod -s /usr/bin/zsh neg
+    - unless: 'test "$(getent passwd neg | cut -d: -f7)" = "/usr/bin/zsh"'
+
+force_zsh_root:
+  cmd.run:
+    - name: usermod -s /usr/bin/zsh root
+    - unless: 'test "$(getent passwd root | cut -d: -f7)" = "/usr/bin/zsh"'
 
 etckeeper_init:
   cmd.run:
