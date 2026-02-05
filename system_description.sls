@@ -154,6 +154,7 @@ include:
   - amnezia
   - build_rpms
   - fonts
+  - fira-code-nerd
   - duf-rpm
 
 # Install all packages in a single transaction.
