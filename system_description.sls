@@ -82,6 +82,7 @@ sudo_timeout:
         {'name': 'dos2unix',            'desc': 'Text file format converters'},
         {'name': 'du-dust',             'desc': 'More intuitive version of du'},
         {'name': 'fd-find',             'desc': 'Fd is a simple, fast and user-friendly alternative to find'},
+        {'name': 'massren',             'desc': 'Mass rename utility using your favorite text editor'},
         {'name': 'ncdu',                'desc': 'Text-based disk usage viewer'},
         {'name': 'rmlint',              'desc': 'Find space waste and other broken things on your filesystem'},
         {'name': 'stow',                'desc': 'Manage the installation of software packages from source'}
@@ -103,7 +104,6 @@ sudo_timeout:
         {'name': 'btop',                'desc': 'A monitor of resources (CPU, Memory, Network)'},
         {'name': 'fastfetch',           'desc': 'Fast neofetch-like system information tool'},
         {'name': 'goaccess',            'desc': 'Real-time web log analyzer and interactive viewer'},
-        {'name': 'htop',                'desc': 'Interactive process viewer'},
         {'name': 'lnav',                'desc': 'Curses-based tool for viewing and analyzing log files'},
         {'name': 'lsof',                'desc': 'A utility which lists open files on a Linux/UNIX system'},
         {'name': 'procps-ng',           'desc': 'System and process monitoring utilities'},

@@ -57,7 +57,6 @@
     context                 # user@hostname
     nordvpn                 # nordvpn connection status, linux only (https://nordvpn.com/)
     ranger                  # ranger shell (https://github.com/ranger/ranger)
-    nnn                     # nnn shell (https://github.com/jarun/nnn)
     lf                      # lf shell (https://github.com/gokcehan/lf)
     xplr                    # xplr shell (https://github.com/sayanarijit/xplr)
     vim_shell               # vim shell indicator (:sh)
@@ -282,7 +281,6 @@
   typeset -g POWERLEVEL9K_NORDVPN_{DISCONNECTED,CONNECTING,DISCONNECTING}_CONTENT_EXPANSION=
   typeset -g POWERLEVEL9K_NORDVPN_{DISCONNECTED,CONNECTING,DISCONNECTING}_VISUAL_IDENTIFIER_EXPANSION=
   typeset -g POWERLEVEL9K_RANGER_FOREGROUND=178
-  typeset -g POWERLEVEL9K_NNN_FOREGROUND=72
   typeset -g POWERLEVEL9K_LF_FOREGROUND=72
   typeset -g POWERLEVEL9K_XPLR_FOREGROUND=72
   typeset -g POWERLEVEL9K_VIM_SHELL_FOREGROUND=34
