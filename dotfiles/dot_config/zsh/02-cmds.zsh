@@ -34,7 +34,7 @@ _exists curl && {
     geoip(){ curl ipinfo.io/$1; }
     sprunge(){ curl -F "sprunge=<-" http://sprunge.us <"$1" ;}
 }
-if [[ -e /etc/NIXOS ]]; then
+if [[ -e /etc/NIXOS ]] || _exists nix; then
     # thx to @oni: https://discourse.nixos.org/t/nvd-simple-nix-nixos-version-diff-tool/12397/3
     hash -d nix-now="/run/current-system"
     hash -d nix-boot="/nix/var/nix/profiles/system"
