@@ -33,10 +33,15 @@ system_hostname:
     - name: hostnamectl set-hostname fedora
     - unless: test "$(hostname)" = "fedora"
 
+user_root:
+  user.present:
+    - name: root
+    - shell: /usr/bin/zsh
+
 user_neg:
   user.present:
     - name: neg
-    - shell: /bin/bash
+    - shell: /usr/bin/zsh
     - uid: 1000
     - gid: 1000
     - groups:
