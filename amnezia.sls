@@ -25,6 +25,7 @@ build_amneziawg_go:
         cp amneziawg-go /build/amneziawg-go-bin
         "
     - creates: /var/home/neg/src/amnezia_build/amneziawg-go-bin
+    - output_loglevel: info
     - require:
       - file: /var/home/neg/src/amnezia_build
 
@@ -51,6 +52,7 @@ build_amneziawg_tools:
         cp wg /build/awg-bin
         "
     - creates: /var/home/neg/src/amnezia_build/awg-bin
+    - output_loglevel: info
     - require:
       - file: /var/home/neg/src/amnezia_build
 
@@ -69,7 +71,10 @@ build_amnezia_vpn:
   cmd.run:
     - name: |
         podman run --rm -v /var/home/neg/src/amnezia_build:/build:Z registry.fedoraproject.org/fedora-toolbox:43 bash -c "
-        dnf install -y git cmake make gcc-c++ qt6-qtbase-devel qt6-qtsvg-devel \
+        (while true; do echo 'Building... ' \$(date); sleep 60; done) &
+        HEARTBEAT_PID=\$!
+        dnf install -y --disablerepo=fedora-cisco-openh264 --setopt=install_weak_deps=False \
+            git cmake make gcc-c++ qt6-qtbase-devel qt6-qtsvg-devel \
             qt6-qtdeclarative-devel qt6-qttools-devel libmnl-devel libmount-devel \
             qt6-qt5compat-devel qt6-qtshadertools-devel qt6-qtmultimedia-devel \
             qt6-qtbase-static qt6-qtdeclarative-static && \
@@ -77,11 +82,13 @@ build_amnezia_vpn:
         git clone --recursive https://github.com/amnezia-vpn/amnezia-client.git /build/amnezia-client-src && \
         mkdir -p /build/amnezia-client-src/build && cd /build/amnezia-client-src/build && \
         cmake .. -DCMAKE_BUILD_TYPE=Release -DVERSION=2.1.2 && \
-        make -j\$(nproc) && \
-        cp AmneziaVPN /build/AmneziaVPN-bin
+        make -j\$(nproc) VERBOSE=1 && \
+        cp AmneziaVPN /build/AmneziaVPN-bin && \
+        kill \$HEARTBEAT_PID
         "
     - creates: /var/home/neg/src/amnezia_build/AmneziaVPN-bin
     - timeout: 3600
+    - output_loglevel: info
     - require:
       - file: /var/home/neg/src/amnezia_build
 
