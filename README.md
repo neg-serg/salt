@@ -1,24 +1,24 @@
   1. Custom Software (neg-serg)
-   - duf (already added) - Custom fork with --style plain support.
-   - albumdetails - CLI for music album metadata.
-   - neg-pretty-printer - Custom Python library and CLI (ppinfo) for colored output.
-   - raise - Tool for window management/raising.
-   - nyxt-bin - Binary packaging for the Nyxt browser.
-   - richcolors - Color manipulation/theme generation utility.
-   - rsmetrx - Metrics exporter/shader pack for Quickshell HUDs.
-   - fsread.nvim - Neovim plugin for "fast reading" mode.
-   - iosevka-neg (already added) - Custom build of the Iosevka font.
-   - Flight-Plasma-Themes (flight-gtk-theme) - Custom GTK/Plasma theme.
-   - Alkano-aio - Cursor theme.
-   - two_percent (sk) - Search utility.
+   - [x] duf - Custom fork with --style plain support.
+   - [x] albumdetails - CLI for music album metadata.
+   - [ ] neg-pretty-printer - Custom Python library and CLI (ppinfo) for colored output. (repo not found)
+   - [ ] raise - Tool for window management/raising. (repo not found)
+   - [ ] nyxt-bin - Binary packaging for the Nyxt browser. (needs investigation)
+   - [ ] richcolors - Color manipulation/theme generation utility. (repo not found)
+   - [x] rsmetrx - Metrics exporter/shader pack for Quickshell HUDs.
+   - [x] fsread.nvim - Neovim plugin for "fast reading" mode.
+   - [x] iosevka-neg - Custom build of the Iosevka font.
+   - [x] Flight-Plasma-Themes (flight-gtk-theme) - Custom GTK/Plasma theme.
+   - [x] Alkano-aio - Cursor theme.
+   - [x] two_percent (sk) - Search utility.
 
 
   2. Specialized Third-party Software (used in your config)
-   - pipemixer - TUI mixer for PipeWire.
-   - wiremix - Another PipeWire mixer for terminal.
-   - matugen-themes - Collection of templates for Matugen.
-   - oldschool-pc-font-pack - Classic PC bitmap/outline fonts.
-   - surfingkeys-conf - Custom configuration for SurfingKeys browser extension.
+   - [ ] pipemixer - TUI mixer for PipeWire. (repo not found)
+   - [x] wiremix - Another PipeWire mixer for terminal.
+   - [x] matugen-themes - Collection of templates for Matugen.
+   - [ ] oldschool-pc-font-pack - Classic PC bitmap/outline fonts. (manual download: https://int10h.org/oldschool-pc-fonts/)
+   - [x] surfingkeys-conf - Custom configuration for SurfingKeys browser extension.
 
 
   3. Shell Aliases (Directly running from GitHub)
