@@ -81,7 +81,6 @@ sudo_timeout:
         {'name': 'convmv',              'desc': 'Convert filename encodings'},
         {'name': 'dos2unix',            'desc': 'Text file format converters'},
         {'name': 'du-dust',             'desc': 'More intuitive version of du'},
-        {'name': 'duf',                 'desc': 'Disk Usage/Free Utility - a better df alternative'},
         {'name': 'fd-find',             'desc': 'Fd is a simple, fast and user-friendly alternative to find'},
         {'name': 'ncdu',                'desc': 'Text-based disk usage viewer'},
         {'name': 'rmlint',              'desc': 'Find space waste and other broken things on your filesystem'},
@@ -150,6 +149,8 @@ sudo_timeout:
 
 include:
   - amnezia
+  - fonts
+  - duf
 
 # Install all packages in a single transaction.
 install_system_packages:
