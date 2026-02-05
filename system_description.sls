@@ -227,3 +227,14 @@ apply_dotfiles:
     - cwd: /var/home/neg
     - require:
       - cmd: install_system_packages
+
+chezmoi_source_symlink:
+  file.symlink:
+    - name: /var/home/neg/.local/share/chezmoi
+    - target: /var/home/neg/src/salt/dotfiles
+    - user: neg
+    - group: neg
+    - force: True
+    - makedirs: True
+    - require:
+      - user: user_neg
