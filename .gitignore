@@ -1,3 +1,14 @@
 .password
-build.log
 nix
+
+# Build artifacts
+rpms/
+*.log
+
+# Python
+.venv/
+__pycache__/
+
+# Tools
+.claude/
+tt
