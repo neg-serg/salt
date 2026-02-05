@@ -4,7 +4,8 @@ source ~/.config/zsh/00-fsyh-parser.zsh
 
 zi_init=${XDG_CONFIG_HOME:-$HOME/.config}/zi/init.zsh
 [[ -r $zi_init ]] && . $zi_init && zzinit
-[[ -f /etc/NIXOS ]] && fpath=(${ZDOTDIR}/lazyfuncs ${XDG_CONFIG_HOME}/zsh-nix $fpath)
+fpath=(${ZDOTDIR}/lazyfuncs $fpath)
+[[ -f /etc/NIXOS ]] && fpath=(${XDG_CONFIG_HOME}/zsh-nix $fpath)
 zi ice depth'1' lucid
 zi light romkatv/zsh-defer
 typeset -f zsh-defer >/dev/null || zsh-defer() { "$@"; }
