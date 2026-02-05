@@ -150,7 +150,6 @@ sudo_timeout:
 
 include:
   - amnezia
-  - nix
 
 # Install all packages in a single transaction.
 install_system_packages:
