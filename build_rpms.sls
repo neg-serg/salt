@@ -6,9 +6,22 @@
     - group: neg
     - makedirs: True
 
-# This state runs the build-rpm.sh script inside a container
-# to produce the RPM packages.
-build_custom_rpms:
+# Build Duf RPM
+build_duf_rpm:
+  cmd.run:
+    - name: |
+        podman run --rm \
+        -v /var/home/neg/src/salt/salt:/build/salt:z \
+        -v /var/home/neg/src/salt/rpms:/build/rpms:z \
+        registry.fedoraproject.org/fedora-toolbox:43 \
+        bash /build/salt/build-rpm.sh duf
+    - runas: neg
+    - creates: /var/home/neg/src/salt/rpms/duf-0.9.1-1.fc43.x86_64.rpm
+    - require:
+      - file: /var/home/neg/src/salt/rpms
+
+# Build Iosevka RPM
+build_iosevka_rpm:
   cmd.run:
     - name: |
         podman run --rm \
@@ -16,11 +29,10 @@ build_custom_rpms:
         -v /var/home/neg/src/salt/rpms:/build/rpms:z \
         -v /var/home/neg/src/salt/iosevka-neg.toml:/build/iosevka-neg.toml:z \
         registry.fedoraproject.org/fedora-toolbox:43 \
-        bash /build/salt/build-rpm.sh
-    - runas: neg # Run as user 'neg' for rootless podman and user ownership of files
-    - creates: /var/home/neg/src/salt/rpms/iosevka-neg-fonts-*.rpm # Indicate creation of Iosevka RPM
-    - creates: /var/home/neg/src/salt/rpms/duf-*.rpm # Indicate creation of Duf RPM
-    - timeout: 7200 # Allow up to 2 hours for build
+        bash /build/salt/build-rpm.sh iosevka
+    - runas: neg
+    - creates: /var/home/neg/src/salt/rpms/iosevka-neg-fonts-34.1.0-1.fc43.noarch.rpm
+    - timeout: 7200
     - output_loglevel: info
     - require:
       - file: /var/home/neg/src/salt/rpms
