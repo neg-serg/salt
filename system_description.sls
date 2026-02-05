@@ -76,6 +76,7 @@ sudo_timeout:
         {'name': 'tree-sitter-cli',     'desc': 'CLI tool for developing, testing, and using Tree-sitter parsers'}
     ],
     'File Management': [
+        {'name': 'bat',                 'desc': 'A cat(1) clone with wings'},
         {'name': 'convmv',              'desc': 'Convert filename encodings'},
         {'name': 'dos2unix',            'desc': 'Text file format converters'},
         {'name': 'du-dust',             'desc': 'More intuitive version of du'},
@@ -86,6 +87,7 @@ sudo_timeout:
         {'name': 'stow',                'desc': 'Manage the installation of software packages from source'}
     ],
     'Media': [
+        {'name': 'cava',                'desc': 'Console audio visualizer'},
         {'name': 'chafa',               'desc': 'Image-to-text converter for terminal'},
         {'name': 'mpv',                 'desc': 'A free, open source, and cross-platform media player'},
         {'name': 'perl-Image-ExifTool', 'desc': 'Utility for reading and writing image meta info'},
@@ -95,6 +97,7 @@ sudo_timeout:
         {'name': 'zbar',                'desc': 'Bar code reader'}
     ],
     'Monitoring & System': [
+        {'name': 'btop',                'desc': 'A monitor of resources (CPU, Memory, Network)'},
         {'name': 'fastfetch',           'desc': 'Fast neofetch-like system information tool'},
         {'name': 'goaccess',            'desc': 'Real-time web log analyzer and interactive viewer'},
         {'name': 'htop',                'desc': 'Interactive process viewer'},
@@ -103,21 +106,31 @@ sudo_timeout:
         {'name': 'procps-ng',           'desc': 'System and process monitoring utilities'},
         {'name': 'progress',            'desc': 'Coreutils Viewer'},
         {'name': 'psmisc',              'desc': 'Utilities for managing processes on your system'},
-        {'name': 'pv',                  'desc': 'A tool for monitoring the progress of data through a pipeline'}
+        {'name': 'pv',                  'desc': 'A tool for monitoring the progress of data through a pipeline'},
+        {'name': 's-tui',               'desc': 'Stress terminal UI for CPU monitoring'},
+        {'name': 'sysstat',             'desc': 'Performance monitoring tools'}
     ],
     'Network': [
-        {'name': 'aria2',               'desc': 'High speed download utility with resuming and segmented downloading'}
+        {'name': 'aria2',               'desc': 'High speed download utility with resuming and segmented downloading'},
+        {'name': 'mtr',                 'desc': 'Network diagnostic tool'}
     ],
     'Shell & Tools': [
         {'name': 'asciinema',           'desc': 'Terminal session recorder, streamer and player'},
         {'name': 'entr',                'desc': 'Run arbitrary commands when files change'},
+        {'name': 'fzf',                 'desc': 'A command-line fuzzy finder'},
+        {'name': 'gh',                  'desc': 'GitHub CLI'},
+        {'name': 'git-lfs',             'desc': 'Git Large File Storage'},
         {'name': 'inotify-tools',       'desc': 'Command line utilities for inotify'},
+        {'name': 'kitty',               'desc': 'GPU-accelerated terminal emulator'},
         {'name': 'moreutils',           'desc': 'Additional unix utilities'},
         {'name': 'par',                 'desc': 'Paragraph reformatter, vaguely like fmt, but more elaborate'},
         {'name': 'parallel',            'desc': 'Shell tool for executing jobs in parallel'},
+        {'name': 'pass',                'desc': 'The standard unix password manager'},
         {'name': 'pwgen',               'desc': 'Automatic password generation'},
         {'name': 'reptyr',              'desc': 'Attach a running process to a new terminal'},
         {'name': 'salt',                'desc': 'A parallel remote execution system'},
+        {'name': 'tealdeer',            'desc': 'A fast tldr client in Rust'},
+        {'name': 'tmux',                'desc': 'Terminal multiplexer'},
         {'name': 'zoxide',              'desc': 'Smarter cd command for your terminal'},
         {'name': 'zsh',                 'desc': 'Powerful interactive shell'}
     ],
@@ -264,6 +277,60 @@ install_oh_my_posh:
     - name: curl -s https://ohmyposh.dev/install.sh | bash -s -- -d ~/.local/bin
     - runas: neg
     - creates: /var/home/neg/.local/bin/oh-my-posh
+
+install_aliae:
+  cmd.run:
+    - name: curl -L https://github.com/p-nerd/aliae/releases/latest/download/aliae-linux-amd64 -o ~/.local/bin/aliae && chmod +x ~/.local/bin/aliae
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/aliae
+
+install_yazi:
+  cmd.run:
+    - name: |
+        curl -L https://github.com/sxyazi/yazi/releases/latest/download/yazi-x86_64-unknown-linux-musl.zip -o /tmp/yazi.zip
+        unzip -o /tmp/yazi.zip -d /tmp/yazi_extracted
+        mv /tmp/yazi_extracted/yazi-x86_64-unknown-linux-musl/yazi ~/.local/bin/
+        mv /tmp/yazi_extracted/yazi-x86_64-unknown-linux-musl/ya ~/.local/bin/
+        rm -rf /tmp/yazi.zip /tmp/yazi_extracted
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/yazi
+
+install_broot:
+  cmd.run:
+    - name: curl -L https://dystroy.org/broot/download/x86_64-linux/broot -o ~/.local/bin/broot && chmod +x ~/.local/bin/broot
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/broot
+
+install_nushell:
+  cmd.run:
+    - name: |
+        curl -L https://github.com/nushell/nushell/releases/latest/download/nu-$(curl -s https://api.github.com/repos/nushell/nushell/releases/latest | jq -r .tag_name)-x86_64-unknown-linux-musl.tar.gz -o /tmp/nu.tar.gz
+        tar -xzf /tmp/nu.tar.gz -C /tmp
+        mv /tmp/nu-*-x86_64-unknown-linux-musl/nu* ~/.local/bin/
+        rm -rf /tmp/nu.tar.gz /tmp/nu-*-x86_64-unknown-linux-musl
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/nu
+
+install_eza:
+  cmd.run:
+    - name: |
+        curl -L https://github.com/eza-community/eza/releases/latest/download/eza_x86_64-unknown-linux-musl.tar.gz -o /tmp/eza.tar.gz
+        tar -xzf /tmp/eza.tar.gz -C /tmp
+        mv /tmp/eza ~/.local/bin/
+        rm /tmp/eza.tar.gz
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/eza
+
+install_television:
+  cmd.run:
+    - name: |
+        TAG=$(curl -s https://api.github.com/repos/alexpasmantier/television/releases/latest | jq -r .tag_name)
+        curl -L "https://github.com/alexpasmantier/television/releases/download/${TAG}/tv-${TAG}-x86_64-unknown-linux-musl.tar.gz" -o /tmp/tv.tar.gz
+        tar -xzf /tmp/tv.tar.gz -C /tmp
+        mv /tmp/tv-${TAG}-x86_64-unknown-linux-musl/tv ~/.local/bin/
+        rm -rf /tmp/tv.tar.gz /tmp/tv-${TAG}-x86_64-unknown-linux-musl
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/tv
 
 apply_dotfiles:
   cmd.run:
