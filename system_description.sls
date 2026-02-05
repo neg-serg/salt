@@ -55,8 +55,8 @@ user_neg:
     'git', 'git-delta', 'fd-find', 'zoxide', 'ncdu', 'htop', 'fastfetch',
     'jq', 'aria2', 'p7zip', 'unzip', 'zip', 'xz', 'lsof', 'procps-ng',
     'psmisc', 'pv', 'parallel', 'perl-Image-ExifTool', 'chafa', 'convmv',
-    'dos2unix', 'moreutils', 'duf', 'rmlint', 'ouch', 'nnn', 'stow',
-    'du-dust', 'eza', 'pwgen', 'par', 'entr', 'inotify-tools', 'progress',
+    'dos2unix', 'moreutils', 'duf', 'rmlint', 'nnn', 'stow',
+    'du-dust', 'pwgen', 'par', 'entr', 'inotify-tools', 'progress',
     'reptyr', 'goaccess', 'lnav', 'qrencode', 'asciinema', 'sox', 'zbar',
     'libnotify', 'kernel-devel', 'dkms', 'gcc', 'make', 'python3-devel'
 ] %}
