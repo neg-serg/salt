@@ -1,9 +1,9 @@
 # Resolve fzf dir (prefer fzf-share)
-local _fzf_dir
+local _fzf_base
 if (( ${+commands[fzf-share]} )); then
-  _fzf_dir="$(fzf-share 2>/dev/null)"
+  _fzf_base="$(fzf-share 2>/dev/null)"
 elif [[ -d /usr/share/fzf ]]; then
-  _fzf_dir=/usr/share/fzf
+  _fzf_base=/usr/share/fzf
 else
   return 0
 fi
@@ -12,9 +12,19 @@ local _fzf_cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/fzf"
 [[ -d "$_fzf_cache_dir" ]] || mkdir -p -- "$_fzf_cache_dir"
 
 # Sync files if missing/empty or older than source
+# Fedora puts them in /usr/share/fzf/shell/
+# Others might put them in /usr/share/fzf/
 for f in key-bindings.zsh completion.zsh; do
-  local src="${_fzf_dir}/${f}" dst="${_fzf_cache_dir}/${f}"
-  [[ -r "$src" ]] || continue
+  local src=""
+  for loc in "$_fzf_base" "$_fzf_base/shell"; do
+    if [[ -r "$loc/$f" ]]; then
+      src="$loc/$f"
+      break
+    fi
+  done
+
+  [[ -n "$src" ]] || continue
+  local dst="${_fzf_cache_dir}/${f}"
   [[ -s "$dst" && ! "$src" -nt "$dst" ]] || cp -f -- "$src" "$dst"
 done
 
