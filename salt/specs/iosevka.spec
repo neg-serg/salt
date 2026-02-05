@@ -7,6 +7,7 @@ License:        OFL-1.1
 URL:            https://github.com/be5invis/Iosevka
 Source0:        iosevka-source-%{version}.tar.gz
 Source1:        iosevka-neg.toml
+BuildArch:      noarch
 
 BuildRequires:  npm
 BuildRequires:  git

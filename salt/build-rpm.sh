@@ -40,21 +40,27 @@ cp /build/salt/specs/iosevka.spec "${SPECS_DIR}/iosevka-neg-fonts.spec"
 cp /build/salt/specs/duf.spec "${SPECS_DIR}/duf.spec"
 
 # --- Build Iosevka RPM ---
+echo "--- Building Iosevka RPM ---"
 rpmbuild \
     --define "_topdir ${RPM_BUILD_ROOT}" \
     -ba "${SPECS_DIR}/iosevka-neg-fonts.spec"
 
+# Copy Iosevka RPM immediately
+echo "--- Copying Iosevka RPMs to /build/rpms/ ---"
+find "${RPMS_DIR}" -name "iosevka-neg-fonts-*.rpm" -exec cp -v {} /build/rpms/ \;
+
 # --- Build Duf RPM ---
+echo "--- Building Duf RPM ---"
 rpmbuild \
     --define "_topdir ${RPM_BUILD_ROOT}" \
     -ba "${SPECS_DIR}/duf.spec"
 
-# --- Copy resulting RPMs to a shared output directory ---
-mkdir -p /build/rpms
-cp "${RPMS_DIR}/x86_64/"*.rpm /build/rpms/
+# Copy Duf RPM immediately
+echo "--- Copying Duf RPMs to /build/rpms/ ---"
+find "${RPMS_DIR}" -name "duf-*.rpm" -exec cp -v {} /build/rpms/ \;
 
 # Clean up (optional)
 # rm -rf "${RPM_BUILD_ROOT}"
 
-echo "RPMs built and copied to /build/rpms/"
+echo "All RPMs built and copied to /build/rpms/"
 ls -l /build/rpms/
