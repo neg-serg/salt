@@ -1,5 +1,5 @@
 Name:           duf
-Version:        0.2.0 # Placeholder, will be updated by script
+Version:        0.9.1
 Release:        1%{?dist}
 Summary:        Disk Usage/Free Utility - a better df alternative (neg-serg custom build)
 

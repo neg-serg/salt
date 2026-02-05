@@ -1,5 +1,5 @@
 Name:           iosevka-neg-fonts
-Version:        34.1.0 # Placeholder, will be updated by script
+Version:        34.1.0
 Release:        1%{?dist}
 Summary:        Custom Iosevka Nerd Fonts by neg-serg
 

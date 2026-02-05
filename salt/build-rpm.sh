@@ -36,19 +36,17 @@ cd ..
 tar -czf "${SOURCES_DIR}/duf-${DUF_VERSION}.tar.gz" "${DUF_SOURCE_DIR}"
 
 # --- Copy spec files ---
-cp /build/specs/iosevka.spec "${SPECS_DIR}/iosevka-neg-fonts.spec"
-cp /build/specs/duf.spec "${SPECS_DIR}/duf.spec"
+cp /build/salt/specs/iosevka.spec "${SPECS_DIR}/iosevka-neg-fonts.spec"
+cp /build/salt/specs/duf.spec "${SPECS_DIR}/duf.spec"
 
 # --- Build Iosevka RPM ---
 rpmbuild \
     --define "_topdir ${RPM_BUILD_ROOT}" \
-    --define "version ${IOSEVKA_VERSION}" \
     -ba "${SPECS_DIR}/iosevka-neg-fonts.spec"
 
 # --- Build Duf RPM ---
 rpmbuild \
     --define "_topdir ${RPM_BUILD_ROOT}" \
-    --define "version ${DUF_VERSION}" \
     -ba "${SPECS_DIR}/duf.spec"
 
 # --- Copy resulting RPMs to a shared output directory ---
