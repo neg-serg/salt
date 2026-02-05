@@ -18,4 +18,6 @@ if [[ "$1" == "--dry-run" ]]; then
 else
   echo "--- Applying configuration ---"
   run_salt ""
+  echo "--- Applying dotfiles (chezmoi) ---"
+  chezmoi apply --force --source /var/home/neg/src/salt/dotfiles
 fi
