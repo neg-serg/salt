@@ -15,22 +15,15 @@ Duf is a disk usage utility that provides a better overview of disk usage.
 This is a custom build from neg-serg's fork, including specific features or fixes.
 
 %prep
-# No %setup as we will clone the git repo directly
-# %setup -q -n %{name}-%{version}
+%setup -q -n duf-%{version}
 
 %build
-# Clone the repository
-git clone https://github.com/neg-serg/duf.git %{_builddir}/%{name}-%{version}
-cd %{_builddir}/%{name}-%{version}
-
 # Build duf
-go mod init duf # Initialize go module
-go mod tidy # Fetch dependencies
-go build -ldflags="-s -w -X main.Version=%{version}" -o %{_builddir}/%{name}-%{version}/duf-bin .
+go build -ldflags="-s -w -X main.Version=%{version}" -o duf-bin .
 
 %install
 mkdir -p %{buildroot}%{_bindir}
-install -m 0755 %{_builddir}/%{name}-%{version}/duf-bin %{buildroot}%{_bindir}/duf
+install -m 0755 duf-bin %{buildroot}%{_bindir}/duf
 
 %files
 %{_bindir}/duf

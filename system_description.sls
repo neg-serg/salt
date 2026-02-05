@@ -149,8 +149,9 @@ sudo_timeout:
 
 include:
   - amnezia
+  - build_rpms
   - fonts
-  - duf
+  - duf-rpm
 
 # Install all packages in a single transaction.
 install_system_packages:

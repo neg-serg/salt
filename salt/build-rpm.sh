@@ -15,6 +15,9 @@ SRPMS_DIR="${RPM_BUILD_ROOT}/SRPMS"
 # Create RPM build directories
 mkdir -p "$SOURCES_DIR" "$SPECS_DIR" "$RPMS_DIR" "$SRPMS_DIR"
 
+# Install build dependencies
+dnf install -y git rpm-build tar make gcc golang nodejs npm ttfautohint python3-pip python3-fonttools
+
 # --- Prepare Iosevka sources ---
 IOSEVKA_SOURCE_DIR="iosevka-source-${IOSEVKA_VERSION}"
 git clone --depth 1 https://github.com/be5invis/Iosevka.git "${IOSEVKA_SOURCE_DIR}"
@@ -37,15 +40,15 @@ cp /build/specs/iosevka.spec "${SPECS_DIR}/iosevka-neg-fonts.spec"
 cp /build/specs/duf.spec "${SPECS_DIR}/duf.spec"
 
 # --- Build Iosevka RPM ---
-rpmbuild 
-    --define "_topdir ${RPM_BUILD_ROOT}" 
-    --define "version ${IOSEVKA_VERSION}" 
+rpmbuild \
+    --define "_topdir ${RPM_BUILD_ROOT}" \
+    --define "version ${IOSEVKA_VERSION}" \
     -ba "${SPECS_DIR}/iosevka-neg-fonts.spec"
 
 # --- Build Duf RPM ---
-rpmbuild 
-    --define "_topdir ${RPM_BUILD_ROOT}" 
-    --define "version ${DUF_VERSION}" 
+rpmbuild \
+    --define "_topdir ${RPM_BUILD_ROOT}" \
+    --define "version ${DUF_VERSION}" \
     -ba "${SPECS_DIR}/duf.spec"
 
 # --- Copy resulting RPMs to a shared output directory ---
