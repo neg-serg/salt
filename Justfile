@@ -11,6 +11,7 @@ dry-run:
 # Re-bootstrap the salt environment
 bootstrap:
     python3 -m venv .venv
+    .venv/bin/pip install ruff salt-lint
     ./apply_config.sh --dry-run
 
 # Show salt state info
@@ -25,10 +26,10 @@ clean:
 
 # Lint Salt states and Python scripts
 lint:
-    ruff check .
-    ruff format --check .
-    salt-lint *.sls salt/**/*.sls
+    .venv/bin/ruff check .
+    .venv/bin/ruff format --check .
+    .venv/bin/salt-lint *.sls
 
 # Format Python scripts
 fmt:
-    ruff format .
+    .venv/bin/ruff format .
