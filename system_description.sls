@@ -48,6 +48,16 @@ user_neg:
       - neg
       - wheel
 
+sudo_timeout:
+  file.managed:
+    - name: /etc/sudoers.d/timeout
+    - contents: |
+        Defaults timestamp_timeout=30
+    - user: root
+    - group: root
+    - mode: '0440'
+    - check_cmd: /usr/sbin/visudo -c -f
+
 # Use rpm-ostree for Silverblue.
 # Batch packages for speed and correct dependency resolution.
 {% set cli_packages = [
