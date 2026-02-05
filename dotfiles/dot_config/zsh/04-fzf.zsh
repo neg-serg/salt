@@ -13,12 +13,29 @@ local _fzf_cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/fzf"
 
 # Sync files if missing/empty or older than source
 # Fedora puts them in /usr/share/fzf/shell/
-# Others might put them in /usr/share/fzf/
+# Completion is often /usr/share/zsh/site-functions/_fzf
 for f in key-bindings.zsh completion.zsh; do
   local src=""
-  for loc in "$_fzf_base" "$_fzf_base/shell"; do
-    if [[ -r "$loc/$f" ]]; then
-      src="$loc/$f"
+  local search_paths=()
+  if [[ "$f" == "completion.zsh" ]]; then
+    search_paths=(
+      "$_fzf_base/shell"
+      "$_fzf_base"
+      "/usr/share/zsh/site-functions"
+    )
+  else
+    search_paths=(
+      "$_fzf_base/shell"
+      "$_fzf_base"
+    )
+  fi
+
+  for loc in "${search_paths[@]}"; do
+    local target="$loc/$f"
+    [[ "$f" == "completion.zsh" && ! -r "$target" ]] && target="$loc/_fzf"
+    
+    if [[ -r "$target" ]]; then
+      src="$target"
       break
     fi
   done
