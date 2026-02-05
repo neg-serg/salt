@@ -61,11 +61,14 @@ if [[ -r "${ZDOTDIR}/99-fix-aliases.zsh" ]]; then
 fi
 
 # F-Sy-H (must be loaded last to correctly wrap ZLE widgets)
-# Skip in Distrobox to prevent breakage due to missing dependencies/widgets
-if [[ -z "$DISTROBOX_ENTER_PATH" ]]; then
-  zi ice depth'1' lucid atinit'typeset -gA FAST_HIGHLIGHT; FAST_HIGHLIGHT[use_async]=1 FAST_HIGHLIGHT[BIND_VI_WIDGETS]=0 FAST_HIGHLIGHT[WIDGETS_MODE]=minimal' wait'0'
-  zi load neg-serg/F-Sy-H
-fi
+# We use zsh-defer to ensure it runs after all other widget-defining scripts
+_load_f_sy_h() {
+  if [[ -z "$DISTROBOX_ENTER_PATH" ]]; then
+    zi ice depth'1' lucid atinit'typeset -gA FAST_HIGHLIGHT; FAST_HIGHLIGHT[use_async]=1'
+    zi load neg-serg/F-Sy-H
+  fi
+}
+zsh-defer _load_f_sy_h
 
 [[ $NEOVIM_TERMINAL ]] && source "${ZDOTDIR}/08-neovim-cd.zsh"
 
