@@ -73,17 +73,22 @@ build_amnezia_vpn:
         podman run --rm -v /var/home/neg/src/amnezia_build:/build:Z registry.fedoraproject.org/fedora-toolbox:43 bash -c "
         (while true; do echo 'Building... ' \$(date); sleep 60; done) &
         HEARTBEAT_PID=\$!
+        git config --global --add safe.directory '*'
         dnf install -y --disablerepo=fedora-cisco-openh264 --setopt=install_weak_deps=False \
-            git cmake make gcc-c++ qt6-qtbase-devel qt6-qtsvg-devel \
-            qt6-qtdeclarative-devel qt6-qttools-devel libmnl-devel libmount-devel \
+            git cmake make gcc-c++ \
+            qt6-qtbase-devel qt6-qtsvg-devel qt6-qtdeclarative-devel qt6-qttools-devel \
             qt6-qt5compat-devel qt6-qtshadertools-devel qt6-qtmultimedia-devel \
+            qt6-qtremoteobjects-devel qt6-qtwayland-devel \
+            libmnl-devel libmount-devel libsecret-devel openssl-devel zlib-devel \
+            dbus-devel polkit-devel systemd-devel \
+            glibc-static libstdc++-static \
             qt6-qtbase-static qt6-qtdeclarative-static && \
         rm -rf /build/amnezia-client-src && \
         git clone --recursive https://github.com/amnezia-vpn/amnezia-client.git /build/amnezia-client-src && \
         mkdir -p /build/amnezia-client-src/build && cd /build/amnezia-client-src/build && \
         cmake .. -DCMAKE_BUILD_TYPE=Release -DVERSION=2.1.2 && \
         make -j\$(nproc) VERBOSE=1 && \
-        cp AmneziaVPN /build/AmneziaVPN-bin && \
+        cp client/AmneziaVPN /build/AmneziaVPN-bin && \
         kill \$HEARTBEAT_PID
         "
     - creates: /var/home/neg/src/amnezia_build/AmneziaVPN-bin
