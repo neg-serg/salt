@@ -70,6 +70,7 @@ sudo_timeout:
     'Development': [
         {'name': 'dkms',                'desc': 'Dynamic Kernel Module Support Framework'},
         {'name': 'gcc',                 'desc': 'Various compilers (C, C++, ...)'},
+        {'name': 'just',                'desc': 'Just a command runner'},
         {'name': 'kernel-devel',        'desc': 'Development package for building kernel modules'},
         {'name': 'make',                'desc': 'A GNU tool which simplifies the build process for users'},
         {'name': 'python3-devel',       'desc': 'Libraries and header files needed for Python development'},
