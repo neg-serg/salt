@@ -82,7 +82,7 @@ if [[ $# -eq 0 || "$1" == "iosevka" ]]; then
         # Install iosevka build dependencies
         dnf install -y dnf-plugins-core
         rm -f /etc/yum.repos.d/fedora-cisco-openh264.repo
-        dnf install -y --skip-broken make gcc nodejs npm ttfautohint python3-pip python3-fonttools python3-setuptools python3-wheel fontforge
+        dnf install -y --skip-broken make gcc git nodejs npm rpm-build ttfautohint python3-pip python3-fonttools python3-setuptools python3-wheel fontforge
 
         IOSEVKA_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/iosevka-source-${IOSEVKA_VERSION}"
         if [ ! -d "${IOSEVKA_SOURCE_DIR}" ]; then
