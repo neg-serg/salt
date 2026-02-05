@@ -250,6 +250,21 @@ mount_one:
     - opts: defaults
     - persist: True
 
+install_zi:
+  cmd.run:
+    - name: |
+        export ZI_HOME="$HOME/.config/zi"
+        mkdir -p "$ZI_HOME"
+        git clone https://github.com/z-shell/zi.git "$ZI_HOME/bin"
+    - runas: neg
+    - creates: /var/home/neg/.config/zi/bin/zi.zsh
+
+install_oh_my_posh:
+  cmd.run:
+    - name: curl -s https://ohmyposh.dev/install.sh | bash -s -- -d ~/.local/bin
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/oh-my-posh
+
 apply_dotfiles:
   cmd.run:
     - name: chezmoi apply --force --source /var/home/neg/src/salt/dotfiles
