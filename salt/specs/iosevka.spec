@@ -37,11 +37,11 @@ git clone --depth 1 https://github.com/ryanoasis/nerd-fonts.git %{_builddir}/ner
 mkdir -p %{_builddir}/iosevka-build/ttf
 cp -v dist/Iosevkaneg/TTF/*.ttf %{_builddir}/iosevka-build/ttf/
 
-# Patch with Nerd Font
+# Patch with Nerd Font (preserve original family name with --makegroups -1)
 mkdir -p %{_builddir}/iosevka-build/nerd-fonts
 # Use find to get all generated TTF files
 find %{_builddir}/iosevka-build/ttf -name "*.ttf" -print0 | xargs -0 -n 1 fontforge -script %{_builddir}/nerd-fonts-patcher/font-patcher \
-    --complete --quiet --outputdir %{_builddir}/iosevka-build/nerd-fonts
+    --complete -s --makegroups '-1' --careful --quiet --outputdir %{_builddir}/iosevka-build/nerd-fonts
 
 %install
 # Install the patched fonts
