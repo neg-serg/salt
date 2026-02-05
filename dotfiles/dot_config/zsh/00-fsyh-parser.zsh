@@ -1,5 +1,5 @@
 MAGIC="# 🥟 pie"
-THEME_FILE="${XDG_CONFIG_HOME}/f-sy-h/current_theme.zsh"
+THEME_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/f-sy-h/current_theme.zsh"
 typeset -gA FAST_HIGHLIGHT_STYLES
 FAST_THEME_NAME="neg"
 
@@ -11,7 +11,7 @@ typeset -gA FILE_EXTENSION_STYLES # Global associative array for file extension 
 section=""
 
 # Process each line in the INI file
-INI_FILE="${XDG_CONFIG_HOME}/f-sy-h/neg.ini"
+INI_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/f-sy-h/neg.ini"
 if [[ -r "$INI_FILE" ]]; then
     while IFS= read -r line; do
       # Clean up the line:
