@@ -29,7 +29,7 @@ autopart
 # --- User Configuration ---
 rootpw --lock
 # Replace 'YOUR_PASSWORD_HASH' with a real hash (generate with: openssl passwd -6)
-user --name=neg --groups=wheel --uid=1000 --gid=1000 --password=YOUR_PASSWORD_HASH --iscrypted
+user --name=neg --groups=wheel --uid=1000 --gid=1000 --password=$y$j9T$4Its.5R.HvywmvnhQWoTB1$iJTgDvK2cRyrjmeFV9V428edGyAy9Tl7WuOpx81m6/B --iscrypted
 
 # --- Post-installation Script ---
 %post --log=/mnt/sysimage/root/ks-post.log
