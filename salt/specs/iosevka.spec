@@ -30,7 +30,7 @@ npm install
 npm run build -- contents::Iosevkaneg
 
 # Install nerd-font-patcher
-pip3 install nerd-font-patcher
+git clone --depth 1 https://github.com/ryanoasis/nerd-fonts.git %{_builddir}/nerd-fonts-patcher
 
 # Create directory for built TTF files
 mkdir -p %{_builddir}/iosevka-build/ttf
@@ -39,7 +39,7 @@ cp -v dist/Iosevkaneg/TTF/*.ttf %{_builddir}/iosevka-build/ttf/
 # Patch with Nerd Font
 mkdir -p %{_builddir}/iosevka-build/nerd-fonts
 # Use find to get all generated TTF files
-find %{_builddir}/iosevka-build/ttf -name "*.ttf" -print0 | xargs -0 -n 1 nerd-font-patcher \
+find %{_builddir}/iosevka-build/ttf -name "*.ttf" -print0 | xargs -0 -n 1 fontforge -script %{_builddir}/nerd-fonts-patcher/font-patcher \
     --complete --quiet --outputdir %{_builddir}/iosevka-build/nerd-fonts
 
 %install
@@ -51,5 +51,5 @@ install -m 0644 %{_builddir}/iosevka-build/nerd-fonts/*.ttf %{buildroot}%{_datad
 %{_datadir}/fonts/truetype/iosevka-neg/
 
 %changelog
-* %{__date} neg-serg <neg-serg@example.com> - 34.1.0-1
+* Thu Feb 05 2026 neg-serg <neg-serg@example.com> - 34.1.0-1
 - Initial custom Iosevka Nerd Font RPM build

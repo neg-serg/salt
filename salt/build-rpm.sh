@@ -16,7 +16,7 @@ SRPMS_DIR="${RPM_BUILD_ROOT}/SRPMS"
 mkdir -p "$SOURCES_DIR" "$SPECS_DIR" "$RPMS_DIR" "$SRPMS_DIR"
 
 # Install build dependencies
-dnf install -y git rpm-build tar make gcc golang nodejs npm ttfautohint python3-pip python3-fonttools
+dnf install -y git rpm-build tar make gcc golang nodejs npm ttfautohint python3-pip python3-fonttools python3-setuptools python3-wheel fontforge
 
 # --- Prepare Iosevka sources ---
 IOSEVKA_SOURCE_DIR="iosevka-source-${IOSEVKA_VERSION}"
