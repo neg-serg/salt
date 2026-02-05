@@ -22,3 +22,13 @@ clean:
     rm -rf __pycache__
     rm -rf .venv
     rm -rf /var/home/neg/.gemini/tmp/salt_config
+
+# Lint Salt states and Python scripts
+lint:
+    ruff check .
+    ruff format --check .
+    salt-lint *.sls salt/**/*.sls
+
+# Format Python scripts
+fmt:
+    ruff format .
