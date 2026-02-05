@@ -1,3 +1,5 @@
+%define debug_package %{nil}
+
 Name:           duf
 Version:        0.9.1
 Release:        1%{?dist}
@@ -5,7 +7,7 @@ Summary:        Disk Usage/Free Utility - a better df alternative (neg-serg cust
 
 License:        MIT
 URL:            https://github.com/neg-serg/duf
-Source0:        %{name}-%{version}.tar.gz # Placeholder, source will be cloned
+Source0:        %{name}-%{version}.tar.gz
 
 BuildRequires:  golang
 BuildRequires:  git
