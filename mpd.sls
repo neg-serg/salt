@@ -19,7 +19,7 @@ music_fstab_entry:
     - text: |
 
         # Bind mounts for user directories (migrated from NixOS)
-        /var/mnt/one/music	{{ home }}/music	none	rbind,nofail,x-systemd.automount	0 0
+        /var/mnt/one/music {{ home }}/music none rbind,nofail,x-systemd.automount 0 0
     - unless: grep -q '{{ home }}/music' /etc/fstab
 
 music_mount:
@@ -55,7 +55,7 @@ zsh_env:
     - source: salt://dotfiles/dot_config/zsh/dot_zshenv
     - user: {{ user }}
     - group: {{ user }}
-    - mode: 644
+    - mode: '0644'
 
 zsh_rc:
   file.managed:
@@ -63,7 +63,7 @@ zsh_rc:
     - source: salt://dotfiles/dot_config/zsh/dot_zshrc
     - user: {{ user }}
     - group: {{ user }}
-    - mode: 644
+    - mode: '0644'
 
 # --- Deploy rmpc config ---
 rmpc_config_dir:
@@ -114,7 +114,7 @@ ncpamixer_install:
     - source: /tmp/ncpamixer/build/ncpamixer
     - user: {{ user }}
     - group: {{ user }}
-    - mode: 755
+    - mode: '0755'
     - require:
       - cmd: ncpamixer_build
     - unless: test -f {{ home }}/.local/bin/ncpamixer
@@ -142,7 +142,7 @@ mpd_quadlet:
     - source: salt://containers/mpd/mpd.container
     - user: {{ user }}
     - group: {{ user }}
-    - mode: 644
+    - mode: '0644'
     - require:
       - file: mpd_directories
 
