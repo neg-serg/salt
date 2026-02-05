@@ -334,13 +334,6 @@ install_television:
     - runas: neg
     - creates: /var/home/neg/.local/bin/tv
 
-generate_aliae_aliases:
-  cmd.run:
-    - name: ~/.local/bin/aliae init zsh --config ~/.config/aliae/aliae.yaml > ~/.config/zsh/06-aliae.zsh
-    - runas: neg
-    - require:
-      - cmd: install_aliae
-
 apply_dotfiles:
   cmd.run:
     - name: chezmoi apply --force --source /var/home/neg/src/salt/dotfiles
