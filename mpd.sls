@@ -5,7 +5,32 @@
 {% set home = '/var/home/' ~ user %}
 {% set containers_src = '/var/home/neg/src/salt/containers/mpd' %}
 
-# Ensure required directories exist
+# --- Bind mount for music directory ---
+music_mount_point:
+  file.directory:
+    - name: {{ home }}/music
+    - user: {{ user }}
+    - group: {{ user }}
+    - makedirs: True
+
+music_fstab_entry:
+  file.append:
+    - name: /etc/fstab
+    - text: |
+
+        # Bind mounts for user directories (migrated from NixOS)
+        /var/mnt/one/music	{{ home }}/music	none	rbind,nofail,x-systemd.automount	0 0
+    - unless: grep -q '{{ home }}/music' /etc/fstab
+
+music_mount:
+  cmd.run:
+    - name: mount {{ home }}/music || true
+    - unless: mountpoint -q {{ home }}/music
+    - require:
+      - file: music_fstab_entry
+      - file: music_mount_point
+
+# --- MPD directories ---
 mpd_directories:
   file.directory:
     - names:
@@ -16,7 +41,85 @@ mpd_directories:
     - group: {{ user }}
     - makedirs: True
 
-# Create FIFO for visualizers
+# --- Deploy zsh config with MPD variables ---
+zsh_config_dir:
+  file.directory:
+    - name: {{ home }}/.config/zsh
+    - user: {{ user }}
+    - group: {{ user }}
+    - makedirs: True
+
+zsh_env:
+  file.managed:
+    - name: {{ home }}/.config/zsh/.zshenv
+    - source: salt://dotfiles/dot_config/zsh/dot_zshenv
+    - user: {{ user }}
+    - group: {{ user }}
+    - mode: 644
+
+zsh_rc:
+  file.managed:
+    - name: {{ home }}/.config/zsh/.zshrc
+    - source: salt://dotfiles/dot_config/zsh/dot_zshrc
+    - user: {{ user }}
+    - group: {{ user }}
+    - mode: 644
+
+# --- Deploy rmpc config ---
+rmpc_config_dir:
+  file.directory:
+    - name: {{ home }}/.config/rmpc
+    - user: {{ user }}
+    - group: {{ user }}
+    - makedirs: True
+
+rmpc_config:
+  file.recurse:
+    - name: {{ home }}/.config/rmpc
+    - source: salt://dotfiles/dot_config/rmpc
+    - user: {{ user }}
+    - group: {{ user }}
+
+# --- Install cargo packages (rmpc, wiremix) ---
+cargo_packages:
+  cmd.run:
+    - name: |
+        export PATH="{{ home }}/.cargo/bin:$PATH"
+        cargo install rmpc 2>/dev/null || true
+        BINDGEN_EXTRA_CLANG_ARGS="-I/usr/lib/clang/21/include" cargo install wiremix 2>/dev/null || true
+    - runas: {{ user }}
+    - env:
+      - HOME: {{ home }}
+    - unless: test -f {{ home }}/.cargo/bin/rmpc
+
+# --- Build ncpamixer from source ---
+ncpamixer_clone:
+  git.cloned:
+    - name: https://github.com/fulhax/ncpamixer.git
+    - target: /tmp/ncpamixer
+    - user: {{ user }}
+    - unless: test -f {{ home }}/.local/bin/ncpamixer
+
+ncpamixer_build:
+  cmd.run:
+    - name: cd /tmp/ncpamixer && rm -rf build && make RELEASE=1
+    - runas: {{ user }}
+    - require:
+      - git: ncpamixer_clone
+    - unless: test -f {{ home }}/.local/bin/ncpamixer
+
+ncpamixer_install:
+  file.managed:
+    - name: {{ home }}/.local/bin/ncpamixer
+    - source: /tmp/ncpamixer/build/ncpamixer
+    - user: {{ user }}
+    - group: {{ user }}
+    - mode: 755
+    - require:
+      - cmd: ncpamixer_build
+    - unless: test -f {{ home }}/.local/bin/ncpamixer
+
+# --- MPD Container ---
 mpd_fifo:
   cmd.run:
     - name: |
@@ -27,14 +130,12 @@ mpd_fifo:
     - runas: {{ user }}
     - unless: test -p /tmp/mpd.fifo
 
-# Build MPD container image
 mpd_container_build:
   cmd.run:
     - name: podman build -t localhost/mpd:latest {{ containers_src }}
     - runas: {{ user }}
     - unless: podman image exists localhost/mpd:latest
 
-# Deploy quadlet file for systemd integration
 mpd_quadlet:
   file.managed:
     - name: {{ home }}/.config/containers/systemd/mpd.container
@@ -45,7 +146,6 @@ mpd_quadlet:
     - require:
       - file: mpd_directories
 
-# Reload systemd user daemon
 mpd_systemd_reload:
   cmd.run:
     - name: systemctl --user daemon-reload
@@ -56,7 +156,6 @@ mpd_systemd_reload:
     - onchanges:
       - file: mpd_quadlet
 
-# Enable and start MPD service
 mpd_service_enable:
   cmd.run:
     - name: systemctl --user enable --now mpd.service
@@ -67,4 +166,5 @@ mpd_service_enable:
     - require:
       - cmd: mpd_container_build
       - cmd: mpd_systemd_reload
+      - cmd: music_mount
     - unless: systemctl --user is-active mpd.service
