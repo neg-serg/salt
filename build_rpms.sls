@@ -330,6 +330,104 @@ build_epr_rpm:
     - require:
       - file: /var/home/neg/src/salt/rpms
 
+# Build Lutgen RPM
+build_lutgen_rpm:
+  cmd.run:
+    - name: |
+        podman run --rm \
+        -v /var/home/neg/src/salt/salt:/build/salt:z \
+        -v /var/home/neg/src/salt/rpms:/build/rpms:z \
+        registry.fedoraproject.org/fedora-toolbox:43 \
+        bash /build/salt/build-rpm.sh lutgen
+    - runas: neg
+    - creates: /var/home/neg/src/salt/rpms/lutgen-0.12.1-1.fc43.x86_64.rpm
+    - require:
+      - file: /var/home/neg/src/salt/rpms
+
+# Build Taplo RPM
+build_taplo_rpm:
+  cmd.run:
+    - name: |
+        podman run --rm \
+        -v /var/home/neg/src/salt/salt:/build/salt:z \
+        -v /var/home/neg/src/salt/rpms:/build/rpms:z \
+        registry.fedoraproject.org/fedora-toolbox:43 \
+        bash /build/salt/build-rpm.sh taplo
+    - runas: neg
+    - creates: /var/home/neg/src/salt/rpms/taplo-0.10.0-1.fc43.x86_64.rpm
+    - require:
+      - file: /var/home/neg/src/salt/rpms
+
+# Build Gist RPM
+build_gist_rpm:
+  cmd.run:
+    - name: |
+        podman run --rm \
+        -v /var/home/neg/src/salt/salt:/build/salt:z \
+        -v /var/home/neg/src/salt/rpms:/build/rpms:z \
+        registry.fedoraproject.org/fedora-toolbox:43 \
+        bash /build/salt/build-rpm.sh gist
+    - runas: neg
+    - creates: /var/home/neg/src/salt/rpms/gist-6.0.0-1.fc43.noarch.rpm
+    - require:
+      - file: /var/home/neg/src/salt/rpms
+
+# Build Xxh RPM
+build_xxh_rpm:
+  cmd.run:
+    - name: |
+        podman run --rm \
+        -v /var/home/neg/src/salt/salt:/build/salt:z \
+        -v /var/home/neg/src/salt/rpms:/build/rpms:z \
+        registry.fedoraproject.org/fedora-toolbox:43 \
+        bash /build/salt/build-rpm.sh xxh
+    - runas: neg
+    - creates: /var/home/neg/src/salt/rpms/xxh-0.8.14-1.fc43.noarch.rpm
+    - require:
+      - file: /var/home/neg/src/salt/rpms
+
+# Build Nerdctl RPM
+build_nerdctl_rpm:
+  cmd.run:
+    - name: |
+        podman run --rm \
+        -v /var/home/neg/src/salt/salt:/build/salt:z \
+        -v /var/home/neg/src/salt/rpms:/build/rpms:z \
+        registry.fedoraproject.org/fedora-toolbox:43 \
+        bash /build/salt/build-rpm.sh nerdctl
+    - runas: neg
+    - creates: /var/home/neg/src/salt/rpms/nerdctl-2.2.1-1.fc43.x86_64.rpm
+    - require:
+      - file: /var/home/neg/src/salt/rpms
+
+# Build Rapidgzip RPM
+build_rapidgzip_rpm:
+  cmd.run:
+    - name: |
+        podman run --rm \
+        -v /var/home/neg/src/salt/salt:/build/salt:z \
+        -v /var/home/neg/src/salt/rpms:/build/rpms:z \
+        registry.fedoraproject.org/fedora-toolbox:43 \
+        bash /build/salt/build-rpm.sh rapidgzip
+    - runas: neg
+    - creates: /var/home/neg/src/salt/rpms/rapidgzip-0.16.0-1.fc43.x86_64.rpm
+    - require:
+      - file: /var/home/neg/src/salt/rpms
+
+# Build Scour RPM
+build_scour_rpm:
+  cmd.run:
+    - name: |
+        podman run --rm \
+        -v /var/home/neg/src/salt/salt:/build/salt:z \
+        -v /var/home/neg/src/salt/rpms:/build/rpms:z \
+        registry.fedoraproject.org/fedora-toolbox:43 \
+        bash /build/salt/build-rpm.sh scour
+    - runas: neg
+    - creates: /var/home/neg/src/salt/rpms/scour-0.38.2-1.fc43.noarch.rpm
+    - require:
+      - file: /var/home/neg/src/salt/rpms
+
 # Build Iosevka RPM
 build_iosevka_rpm:
   cmd.run:

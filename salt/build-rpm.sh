@@ -25,6 +25,13 @@ DIVE_VERSION="0.13.1"
 ZK_VERSION="0.15.2"
 GIT_FILTER_REPO_VERSION="2.47.0"
 EPR_VERSION="2.4.15"
+LUTGEN_VERSION="0.12.1"
+TAPLO_VERSION="0.10.0"
+GIST_VERSION="6.0.0"
+XXH_VERSION="0.8.14"
+NERDCTL_VERSION="2.2.1"
+RAPIDGZIP_VERSION="0.16.0"
+SCOUR_VERSION="0.38.2"
 
 # RPM build root directory inside the container
 RPM_BUILD_ROOT="/rpmbuild"
@@ -661,6 +668,195 @@ if [[ $# -eq 0 || "$1" == "epr" ]]; then
 
         echo "--- Copying Epr RPMs to /build/rpms/ ---"
         find "${RPMS_DIR}" -name "epr-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Lutgen RPM ---
+LUTGEN_RPM_NAME="lutgen-${LUTGEN_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "lutgen" ]]; then
+    echo "--- Preparing Lutgen ---"
+    if [ -f "/build/rpms/${LUTGEN_RPM_NAME}" ]; then
+        echo "Lutgen RPM (${LUTGEN_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar rust cargo
+
+        LUTGEN_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/lutgen-${LUTGEN_VERSION}"
+        if [ ! -d "${LUTGEN_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${LUTGEN_VERSION}" https://github.com/ozwaldorf/lutgen-rs.git "${LUTGEN_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/lutgen-${LUTGEN_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "lutgen-${LUTGEN_VERSION}"
+        cp /build/salt/specs/lutgen.spec "${SPECS_DIR}/lutgen.spec"
+
+        echo "--- Building Lutgen RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/lutgen.spec"
+
+        echo "--- Copying Lutgen RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "lutgen-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Taplo RPM ---
+TAPLO_RPM_NAME="taplo-${TAPLO_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "taplo" ]]; then
+    echo "--- Preparing Taplo ---"
+    if [ -f "/build/rpms/${TAPLO_RPM_NAME}" ]; then
+        echo "Taplo RPM (${TAPLO_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar rust cargo openssl-devel pkgconf-pkg-config
+
+        TAPLO_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/taplo-${TAPLO_VERSION}"
+        if [ ! -d "${TAPLO_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "${TAPLO_VERSION}" https://github.com/tamasfe/taplo.git "${TAPLO_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/taplo-${TAPLO_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "taplo-${TAPLO_VERSION}"
+        cp /build/salt/specs/taplo.spec "${SPECS_DIR}/taplo.spec"
+
+        echo "--- Building Taplo RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/taplo.spec"
+
+        echo "--- Copying Taplo RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "taplo-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Gist RPM ---
+GIST_RPM_NAME="gist-${GIST_VERSION}-1.fc43.noarch.rpm"
+if [[ $# -eq 0 || "$1" == "gist" ]]; then
+    echo "--- Preparing Gist ---"
+    if [ -f "/build/rpms/${GIST_RPM_NAME}" ]; then
+        echo "Gist RPM (${GIST_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar ruby rubygem-rake
+
+        GIST_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/gist-${GIST_VERSION}"
+        if [ ! -d "${GIST_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${GIST_VERSION}" https://github.com/defunkt/gist.git "${GIST_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/gist-${GIST_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "gist-${GIST_VERSION}"
+        cp /build/salt/specs/gist.spec "${SPECS_DIR}/gist.spec"
+
+        echo "--- Building Gist RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/gist.spec"
+
+        echo "--- Copying Gist RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "gist-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Xxh RPM ---
+XXH_RPM_NAME="xxh-${XXH_VERSION}-1.fc43.noarch.rpm"
+if [[ $# -eq 0 || "$1" == "xxh" ]]; then
+    echo "--- Preparing Xxh ---"
+    if [ -f "/build/rpms/${XXH_RPM_NAME}" ]; then
+        echo "Xxh RPM (${XXH_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar python3-devel python3-pip python3-setuptools python3-wheel
+
+        XXH_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/xxh-${XXH_VERSION}"
+        if [ ! -d "${XXH_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "${XXH_VERSION}" https://github.com/xxh/xxh.git "${XXH_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/xxh-${XXH_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "xxh-${XXH_VERSION}"
+        cp /build/salt/specs/xxh.spec "${SPECS_DIR}/xxh.spec"
+
+        echo "--- Building Xxh RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/xxh.spec"
+
+        echo "--- Copying Xxh RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "xxh-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Nerdctl RPM ---
+NERDCTL_RPM_NAME="nerdctl-${NERDCTL_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "nerdctl" ]]; then
+    echo "--- Preparing Nerdctl ---"
+    if [ -f "/build/rpms/${NERDCTL_RPM_NAME}" ]; then
+        echo "Nerdctl RPM (${NERDCTL_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar golang
+
+        NERDCTL_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/nerdctl-${NERDCTL_VERSION}"
+        if [ ! -d "${NERDCTL_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${NERDCTL_VERSION}" https://github.com/containerd/nerdctl.git "${NERDCTL_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/nerdctl-${NERDCTL_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "nerdctl-${NERDCTL_VERSION}"
+        cp /build/salt/specs/nerdctl.spec "${SPECS_DIR}/nerdctl.spec"
+
+        echo "--- Building Nerdctl RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/nerdctl.spec"
+
+        echo "--- Copying Nerdctl RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "nerdctl-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Rapidgzip RPM ---
+RAPIDGZIP_RPM_NAME="rapidgzip-${RAPIDGZIP_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "rapidgzip" ]]; then
+    echo "--- Preparing Rapidgzip ---"
+    if [ -f "/build/rpms/${RAPIDGZIP_RPM_NAME}" ]; then
+        echo "Rapidgzip RPM (${RAPIDGZIP_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar python3-devel python3-pip python3-setuptools python3-wheel gcc-c++ nasm
+
+        RAPIDGZIP_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/rapidgzip-${RAPIDGZIP_VERSION}"
+        if [ ! -d "${RAPIDGZIP_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --recursive --branch "rapidgzip-v${RAPIDGZIP_VERSION}" https://github.com/mxmlnkn/rapidgzip.git "${RAPIDGZIP_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/rapidgzip-${RAPIDGZIP_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "rapidgzip-${RAPIDGZIP_VERSION}"
+        cp /build/salt/specs/rapidgzip.spec "${SPECS_DIR}/rapidgzip.spec"
+
+        echo "--- Building Rapidgzip RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/rapidgzip.spec"
+
+        echo "--- Copying Rapidgzip RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "rapidgzip-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Scour RPM ---
+SCOUR_RPM_NAME="scour-${SCOUR_VERSION}-1.fc43.noarch.rpm"
+if [[ $# -eq 0 || "$1" == "scour" ]]; then
+    echo "--- Preparing Scour ---"
+    if [ -f "/build/rpms/${SCOUR_RPM_NAME}" ]; then
+        echo "Scour RPM (${SCOUR_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar python3-devel
+
+        SCOUR_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/scour-${SCOUR_VERSION}"
+        if [ ! -d "${SCOUR_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${SCOUR_VERSION}" https://github.com/scour-project/scour.git "${SCOUR_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/scour-${SCOUR_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "scour-${SCOUR_VERSION}"
+        cp /build/salt/specs/scour.spec "${SPECS_DIR}/scour.spec"
+
+        echo "--- Building Scour RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/scour.spec"
+
+        echo "--- Copying Scour RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "scour-*.rpm" -exec cp -v {} /build/rpms/ \;
     fi
 fi
 

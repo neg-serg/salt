@@ -160,3 +160,52 @@ install_epr_rpm:
         rpm-ostree install /var/home/neg/src/salt/rpms/epr-*.rpm
     - unless: "rpm-ostree status | grep 'epr-'"
     - runas: root
+
+install_lutgen_rpm:
+  cmd.run:
+    - name: |
+        rpm-ostree install /var/home/neg/src/salt/rpms/lutgen-*.rpm
+    - unless: "rpm-ostree status | grep 'lutgen-'"
+    - runas: root
+
+install_taplo_rpm:
+  cmd.run:
+    - name: |
+        rpm-ostree install /var/home/neg/src/salt/rpms/taplo-*.rpm
+    - unless: "rpm-ostree status | grep 'taplo-'"
+    - runas: root
+
+install_gist_rpm:
+  cmd.run:
+    - name: |
+        rpm-ostree install /var/home/neg/src/salt/rpms/gist-*.rpm
+    - unless: "rpm-ostree status | grep 'gist-'"
+    - runas: root
+
+install_xxh_rpm:
+  cmd.run:
+    - name: |
+        rpm-ostree install /var/home/neg/src/salt/rpms/xxh-*.rpm
+    - unless: "rpm-ostree status | grep 'xxh-'"
+    - runas: root
+
+install_nerdctl_rpm:
+  cmd.run:
+    - name: |
+        rpm-ostree install /var/home/neg/src/salt/rpms/nerdctl-*.rpm
+    - unless: "rpm-ostree status | grep 'nerdctl-'"
+    - runas: root
+
+install_rapidgzip_rpm:
+  cmd.run:
+    - name: |
+        rpm-ostree install /var/home/neg/src/salt/rpms/rapidgzip-*.rpm
+    - unless: "rpm-ostree status | grep 'rapidgzip-'"
+    - runas: root
+
+install_scour_rpm:
+  cmd.run:
+    - name: |
+        rpm-ostree install /var/home/neg/src/salt/rpms/scour-*.rpm
+    - unless: "rpm-ostree status | grep 'scour-'"
+    - runas: root
