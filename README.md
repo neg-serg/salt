@@ -4,7 +4,7 @@
 - [ ] neg-pretty-printer - Custom Python library and CLI (ppinfo) for colored output. (repo not found)
 - [x] raise - Tool for window management/raising.
 - [ ] nyxt-bin - Binary packaging for the Nyxt browser. (needs investigation)
-- [ ] richcolors - Color manipulation/theme generation utility. (repo not found)
+- [x] richcolors - Color manipulation/theme generation utility.
 - [x] rsmetrx - Metrics exporter/shader pack for Quickshell HUDs.
 - [x] fsread.nvim - Neovim plugin for "fast reading" mode.
 - [x] iosevka-neg - Custom build of the Iosevka font.
@@ -14,7 +14,7 @@
 
 
 2. Specialized Third-party Software (used in your config)
-- [ ] pipemixer - TUI mixer for PipeWire. (repo not found)
+- [x] pipemixer - TUI mixer for PipeWire.
 - [x] wiremix - Another PipeWire mixer for terminal.
 - [x] matugen-themes - Collection of templates for Matugen.
 - [x] oldschool-pc-font-pack - Classic PC bitmap/outline fonts. (manual download: https://int10h.org/oldschool-pc-fonts/)
