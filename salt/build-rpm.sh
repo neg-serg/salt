@@ -5,6 +5,8 @@ set -euxo pipefail
 IOSEVKA_VERSION="34.1.0"
 DUF_VERSION="0.9.1"
 RAISE_VERSION="0.1.0"
+PIPEMIXER_VERSION="0.4.0"
+RICHCOLORS_VERSION="0.1.0"
 
 # RPM build root directory inside the container
 RPM_BUILD_ROOT="/rpmbuild"
@@ -98,6 +100,62 @@ if [[ $# -eq 0 || "$1" == "raise" ]]; then
 
         echo "--- Copying Raise RPMs to /build/rpms/ ---"
         find "${RPMS_DIR}" -name "raise-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Pipemixer RPM ---
+PIPEMIXER_RPM_NAME="pipemixer-${PIPEMIXER_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "pipemixer" ]]; then
+    echo "--- Preparing Pipemixer ---"
+    if [ -f "/build/rpms/${PIPEMIXER_RPM_NAME}" ]; then
+        echo "Pipemixer RPM (${PIPEMIXER_RPM_NAME}) already exists, skipping."
+    else
+        # Install pipemixer build dependencies
+        dnf install -y --skip-broken git rpm-build tar gcc meson ninja-build pkgconf-pkg-config pipewire-devel ncurses-devel inih-devel
+
+        PIPEMIXER_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/pipemixer-${PIPEMIXER_VERSION}"
+        if [ ! -d "${PIPEMIXER_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${PIPEMIXER_VERSION}" https://github.com/heather7283/pipemixer.git "${PIPEMIXER_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/pipemixer-${PIPEMIXER_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "pipemixer-${PIPEMIXER_VERSION}"
+        cp /build/salt/specs/pipemixer.spec "${SPECS_DIR}/pipemixer.spec"
+
+        echo "--- Building Pipemixer RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/pipemixer.spec"
+
+        echo "--- Copying Pipemixer RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "pipemixer-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Richcolors RPM ---
+RICHCOLORS_RPM_NAME="richcolors-${RICHCOLORS_VERSION}-1.fc43.noarch.rpm"
+if [[ $# -eq 0 || "$1" == "richcolors" ]]; then
+    echo "--- Preparing Richcolors ---"
+    if [ -f "/build/rpms/${RICHCOLORS_RPM_NAME}" ]; then
+        echo "Richcolors RPM (${RICHCOLORS_RPM_NAME}) already exists, skipping."
+    else
+        # Install richcolors build dependencies
+        dnf install -y --skip-broken git rpm-build tar
+
+        RICHCOLORS_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/richcolors-${RICHCOLORS_VERSION}"
+        if [ ! -d "${RICHCOLORS_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 https://github.com/Rizen54/richcolors.git "${RICHCOLORS_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/richcolors-${RICHCOLORS_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "richcolors-${RICHCOLORS_VERSION}"
+        cp /build/salt/specs/richcolors.spec "${SPECS_DIR}/richcolors.spec"
+
+        echo "--- Building Richcolors RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/richcolors.spec"
+
+        echo "--- Copying Richcolors RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "richcolors-*.rpm" -exec cp -v {} /build/rpms/ \;
     fi
 fi
 

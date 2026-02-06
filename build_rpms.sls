@@ -48,6 +48,34 @@ build_raise_rpm:
     - require:
       - file: /var/home/neg/src/salt/rpms
 
+# Build Pipemixer RPM
+build_pipemixer_rpm:
+  cmd.run:
+    - name: |
+        podman run --rm \
+        -v /var/home/neg/src/salt/salt:/build/salt:z \
+        -v /var/home/neg/src/salt/rpms:/build/rpms:z \
+        registry.fedoraproject.org/fedora-toolbox:43 \
+        bash /build/salt/build-rpm.sh pipemixer
+    - runas: neg
+    - creates: /var/home/neg/src/salt/rpms/pipemixer-0.4.0-1.fc43.x86_64.rpm
+    - require:
+      - file: /var/home/neg/src/salt/rpms
+
+# Build Richcolors RPM
+build_richcolors_rpm:
+  cmd.run:
+    - name: |
+        podman run --rm \
+        -v /var/home/neg/src/salt/salt:/build/salt:z \
+        -v /var/home/neg/src/salt/rpms:/build/rpms:z \
+        registry.fedoraproject.org/fedora-toolbox:43 \
+        bash /build/salt/build-rpm.sh richcolors
+    - runas: neg
+    - creates: /var/home/neg/src/salt/rpms/richcolors-0.1.0-1.fc43.noarch.rpm
+    - require:
+      - file: /var/home/neg/src/salt/rpms
+
 # Build Iosevka RPM
 build_iosevka_rpm:
   cmd.run:

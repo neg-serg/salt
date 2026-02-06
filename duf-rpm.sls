@@ -20,3 +20,17 @@ install_raise_rpm:
         rpm-ostree install /var/home/neg/src/salt/rpms/raise-*.rpm
     - unless: "rpm-ostree status | grep 'raise-'"
     - runas: root
+
+install_pipemixer_rpm:
+  cmd.run:
+    - name: |
+        rpm-ostree install /var/home/neg/src/salt/rpms/pipemixer-*.rpm
+    - unless: "rpm-ostree status | grep 'pipemixer-'"
+    - runas: root
+
+install_richcolors_rpm:
+  cmd.run:
+    - name: |
+        rpm-ostree install /var/home/neg/src/salt/rpms/richcolors-*.rpm
+    - unless: "rpm-ostree status | grep 'richcolors-'"
+    - runas: root
