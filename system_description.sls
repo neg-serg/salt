@@ -154,7 +154,7 @@ include:
   - build_rpms
   - fonts
   - fira-code-nerd
-  - duf-rpm
+  - install_rpms
 
 # Install all packages in a single transaction.
 install_system_packages:
