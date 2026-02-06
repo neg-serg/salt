@@ -37,11 +37,30 @@ git clone --depth 1 https://github.com/ryanoasis/nerd-fonts.git %{_builddir}/ner
 mkdir -p %{_builddir}/iosevka-build/ttf
 cp -v dist/Iosevkaneg/TTF/*.ttf %{_builddir}/iosevka-build/ttf/
 
-# Patch with Nerd Font (preserve original family name with --makegroups -1)
+# Patch with Nerd Font glyphs
 mkdir -p %{_builddir}/iosevka-build/nerd-fonts
-# Use find to get all generated TTF files
 find %{_builddir}/iosevka-build/ttf -name "*.ttf" -print0 | xargs -0 -n 1 fontforge -script %{_builddir}/nerd-fonts-patcher/font-patcher \
     --complete -s --makegroups '-1' --careful --quiet --outputdir %{_builddir}/iosevka-build/nerd-fonts
+
+# Restore original font family names (strip "Nerd Font" added by patcher)
+python3 -c "
+import glob, os, sys
+from fontTools.ttLib import TTFont
+for path in glob.glob('%{_builddir}/iosevka-build/nerd-fonts/*.ttf'):
+    font = TTFont(path)
+    for rec in font['name'].names:
+        text = rec.toUnicode()
+        if 'Nerd Font' in text or 'NerdFont' in text:
+            text = text.replace(' Nerd Font', '').replace('NerdFont', '')
+            rec.string = text
+    font.save(path)
+    base = os.path.basename(path)
+    newbase = base.replace('NerdFont', '')
+    if newbase != base:
+        newpath = os.path.join(os.path.dirname(path), newbase)
+        os.rename(path, newpath)
+        print('Renamed: %s -> %s' % (base, newbase))
+"
 
 %install
 # Install the patched fonts
