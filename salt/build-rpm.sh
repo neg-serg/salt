@@ -8,6 +8,23 @@ RAISE_VERSION="0.1.0"
 PIPEMIXER_VERSION="0.4.0"
 RICHCOLORS_VERSION="0.1.0"
 NEG_PRETTY_PRINTER_VERSION="0.1.0"
+CHOOSE_VERSION="1.3.7"
+OUCH_VERSION="0.6.1"
+HTMLQ_VERSION="0.4.0"
+ERDTREE_VERSION="3.1.2"
+VIU_VERSION="1.6.1"
+FCLONES_VERSION="0.35.0"
+GREX_VERSION="1.4.6"
+KMON_VERSION="1.7.1"
+JUJUTSU_VERSION="0.38.0"
+ZFXTOP_VERSION="0.3.2"
+PUP_VERSION="0.4.0"
+SCC_VERSION="3.6.0"
+CTOP_VERSION="0.7.7"
+DIVE_VERSION="0.13.1"
+ZK_VERSION="0.15.2"
+GIT_FILTER_REPO_VERSION="2.47.0"
+EPR_VERSION="2.4.15"
 
 # RPM build root directory inside the container
 RPM_BUILD_ROOT="/rpmbuild"
@@ -185,6 +202,465 @@ if [[ $# -eq 0 || "$1" == "neg-pretty-printer" ]]; then
 
         echo "--- Copying neg-pretty-printer RPMs to /build/rpms/ ---"
         find "${RPMS_DIR}" -name "neg-pretty-printer-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Choose RPM ---
+CHOOSE_RPM_NAME="choose-${CHOOSE_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "choose" ]]; then
+    echo "--- Preparing Choose ---"
+    if [ -f "/build/rpms/${CHOOSE_RPM_NAME}" ]; then
+        echo "Choose RPM (${CHOOSE_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar rust cargo
+
+        CHOOSE_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/choose-${CHOOSE_VERSION}"
+        if [ ! -d "${CHOOSE_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${CHOOSE_VERSION}" https://github.com/theryangeary/choose.git "${CHOOSE_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/choose-${CHOOSE_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "choose-${CHOOSE_VERSION}"
+        cp /build/salt/specs/choose.spec "${SPECS_DIR}/choose.spec"
+
+        echo "--- Building Choose RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/choose.spec"
+
+        echo "--- Copying Choose RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "choose-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Ouch RPM ---
+OUCH_RPM_NAME="ouch-${OUCH_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "ouch" ]]; then
+    echo "--- Preparing Ouch ---"
+    if [ -f "/build/rpms/${OUCH_RPM_NAME}" ]; then
+        echo "Ouch RPM (${OUCH_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar rust cargo gcc-c++ clang clang-devel
+
+        OUCH_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/ouch-${OUCH_VERSION}"
+        if [ ! -d "${OUCH_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "${OUCH_VERSION}" https://github.com/ouch-org/ouch.git "${OUCH_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/ouch-${OUCH_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "ouch-${OUCH_VERSION}"
+        cp /build/salt/specs/ouch.spec "${SPECS_DIR}/ouch.spec"
+
+        echo "--- Building Ouch RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/ouch.spec"
+
+        echo "--- Copying Ouch RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "ouch-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Htmlq RPM ---
+HTMLQ_RPM_NAME="htmlq-${HTMLQ_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "htmlq" ]]; then
+    echo "--- Preparing Htmlq ---"
+    if [ -f "/build/rpms/${HTMLQ_RPM_NAME}" ]; then
+        echo "Htmlq RPM (${HTMLQ_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar rust cargo
+
+        HTMLQ_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/htmlq-${HTMLQ_VERSION}"
+        if [ ! -d "${HTMLQ_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${HTMLQ_VERSION}" https://github.com/mgdm/htmlq.git "${HTMLQ_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/htmlq-${HTMLQ_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "htmlq-${HTMLQ_VERSION}"
+        cp /build/salt/specs/htmlq.spec "${SPECS_DIR}/htmlq.spec"
+
+        echo "--- Building Htmlq RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/htmlq.spec"
+
+        echo "--- Copying Htmlq RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "htmlq-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Erdtree RPM ---
+ERDTREE_RPM_NAME="erdtree-${ERDTREE_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "erdtree" ]]; then
+    echo "--- Preparing Erdtree ---"
+    if [ -f "/build/rpms/${ERDTREE_RPM_NAME}" ]; then
+        echo "Erdtree RPM (${ERDTREE_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar rust cargo
+
+        ERDTREE_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/erdtree-${ERDTREE_VERSION}"
+        if [ ! -d "${ERDTREE_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${ERDTREE_VERSION}" https://github.com/solidiquis/erdtree.git "${ERDTREE_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/erdtree-${ERDTREE_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "erdtree-${ERDTREE_VERSION}"
+        cp /build/salt/specs/erdtree.spec "${SPECS_DIR}/erdtree.spec"
+
+        echo "--- Building Erdtree RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/erdtree.spec"
+
+        echo "--- Copying Erdtree RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "erdtree-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Viu RPM ---
+VIU_RPM_NAME="viu-${VIU_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "viu" ]]; then
+    echo "--- Preparing Viu ---"
+    if [ -f "/build/rpms/${VIU_RPM_NAME}" ]; then
+        echo "Viu RPM (${VIU_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar rust cargo
+
+        VIU_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/viu-${VIU_VERSION}"
+        if [ ! -d "${VIU_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${VIU_VERSION}" https://github.com/atanunq/viu.git "${VIU_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/viu-${VIU_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "viu-${VIU_VERSION}"
+        cp /build/salt/specs/viu.spec "${SPECS_DIR}/viu.spec"
+
+        echo "--- Building Viu RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/viu.spec"
+
+        echo "--- Copying Viu RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "viu-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Fclones RPM ---
+FCLONES_RPM_NAME="fclones-${FCLONES_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "fclones" ]]; then
+    echo "--- Preparing Fclones ---"
+    if [ -f "/build/rpms/${FCLONES_RPM_NAME}" ]; then
+        echo "Fclones RPM (${FCLONES_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar rust cargo
+
+        FCLONES_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/fclones-${FCLONES_VERSION}"
+        if [ ! -d "${FCLONES_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${FCLONES_VERSION}" https://github.com/pkolaczk/fclones.git "${FCLONES_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/fclones-${FCLONES_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "fclones-${FCLONES_VERSION}"
+        cp /build/salt/specs/fclones.spec "${SPECS_DIR}/fclones.spec"
+
+        echo "--- Building Fclones RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/fclones.spec"
+
+        echo "--- Copying Fclones RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "fclones-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Grex RPM ---
+GREX_RPM_NAME="grex-${GREX_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "grex" ]]; then
+    echo "--- Preparing Grex ---"
+    if [ -f "/build/rpms/${GREX_RPM_NAME}" ]; then
+        echo "Grex RPM (${GREX_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar rust cargo
+
+        GREX_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/grex-${GREX_VERSION}"
+        if [ ! -d "${GREX_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${GREX_VERSION}" https://github.com/pemistahl/grex.git "${GREX_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/grex-${GREX_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "grex-${GREX_VERSION}"
+        cp /build/salt/specs/grex.spec "${SPECS_DIR}/grex.spec"
+
+        echo "--- Building Grex RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/grex.spec"
+
+        echo "--- Copying Grex RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "grex-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Kmon RPM ---
+KMON_RPM_NAME="kmon-${KMON_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "kmon" ]]; then
+    echo "--- Preparing Kmon ---"
+    if [ -f "/build/rpms/${KMON_RPM_NAME}" ]; then
+        echo "Kmon RPM (${KMON_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar rust cargo
+
+        KMON_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/kmon-${KMON_VERSION}"
+        if [ ! -d "${KMON_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${KMON_VERSION}" https://github.com/orhun/kmon.git "${KMON_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/kmon-${KMON_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "kmon-${KMON_VERSION}"
+        cp /build/salt/specs/kmon.spec "${SPECS_DIR}/kmon.spec"
+
+        echo "--- Building Kmon RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/kmon.spec"
+
+        echo "--- Copying Kmon RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "kmon-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Jujutsu RPM ---
+JUJUTSU_RPM_NAME="jujutsu-${JUJUTSU_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "jujutsu" ]]; then
+    echo "--- Preparing Jujutsu ---"
+    if [ -f "/build/rpms/${JUJUTSU_RPM_NAME}" ]; then
+        echo "Jujutsu RPM (${JUJUTSU_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar rust cargo openssl-devel pkgconf-pkg-config cmake
+
+        JUJUTSU_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/jujutsu-${JUJUTSU_VERSION}"
+        if [ ! -d "${JUJUTSU_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${JUJUTSU_VERSION}" https://github.com/jj-vcs/jj.git "${JUJUTSU_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/jujutsu-${JUJUTSU_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "jujutsu-${JUJUTSU_VERSION}"
+        cp /build/salt/specs/jujutsu.spec "${SPECS_DIR}/jujutsu.spec"
+
+        echo "--- Building Jujutsu RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/jujutsu.spec"
+
+        echo "--- Copying Jujutsu RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "jujutsu-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Zfxtop RPM ---
+ZFXTOP_RPM_NAME="zfxtop-${ZFXTOP_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "zfxtop" ]]; then
+    echo "--- Preparing Zfxtop ---"
+    if [ -f "/build/rpms/${ZFXTOP_RPM_NAME}" ]; then
+        echo "Zfxtop RPM (${ZFXTOP_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar golang
+
+        ZFXTOP_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/zfxtop-${ZFXTOP_VERSION}"
+        if [ ! -d "${ZFXTOP_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "${ZFXTOP_VERSION}" https://github.com/ssleert/zfxtop.git "${ZFXTOP_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/zfxtop-${ZFXTOP_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "zfxtop-${ZFXTOP_VERSION}"
+        cp /build/salt/specs/zfxtop.spec "${SPECS_DIR}/zfxtop.spec"
+
+        echo "--- Building Zfxtop RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/zfxtop.spec"
+
+        echo "--- Copying Zfxtop RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "zfxtop-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Pup RPM ---
+PUP_RPM_NAME="pup-${PUP_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "pup" ]]; then
+    echo "--- Preparing Pup ---"
+    if [ -f "/build/rpms/${PUP_RPM_NAME}" ]; then
+        echo "Pup RPM (${PUP_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar golang
+
+        PUP_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/pup-${PUP_VERSION}"
+        if [ ! -d "${PUP_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${PUP_VERSION}" https://github.com/ericchiang/pup.git "${PUP_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/pup-${PUP_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "pup-${PUP_VERSION}"
+        cp /build/salt/specs/pup.spec "${SPECS_DIR}/pup.spec"
+
+        echo "--- Building Pup RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/pup.spec"
+
+        echo "--- Copying Pup RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "pup-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Scc RPM ---
+SCC_RPM_NAME="scc-${SCC_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "scc" ]]; then
+    echo "--- Preparing Scc ---"
+    if [ -f "/build/rpms/${SCC_RPM_NAME}" ]; then
+        echo "Scc RPM (${SCC_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar golang
+
+        SCC_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/scc-${SCC_VERSION}"
+        if [ ! -d "${SCC_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${SCC_VERSION}" https://github.com/boyter/scc.git "${SCC_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/scc-${SCC_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "scc-${SCC_VERSION}"
+        cp /build/salt/specs/scc.spec "${SPECS_DIR}/scc.spec"
+
+        echo "--- Building Scc RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/scc.spec"
+
+        echo "--- Copying Scc RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "scc-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Ctop RPM ---
+CTOP_RPM_NAME="ctop-${CTOP_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "ctop" ]]; then
+    echo "--- Preparing Ctop ---"
+    if [ -f "/build/rpms/${CTOP_RPM_NAME}" ]; then
+        echo "Ctop RPM (${CTOP_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar golang
+
+        CTOP_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/ctop-${CTOP_VERSION}"
+        if [ ! -d "${CTOP_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${CTOP_VERSION}" https://github.com/bcicen/ctop.git "${CTOP_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/ctop-${CTOP_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "ctop-${CTOP_VERSION}"
+        cp /build/salt/specs/ctop.spec "${SPECS_DIR}/ctop.spec"
+
+        echo "--- Building Ctop RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/ctop.spec"
+
+        echo "--- Copying Ctop RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "ctop-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Dive RPM ---
+DIVE_RPM_NAME="dive-${DIVE_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "dive" ]]; then
+    echo "--- Preparing Dive ---"
+    if [ -f "/build/rpms/${DIVE_RPM_NAME}" ]; then
+        echo "Dive RPM (${DIVE_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar golang
+
+        DIVE_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/dive-${DIVE_VERSION}"
+        if [ ! -d "${DIVE_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${DIVE_VERSION}" https://github.com/wagoodman/dive.git "${DIVE_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/dive-${DIVE_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "dive-${DIVE_VERSION}"
+        cp /build/salt/specs/dive.spec "${SPECS_DIR}/dive.spec"
+
+        echo "--- Building Dive RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/dive.spec"
+
+        echo "--- Copying Dive RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "dive-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Zk RPM ---
+ZK_RPM_NAME="zk-${ZK_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "zk" ]]; then
+    echo "--- Preparing Zk ---"
+    if [ -f "/build/rpms/${ZK_RPM_NAME}" ]; then
+        echo "Zk RPM (${ZK_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar golang gcc
+
+        ZK_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/zk-${ZK_VERSION}"
+        if [ ! -d "${ZK_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${ZK_VERSION}" https://github.com/zk-org/zk.git "${ZK_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/zk-${ZK_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "zk-${ZK_VERSION}"
+        cp /build/salt/specs/zk.spec "${SPECS_DIR}/zk.spec"
+
+        echo "--- Building Zk RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/zk.spec"
+
+        echo "--- Copying Zk RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "zk-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build git-filter-repo RPM ---
+GIT_FILTER_REPO_RPM_NAME="git-filter-repo-${GIT_FILTER_REPO_VERSION}-1.fc43.noarch.rpm"
+if [[ $# -eq 0 || "$1" == "git-filter-repo" ]]; then
+    echo "--- Preparing git-filter-repo ---"
+    if [ -f "/build/rpms/${GIT_FILTER_REPO_RPM_NAME}" ]; then
+        echo "git-filter-repo RPM (${GIT_FILTER_REPO_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar
+
+        GFR_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/git-filter-repo-${GIT_FILTER_REPO_VERSION}"
+        if [ ! -d "${GFR_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${GIT_FILTER_REPO_VERSION}" https://github.com/newren/git-filter-repo.git "${GFR_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/git-filter-repo-${GIT_FILTER_REPO_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "git-filter-repo-${GIT_FILTER_REPO_VERSION}"
+        cp /build/salt/specs/git-filter-repo.spec "${SPECS_DIR}/git-filter-repo.spec"
+
+        echo "--- Building git-filter-repo RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/git-filter-repo.spec"
+
+        echo "--- Copying git-filter-repo RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "git-filter-repo-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Epr RPM ---
+EPR_RPM_NAME="epr-${EPR_VERSION}-1.fc43.noarch.rpm"
+if [[ $# -eq 0 || "$1" == "epr" ]]; then
+    echo "--- Preparing Epr ---"
+    if [ -f "/build/rpms/${EPR_RPM_NAME}" ]; then
+        echo "Epr RPM (${EPR_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar
+
+        EPR_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/epr-${EPR_VERSION}"
+        if [ ! -d "${EPR_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${EPR_VERSION}" https://github.com/wustho/epr.git "${EPR_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/epr-${EPR_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "epr-${EPR_VERSION}"
+        cp /build/salt/specs/epr.spec "${SPECS_DIR}/epr.spec"
+
+        echo "--- Building Epr RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/epr.spec"
+
+        echo "--- Copying Epr RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "epr-*.rpm" -exec cp -v {} /build/rpms/ \;
     fi
 fi
 
