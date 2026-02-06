@@ -3,7 +3,8 @@ set -euxo pipefail
 
 # Define versions
 IOSEVKA_VERSION="34.1.0"
-DUF_VERSION="0.9.1" # Using current duf version from the spec file (arbitrary, can be autodetected later)
+DUF_VERSION="0.9.1"
+RAISE_VERSION="0.1.0"
 
 # RPM build root directory inside the container
 RPM_BUILD_ROOT="/rpmbuild"
@@ -69,6 +70,34 @@ if [[ $# -eq 0 || "$1" == "massren" ]]; then
 
         echo "--- Copying Massren RPMs to /build/rpms/ ---"
         find "${RPMS_DIR}" -name "massren-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Raise RPM ---
+RAISE_RPM_NAME="raise-${RAISE_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "raise" ]]; then
+    echo "--- Preparing Raise ---"
+    if [ -f "/build/rpms/${RAISE_RPM_NAME}" ]; then
+        echo "Raise RPM (${RAISE_RPM_NAME}) already exists, skipping."
+    else
+        # Install raise build dependencies
+        dnf install -y --skip-broken git rpm-build tar rust cargo
+
+        RAISE_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/raise-${RAISE_VERSION}"
+        if [ ! -d "${RAISE_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 https://github.com/neg-serg/raise.git "${RAISE_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/raise-${RAISE_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "raise-${RAISE_VERSION}"
+        cp /build/salt/specs/raise.spec "${SPECS_DIR}/raise.spec"
+
+        echo "--- Building Raise RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/raise.spec"
+
+        echo "--- Copying Raise RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "raise-*.rpm" -exec cp -v {} /build/rpms/ \;
     fi
 fi
 
