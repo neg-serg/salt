@@ -13,3 +13,10 @@ install_massren_rpm:
         rpm-ostree install /var/home/neg/src/salt/rpms/massren-*.rpm
     - unless: "rpm-ostree status | grep 'massren-'"
     - runas: root
+
+install_raise_rpm:
+  cmd.run:
+    - name: |
+        rpm-ostree install /var/home/neg/src/salt/rpms/raise-*.rpm
+    - unless: "rpm-ostree status | grep 'raise-'"
+    - runas: root
