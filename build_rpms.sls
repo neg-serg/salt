@@ -76,6 +76,21 @@ build_richcolors_rpm:
     - require:
       - file: /var/home/neg/src/salt/rpms
 
+# Build neg-pretty-printer RPM
+build_neg_pretty_printer_rpm:
+  cmd.run:
+    - name: |
+        podman run --rm \
+        -v /var/home/neg/src/salt/salt:/build/salt:z \
+        -v /var/home/neg/src/salt/rpms:/build/rpms:z \
+        -v /var/home/neg/src/salt/nixos-config/packages/pretty-printer:/build/pretty-printer:z \
+        registry.fedoraproject.org/fedora-toolbox:43 \
+        bash /build/salt/build-rpm.sh neg-pretty-printer
+    - runas: neg
+    - creates: /var/home/neg/src/salt/rpms/neg-pretty-printer-0.1.0-1.fc43.noarch.rpm
+    - require:
+      - file: /var/home/neg/src/salt/rpms
+
 # Build Iosevka RPM
 build_iosevka_rpm:
   cmd.run:

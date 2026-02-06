@@ -1,7 +1,7 @@
 1. Custom Software (neg-serg)
 - [x] duf - Custom fork with --style plain support.
 - [x] albumdetails - CLI for music album metadata.
-- [ ] neg-pretty-printer - Custom Python library and CLI (ppinfo) for colored output. (repo not found)
+- [x] neg-pretty-printer - Custom Python library and CLI (ppinfo) for colored output.
 - [x] raise - Tool for window management/raising.
 - [ ] nyxt-bin - Binary packaging for the Nyxt browser. (needs investigation)
 - [x] richcolors - Color manipulation/theme generation utility.
