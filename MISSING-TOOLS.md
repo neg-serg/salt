@@ -15,30 +15,17 @@ Already in Fedora repos, installed via `rpm-ostree install --idempotent`:
 ## Custom RPMs (built)
 
 ### Rust
-choose, ouch, htmlq, erdtree, viu, fclones, grex, kmon, raise, jujutsu (jj)
+choose, ouch, htmlq, erdtree, viu, fclones, grex, kmon, raise, jujutsu (jj), lutgen, taplo
 
 ### Go
-duf, massren, pup, scc, ctop, dive, zfxtop, zk
+duf, massren, pup, scc, ctop, dive, zfxtop, zk, nerdctl
 
 ### Other
-pipemixer (C), epr (Python), git-filter-repo (Python), richcolors (Python), neg-pretty-printer (Python), iosevka-neg-fonts (font)
-
-## Still need RPM build
-
-| Tool | Description | Source |
-|------|-------------|--------|
-| lutgen | LUT generator for color grading | github.com/ozwaldorf/lutgen-rs (Rust) |
-| taplo | TOML toolkit/linter | github.com/tamasfe/taplo (Rust) |
-| gist | GitHub gist CLI | github.com/defunkt/gist (Ruby) |
-| xxh | SSH with local shell config | github.com/xxh/xxh (Python) |
-| nerdctl | containerd CLI | github.com/containerd/nerdctl (Go) |
-| rapidgzip | Parallel gzip decompressor | github.com/mxmlnkn/rapidgzip (C++) |
-| scour | SVG optimizer | github.com/scour-project/scour (Python) |
+pipemixer (C), epr (Python), git-filter-repo (Python), richcolors (Python), neg-pretty-printer (Python), xxh (Python), scour (Python), rapidgzip (Python/C++), gist (Ruby), iosevka-neg-fonts (font)
 
 ## Summary
 
 | Category | Count | Status |
 |----------|-------|--------|
 | Fedora repos (packages.sls) | ~40 | salt state ready |
-| Custom RPMs (build_rpms.sls) | 24 | built + salt state ready |
-| Need RPM build | 7 | TODO |
+| Custom RPMs (build_rpms.sls) | 31 | built + salt state ready |
