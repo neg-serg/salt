@@ -2,7 +2,7 @@
 - [x] duf - Custom fork with --style plain support.
 - [x] albumdetails - CLI for music album metadata.
 - [ ] neg-pretty-printer - Custom Python library and CLI (ppinfo) for colored output. (repo not found)
-- [ ] raise - Tool for window management/raising. (repo not found)
+- [x] raise - Tool for window management/raising.
 - [ ] nyxt-bin - Binary packaging for the Nyxt browser. (needs investigation)
 - [ ] richcolors - Color manipulation/theme generation utility. (repo not found)
 - [x] rsmetrx - Metrics exporter/shader pack for Quickshell HUDs.
@@ -17,7 +17,7 @@
 - [ ] pipemixer - TUI mixer for PipeWire. (repo not found)
 - [x] wiremix - Another PipeWire mixer for terminal.
 - [x] matugen-themes - Collection of templates for Matugen.
-- [ ] oldschool-pc-font-pack - Classic PC bitmap/outline fonts. (manual download: https://int10h.org/oldschool-pc-fonts/)
+- [x] oldschool-pc-font-pack - Classic PC bitmap/outline fonts. (manual download: https://int10h.org/oldschool-pc-fonts/)
 - [x] surfingkeys-conf - Custom configuration for SurfingKeys browser extension.
 
 
