@@ -34,3 +34,10 @@ install_richcolors_rpm:
         rpm-ostree install /var/home/neg/src/salt/rpms/richcolors-*.rpm
     - unless: "rpm-ostree status | grep 'richcolors-'"
     - runas: root
+
+install_neg_pretty_printer_rpm:
+  cmd.run:
+    - name: |
+        rpm-ostree install /var/home/neg/src/salt/rpms/neg-pretty-printer-*.rpm
+    - unless: "rpm-ostree status | grep 'neg-pretty-printer-'"
+    - runas: root

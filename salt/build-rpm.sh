@@ -7,6 +7,7 @@ DUF_VERSION="0.9.1"
 RAISE_VERSION="0.1.0"
 PIPEMIXER_VERSION="0.4.0"
 RICHCOLORS_VERSION="0.1.0"
+NEG_PRETTY_PRINTER_VERSION="0.1.0"
 
 # RPM build root directory inside the container
 RPM_BUILD_ROOT="/rpmbuild"
@@ -156,6 +157,34 @@ if [[ $# -eq 0 || "$1" == "richcolors" ]]; then
 
         echo "--- Copying Richcolors RPMs to /build/rpms/ ---"
         find "${RPMS_DIR}" -name "richcolors-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build neg-pretty-printer RPM ---
+NEG_PRETTY_PRINTER_RPM_NAME="neg-pretty-printer-${NEG_PRETTY_PRINTER_VERSION}-1.fc43.noarch.rpm"
+if [[ $# -eq 0 || "$1" == "neg-pretty-printer" ]]; then
+    echo "--- Preparing neg-pretty-printer ---"
+    if [ -f "/build/rpms/${NEG_PRETTY_PRINTER_RPM_NAME}" ]; then
+        echo "neg-pretty-printer RPM (${NEG_PRETTY_PRINTER_RPM_NAME}) already exists, skipping."
+    else
+        # Install neg-pretty-printer build dependencies
+        dnf install -y --skip-broken rpm-build tar python3-devel python3-pip python3-setuptools python3-wheel
+
+        NEG_PP_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/neg-pretty-printer-${NEG_PRETTY_PRINTER_VERSION}"
+        if [ ! -d "${NEG_PP_SOURCE_DIR}" ]; then
+            mkdir -p "${NEG_PP_SOURCE_DIR}"
+            cp -r /build/pretty-printer/* /build/pretty-printer/.gitignore "${NEG_PP_SOURCE_DIR}/" 2>/dev/null || true
+        fi
+        tar -czf "${SOURCES_DIR}/neg-pretty-printer-${NEG_PRETTY_PRINTER_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "neg-pretty-printer-${NEG_PRETTY_PRINTER_VERSION}"
+        cp /build/salt/specs/neg-pretty-printer.spec "${SPECS_DIR}/neg-pretty-printer.spec"
+
+        echo "--- Building neg-pretty-printer RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/neg-pretty-printer.spec"
+
+        echo "--- Copying neg-pretty-printer RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "neg-pretty-printer-*.rpm" -exec cp -v {} /build/rpms/ \;
     fi
 fi
 
