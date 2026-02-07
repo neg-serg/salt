@@ -1,6 +1,6 @@
 Name:           iosevka-neg-fonts
 Version:        34.1.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Custom Iosevka Nerd Fonts by neg-serg
 
 License:        OFL-1.1
@@ -44,15 +44,21 @@ find %{_builddir}/iosevka-build/ttf -name "*.ttf" -print0 | xargs -0 -n 1 fontfo
 
 # Restore original font family names (strip "Nerd Font" added by patcher)
 python3 -c "
-import glob, os, sys
+import glob, os
 from fontTools.ttLib import TTFont
-for path in glob.glob('%{_builddir}/iosevka-build/nerd-fonts/*.ttf'):
+for path in sorted(glob.glob('%{_builddir}/iosevka-build/nerd-fonts/*.ttf')):
     font = TTFont(path)
-    for rec in font['name'].names:
-        text = rec.toUnicode()
-        if 'Nerd Font' in text or 'NerdFont' in text:
-            text = text.replace(' Nerd Font', '').replace('NerdFont', '')
-            rec.string = text
+    nt = font['name']
+    for rec in nt.names:
+        try:
+            text = rec.toUnicode()
+        except UnicodeDecodeError:
+            continue
+        orig = text
+        text = text.replace(' Nerd Font', '').replace('NerdFont', '').replace('Nerd Font', '')
+        if text != orig:
+            nt.setName(text, rec.nameID, rec.platformID, rec.platEncID, rec.langID)
+            print('  nameID=%d: %s -> %s' % (rec.nameID, orig, text))
     font.save(path)
     base = os.path.basename(path)
     newbase = base.replace('NerdFont', '')

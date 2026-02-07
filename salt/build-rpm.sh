@@ -861,7 +861,7 @@ if [[ $# -eq 0 || "$1" == "scour" ]]; then
 fi
 
 # --- Build Iosevka RPM ---
-IOSEVKA_RPM_NAME="iosevka-neg-fonts-${IOSEVKA_VERSION}-1.fc43.noarch.rpm"
+IOSEVKA_RPM_NAME="iosevka-neg-fonts-${IOSEVKA_VERSION}-2.fc43.noarch.rpm"
 if [[ $# -eq 0 || "$1" == "iosevka" ]]; then
     echo "--- Preparing Iosevka ---"
     if [ -f "/build/rpms/${IOSEVKA_RPM_NAME}" ]; then
