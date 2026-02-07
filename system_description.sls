@@ -60,21 +60,17 @@ sudo_timeout:
 
 # Use rpm-ostree for Silverblue.
 # Batch packages for speed and correct dependency resolution.
+# Packages already in Wayblue base image (do NOT layer):
+#   7zip-standalone (obsoletes p7zip), fzf, ImageMagick, inotify-tools, jq,
+#   lsof, make, mtr, procps-ng, psmisc, qrencode, ripgrep, rust,
+#   tree-sitter-cli, unzip, xz, yt-dlp, zip
 {% set categories = {
-    'Archives': [
-        {'name': 'p7zip',               'desc': 'Very high compression ratio file archiver'},
-        {'name': 'unzip',               'desc': 'A utility for unpacking zip files'},
-        {'name': 'xz',                  'desc': 'LZMA compression utilities'},
-        {'name': 'zip',                 'desc': 'A file compression and packaging utility compatible with PKZIP'}
-    ],
     'Development': [
         {'name': 'dkms',                'desc': 'Dynamic Kernel Module Support Framework'},
         {'name': 'gcc',                 'desc': 'Various compilers (C, C++, ...)'},
         {'name': 'just',                'desc': 'Just a command runner'},
         {'name': 'kernel-devel',        'desc': 'Development package for building kernel modules'},
-        {'name': 'make',                'desc': 'A GNU tool which simplifies the build process for users'},
-        {'name': 'python3-devel',       'desc': 'Libraries and header files needed for Python development'},
-        {'name': 'tree-sitter-cli',     'desc': 'CLI tool for developing, testing, and using Tree-sitter parsers'}
+        {'name': 'python3-devel',       'desc': 'Libraries and header files needed for Python development'}
     ],
     'File Management': [
         {'name': 'bat',                 'desc': 'A cat(1) clone with wings'},
@@ -94,9 +90,7 @@ sudo_timeout:
         {'name': 'chafa',               'desc': 'Image-to-text converter for terminal'},
         {'name': 'mpv',                 'desc': 'A free, open source, and cross-platform media player'},
         {'name': 'perl-Image-ExifTool', 'desc': 'Utility for reading and writing image meta info'},
-        {'name': 'qrencode',            'desc': 'Generate QR 2D barcodes'},
         {'name': 'sox',                 'desc': 'A general purpose sound file conversion tool'},
-        {'name': 'yt-dlp',              'desc': 'A command-line program to download videos from online video platforms'},
         {'name': 'zbar',                'desc': 'Bar code reader'}
     ],
     'Monitoring & System': [
@@ -104,25 +98,19 @@ sudo_timeout:
         {'name': 'fastfetch',           'desc': 'Fast neofetch-like system information tool'},
         {'name': 'goaccess',            'desc': 'Real-time web log analyzer and interactive viewer'},
         {'name': 'lnav',                'desc': 'Curses-based tool for viewing and analyzing log files'},
-        {'name': 'lsof',                'desc': 'A utility which lists open files on a Linux/UNIX system'},
-        {'name': 'procps-ng',           'desc': 'System and process monitoring utilities'},
         {'name': 'progress',            'desc': 'Coreutils Viewer'},
-        {'name': 'psmisc',              'desc': 'Utilities for managing processes on your system'},
         {'name': 'pv',                  'desc': 'A tool for monitoring the progress of data through a pipeline'},
         {'name': 's-tui',               'desc': 'Stress terminal UI for CPU monitoring'},
         {'name': 'sysstat',             'desc': 'Performance monitoring tools'}
     ],
     'Network': [
-        {'name': 'aria2',               'desc': 'High speed download utility with resuming and segmented downloading'},
-        {'name': 'mtr',                 'desc': 'Network diagnostic tool'}
+        {'name': 'aria2',               'desc': 'High speed download utility with resuming and segmented downloading'}
     ],
     'Shell & Tools': [
         {'name': 'asciinema',           'desc': 'Terminal session recorder, streamer and player'},
         {'name': 'entr',                'desc': 'Run arbitrary commands when files change'},
-        {'name': 'fzf',                 'desc': 'A command-line fuzzy finder'},
         {'name': 'gh',                  'desc': 'GitHub CLI'},
         {'name': 'git-lfs',             'desc': 'Git Large File Storage'},
-        {'name': 'inotify-tools',       'desc': 'Command line utilities for inotify'},
         {'name': 'kitty',               'desc': 'GPU-accelerated terminal emulator'},
         {'name': 'moreutils',           'desc': 'Additional unix utilities'},
         {'name': 'par',                 'desc': 'Paragraph reformatter, vaguely like fmt, but more elaborate'},
@@ -135,10 +123,6 @@ sudo_timeout:
         {'name': 'tmux',                'desc': 'Terminal multiplexer'},
         {'name': 'zoxide',              'desc': 'Smarter cd command for your terminal'},
         {'name': 'zsh',                 'desc': 'Powerful interactive shell'}
-    ],
-    'Text & Search': [
-        {'name': 'jq',                  'desc': 'Command-line JSON processor'},
-        {'name': 'ripgrep',             'desc': 'Line-oriented search tool'}
     ],
     'Version Control': [
         {'name': 'chezmoi',             'desc': 'Manage your dotfiles across multiple diverse machines'},
