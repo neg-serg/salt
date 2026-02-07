@@ -65,19 +65,41 @@ sudo_timeout:
 #   lsof, make, mtr, procps-ng, psmisc, qrencode, ripgrep, rust,
 #   tree-sitter-cli, unzip, xz, yt-dlp, zip
 {% set categories = {
+    'Archives & Compression': [
+        {'name': 'lbzip2',              'desc': 'Parallel bzip2 compression utility'},
+        {'name': 'patool',              'desc': 'Portable archive file manager'},
+        {'name': 'pbzip2',              'desc': 'Parallel bzip2 implementation'},
+        {'name': 'pigz',                'desc': 'Parallel gzip implementation'},
+        {'name': 'unar',                'desc': 'Universal archive unpacker'},
+        {'name': 'unrar',               'desc': 'RAR archive extractor'}
+    ],
     'Development': [
+        {'name': 'cargo',               'desc': 'Rust package manager'},
+        {'name': 'clang-libs',          'desc': 'Clang runtime libraries'},
+        {'name': 'cmake',               'desc': 'Cross-platform build system'},
         {'name': 'dkms',                'desc': 'Dynamic Kernel Module Support Framework'},
         {'name': 'gcc',                 'desc': 'Various compilers (C, C++, ...)'},
+        {'name': 'gdb',                 'desc': 'GNU Debugger'},
+        {'name': 'hyperfine',           'desc': 'Command-line benchmarking tool'},
         {'name': 'just',                'desc': 'Just a command runner'},
         {'name': 'kernel-devel',        'desc': 'Development package for building kernel modules'},
-        {'name': 'python3-devel',       'desc': 'Libraries and header files needed for Python development'}
+        {'name': 'ncurses-devel',       'desc': 'Development files for ncurses'},
+        {'name': 'pipewire-devel',      'desc': 'PipeWire development files'},
+        {'name': 'pulseaudio-libs-devel', 'desc': 'PulseAudio development libraries'},
+        {'name': 'python3-devel',       'desc': 'Libraries and header files needed for Python development'},
+        {'name': 'ShellCheck',          'desc': 'Shell script analysis tool'},
+        {'name': 'shfmt',               'desc': 'Shell script formatter'},
+        {'name': 'strace',              'desc': 'System call tracer'}
     ],
     'File Management': [
         {'name': 'bat',                 'desc': 'A cat(1) clone with wings'},
+        {'name': 'borgbackup',          'desc': 'Deduplicating archiver with compression and encryption'},
         {'name': 'convmv',              'desc': 'Convert filename encodings'},
         {'name': 'dos2unix',            'desc': 'Text file format converters'},
         {'name': 'du-dust',             'desc': 'More intuitive version of du'},
+        {'name': 'enca',                'desc': 'Character set analyzer and converter'},
         {'name': 'fd-find',             'desc': 'Fd is a simple, fast and user-friendly alternative to find'},
+        {'name': 'jdupes',              'desc': 'Duplicate file finder and remover'},
         {'name': 'ncdu',                'desc': 'Text-based disk usage viewer'},
         {'name': 'rmlint',              'desc': 'Find space waste and other broken things on your filesystem'},
         {'name': 'stow',                'desc': 'Manage the installation of software packages from source'}
@@ -86,11 +108,21 @@ sudo_timeout:
         {'name': 'material-icons-fonts', 'desc': 'Material Design icons fonts'}
     ],
     'Media': [
+        {'name': 'advancecomp',         'desc': 'Recompression utilities for .png, .mng, .zip, .gz'},
         {'name': 'cava',                'desc': 'Console audio visualizer'},
         {'name': 'chafa',               'desc': 'Image-to-text converter for terminal'},
+        {'name': 'darktable',           'desc': 'Utility to organize and develop raw images'},
+        {'name': 'ffmpegthumbnailer',   'desc': 'Lightweight video thumbnailer'},
+        {'name': 'jpegoptim',           'desc': 'Utility to optimize JPEG files'},
+        {'name': 'mediainfo',           'desc': 'Media file information utility'},
+        {'name': 'mpc',                 'desc': 'Command-line MPD client'},
         {'name': 'mpv',                 'desc': 'A free, open source, and cross-platform media player'},
+        {'name': 'optipng',             'desc': 'PNG optimizer'},
         {'name': 'perl-Image-ExifTool', 'desc': 'Utility for reading and writing image meta info'},
+        {'name': 'pngquant',            'desc': 'PNG quantization tool for lossy compression'},
+        {'name': 'rawtherapee',         'desc': 'Raw image processing application'},
         {'name': 'sox',                 'desc': 'A general purpose sound file conversion tool'},
+        {'name': 'swayimg',             'desc': 'Image viewer for Sway/Wayland'},
         {'name': 'zbar',                'desc': 'Bar code reader'}
     ],
     'Monitoring & System': [
@@ -104,31 +136,52 @@ sudo_timeout:
         {'name': 'sysstat',             'desc': 'Performance monitoring tools'}
     ],
     'Network': [
-        {'name': 'aria2',               'desc': 'High speed download utility with resuming and segmented downloading'}
+        {'name': 'aria2',               'desc': 'High speed download utility with resuming and segmented downloading'},
+        {'name': 'prettyping',          'desc': 'Wrapper around ping to make output prettier'},
+        {'name': 'speedtest-cli',       'desc': 'Command-line bandwidth test'},
+        {'name': 'streamlink',          'desc': 'CLI for extracting streams from websites'}
     ],
     'Shell & Tools': [
+        {'name': 'abduco',              'desc': 'Session management in a clean and simple way'},
         {'name': 'asciinema',           'desc': 'Terminal session recorder, streamer and player'},
+        {'name': 'cpufetch',            'desc': 'Simple yet fancy CPU architecture fetching tool'},
+        {'name': 'dcfldd',              'desc': 'Enhanced dd with hashing and status output'},
         {'name': 'entr',                'desc': 'Run arbitrary commands when files change'},
+        {'name': 'expect',              'desc': 'Tool for automating interactive applications'},
         {'name': 'gh',                  'desc': 'GitHub CLI'},
         {'name': 'git-lfs',             'desc': 'Git Large File Storage'},
+        {'name': 'glow',                'desc': 'Render markdown on the CLI'},
+        {'name': 'jc',                  'desc': 'CLI tool to convert command output to JSON'},
         {'name': 'kitty',               'desc': 'GPU-accelerated terminal emulator'},
+        {'name': 'lowdown',             'desc': 'Markdown translator'},
+        {'name': 'miller',              'desc': 'Like awk, sed, cut, join, and sort for name-indexed data'},
         {'name': 'moreutils',           'desc': 'Additional unix utilities'},
         {'name': 'par',                 'desc': 'Paragraph reformatter, vaguely like fmt, but more elaborate'},
         {'name': 'parallel',            'desc': 'Shell tool for executing jobs in parallel'},
         {'name': 'pass',                'desc': 'The standard unix password manager'},
+        {'name': 'pastel',              'desc': 'CLI tool to generate, analyze, convert and manipulate colors'},
         {'name': 'pwgen',               'desc': 'Automatic password generation'},
         {'name': 'reptyr',              'desc': 'Attach a running process to a new terminal'},
+        {'name': 'rlwrap',              'desc': 'Readline wrapper for interactive commands'},
+        {'name': 'sad',                 'desc': 'CLI search and replace'},
         {'name': 'salt',                'desc': 'A parallel remote execution system'},
         {'name': 'tealdeer',            'desc': 'A fast tldr client in Rust'},
         {'name': 'tmux',                'desc': 'Terminal multiplexer'},
+        {'name': 'ugrep',              'desc': 'Ultra fast grep with interactive query UI'},
+        {'name': 'urlscan',             'desc': 'Extract and browse URLs from email messages'},
+        {'name': 'yq',                  'desc': 'YAML/XML/TOML processor'},
         {'name': 'zoxide',              'desc': 'Smarter cd command for your terminal'},
         {'name': 'zsh',                 'desc': 'Powerful interactive shell'}
     ],
     'Version Control': [
         {'name': 'chezmoi',             'desc': 'Manage your dotfiles across multiple diverse machines'},
+        {'name': 'diff-so-fancy',       'desc': 'Good-looking diffs with diff-highlight and more'},
         {'name': 'etckeeper',           'desc': 'Store /etc in a git repository'},
         {'name': 'git',                 'desc': 'Fast Version Control System'},
+        {'name': 'git-crypt',           'desc': 'Transparent file encryption in git'},
         {'name': 'git-delta',           'desc': 'Syntax-highlighting pager for git'},
+        {'name': 'git-extras',          'desc': 'Extra git commands for everyday use'},
+        {'name': 'onefetch',            'desc': 'Git repository summary on your terminal'},
         {'name': 'tig',                 'desc': 'Text-mode interface for the git revision control system'}
     ]
 } %}
@@ -136,7 +189,6 @@ sudo_timeout:
 include:
   - amnezia
   - build_rpms
-  - fonts
   - fira-code-nerd
   - install_rpms
 
@@ -321,14 +373,6 @@ install_television:
         rm -rf /tmp/tv.tar.gz /tmp/tv-${TAG}-x86_64-unknown-linux-musl
     - runas: neg
     - creates: /var/home/neg/.local/bin/tv
-
-apply_dotfiles:
-  cmd.run:
-    - name: chezmoi apply --force --source /var/home/neg/src/salt/dotfiles
-    - runas: neg
-    - cwd: /var/home/neg
-    - require:
-      - cmd: install_system_packages
 
 chezmoi_source_symlink:
   file.symlink:
