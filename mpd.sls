@@ -42,7 +42,7 @@ mpd_directories:
     - makedirs: True
 
 # --- Deploy zsh config with MPD variables ---
-zsh_config_dir:
+mpd_zsh_config_dir:
   file.directory:
     - name: {{ home }}/.config/zsh
     - user: {{ user }}
