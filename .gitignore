@@ -9,6 +9,10 @@ rpms/
 .venv/
 __pycache__/
 
+# Salt runtime (keep minion config, ignore runtime dirs)
+salt_config/pki/
+salt_config/var/
+
 # Tools
 .claude/
 tt

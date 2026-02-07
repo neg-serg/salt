@@ -4,7 +4,7 @@ set -e
 # --- Bootstrap Environment ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VENV_DIR="${SCRIPT_DIR}/.venv"
-CONFIG_DIR="/var/home/neg/.gemini/tmp/salt_config"
+CONFIG_DIR="${SCRIPT_DIR}/salt_config"
 SUDO_PASS=$(cat "${SCRIPT_DIR}/.password")
 ACTION="state.sls"
 STATE="system_description"
@@ -20,8 +20,9 @@ bootstrap_salt() {
     # Python 3.14+ might have issues with salt's metadata or dependencies
     "$VENV_DIR/bin/pip" install salt passlib tornado jinja2 msgpack pyyaml psutil requests distro looseversion packaging pycryptodomex
 
-    # Patch Salt for Python 3.14 urlunparse behavior (character swallowing)
-    URL_PY="$VENV_DIR/lib/python3.14/site-packages/salt/utils/url.py"
+    # Patch Salt for Python 3.14+ urlunparse behavior (character swallowing)
+    PYVER=$("$VENV_DIR/bin/python3" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
+    URL_PY="$VENV_DIR/lib/python${PYVER}/site-packages/salt/utils/url.py"
     if [[ -f "$URL_PY" ]]; then
       echo "--- Patching Salt for Python 3.14 compatibility ---"
       sed -i 's/return "salt:\/\/{}".format(url\[len("file:\/\/\/") :\])/return "salt:\/\/{}".format(url.split("file:", 1)[1].lstrip("\/"))/' "$URL_PY"
