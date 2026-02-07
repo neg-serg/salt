@@ -4,6 +4,7 @@
 install_custom_rpms:
   cmd.run:
     - name: |
+        {% raw %}
         to_install=()
         for rpm_file in /var/home/neg/src/salt/rpms/*.rpm; do
           pkg_name=$(rpm -qp --queryformat '%{NAME}' "$rpm_file" 2>/dev/null)
@@ -14,6 +15,7 @@ install_custom_rpms:
         if [ ${#to_install[@]} -gt 0 ]; then
           rpm-ostree install "${to_install[@]}"
         fi
+        {% endraw %}
     - unless: |
         for rpm_file in /var/home/neg/src/salt/rpms/*.rpm; do
           pkg_name=$(rpm -qp --queryformat '%{NAME}' "$rpm_file" 2>/dev/null)
