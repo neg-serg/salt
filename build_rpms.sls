@@ -439,7 +439,7 @@ build_iosevka_rpm:
         registry.fedoraproject.org/fedora-toolbox:43 \
         bash /build/salt/build-rpm.sh iosevka
     - runas: neg
-    - creates: /var/home/neg/src/salt/rpms/iosevka-neg-fonts-34.1.0-1.fc43.noarch.rpm
+    - creates: /var/home/neg/src/salt/rpms/iosevka-neg-fonts-34.1.0-2.fc43.noarch.rpm
     - timeout: 7200
     - output_loglevel: info
     - require:
