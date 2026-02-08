@@ -1,0 +1,12 @@
+[Unit]
+Description=MPD AudioScrobbler (Last.fm)
+After=mpd.service
+Requires=mpd.service
+
+[Service]
+ExecStart=/bin/mpdas
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target
