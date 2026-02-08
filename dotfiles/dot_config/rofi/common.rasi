@@ -152,4 +152,5 @@ entry {
 element-text {
     background-color: inherit;
     text-color:       inherit;
+    /* Some rofi versions don't support horizontal-align here; relying on columns=1 ensures left alignment */
 }

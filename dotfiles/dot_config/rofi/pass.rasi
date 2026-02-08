@@ -3,6 +3,7 @@
 
 #mainbox {
     orientation: vertical;
+    /* Drop the message widget to avoid exposing helper text */
     children: [ listview, inputbar ];
     spacing: 0px;
 }
