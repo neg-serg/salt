@@ -15,6 +15,9 @@ Both chezmoi and Salt read secrets from gopass at deploy time.
 ## gopass Store Layout
 
 ```
+ssh-key                   # SSH key passphrase (~/.ssh/id_ed25519)
+yubikey-pin               # Yubikey PIN (for GPG unlock)
+
 email/
   gmail/
     app-password          # Gmail App Password (for mbsync/msmtp/imapnotify)
@@ -36,6 +39,8 @@ lastfm/
   api-key                 # Last.fm API key (for rescrobbled)
   api-secret              # Last.fm API secret (for rescrobbled)
 ```
+
+Подробные инструкции по заведению каждого секрета: см. `gopass-setup.md`.
 
 ## Chezmoi Integration
 
