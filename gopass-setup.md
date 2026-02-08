@@ -1,53 +1,6 @@
-# gopass Setup Guide
-
-Пошаговая инструкция по заведению всех секретов для Salt/chezmoi конфигурации.
-Каждый секрет используется в chezmoi-шаблонах или Salt states — без них деплой упадёт.
-
-## 0. Предварительная проверка
-
-```bash
-# Проверить, что gopass инициализирован
-gopass ls
-
-# Посмотреть, какие секреты уже есть, а какие отсутствуют
-for key in \
-    email/gmail/app-password email/gmail/address \
-    caldav/google/client-id caldav/google/client-secret \
-    lastfm/username lastfm/password lastfm/api-key lastfm/api-secret \
-    api/github-token api/brave-search api/context7 \
-    ssh-key yubikey-pin; do
-  if gopass show -o "$key" >/dev/null 2>&1; then
-    echo "  ✓ $key"
-  else
-    echo "  ✗ $key  (MISSING)"
-  fi
-done
-```
-
----
-
-## 1. Инициализация gopass (если store не существует)
-
-```bash
-gopass init <GPG-KEY-ID>
-gopass git init
-
-# Проверка
-gopass ls
-```
-
----
-
 ## 2. SSH и Yubikey (скрипт `unlock`)
 
 Используются в: `~/.local/bin/unlock` — автоматический unlock SSH ключей при логине.
-
-### 2a. Пароль SSH ключа
-
-```bash
-# Пароль от ~/.ssh/id_ed25519
-gopass insert ssh-key
-```
 
 ### 2b. PIN Yubikey
 
@@ -66,10 +19,6 @@ gopass insert yubikey-pin
 ### 3a. Gmail адрес
 
 ```bash
-gopass insert email/gmail/address
-# Ввести: ваш gmail адрес (например serg.zorg@gmail.com)
-```
-
 ### 3b. Gmail App Password
 
 **Где получить:**
@@ -126,34 +75,6 @@ gopass insert caldav/google/client-secret
 Шаблон: `dot_config/rescrobbled/config.toml.tmpl`
 
 ### 5a. Логин и пароль Last.fm
-
-```bash
-gopass insert lastfm/username
-# Ввести: ваш Last.fm username
-
-gopass insert lastfm/password
-# Ввести: ваш Last.fm пароль
-```
-
-### 5b. API ключи Last.fm
-
-**Где получить:**
-1. Перейти на https://www.last.fm/api/account/create
-2. Залогиниться (если не залогинены)
-3. Заполнить форму:
-   - Application name: любое (например "rescrobbled")
-   - Application description: любое
-   - Callback URL: оставить пустым
-4. Нажать **Submit**
-5. Скопировать **API key** и **Shared secret**
-
-```bash
-gopass insert lastfm/api-key
-# Ввести: API key (32 hex символа)
-
-gopass insert lastfm/api-secret
-# Ввести: Shared secret (32 hex символа)
-```
 
 ---
 
