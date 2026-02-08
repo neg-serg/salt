@@ -37,7 +37,8 @@
     {'name': 'xh',                'version': '0.25.3'},
     {'name': 'curlie',            'version': '1.8.2'},
     {'name': 'doggo',             'version': '1.1.2'},
-    {'name': 'wallust',           'version': '3.3.0'}
+    {'name': 'wallust',           'version': '3.3.0'},
+    {'name': 'quickshell',        'version': '0.2.1',  'timeout': 3600}
 ] %}
 
 {% set iosevka = {
