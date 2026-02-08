@@ -26,7 +26,7 @@ Singleton {
             reload()
         }
         onLoadFailed: function(error) {
-            stateAdapter = {}
+            stateAdapter.lastActivePlayers = []
             writeAdapter()
         }
         JsonAdapter {
