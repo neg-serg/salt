@@ -3,8 +3,8 @@
     // Layout primitives for the top bar; keep values even to avoid pixel jitter.
     "height": 22,
     "scale": 1.15,
-    "sideMargin": 18,
-    "widgetSpacing": 12,
+    "sideMargin": 4,
+    "widgetSpacing": 4,
     "separatorWidthFactor": 1,
     "separatorOpacity": 0.88,
     "hotzone": {
@@ -18,7 +18,7 @@
       // Hover pill controls consolidated menu/tooltip popups triggered from the bar.
       "height": 28,
       "iconSize": 22,
-      "paddingH": 14,
+      "paddingH": 8,
       "showDelayMs": 500,
       "autoHidePauseMs": 2500,
       "color": "#000000"
@@ -32,10 +32,10 @@
       "shortHoldMs": 1500,
       "guardMs": 120,
       "overlayDismissDelayMs": 5000,
-      "inlinePadding": 8
+      "inlinePadding": 4
     },
-    "rowSpacing": 8,
-    "rowSpacingSmall": 4,
+    "rowSpacing": 4,
+    "rowSpacingSmall": 2,
     "volume": {
       "fullHideMs": 800,
       "lowColor": "#D62E6E",
@@ -61,7 +61,7 @@
     },
     "overlayRadius": 20,
     "netCluster": {
-      "spacing": 6
+      "spacing": 2
     },
     "capsule": {
       "borderInset": -1,
