@@ -38,6 +38,7 @@ CURLIE_VERSION="1.8.2"
 DOGGO_VERSION="1.1.2"
 CARAPACE_VERSION="1.6.1"
 WALLUST_VERSION="3.3.0"
+QUICKSHELL_VERSION="0.2.1"
 
 # RPM build root directory inside the container
 RPM_BUILD_ROOT="/rpmbuild"
@@ -1030,6 +1031,38 @@ if [[ $# -eq 0 || "$1" == "wallust" ]]; then
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/wallust.spec"
         echo "--- Copying Wallust RPMs to /build/rpms/ ---"
         find "${RPMS_DIR}" -name "wallust-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Quickshell RPM ---
+QUICKSHELL_RPM_NAME="quickshell-${QUICKSHELL_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "quickshell" ]]; then
+    echo "--- Preparing Quickshell ---"
+    if [ -f "/build/rpms/${QUICKSHELL_RPM_NAME}" ]; then
+        echo "Quickshell RPM (${QUICKSHELL_RPM_NAME}) already exists, skipping."
+    else
+        # Install Qt6 packages from base repo only (without updates) to match
+        # the host's Wayblue base image Qt version (6.9.x, not 6.10.x)
+        dnf install -y --skip-unavailable --disablerepo=updates git rpm-build tar cmake ninja-build gcc-c++ \
+            qt6-qtbase-devel qt6-qtbase-private-devel qt6-qtdeclarative-devel \
+            qt6-qtshadertools-devel qt6-qtwayland-devel \
+            qt6-qtsvg-devel spirv-tools cli11-devel jemalloc-devel \
+            wayland-devel wayland-protocols-devel \
+            libdrm-devel mesa-libgbm-devel mesa-libEGL-devel \
+            pipewire-devel pam-devel \
+            polkit-devel glib2-devel \
+            libxcb-devel xcb-util-devel
+        QUICKSHELL_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/quickshell-${QUICKSHELL_VERSION}"
+        if [ ! -d "${QUICKSHELL_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${QUICKSHELL_VERSION}" https://github.com/quickshell-mirror/quickshell.git "${QUICKSHELL_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/quickshell-${QUICKSHELL_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "quickshell-${QUICKSHELL_VERSION}"
+        cp /build/salt/specs/quickshell.spec "${SPECS_DIR}/quickshell.spec"
+        echo "--- Building Quickshell RPM ---"
+        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/quickshell.spec"
+        echo "--- Copying Quickshell RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "quickshell-*.rpm" -exec cp -v {} /build/rpms/ \;
     fi
 fi
 
