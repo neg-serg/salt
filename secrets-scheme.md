@@ -17,7 +17,7 @@ Both chezmoi and Salt read secrets from gopass at deploy time.
 ```
 email/
   gmail/
-    app-password          # Gmail App Password (for mbsync/msmtp)
+    app-password          # Gmail App Password (for mbsync/msmtp/imapnotify)
     address               # serg.zorg@gmail.com
 
 caldav/
@@ -32,6 +32,9 @@ api/
 
 lastfm/
   password                # Last.fm password (for mpdas)
+  username                # Last.fm username (for mpdas)
+  api-key                 # Last.fm API key (for rescrobbled)
+  api-secret              # Last.fm API secret (for rescrobbled)
 ```
 
 ## Chezmoi Integration
@@ -40,38 +43,44 @@ Dotfiles that contain secrets use chezmoi templates (`.tmpl` suffix):
 
 | Dotfile | Template | gopass key |
 |---|---|---|
-| `~/.config/mbsync/mbsyncrc` | `dot_config/mbsync/mbsyncrc.tmpl` | `email/gmail/app-password` |
-| `~/.config/msmtp/config` | `dot_config/msmtp/config.tmpl` | `email/gmail/app-password` |
-| `~/.config/imapnotify/gmail.json` | `dot_config/imapnotify/gmail.json.tmpl` | `email/gmail/app-password` |
-| `~/.config/vdirsyncer/config` | `dot_config/vdirsyncer/config.tmpl` | `caldav/google/*` |
-| `~/.config/opencode/opencode.json` | `dot_config/opencode/opencode.json.tmpl` | `api/*` |
+| `~/.config/mbsync/mbsyncrc` | `dot_config/mbsync/mbsyncrc.tmpl` | `email/gmail/app-password`, `email/gmail/address` |
+| `~/.config/msmtp/config` | `dot_config/msmtp/config.tmpl` | `email/gmail/app-password`, `email/gmail/address` |
+| `~/.config/imapnotify/gmail.json` | `dot_config/imapnotify/gmail.json.tmpl` | `email/gmail/app-password`, `email/gmail/address` |
+| `~/.config/vdirsyncer/config` | `dot_config/vdirsyncer/config.tmpl` | `caldav/google/client-id`, `caldav/google/client-secret` |
+| `~/.config/rescrobbled/config.toml` | `dot_config/rescrobbled/config.toml.tmpl` | `lastfm/api-key`, `lastfm/api-secret` |
+| `~/.config/zsh/10-secrets.zsh` | `dot_config/zsh/10-secrets.zsh.tmpl` | `api/github-token`, `api/brave-search`, `api/context7` |
 
 Template syntax:
 ```
 # in dot_config/msmtp/config.tmpl
-password {{ gopass "email/gmail/app-password" }}
+passwordeval   "gopass show -o email/gmail/app-password"
+user           {{ gopass "email/gmail/address" }}
 ```
 
 ## Salt Integration
 
-For Salt states that need secrets (e.g. systemd service env files):
+For Salt states that need secrets (e.g. mpdas config in `mpd.sls`):
 
 ```yaml
-# In system_description.sls or a dedicated state
 mpdas_config:
   cmd.run:
     - name: |
+        USER=$(gopass show -o lastfm/username)
         PASS=$(gopass show -o lastfm/password)
-        cat > ~/.config/mpdas/mpdas.conf << EOF
-        [mpdas]
+        cat > ~/.config/mpdas/mpdas.rc << EOF
+        host = localhost
+        port = 6600
+        service = lastfm
+        username = ${USER}
         password = ${PASS}
         EOF
     - runas: neg
+    - creates: ~/.config/mpdas/mpdas.rc
 ```
 
 ## Setup Steps
 
-1. **Initialize gopass store**:
+1. **Initialize gopass store** (if not already done):
    ```
    gopass init <GPG-KEY-ID>
    gopass git init
@@ -80,15 +89,19 @@ mpdas_config:
 2. **Populate secrets**:
    ```
    gopass insert email/gmail/app-password
+   gopass insert email/gmail/address
    gopass insert caldav/google/client-id
    gopass insert caldav/google/client-secret
    gopass insert api/brave-search
    gopass insert api/github-token
    gopass insert api/context7
    gopass insert lastfm/password
+   gopass insert lastfm/username
+   gopass insert lastfm/api-key
+   gopass insert lastfm/api-secret
    ```
 
-3. **Configure chezmoi** (in `~/.config/chezmoi/chezmoi.toml`):
+3. **Configure chezmoi** (deployed by Salt from `dotfiles/dot_config/chezmoi/chezmoi.toml`):
    ```toml
    [gopass]
    command = "gopass"
@@ -106,16 +119,18 @@ mpdas_config:
 - gopass store can be versioned in a separate private git repo
 - No plaintext secrets in the salt/ or dotfiles/ repos
 - chezmoi templates contain only gopass references, not actual values
+- Rendered files with secrets get 0600 permissions
 
 ## Files Requiring Secrets (Migration Status)
 
 | Config | Secrets needed | Status |
 |---|---|---|
-| mbsync/mbsyncrc | Gmail app password | [ ] |
-| msmtp/config | Gmail app password | [ ] |
-| imapnotify/gmail.json | Gmail app password | [ ] |
-| notmuch/notmuchrc | No secrets (just config) | [ ] |
-| vdirsyncer/config | Google OAuth client ID + secret | [ ] |
-| khal/config | No secrets (reads vdirsyncer data) | [ ] |
-| opencode/opencode.json | Brave, GitHub, Context7 API keys | [ ] |
-| mpdas/mpdas.conf | Last.fm password | [ ] |
+| mbsync/mbsyncrc | Gmail app password, address | [x] chezmoi template |
+| msmtp/config | Gmail app password, address | [x] chezmoi template |
+| imapnotify/gmail.json | Gmail app password, address | [x] chezmoi template |
+| notmuch/notmuchrc | No secrets (just config) | [x] plain dotfile |
+| vdirsyncer/config | Google OAuth client ID + secret | [x] chezmoi template |
+| khal/config | No secrets (reads vdirsyncer data) | [x] plain dotfile |
+| rescrobbled/config.toml | Last.fm API key + secret | [x] chezmoi template |
+| zsh/10-secrets.zsh | API keys (GitHub, Brave, Context7) | [x] chezmoi template |
+| mpdas/mpdas.rc | Last.fm username + password | [x] Salt cmd.run + gopass |
