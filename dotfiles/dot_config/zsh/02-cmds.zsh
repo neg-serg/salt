@@ -1,21 +1,7 @@
 
 _exists rg && {
-    local rg_options=(
-        --max-columns=0
-        --max-columns-preview
-        --glob="'!*.git*'"
-        --glob="'!*.obsidian'"
-        --colors=match:fg:25
-        --colors=match:style:underline
-        --colors=line:fg:cyan
-        --colors=line:style:bold
-        --colors=path:fg:249
-        --colors=path:style:bold
-        --smart-case
-        --hidden
-    )
-    alias -g RG="rg $rg_options"
-    alias -g zrg="rg $rg_options -z"
+    alias -g RG="rg"
+    alias -g zrg="rg -z"
 }
 
 _exists sudo && {
