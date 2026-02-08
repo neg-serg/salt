@@ -1,0 +1,30 @@
+plugins:
+  - bpm
+  - chroma
+  - duplicates
+  - edit
+  - embedart
+  - export
+  - fetchart
+  - fromfilename
+  - ftintitle
+  - fuzzy
+  - hook
+  - info
+  - inline
+  - lastgenre
+  - lyrics
+  - mbsync
+  - missing
+  - mpdstats
+  - parentdir
+  - playlist
+  - scrub
+  - smartplaylist
+  - types
+directory: ~/music/
+library: ~/.config/beets/musiclibrary.db
+import:
+  copy: false
+  move: true
+  write: true

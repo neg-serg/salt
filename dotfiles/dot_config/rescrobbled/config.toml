@@ -1,0 +1,4 @@
+[lastfm]
+api_key = "CHANGE_ME"
+secret = "CHANGE_ME"
+# session_key = "" # Generated via `rescrobbled` auth
