@@ -151,6 +151,7 @@ mpd_service:
       - file: mpd_directories
       - cmd: music_mount
       - cmd: mpd_fifo
+    - onlyif: rpm -q mpd
     - unless: systemctl --user is-active mpd.service
 
 # --- Enable mpdris2 (MPRIS2 bridge) ---
@@ -163,6 +164,7 @@ mpdris2_service:
       - DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
     - require:
       - cmd: mpd_service
+    - onlyif: rpm -q mpd
     - unless: systemctl --user is-enabled mpdris2.service
 
 # --- Enable rescrobbled (MPRIS scrobbler) ---
@@ -175,6 +177,7 @@ rescrobbled_service:
       - DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
     - require:
       - cmd: mpd_service
+    - onlyif: rpm -q mpd
     - unless: systemctl --user is-enabled rescrobbled.service
 
 # --- Deploy mpdas config via gopass ---
