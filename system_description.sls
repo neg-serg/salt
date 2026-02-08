@@ -478,6 +478,13 @@ install_flatpak_floorp:
     - runas: neg
     - unless: flatpak info one.ablaze.floorp &>/dev/null
 
+# --- Neovim Python dependencies (nvr + pynvim) ---
+install_neovim_python_deps:
+  cmd.run:
+    - name: pip install --user pynvim neovim-remote
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/nvr
+
 install_zi:
   cmd.run:
     - name: |
