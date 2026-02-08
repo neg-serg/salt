@@ -146,16 +146,22 @@ Status legend: `[x]` migrated, `[~]` partial, `[ ]` not migrated, `[n/a]` not ne
 |---|---|
 | mpdris2 (MPRIS bridge) | [x] Salt state in system_description.sls |
 | rescrobbled (MPRIS scrobbler) | [x] Salt state in system_description.sls |
-| mpdas (Last.fm) | [~] needs sops secret for credentials |
+| mpdas (Last.fm) | [x] Salt cmd.run + gopass in mpd.sls |
 
 ## 11. Mail System
 
 | Config file | NixOS source | Dotfiles path | Status |
 |---|---|---|---|
-| `~/.config/mbsync/mbsyncrc` | sys/mail.nix (credentials) | — | [ ] needs secrets |
-| `~/.config/msmtp/config` | sys/mail.nix | — | [ ] needs secrets |
-| `~/.config/notmuch/notmuchrc` | sys/mail.nix | — | [ ] |
-| `~/.config/imapnotify/gmail.json` | sys/mail.nix | — | [ ] needs secrets |
+| `~/.config/mbsync/mbsyncrc` | sys/mail.nix (credentials) | dot_config/mbsync/mbsyncrc.tmpl | [x] gopass template |
+| `~/.config/msmtp/config` | sys/mail.nix | dot_config/msmtp/config.tmpl | [x] gopass template |
+| `~/.config/notmuch/notmuchrc` | sys/mail.nix | dot_config/notmuch/notmuchrc | [x] |
+| `~/.config/imapnotify/gmail.json` | sys/mail.nix | dot_config/imapnotify/gmail.json.tmpl | [x] gopass template |
+
+### Systemd services
+| Service | Status |
+|---|---|
+| mbsync-gmail.timer (10min mail sync) | [x] Salt state in system_description.sls |
+| imapnotify-gmail (IMAP IDLE) | [x] Salt state in system_description.sls |
 
 ## 12. GPG/SSH
 
@@ -170,8 +176,13 @@ Status legend: `[x]` migrated, `[~]` partial, `[ ]` not migrated, `[n/a]` not ne
 
 | Config file | NixOS source | Dotfiles path | Status |
 |---|---|---|---|
-| `~/.config/khal/config` | sys/khal.nix (generated) | — | [ ] |
-| `~/.config/vdirsyncer/config` | sys/vdirsyncer.nix (sops template) | dot_config/vdirsyncer/ | [~] |
+| `~/.config/khal/config` | sys/khal.nix (generated) | dot_config/khal/config | [x] |
+| `~/.config/vdirsyncer/config` | sys/vdirsyncer.nix (sops template) | dot_config/vdirsyncer/config.tmpl | [x] gopass template |
+
+### Systemd services
+| Service | Status |
+|---|---|
+| vdirsyncer.timer (5min calendar sync) | [x] Salt state in system_description.sls |
 
 ## 14. Download Tools
 
@@ -200,7 +211,7 @@ Status legend: `[x]` migrated, `[~]` partial, `[ ]` not migrated, `[n/a]` not ne
 | Config file | NixOS source | Dotfiles path | Status |
 |---|---|---|---|
 | `~/.config/Antigravity/User/settings.json` | apps/antigravity.nix | dot_config/Antigravity/User/settings.json | [x] |
-| `~/.config/opencode/opencode.json` | apps/opencode.nix | — | [ ] contains API keys |
+| `~/.config/opencode/opencode.json` | apps/opencode.nix | — | [~] config ok, API keys via zsh/10-secrets.zsh.tmpl |
 
 ## 18. Application Launcher (Walker)
 
@@ -225,7 +236,7 @@ Status legend: `[x]` migrated, `[~]` partial, `[ ]` not migrated, `[n/a]` not ne
 ## Summary Statistics
 
 - **Total config groups**: 20
-- **Fully migrated** `[x]`: ~85 files across 18 groups
-- **Partially migrated** `[~]`: 5 items (permissions.conf, plugins.conf, vdirsyncer, pinentry, mpdas)
-- **Not migrated** `[ ]`: ~10 items across 4 groups
-- **Remaining**: mail system (secrets), browser (complex), opencode (API keys), khal, gpg-agent service
+- **Fully migrated** `[x]`: ~95 files across 19 groups
+- **Partially migrated** `[~]`: 3 items (permissions.conf, plugins.conf, pinentry)
+- **Not migrated** `[ ]`: ~5 items (browser, gpg-agent service)
+- **Remaining**: browser (complex Flatpak integration), gpg-agent systemd service, opencode.json itself
