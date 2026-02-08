@@ -5,54 +5,62 @@
 ## Available in Fedora repos (rpm-ostree install)
 
 ### Wayland/Hyprland
-[ ] swww                    # Animated wallpaper daemon (used by wl script)
-[ ] pyprland                # Hyprland plugin system / scratchpads
-[ ] wf-recorder             # Wayland screen recorder (used by screenrec script)
-[ ] cliphist                # Clipboard history for Wayland (used by clip script)
+[x] swww                    # Animated wallpaper daemon (used by wl script)
+[x] pyprland                # Hyprland plugin system / scratchpads
+[x] wf-recorder             # Wayland screen recorder (used by screenrec script)
+[x] cliphist                # Clipboard history for Wayland (used by clip script)
+[x] wtype                   # xdotool type for Wayland (used by clip script)
+[x] rofi                    # Window switcher / app launcher (used by hyde-selector, mpd-add, pl)
+[x] ydotool                 # Generic CLI automation for Wayland
 
 ### Audio/Music
-[ ] beets                   # Music library manager and tagger (used by beet-update script)
-[ ] mpdris2                 # MPD to MPRIS2 bridge daemon
-[ ] mpdas                   # Last.fm/Libre.fm scrobbler for MPD
-[ ] helvum                  # GTK patchbay for PipeWire
-[ ] id3v2                   # Command-line ID3 tag editor
-[ ] qpwgraph                # Qt PipeWire graph/patchbay
+[x] beets                   # Music library manager and tagger (used by beet-update script)
+[x] mpdris2                 # MPD to MPRIS2 bridge daemon
+[x] mpdas                   # Last.fm/Libre.fm scrobbler for MPD
+[x] helvum                  # GTK patchbay for PipeWire
+[x] id3v2                   # Command-line ID3 tag editor
+[x] qpwgraph                # Qt PipeWire graph/patchbay
 
 ### Network
-[ ] httpie                  # Modern HTTP client CLI
-[ ] nmap-ncat               # Netcat from nmap (used by pypr-client and other scripts)
-[ ] fuse-sshfs              # Mount remote dirs over SSH
-[ ] w3m                     # Text-mode web browser
+[x] httpie                  # Modern HTTP client CLI
+[x] nmap-ncat               # Netcat from nmap (used by pypr-client and other scripts)
+[x] fuse-sshfs              # Mount remote dirs over SSH
+[x] w3m                     # Text-mode web browser
 
 ### System/Hardware
-[ ] smartmontools           # S.M.A.R.T. disk monitoring
-[ ] acpi                    # ACPI battery/thermal info
-[ ] lm_sensors              # Hardware sensor monitoring (temperatures, fans, voltages)
-[ ] fio                     # Flexible I/O tester / disk benchmarking
+[x] smartmontools           # S.M.A.R.T. disk monitoring
+[x] acpi                    # ACPI battery/thermal info
+[x] lm_sensors              # Hardware sensor monitoring (temperatures, fans, voltages)
+[x] fio                     # Flexible I/O tester / disk benchmarking
 
 ### GUI Applications
-[ ] transmission-gtk        # BitTorrent client
+[x] transmission-gtk        # BitTorrent client
 
 ### Tools
-[ ] age                     # Modern file encryption (alternative to GPG)
-[ ] figlet                  # ASCII art text banners
-[ ] toilet                  # Color ASCII art text banners
-[ ] fortune-mod             # Random quotes/aphorisms
-[ ] cowsay                  # Talking cow ASCII art
+[x] age                     # Modern file encryption (alternative to GPG)
+[x] figlet                  # ASCII art text banners
+[x] toilet                  # Color ASCII art text banners
+[x] fortune-mod             # Random quotes/aphorisms
+[x] cowsay                  # Talking cow ASCII art
+[x] direnv                  # Per-directory shell configuration tool
+[x] translate-shell         # Command-line online translator (trans command)
 
 ### Misc
-[ ] tesseract               # OCR engine (used by screenshot script for OCR mode)
-[ ] zathura                 # Minimal PDF/document viewer (used by read_documents script)
-[ ] zathura-pdf-poppler     # PDF plugin for zathura
+[x] tesseract               # OCR engine (used by screenshot script for OCR mode)
+[x] zathura                 # Minimal PDF/document viewer (used by read_documents script)
+[x] zathura-pdf-poppler     # PDF plugin for zathura
 
 ## NOT in Fedora repos (need custom RPM or other install method)
 
-### Could build as custom RPM (like existing 31 packages)
-[ ] bandwhich               # Network utilization per process (Rust)
-[ ] curlie                  # curl wrapper with HTTPie UI (Go)
-[ ] doggo                   # DNS client CLI (Go)
-[ ] xh                      # Friendly HTTP client (Rust, like httpie but faster)
-[ ] carapace                # Multi-shell completion engine (Go)
+### Built as custom RPM
+[x] bandwhich               # Network utilization per process (Rust)
+[x] curlie                  # curl wrapper with HTTPie UI (Go)
+[x] doggo                   # DNS client CLI (Go)
+[x] xh                      # Friendly HTTP client (Rust, like httpie but faster)
+[x] wallust                 # Colorscheme generator from images (Rust)
+
+### Build failed / deferred
+[ ] carapace                # Multi-shell completion engine (Go) - needs code generation
 
 ### Probably skip / low priority
 [ ] rescrobbled             # MPRIS scrobbler daemon (Rust)

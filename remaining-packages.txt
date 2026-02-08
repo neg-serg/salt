@@ -1,0 +1,216 @@
+# Remaining packages from nixos-config not yet in salt config
+# Generated: 2026-02-08
+# Status: [+] = adding now, [base] = in base image, [-] = not in Fedora repos
+
+## Already in Wayblue base image (no action needed)
+[base] antiword
+[base] bind-utils (dnsutils)
+[base] brightnessctl
+[base] btrfs-progs
+[base] cryptsetup
+[base] ddcutil
+[base] distrobox
+[base] dmidecode
+[base] enchant
+[base] ethtool
+[base] exfatprogs
+[base] exiv2
+[base] fuse3
+[base] gamemode
+[base] gawk
+[base] gnupg2
+[base] grim
+[base] hunspell
+[base] ipcalc
+[base] neovim
+[base] ntfs-3g
+[base] nvme-cli
+[base] openconnect
+[base] opensc
+[base] openvpn
+[base] os-prober
+[base] pciutils
+[base] playerctl
+[base] rsync
+[base] slurp
+[base] socat
+[base] stress-ng
+[base] usbutils
+[base] wget2
+[base] whois
+[base] wl-clipboard
+[base] xdg-utils
+[base] zstd
+
+## Adding now (available in Fedora repos)
+
+### System/Hardware
+[+] atop                     # Advanced system and process monitor
+[+] blktrace                 # Block layer tracing tools
+[+] ddrescue                 # Data recovery tool
+[+] device-mapper-multipath  # Tools for multipath devices
+[+] gdisk                    # GPT partition tools (sgdisk, fixparts)
+[+] hw-probe                 # Hardware probe tool
+[+] hwinfo                   # Detailed hardware information
+[+] inxi                     # System information script
+[+] iotop-c                  # I/O monitoring (C rewrite)
+[+] kexec-tools              # Directly boot into a new kernel
+[+] liquidctl                # Fan/pump/LED controller for AIO/peripherals
+[+] lshw                     # Hardware lister
+[+] memtester                # User-space memory stress test
+[+] nethogs                  # Per-process network bandwidth
+[+] netmask                  # IP address/netmask manipulation
+[+] nvtop                    # GPU process monitor (like top for GPUs)
+[+] parted                   # GNU Partition Editor
+[+] perf                     # Performance analysis tools
+[+] plocate                  # Fast file locate
+[+] powertop                 # Power consumption analyzer
+[+] schedtool                # CPU scheduling policies
+[+] vmtouch                  # Virtual memory touch tool
+[+] vnstat                   # Network traffic monitor
+
+### Network
+[+] axel                     # Multi-threaded download accelerator
+[+] fping                    # Fast ping
+[+] freerdp                  # Remote Desktop Protocol client
+[+] GeoIP                    # IP-to-location lookup
+[+] iftop                    # Display bandwidth usage on an interface
+[+] ioping                   # Simple disk I/O latency monitor
+[+] iperf                    # Network bandwidth measurement
+[+] iwd                      # Wireless daemon for Linux
+[+] ollama                   # Local LLM runner
+[+] rclone                   # Cloud storage sync tool
+[+] sshpass                  # Non-interactive SSH password auth
+[+] traceroute               # Trace packet route
+[+] waypipe                  # Network transparency for Wayland
+[+] wayvnc                   # VNC server for Wayland
+[+] zmap                     # Fast internet-wide scanner
+
+### Development
+[+] difftastic               # Structural diff tool
+[+] elfutils                 # ELF binary tools
+[+] graphviz                 # Graph visualization
+[+] helix                    # Post-modern modal text editor
+[+] hexyl                    # Hex viewer with colored output
+[+] lldb                     # LLVM debugger
+[+] pgcli                    # PostgreSQL CLI with autocomplete
+[+] ruff                     # Fast Python linter
+[+] stylua                   # NOT IN REPOS (removed)
+[+] valgrind                 # Memory debugging and profiling
+[+] yamllint                 # YAML linter
+
+### Media/Audio
+[+] carla                    # Audio plugin host
+[+] cdparanoia               # Secure CD ripper
+[+] jpegoptim                # JPEG optimizer
+[+] picard                   # MusicBrainz GUI tagger
+[+] raysession               # Session manager for audio
+[+] rnnoise                  # Real-time noise suppression
+[+] sonic-visualiser         # Audio analysis and visualization
+
+### GUI/Desktop
+[+] bottles                  # Wine/Proton app manager
+[+] corectrl                 # AMD GPU power/fan control
+[+] ddccontrol               # DDC monitor control
+[+] gopass                   # Password store with extensions
+[+] neomutt                  # Terminal email client
+[+] openrgb                  # Peripheral RGB controller
+[+] ranger                   # Terminal file manager
+[+] recoll                   # Desktop search tool
+[+] screenkey                # Show keystrokes on screen
+[+] swappy                   # Screenshot annotation tool
+[+] swaybg                   # Wayland background setter
+[+] testdisk                 # Data recovery tool
+[+] udiskie                  # Automounter for removable media
+[+] virt-manager             # Virtual machine manager
+[+] wev                      # Wayland event viewer
+[+] wlogout                  # Wayland logout menu
+
+### Games/Entertainment
+[+] abuse                    # Action platformer
+[+] crawl-tiles              # Dungeon Crawl Stone Soup (tiles)
+[+] dosbox-staging           # Modernized DOSBox fork
+[+] gamescope                # SteamOS session compositing
+[+] gnuchess                 # GNU Chess engine
+[+] hashcat                  # Password recovery tool
+[+] mangohud                 # Vulkan/OpenGL overlay for monitoring
+[+] neo                      # Matrix digital rain
+[+] nethack                  # Classic roguelike
+[+] pcem                     # IBM PC emulator
+[+] pcsx2                    # PS2 emulator
+[+] protontricks             # Proton/Wine tricks
+[+] retroarch                # Multi-platform emulator frontend
+[+] steam                    # Steam for Linux
+[+] supertuxkart             # 3D racing game
+[+] tcpdump                  # Network packet analyzer
+[+] texlive-scheme-basic     # TeX Live basic scheme
+[+] wesnoth                  # Turn-based strategy game
+[+] wireshark-cli            # Network protocol analyzer CLI (tshark)
+[+] xaos                     # Interactive fractal zoomer
+[+] xonotic                  # Fast-paced FPS
+[+] freeze                   # Generate images of code and terminal
+
+### Shell tools
+[+] minicom                  # Serial console
+[+] mtools                   # MS-DOS disk utilities
+[+] sqlite                   # SQLite database CLI
+
+## NOT in Fedora repos (skip or custom RPM later)
+[-] ast-grep                 # Structural code search (Rust)
+[-] czkawka                  # Duplicate file finder (Rust GUI)
+[-] dmraid                   # Device mapper RAID
+[-] dosbox                   # Original DOSBox (have dosbox-staging)
+[-] dotacat                  # Colorful cat (Rust)
+[-] evhz                     # Input polling rate monitor
+[-] gallery-dl               # Gallery downloader (pip)
+[-] gron                     # Make JSON greppable (Go)
+[-] handlr                   # Default app handler (Rust)
+[-] himalaya                 # Email CLI (Rust)
+[-] httpstat                 # curl stats visualizer (pip)
+[-] hwatch                   # Watch command alternative (Rust)
+[-] jamesdsp                 # Audio DSP (custom build)
+[-] lact                     # Linux AMDGPU controller
+[-] license-generator        # Generate license files
+[-] mitmproxy                # Interactive TLS/HTTPS proxy (pip)
+[-] monolith                 # Save complete web pages (Rust)
+[-] nchat                    # Terminal chat client
+[-] neo-cowsay               # Cowsay rewrite (Go)
+[-] nicotine-plus            # Soulseek client
+[-] nms                      # "No More Secrets" effect
+[-] noisetorch               # PipeWire noise gate
+[-] numbat                   # Type-aware calculator (Rust)
+[-] overskride               # Bluetooth client
+[-] protonplus               # Proton/Wine installer
+[-] read-edid                # Read EDID from monitors
+[-] rescrobbled              # MPRIS scrobbler (Rust)
+[-] rmpc                     # Rust MPD client
+[-] rnnoise-plugin           # RNNoise as PipeWire plugin
+[-] scdl                     # SoundCloud downloader
+[-] scrcpy                   # Android screen mirror
+[-] sn0int                   # OSINT framework
+[-] sops                     # Secret management (Go)
+[-] stegseek                 # Steganography tool
+[-] stylua                   # Lua formatter (Rust)
+[-] superTux                 # 2D platformer
+[-] swayosd                  # OSD overlay
+[-] sysdig                   # System tracing
+[-] taoup                    # The Art of Unix Programming
+[-] tcptraceroute            # TCP traceroute
+[-] tdl                      # Telegram downloader (Go)
+[-] tomb                     # Encrypted containers
+[-] trippy                   # Network diagnostic (Rust)
+[-] typos                    # Source code spell checker (Rust)
+[-] unflac                   # FLAC cuesheet splitter
+[-] unscd                    # Userspace nscd
+[-] update-resolv-conf       # OpenVPN resolv.conf helper
+[-] voxinput                 # Voice-to-text
+[-] walker                   # App launcher
+[-] watchexec                # Execute on file changes (Rust)
+[-] wavemon                  # Wireless monitor
+[-] wl-clip-persist          # Clipboard persistence
+[-] wrk2                     # HTTP benchmark
+[-] xdg-ninja                # XDG compliance checker
+[-] yabridge                 # VST bridge for Linux
+[-] yabridgectl              # yabridge manager
+[-] yaml-language-server     # YAML LSP (npm)
+[-] zeroad                   # RTS game (0 A.D.)
