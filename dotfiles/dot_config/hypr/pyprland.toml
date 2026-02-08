@@ -3,7 +3,7 @@ plugins = ["fetch_client_menu", "scratchpads", "toggle_special"]
 
 [scratchpads.im]
 animation = ""
-command = "telegram-desktop"
+command = "Telegram"
 class = "org.telegram.desktop"
 size = "30% 95%"
 position = "69% 2%"
