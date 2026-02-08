@@ -756,3 +756,12 @@ vdirsyncer_timer:
         OnUnitActiveSec=5min
         [Install]
         WantedBy=timers.target
+
+# --- GPG agent with SSH support ---
+gpg_agent_socket:
+  cmd.run:
+    - name: systemctl --user enable gpg-agent.socket gpg-agent-ssh.socket
+    - runas: neg
+    - env:
+      - XDG_RUNTIME_DIR: /run/user/1000
+    - unless: systemctl --user is-enabled gpg-agent-ssh.socket
