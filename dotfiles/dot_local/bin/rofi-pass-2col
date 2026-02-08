@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+mapfile -t entries < <(gopass ls --flat 2>/dev/null)
+count=${#entries[@]}
+[ "$count" -gt 0 ] || exit 0
+
+lines=$(( (count + 1) / 2 ))
+[ "$lines" -gt 12 ] && lines=12
+
+sel=$(printf '%s\n' "${entries[@]}" \
+  | rofi -dmenu -p 'pass' -theme pass \
+    -theme-str "listview { columns: 2; lines: $lines; }")
+
+[ -n "${sel:-}" ] || exit 0
+
+# Prefer OTP when present
+if otp_code=$(gopass otp "$sel" 2>/dev/null); then
+  otp_code=$(printf '%s' "$otp_code" | head -n1 | tr -d '\r\n')
+  if [ -n "$otp_code" ]; then
+    printf '%s' "$otp_code" | wl-copy
+    notify-send "gopass" "OTP copied: $sel" 2>/dev/null || true
+    exit 0
+  fi
+fi
+
+# Copy password (first line)
+pw=$(gopass show -o "$sel" 2>/dev/null | head -n1 || true)
+pw=$(printf '%s' "$pw" | tr -d '\r\n')
+
+if [ -n "$pw" ] && [[ "$pw" == otpauth://* ]]; then
+  notify-send "gopass" "OTP entry needs gopass otp: $sel" 2>/dev/null || true
+  exit 0
+fi
+
+if [ -n "$pw" ]; then
+  printf '%s' "$pw" | wl-copy
+  notify-send "gopass" "Copied: $sel" 2>/dev/null || true
+fi
