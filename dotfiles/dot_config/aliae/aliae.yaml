@@ -142,6 +142,14 @@ alias:
   - name: fd
     value: fd -H --ignore-vcs
 
+  # Flatpak apps
+  - name: floorp
+    value: flatpak run one.ablaze.floorp
+  - name: steam
+    value: flatpak run com.valvesoftware.Steam
+  - name: pcsx2
+    value: flatpak run net.pcsx2.PCSX2
+
 function:
   - name: y
     value: |
