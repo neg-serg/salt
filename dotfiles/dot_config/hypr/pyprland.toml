@@ -1,0 +1,52 @@
+[pyprland]
+plugins = ["fetch_client_menu", "scratchpads", "toggle_special"]
+
+[scratchpads.im]
+animation = ""
+command = "telegram-desktop"
+class = "org.telegram.desktop"
+size = "30% 95%"
+position = "69% 2%"
+lazy = true
+multi = true
+process_tracking = false
+
+[scratchpads.music]
+animation = ""
+command = "kitty --class music -e rmpc"
+margin = "80%"
+class = "music"
+position = "15% 50%"
+size = "70% 40%"
+lazy = true
+unfocus = "hide"
+process_tracking = false
+
+[scratchpads.torrment]
+animation = ""
+command = "kitty --class torrment -e rustmission"
+class = "torrment"
+position = "1% 0%"
+size = "98% 40%"
+lazy = true
+unfocus = "hide"
+process_tracking = false
+
+[scratchpads.teardown]
+animation = ""
+command = "kitty --class teardown -e btop"
+class = "teardown"
+position = "1% 0%"
+size = "98% 50%"
+lazy = true
+process_tracking = false
+
+[scratchpads.mixer]
+animation = "fromRight"
+command = "kitty --class mixer -e ncpamixer"
+class = "mixer"
+lazy = true
+size = "40% 90%"
+unfocus = "hide"
+multi = true
+process_tracking = false
