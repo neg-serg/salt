@@ -3,7 +3,7 @@
 -- Loads only if `sshfs` binary is available. Provides :SSHConnect/:SSHBrowse/etc.
 return {
   "uhs-robert/sshfs.nvim",
-  cond = function()
+  enabled = function()
     return vim.fn.executable("sshfs") == 1
   end,
   cmd = { "SSHConnect", "SSHDisconnect", "SSHEdit", "SSHReload", "SSHBrowse", "SSHGrep" },
