@@ -1,0 +1,3 @@
+#!/bin/sh
+# sx: alias for swayimg-first (IPC-aware swayimg wrapper)
+exec swayimg-first "$@"
