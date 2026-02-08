@@ -32,7 +32,11 @@
     {'name': 'viu',               'version': '1.6.1'},
     {'name': 'xxh',               'version': '0.8.14',  'arch': 'noarch'},
     {'name': 'zfxtop',            'version': '0.3.2'},
-    {'name': 'zk',                'version': '0.15.2'}
+    {'name': 'zk',                'version': '0.15.2'},
+    {'name': 'bandwhich',         'version': '0.23.1'},
+    {'name': 'xh',                'version': '0.25.3'},
+    {'name': 'curlie',            'version': '1.8.2'},
+    {'name': 'doggo',             'version': '1.1.2'}
 ] %}
 
 {% set iosevka = {

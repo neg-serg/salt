@@ -32,6 +32,11 @@ XXH_VERSION="0.8.14"
 NERDCTL_VERSION="2.2.1"
 RAPIDGZIP_VERSION="0.16.0"
 SCOUR_VERSION="0.38.2"
+BANDWHICH_VERSION="0.23.1"
+XH_VERSION="0.25.3"
+CURLIE_VERSION="1.8.2"
+DOGGO_VERSION="1.1.2"
+CARAPACE_VERSION="1.6.1"
 
 # RPM build root directory inside the container
 RPM_BUILD_ROOT="/rpmbuild"
@@ -892,6 +897,116 @@ if [[ $# -eq 0 || "$1" == "iosevka" ]]; then
         # Copy Iosevka RPM immediately
         echo "--- Copying Iosevka RPMs to /build/rpms/ ---"
         find "${RPMS_DIR}" -name "iosevka-neg-fonts-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Bandwhich RPM ---
+BANDWHICH_RPM_NAME="bandwhich-${BANDWHICH_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "bandwhich" ]]; then
+    echo "--- Preparing Bandwhich ---"
+    if [ -f "/build/rpms/${BANDWHICH_RPM_NAME}" ]; then
+        echo "Bandwhich RPM (${BANDWHICH_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar rust cargo
+        BANDWHICH_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/bandwhich-${BANDWHICH_VERSION}"
+        if [ ! -d "${BANDWHICH_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${BANDWHICH_VERSION}" https://github.com/imsnif/bandwhich.git "${BANDWHICH_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/bandwhich-${BANDWHICH_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "bandwhich-${BANDWHICH_VERSION}"
+        cp /build/salt/specs/bandwhich.spec "${SPECS_DIR}/bandwhich.spec"
+        echo "--- Building Bandwhich RPM ---"
+        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/bandwhich.spec"
+        echo "--- Copying Bandwhich RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "bandwhich-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Xh RPM ---
+XH_RPM_NAME="xh-${XH_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "xh" ]]; then
+    echo "--- Preparing Xh ---"
+    if [ -f "/build/rpms/${XH_RPM_NAME}" ]; then
+        echo "Xh RPM (${XH_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar rust cargo
+        XH_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/xh-${XH_VERSION}"
+        if [ ! -d "${XH_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${XH_VERSION}" https://github.com/ducaale/xh.git "${XH_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/xh-${XH_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "xh-${XH_VERSION}"
+        cp /build/salt/specs/xh.spec "${SPECS_DIR}/xh.spec"
+        echo "--- Building Xh RPM ---"
+        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/xh.spec"
+        echo "--- Copying Xh RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "xh-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Curlie RPM ---
+CURLIE_RPM_NAME="curlie-${CURLIE_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "curlie" ]]; then
+    echo "--- Preparing Curlie ---"
+    if [ -f "/build/rpms/${CURLIE_RPM_NAME}" ]; then
+        echo "Curlie RPM (${CURLIE_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar golang
+        CURLIE_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/curlie-${CURLIE_VERSION}"
+        if [ ! -d "${CURLIE_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${CURLIE_VERSION}" https://github.com/rs/curlie.git "${CURLIE_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/curlie-${CURLIE_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "curlie-${CURLIE_VERSION}"
+        cp /build/salt/specs/curlie.spec "${SPECS_DIR}/curlie.spec"
+        echo "--- Building Curlie RPM ---"
+        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/curlie.spec"
+        echo "--- Copying Curlie RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "curlie-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Doggo RPM ---
+DOGGO_RPM_NAME="doggo-${DOGGO_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "doggo" ]]; then
+    echo "--- Preparing Doggo ---"
+    if [ -f "/build/rpms/${DOGGO_RPM_NAME}" ]; then
+        echo "Doggo RPM (${DOGGO_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar golang
+        DOGGO_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/doggo-${DOGGO_VERSION}"
+        if [ ! -d "${DOGGO_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${DOGGO_VERSION}" https://github.com/mr-karan/doggo.git "${DOGGO_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/doggo-${DOGGO_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "doggo-${DOGGO_VERSION}"
+        cp /build/salt/specs/doggo.spec "${SPECS_DIR}/doggo.spec"
+        echo "--- Building Doggo RPM ---"
+        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/doggo.spec"
+        echo "--- Copying Doggo RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "doggo-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Carapace RPM ---
+CARAPACE_RPM_NAME="carapace-${CARAPACE_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "carapace" ]]; then
+    echo "--- Preparing Carapace ---"
+    if [ -f "/build/rpms/${CARAPACE_RPM_NAME}" ]; then
+        echo "Carapace RPM (${CARAPACE_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar golang
+        CARAPACE_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/carapace-${CARAPACE_VERSION}"
+        if [ ! -d "${CARAPACE_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${CARAPACE_VERSION}" https://github.com/carapace-sh/carapace-bin.git "${CARAPACE_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/carapace-${CARAPACE_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "carapace-${CARAPACE_VERSION}"
+        cp /build/salt/specs/carapace.spec "${SPECS_DIR}/carapace.spec"
+        echo "--- Building Carapace RPM ---"
+        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/carapace.spec"
+        echo "--- Copying Carapace RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "carapace-*.rpm" -exec cp -v {} /build/rpms/ \;
     fi
 fi
 
