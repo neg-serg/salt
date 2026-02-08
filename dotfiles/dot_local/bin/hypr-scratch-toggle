@@ -1,0 +1,14 @@
+#!/bin/sh
+# Smart scratchpad toggle: if a scratchpad is focused, hide it;
+# otherwise toggle the requested target scratchpad.
+target="$1"
+active_class=$(hyprctl activewindow -j | jq -r '.class')
+
+case "$active_class" in
+    org.telegram.desktop) pypr toggle im ;;
+    music) pypr toggle music ;;
+    torrment) pypr toggle torrment ;;
+    teardown) pypr toggle teardown ;;
+    mixer) pypr toggle mixer ;;
+    *) pypr toggle "$target" ;;
+esac
