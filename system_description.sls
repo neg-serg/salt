@@ -635,6 +635,15 @@ rescrobbled_user_service:
         [Install]
         WantedBy=default.target
 
+chezmoi_config:
+  file.managed:
+    - name: /var/home/neg/.config/chezmoi/chezmoi.toml
+    - source: salt://dotfiles/dot_config/chezmoi/chezmoi.toml
+    - user: neg
+    - group: neg
+    - mode: '0644'
+    - makedirs: True
+
 chezmoi_source_symlink:
   file.symlink:
     - name: /var/home/neg/.local/share/chezmoi
@@ -645,3 +654,105 @@ chezmoi_source_symlink:
     - makedirs: True
     - require:
       - user: user_neg
+      - file: chezmoi_config
+
+# --- Mail directories (needed by mbsync) ---
+mail_directories:
+  file.directory:
+    - names:
+      - /var/home/neg/.local/mail/gmail/INBOX
+      - /var/home/neg/.local/mail/gmail/[Gmail]/Sent Mail
+      - /var/home/neg/.local/mail/gmail/[Gmail]/Drafts
+      - /var/home/neg/.local/mail/gmail/[Gmail]/All Mail
+      - /var/home/neg/.local/mail/gmail/[Gmail]/Trash
+      - /var/home/neg/.local/mail/gmail/[Gmail]/Spam
+    - user: neg
+    - group: neg
+    - makedirs: True
+
+# --- Systemd user services for mail ---
+mbsync_gmail_service:
+  file.managed:
+    - name: /var/home/neg/.config/systemd/user/mbsync-gmail.service
+    - user: neg
+    - group: neg
+    - mode: '0644'
+    - makedirs: True
+    - contents: |
+        [Unit]
+        Description=Mailbox synchronization (Gmail)
+        After=network-online.target
+        Wants=network-online.target
+        [Service]
+        Type=oneshot
+        ExecStart=/usr/bin/mbsync gmail
+        [Install]
+        WantedBy=default.target
+
+mbsync_gmail_timer:
+  file.managed:
+    - name: /var/home/neg/.config/systemd/user/mbsync-gmail.timer
+    - user: neg
+    - group: neg
+    - mode: '0644'
+    - makedirs: True
+    - contents: |
+        [Unit]
+        Description=Mailbox synchronization timer (Gmail)
+        [Timer]
+        OnBootSec=2min
+        OnUnitActiveSec=10min
+        [Install]
+        WantedBy=timers.target
+
+imapnotify_gmail_service:
+  file.managed:
+    - name: /var/home/neg/.config/systemd/user/imapnotify-gmail.service
+    - user: neg
+    - group: neg
+    - mode: '0644'
+    - makedirs: True
+    - contents: |
+        [Unit]
+        Description=IMAP IDLE notifications (Gmail)
+        After=network-online.target
+        Wants=network-online.target
+        [Service]
+        ExecStart=/usr/bin/goimapnotify -conf %h/.config/imapnotify/gmail.json
+        Restart=on-failure
+        RestartSec=30
+        [Install]
+        WantedBy=default.target
+
+# --- Systemd user services for calendar ---
+vdirsyncer_service:
+  file.managed:
+    - name: /var/home/neg/.config/systemd/user/vdirsyncer.service
+    - user: neg
+    - group: neg
+    - mode: '0644'
+    - makedirs: True
+    - contents: |
+        [Unit]
+        Description=Synchronize calendars and contacts (vdirsyncer)
+        After=network-online.target
+        Wants=network-online.target
+        [Service]
+        Type=oneshot
+        ExecStart=/usr/bin/vdirsyncer sync
+
+vdirsyncer_timer:
+  file.managed:
+    - name: /var/home/neg/.config/systemd/user/vdirsyncer.timer
+    - user: neg
+    - group: neg
+    - mode: '0644'
+    - makedirs: True
+    - contents: |
+        [Unit]
+        Description=Synchronize calendars and contacts timer
+        [Timer]
+        OnBootSec=2min
+        OnUnitActiveSec=5min
+        [Install]
+        WantedBy=timers.target

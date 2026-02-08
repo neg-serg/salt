@@ -176,3 +176,29 @@ rescrobbled_service:
     - require:
       - cmd: mpd_service
     - unless: systemctl --user is-enabled rescrobbled.service
+
+# --- Deploy mpdas config via gopass ---
+mpdas_config_dir:
+  file.directory:
+    - name: {{ home }}/.config/mpdas
+    - user: {{ user }}
+    - group: {{ user }}
+    - makedirs: True
+
+mpdas_config:
+  cmd.run:
+    - name: |
+        USER=$(gopass show -o lastfm/username)
+        PASS=$(gopass show -o lastfm/password)
+        cat > {{ home }}/.config/mpdas/mpdas.rc << EOF
+        host = localhost
+        port = 6600
+        service = lastfm
+        username = ${USER}
+        password = ${PASS}
+        EOF
+        chmod 600 {{ home }}/.config/mpdas/mpdas.rc
+    - runas: {{ user }}
+    - creates: {{ home }}/.config/mpdas/mpdas.rc
+    - require:
+      - file: mpdas_config_dir
