@@ -748,3 +748,93 @@ gpg_agent_socket:
     - env:
       - XDG_RUNTIME_DIR: /run/user/1000
     - unless: systemctl --user is-enabled gpg-agent-ssh.socket
+
+# --- SSH directory setup ---
+ssh_dir:
+  file.directory:
+    - name: /var/home/neg/.ssh
+    - user: neg
+    - group: neg
+    - mode: '0700'
+
+# --- GPG keyring migration (old ~/.gnupg → XDG ~/.local/share/gnupg) ---
+gnupg_xdg_dir:
+  file.directory:
+    - name: /var/home/neg/.local/share/gnupg
+    - user: neg
+    - group: neg
+    - mode: '0700'
+
+gnupg_xdg_private_keys_dir:
+  file.directory:
+    - name: /var/home/neg/.local/share/gnupg/private-keys-v1.d
+    - user: neg
+    - group: neg
+    - mode: '0700'
+    - require:
+      - file: gnupg_xdg_dir
+
+gnupg_migrate_pubkey:
+  cmd.run:
+    - name: GNUPGHOME=/var/home/neg/.gnupg gpg --export 9629B754BC0D843F7304BCF0F2CF6AB037FFADB1 | gpg --homedir /var/home/neg/.local/share/gnupg --import
+    - runas: neg
+    - onlyif: test -f /var/home/neg/.gnupg/pubring.kbx
+    - unless: gpg --homedir /var/home/neg/.local/share/gnupg --list-keys 9629B754BC0D843F7304BCF0F2CF6AB037FFADB1 2>/dev/null
+    - require:
+      - file: gnupg_xdg_dir
+
+gnupg_migrate_trust:
+  cmd.run:
+    - name: echo "9629B754BC0D843F7304BCF0F2CF6AB037FFADB1:6:" | gpg --homedir /var/home/neg/.local/share/gnupg --import-ownertrust
+    - runas: neg
+    - unless: gpg --homedir /var/home/neg/.local/share/gnupg --export-ownertrust 2>/dev/null | grep -q 9629B754BC0D843F7304BCF0F2CF6AB037FFADB1
+    - require:
+      - cmd: gnupg_migrate_pubkey
+
+gnupg_migrate_key_stubs:
+  cmd.run:
+    - name: cp -n /var/home/neg/.gnupg/private-keys-v1.d/*.key /var/home/neg/.local/share/gnupg/private-keys-v1.d/
+    - runas: neg
+    - onlyif: test -d /var/home/neg/.gnupg/private-keys-v1.d
+    - unless: test "$(ls /var/home/neg/.local/share/gnupg/private-keys-v1.d/*.key 2>/dev/null | wc -l)" -gt 0
+    - require:
+      - file: gnupg_xdg_private_keys_dir
+
+# --- Gopass store migration (old ~/.password-store → XDG ~/.local/share/pass) ---
+gopass_store_dir:
+  file.directory:
+    - name: /var/home/neg/.local/share/pass
+    - user: neg
+    - group: neg
+    - mode: '0700'
+
+gopass_store_migrate:
+  cmd.run:
+    - name: cp -a /var/home/neg/.password-store/. /var/home/neg/.local/share/pass/
+    - runas: neg
+    - onlyif: test -f /var/home/neg/.password-store/.gpg-id
+    - unless: test -f /var/home/neg/.local/share/pass/.gpg-id
+    - require:
+      - file: gopass_store_dir
+
+# --- Wallust cache defaults (prevents hyprland source errors on first boot) ---
+wallust_cache_dir:
+  file.directory:
+    - name: /var/home/neg/.cache/wallust
+    - user: neg
+    - group: neg
+    - mode: '0755'
+
+wallust_hyprland_defaults:
+  file.managed:
+    - name: /var/home/neg/.cache/wallust/hyprland.conf
+    - user: neg
+    - group: neg
+    - mode: '0644'
+    - replace: false
+    - contents: |
+        $col_border_active_base = rgb(89b4fa)
+        $col_border_inactive   = rgba(00000000)
+        $shadow_color          = rgba(1e1e2eaa)
+    - require:
+      - file: wallust_cache_dir
