@@ -37,6 +37,7 @@ XH_VERSION="0.25.3"
 CURLIE_VERSION="1.8.2"
 DOGGO_VERSION="1.1.2"
 CARAPACE_VERSION="1.6.1"
+WL_CLIP_PERSIST_VERSION="0.5.0"
 WALLUST_VERSION="3.3.0"
 QUICKSHELL_VERSION="0.2.1"
 XDG_TERMFILECHOOSER_VERSION="0.4.0"
@@ -1032,6 +1033,28 @@ if [[ $# -eq 0 || "$1" == "wallust" ]]; then
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/wallust.spec"
         echo "--- Copying Wallust RPMs to /build/rpms/ ---"
         find "${RPMS_DIR}" -name "wallust-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build wl-clip-persist RPM ---
+WL_CLIP_PERSIST_RPM_NAME="wl-clip-persist-${WL_CLIP_PERSIST_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "wl-clip-persist" ]]; then
+    echo "--- Preparing wl-clip-persist ---"
+    if [ -f "/build/rpms/${WL_CLIP_PERSIST_RPM_NAME}" ]; then
+        echo "wl-clip-persist RPM (${WL_CLIP_PERSIST_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar rust cargo
+        WL_CLIP_PERSIST_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/wl-clip-persist-${WL_CLIP_PERSIST_VERSION}"
+        if [ ! -d "${WL_CLIP_PERSIST_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${WL_CLIP_PERSIST_VERSION}" https://github.com/Linus789/wl-clip-persist.git "${WL_CLIP_PERSIST_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/wl-clip-persist-${WL_CLIP_PERSIST_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "wl-clip-persist-${WL_CLIP_PERSIST_VERSION}"
+        cp /build/salt/specs/wl-clip-persist.spec "${SPECS_DIR}/wl-clip-persist.spec"
+        echo "--- Building wl-clip-persist RPM ---"
+        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/wl-clip-persist.spec"
+        echo "--- Copying wl-clip-persist RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "wl-clip-persist-*.rpm" -exec cp -v {} /build/rpms/ \;
     fi
 fi
 
