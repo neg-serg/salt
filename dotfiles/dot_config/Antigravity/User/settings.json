@@ -1,0 +1,8 @@
+{
+  "json.schemaDownload.enable": true,
+  "python.languageServer": "Default",
+  "redhat.telemetry.enabled": true,
+  "workbench.activityBar.location": "bottom",
+  "workbench.colorTheme": "Default Dark Modern",
+  "workbench.editor.showTabs": "none"
+}
