@@ -1,9 +1,8 @@
-# MPD Container Deployment
-# Salt state for deploying MPD as a Podman container with systemd integration
+# MPD Native Deployment
+# Salt state for setting up MPD with systemd user service and pipewire output
 
 {% set user = 'neg' %}
 {% set home = '/var/home/' ~ user %}
-{% set containers_src = '/var/home/neg/src/salt/containers/mpd' %}
 
 # --- Bind mount for music directory ---
 music_mount_point:
@@ -36,7 +35,6 @@ mpd_directories:
     - names:
       - {{ home }}/.local/share/mpd
       - {{ home }}/.config/mpd/playlists
-      - {{ home }}/.config/containers/systemd
     - user: {{ user }}
     - group: {{ user }}
     - makedirs: True
@@ -119,7 +117,7 @@ ncpamixer_install:
       - cmd: ncpamixer_build
     - unless: test -f {{ home }}/.local/bin/ncpamixer
 
-# --- MPD Container ---
+# --- MPD FIFO for visualizers (cava, etc.) ---
 mpd_fifo:
   cmd.run:
     - name: |
@@ -130,33 +128,18 @@ mpd_fifo:
     - runas: {{ user }}
     - unless: test -p /tmp/mpd.fifo
 
-mpd_container_build:
-  cmd.run:
-    - name: podman build -t localhost/mpd:latest {{ containers_src }}
-    - runas: {{ user }}
-    - unless: podman image exists localhost/mpd:latest
-
-mpd_quadlet:
+# --- Deploy mpd.conf ---
+mpd_config:
   file.managed:
-    - name: {{ home }}/.config/containers/systemd/mpd.container
-    - source: salt://containers/mpd/mpd.container
+    - name: {{ home }}/.config/mpd/mpd.conf
+    - source: salt://dotfiles/dot_config/mpd/mpd.conf
     - user: {{ user }}
     - group: {{ user }}
     - mode: '0644'
-    - require:
-      - file: mpd_directories
+    - makedirs: True
 
-mpd_systemd_reload:
-  cmd.run:
-    - name: systemctl --user daemon-reload
-    - runas: {{ user }}
-    - env:
-      - XDG_RUNTIME_DIR: /run/user/1000
-      - DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
-    - onchanges:
-      - file: mpd_quadlet
-
-mpd_service_enable:
+# --- Enable native MPD systemd user service ---
+mpd_service:
   cmd.run:
     - name: systemctl --user enable --now mpd.service
     - runas: {{ user }}
@@ -164,7 +147,32 @@ mpd_service_enable:
       - XDG_RUNTIME_DIR: /run/user/1000
       - DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
     - require:
-      - cmd: mpd_container_build
-      - cmd: mpd_systemd_reload
+      - file: mpd_config
+      - file: mpd_directories
       - cmd: music_mount
+      - cmd: mpd_fifo
     - unless: systemctl --user is-active mpd.service
+
+# --- Enable mpdris2 (MPRIS2 bridge) ---
+mpdris2_service:
+  cmd.run:
+    - name: systemctl --user enable --now mpdris2.service
+    - runas: {{ user }}
+    - env:
+      - XDG_RUNTIME_DIR: /run/user/1000
+      - DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
+    - require:
+      - cmd: mpd_service
+    - unless: systemctl --user is-enabled mpdris2.service
+
+# --- Enable rescrobbled (MPRIS scrobbler) ---
+rescrobbled_service:
+  cmd.run:
+    - name: systemctl --user enable --now rescrobbled.service
+    - runas: {{ user }}
+    - env:
+      - XDG_RUNTIME_DIR: /run/user/1000
+      - DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
+    - require:
+      - cmd: mpd_service
+    - unless: systemctl --user is-enabled rescrobbled.service
