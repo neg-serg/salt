@@ -154,18 +154,18 @@ mpd_service:
     - onlyif: rpm -q mpd
     - unless: systemctl --user is-active mpd.service
 
-# --- Enable mpdris2 (MPRIS2 bridge) ---
+# --- Enable mpdris2 (MPRIS2 bridge, RPM-shipped unit) ---
 mpdris2_service:
   cmd.run:
-    - name: systemctl --user enable --now mpdris2.service
+    - name: systemctl --user enable --now mpDris2.service
     - runas: {{ user }}
     - env:
       - XDG_RUNTIME_DIR: /run/user/1000
       - DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
     - require:
       - cmd: mpd_service
-    - onlyif: rpm -q mpd
-    - unless: systemctl --user is-enabled mpdris2.service
+    - onlyif: rpm -q mpdris2
+    - unless: systemctl --user is-enabled mpDris2.service
 
 # --- Enable rescrobbled (MPRIS scrobbler) ---
 rescrobbled_service:

@@ -600,23 +600,23 @@ install_mpv_scripts:
     - creates: /var/home/neg/.config/mpv/scripts/thumbfast.lua
 
 # --- Systemd user services for media ---
+# Remove legacy custom mpdris2.service (replaced by drop-in for RPM unit)
+mpdris2_legacy_cleanup:
+  file.absent:
+    - name: /var/home/neg/.config/systemd/user/mpdris2.service
+
+# Drop-in override for RPM-shipped mpDris2.service: adds MPD ordering
 mpdris2_user_service:
   file.managed:
-    - name: /var/home/neg/.config/systemd/user/mpdris2.service
+    - name: /var/home/neg/.config/systemd/user/mpDris2.service.d/override.conf
     - user: neg
     - group: neg
     - mode: '0644'
     - makedirs: True
     - contents: |
         [Unit]
-        Description=MPD MPRIS2 Bridge
         After=mpd.service
         Wants=mpd.service
-        [Service]
-        ExecStart=/usr/bin/mpDris2
-        Restart=on-failure
-        [Install]
-        WantedBy=default.target
 
 rescrobbled_user_service:
   file.managed:
