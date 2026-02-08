@@ -1,0 +1,6 @@
+--downloader aria2c
+--downloader-args aria2c:'-c -x8 -s8 -k1M'
+--embed-metadata
+--embed-subs
+--embed-thumbnail
+--sub-langs all

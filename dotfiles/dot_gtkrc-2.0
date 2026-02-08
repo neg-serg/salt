@@ -1,0 +1,6 @@
+gtk-theme-name="Flight-Dark-GTK"
+gtk-icon-theme-name="kora"
+gtk-font-name="Iosevka 10"
+gtk-cursor-theme-name="Alkano-aio"
+gtk-cursor-theme-size=23
+gtk-application-prefer-dark-theme=1
