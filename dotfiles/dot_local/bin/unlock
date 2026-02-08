@@ -5,10 +5,8 @@
 cleanup() { unset pp0 pp1 pp2 || true; }
 trap cleanup EXIT HUP INT TERM
 
-# Ensure we have an ssh-agent
-if [ -z "$SSH_AUTH_SOCK" ]; then
-    eval "$(ssh-agent -s)"
-fi
+# Ensure gpg-agent is ready (provides SSH agent via enable-ssh-support)
+gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
 
 # Retrieve secrets
 pp0="$(pass show ssh-key)"
