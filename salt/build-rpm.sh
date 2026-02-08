@@ -37,6 +37,7 @@ XH_VERSION="0.25.3"
 CURLIE_VERSION="1.8.2"
 DOGGO_VERSION="1.1.2"
 CARAPACE_VERSION="1.6.1"
+WALLUST_VERSION="3.3.0"
 
 # RPM build root directory inside the container
 RPM_BUILD_ROOT="/rpmbuild"
@@ -1007,6 +1008,28 @@ if [[ $# -eq 0 || "$1" == "carapace" ]]; then
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/carapace.spec"
         echo "--- Copying Carapace RPMs to /build/rpms/ ---"
         find "${RPMS_DIR}" -name "carapace-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Wallust RPM ---
+WALLUST_RPM_NAME="wallust-${WALLUST_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "wallust" ]]; then
+    echo "--- Preparing Wallust ---"
+    if [ -f "/build/rpms/${WALLUST_RPM_NAME}" ]; then
+        echo "Wallust RPM (${WALLUST_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar rust cargo
+        WALLUST_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/wallust-${WALLUST_VERSION}"
+        if [ ! -d "${WALLUST_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "${WALLUST_VERSION}" https://codeberg.org/explosion-mental/wallust.git "${WALLUST_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/wallust-${WALLUST_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "wallust-${WALLUST_VERSION}"
+        cp /build/salt/specs/wallust.spec "${SPECS_DIR}/wallust.spec"
+        echo "--- Building Wallust RPM ---"
+        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/wallust.spec"
+        echo "--- Copying Wallust RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "wallust-*.rpm" -exec cp -v {} /build/rpms/ \;
     fi
 fi
 
