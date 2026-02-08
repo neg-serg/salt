@@ -39,6 +39,7 @@ DOGGO_VERSION="1.1.2"
 CARAPACE_VERSION="1.6.1"
 WALLUST_VERSION="3.3.0"
 QUICKSHELL_VERSION="0.2.1"
+XDG_TERMFILECHOOSER_VERSION="0.4.0"
 
 # RPM build root directory inside the container
 RPM_BUILD_ROOT="/rpmbuild"
@@ -1063,6 +1064,28 @@ if [[ $# -eq 0 || "$1" == "quickshell" ]]; then
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/quickshell.spec"
         echo "--- Copying Quickshell RPMs to /build/rpms/ ---"
         find "${RPMS_DIR}" -name "quickshell-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build xdg-desktop-portal-termfilechooser RPM ---
+XDG_TERMFILECHOOSER_RPM_NAME="xdg-desktop-portal-termfilechooser-${XDG_TERMFILECHOOSER_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "xdg-desktop-portal-termfilechooser" ]]; then
+    echo "--- Preparing xdg-desktop-portal-termfilechooser ---"
+    if [ -f "/build/rpms/${XDG_TERMFILECHOOSER_RPM_NAME}" ]; then
+        echo "xdg-desktop-portal-termfilechooser RPM (${XDG_TERMFILECHOOSER_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar gcc meson ninja-build pkgconf-pkg-config inih-devel systemd-devel scdoc
+        XDG_TFC_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/xdg-desktop-portal-termfilechooser-${XDG_TERMFILECHOOSER_VERSION}"
+        if [ ! -d "${XDG_TFC_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 https://github.com/GermainZ/xdg-desktop-portal-termfilechooser.git "${XDG_TFC_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/xdg-desktop-portal-termfilechooser-${XDG_TERMFILECHOOSER_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "xdg-desktop-portal-termfilechooser-${XDG_TERMFILECHOOSER_VERSION}"
+        cp /build/salt/specs/xdg-desktop-portal-termfilechooser.spec "${SPECS_DIR}/xdg-desktop-portal-termfilechooser.spec"
+        echo "--- Building xdg-desktop-portal-termfilechooser RPM ---"
+        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/xdg-desktop-portal-termfilechooser.spec"
+        echo "--- Copying xdg-desktop-portal-termfilechooser RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "xdg-desktop-portal-termfilechooser-*.rpm" -exec cp -v {} /build/rpms/ \;
     fi
 fi
 
