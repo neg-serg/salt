@@ -6,9 +6,9 @@ Status legend: `[x]` migrated, `[~]` partial, `[ ]` not migrated, `[n/a]` not ne
 
 | Config file | NixOS source | Dotfiles path | Status |
 |---|---|---|---|
-| `~/.config/zsh/.zshenv` | cli/shells.nix | dot_config/zsh/dot_zshenv | [x] |
+| `~/.config/zsh/.zshenv` | cli/shells.nix + cli/envs.nix | dot_config/zsh/dot_zshenv | [x] |
 | `~/.config/zsh/*.zsh` | static files/ | dot_config/zsh/ | [x] |
-| `~/.config/inputrc` | cli/shells.nix | — | [ ] |
+| `~/.config/inputrc` | cli/shells.nix | dot_config/inputrc | [x] |
 | `~/.config/aliae/config.yaml` | cli/shells.nix | dot_config/aliae/aliae.yaml | [x] |
 | `~/.config/kitty/*` | static files/ | dot_config/kitty/ | [x] |
 | `~/.config/tmux/tmux.conf` | cli/tmux/default.nix (programs.tmux) | dot_config/tmux/tmux.conf | [x] |
@@ -16,21 +16,22 @@ Status legend: `[x]` migrated, `[~]` partial, `[ ]` not migrated, `[n/a]` not ne
 ### Environment variables (cli/shells.nix, cli/envs.nix)
 | Variable | Value | Status |
 |---|---|---|
-| `ZDOTDIR` | `~/.config/zsh` | [ ] need /etc/zshenv |
-| `TERMINAL` | `kitty` | [ ] |
-| `MANWIDTH` | `999` | [ ] |
-| `GREP_COLOR`, `GREP_COLORS` | color codes | [ ] |
-| `EZA_COLORS` | color string | [ ] |
+| `ZDOTDIR` | `~/.config/zsh` | [x] in dot_zshenv |
+| `TERMINAL` | `kitty` | [x] in dot_zshenv |
+| `MANWIDTH` | `80` | [x] in dot_zshenv |
+| `GREP_COLOR`, `GREP_COLORS` | color codes | [x] in dot_zshenv |
+| `XDG compliance vars` | CRAWL_DIR, GRIM_DEFAULT_DIR, NPM_*, etc. | [x] in dot_zshenv |
 
 ## 2. CLI Tools
 
 | Config file | NixOS source | Dotfiles path | Status |
 |---|---|---|---|
 | `~/.config/tig/config` | cli/tig.nix | dot_config/tig/config | [x] |
-| `~/.config/bat/config` | cli/search.nix | — | [ ] |
-| `~/.config/fd/ignore` | cli/search.nix | — | [ ] |
-| `~/.config/ripgrep/ripgreprc` | cli/search.nix | — | [ ] |
+| `~/.config/bat/config` | cli/search.nix | dot_config/bat/config | [x] |
+| `~/.config/fd/ignore` | cli/search.nix | dot_config/fd/ignore | [x] |
+| `~/.config/ripgrep/ripgreprc` | cli/search.nix | dot_config/ripgrep/ripgreprc | [x] |
 | `~/.config/btop/btop.conf` | cli/monitoring.nix | dot_config/btop/btop.conf | [x] |
+| `~/.config/btop/themes/midnight-ocean.theme` | static files/ | dot_config/btop/themes/ | [x] |
 | `~/.config/broot/*` | static files/ | dot_config/broot/ | [x] |
 | `~/.config/television/*` | static files/ | dot_config/television/ | [x] |
 | `~/.config/fastfetch/*` | static files/ | dot_config/fastfetch/ | [x] |
@@ -38,11 +39,11 @@ Status legend: `[x]` migrated, `[~]` partial, `[ ]` not migrated, `[n/a]` not ne
 ### Environment variables (cli/search.nix)
 | Variable | Value | Status |
 |---|---|---|
-| `RIPGREP_CONFIG_PATH` | `~/.config/ripgrep/ripgreprc` | [ ] |
-| `FZF_DEFAULT_COMMAND` | fd command | [ ] |
-| `FZF_DEFAULT_OPTS` | extensive options | [ ] |
-| `FZF_CTRL_R_OPTS` | search options | [ ] |
-| `FZF_CTRL_T_OPTS` | file picker options | [ ] |
+| `RIPGREP_CONFIG_PATH` | `~/.config/ripgrep/ripgreprc` | [x] in dot_zshenv |
+| `FZF_DEFAULT_COMMAND` | fd command | [x] in dot_zshenv |
+| `FZF_DEFAULT_OPTS` | extensive options + colors | [x] in dot_zshenv |
+| `FZF_CTRL_R_OPTS` | search options | [x] in dot_zshenv |
+| `FZF_CTRL_T_OPTS` | file picker options | [x] in dot_zshenv |
 
 ## 3. Yazi File Manager
 
@@ -58,6 +59,7 @@ Status legend: `[x]` migrated, `[~]` partial, `[ ]` not migrated, `[n/a]` not ne
 | Config file | NixOS source | Dotfiles path | Status |
 |---|---|---|---|
 | `~/.config/hypr/hyprland.conf` | hyprland/environment.nix | dot_config/hypr/hyprland.conf | [x] |
+| `~/.config/hypr/env.conf` | hyprland/environment.nix | dot_config/hypr/env.conf | [x] |
 | `~/.config/hypr/init.conf` | static files/ | dot_config/hypr/init.conf | [x] |
 | `~/.config/hypr/bindings.conf` | static files/ | dot_config/hypr/bindings.conf | [x] |
 | `~/.config/hypr/workspaces.conf` | hyprland/environment.nix (generated) | dot_config/hypr/workspaces.conf | [x] |
@@ -68,57 +70,51 @@ Status legend: `[x]` migrated, `[~]` partial, `[ ]` not migrated, `[n/a]` not ne
 | `~/.config/hypr/bindings/*` | static files/ | dot_config/hypr/bindings/ | [x] |
 | `~/.config/hypr/hyprlock/*` | static files/ | dot_config/hypr/hyprlock/ | [x] |
 
+### Environment variables (hyprland/environment.nix, gui/theme.nix, gui/qt.nix)
+| Variable | Value | Status |
+|---|---|---|
+| `GDK_SCALE`, `QT_AUTO_SCREEN_SCALE_FACTOR` | scaling | [x] in env.conf |
+| `GDK_BACKEND`, `QT_QPA_PLATFORM`, `SDL_VIDEODRIVER` | wayland | [x] in env.conf |
+| `XDG_CURRENT_DESKTOP`, `XDG_SESSION_TYPE` | Hyprland/wayland | [x] in env.conf |
+| `MOZ_ENABLE_WAYLAND`, `ELECTRON_OZONE_PLATFORM_HINT` | 1/auto | [x] in env.conf |
+| `QT_QPA_PLATFORMTHEME`, `QT_STYLE_OVERRIDE` | qt6ct/kvantum | [x] in env.conf |
+| `GTK_THEME`, `XCURSOR_THEME`, `HYPRCURSOR_*` | themes | [x] in env.conf |
+
 ## 5. GUI: Notifications (Dunst)
 
 | Config file | NixOS source | Dotfiles path | Status |
 |---|---|---|---|
 | `~/.config/dunst/dunstrc` | gui/dunst.nix (generated INI) | dot_config/dunst/dunstrc | [x] |
 
-### Systemd service: dunst
-- Type: dbus, BusName: org.freedesktop.Notifications
-- Status: [ ] need to create user service or autostart
-
 ## 6. GUI: Theme & Appearance
 
 | Config file | NixOS source | Dotfiles path | Status |
 |---|---|---|---|
-| `~/.config/gtk-3.0/settings.ini` | gui/theme.nix (generated INI) | — | [ ] |
-| `~/.config/gtk-3.0/gtk.css` | gui/theme.nix | — | [ ] |
-| `~/.config/gtk-4.0/settings.ini` | gui/theme.nix (generated INI) | — | [ ] |
-| `~/.config/gtk-4.0/gtk.css` | gui/theme.nix | — | [ ] |
-| `~/.gtkrc-2.0` | gui/theme.nix | — | [ ] |
+| `~/.config/gtk-3.0/settings.ini` | gui/theme.nix (generated INI) | dot_config/gtk-3.0/settings.ini | [x] |
+| `~/.config/gtk-3.0/gtk.css` | gui/theme.nix | dot_config/gtk-3.0/gtk.css | [x] |
+| `~/.config/gtk-4.0/settings.ini` | gui/theme.nix (generated INI) | dot_config/gtk-4.0/settings.ini | [x] |
+| `~/.config/gtk-4.0/gtk.css` | gui/theme.nix | dot_config/gtk-4.0/gtk.css | [x] |
+| `~/.gtkrc-2.0` | gui/theme.nix | dot_gtkrc-2.0 | [x] |
 | `~/.config/wallust/*` | gui/theme.nix (static files/) | dot_config/wallust/ | [x] |
-
-### Environment variables (gui/theme.nix)
-| Variable | Value | Status |
-|---|---|---|
-| `GTK_THEME` | `Flight-Dark-GTK` | [ ] |
-| `XCURSOR_THEME` | `Alkano-aio` | [ ] |
-| `XCURSOR_SIZE` | `23` | [ ] |
-| `HYPRCURSOR_THEME` | `Alkano-aio` | [ ] |
-| `HYPRCURSOR_SIZE` | `23` | [ ] |
+| Flight-Dark-GTK theme | gui/theme.nix (package) | ~/.local/share/themes/ | [x] Salt installer |
+| kora-icon-theme | gui/theme.nix (package) | ~/.local/share/icons/ | [x] Salt installer |
 
 ## 7. GUI: Qt Theming
 
 | Config file | NixOS source | Dotfiles path | Status |
 |---|---|---|---|
-| `~/.config/Kvantum/kvantum.kvconfig` | gui/qt.nix | — | [ ] |
-| `~/.config/qt6ct/qt6ct.conf` | gui/qt.nix | — | [ ] |
-| `~/.config/qt5ct/qt5ct.conf` | gui/qt.nix | — | [ ] |
-
-### Environment variables (gui/qt.nix)
-| Variable | Value | Status |
-|---|---|---|
-| `QT_QPA_PLATFORMTHEME` | `qt6ct` | [ ] |
-| `QT_STYLE_OVERRIDE` | `kvantum` | [ ] |
+| `~/.config/Kvantum/kvantum.kvconfig` | gui/qt.nix | dot_config/Kvantum/kvantum.kvconfig | [x] |
+| `~/.config/qt6ct/qt6ct.conf` | gui/qt.nix | dot_config/qt6ct/qt6ct.conf | [x] |
+| `~/.config/qt5ct/qt5ct.conf` | gui/qt.nix | dot_config/qt5ct/qt5ct.conf | [x] |
+| Packages: qt5ct, qt6ct, kvantum | gui/qt.nix | system_description.sls | [x] |
 
 ## 8. GUI: XDG & File Association
 
 | Config file | NixOS source | Dotfiles path | Status |
 |---|---|---|---|
-| `~/.config/mimeapps.list` | gui/xdg.nix (generated INI) | — | [ ] |
-| `~/.config/user-dirs.dirs` | gui/xdg.nix | — | [ ] |
-| desktop entries | gui/xdg.nix | — | [ ] |
+| `~/.config/mimeapps.list` | gui/xdg.nix (generated INI) | dot_config/mimeapps.list | [x] |
+| `~/.config/user-dirs.dirs` | gui/xdg.nix | dot_config/user-dirs.dirs | [x] |
+| `kitty-open.desktop` | gui/xdg.nix | dot_local/share/applications/ | [x] |
 
 ## 9. Media: MPV
 
@@ -130,7 +126,7 @@ Status legend: `[x]` migrated, `[~]` partial, `[ ]` not migrated, `[n/a]` not ne
 | `~/.config/mpv/styles.ass` | apps/mpv/config.nix | dot_config/mpv/styles.ass | [x] |
 | `~/.config/mpv/script-opts/osc.conf` | apps/mpv/scripts.nix | dot_config/mpv/script-opts/osc.conf | [x] |
 | `~/.config/mpv/script-opts/uosc.conf` | apps/mpv/scripts.nix | dot_config/mpv/script-opts/uosc.conf | [x] |
-| `~/.config/mpv/shaders/*` | apps/mpv/shaders.nix (fetchurl) | dot_config/mpv/shaders/ | [ ] need shader files |
+| `~/.config/mpv/shaders/*` | apps/mpv/shaders.nix (fetchurl) | dot_config/mpv/shaders/ | [x] 4 GLSL files |
 
 ### MPV scripts (bundled in NixOS mpv package)
 - cutter, mpris, quality-menu, sponsorblock, thumbfast, uosc
@@ -163,8 +159,10 @@ Status legend: `[x]` migrated, `[~]` partial, `[ ]` not migrated, `[n/a]` not ne
 
 | Config file | NixOS source | Dotfiles path | Status |
 |---|---|---|---|
-| `~/.gnupg/gpg-agent.conf` | sys/gpg.nix | — | [ ] |
-| `~/.gnupg/scdaemon.conf` | sys/gpg.nix | — | [ ] |
+| `~/.local/share/gnupg/gpg-agent.conf` | sys/gpg.nix | dot_local/share/gnupg/gpg-agent.conf | [x] |
+| `~/.local/share/gnupg/scdaemon.conf` | sys/gpg.nix | dot_local/share/gnupg/scdaemon.conf | [x] |
+| pinentry-rofi wrapper | sys/gpg.nix (custom script) | — | [~] using pinentry-gnome3 |
+| gpg-agent systemd service | sys/gpg.nix | — | [ ] |
 
 ## 13. Calendar & Contacts
 
@@ -177,14 +175,14 @@ Status legend: `[x]` migrated, `[~]` partial, `[ ]` not migrated, `[n/a]` not ne
 
 | Config file | NixOS source | Dotfiles path | Status |
 |---|---|---|---|
-| `~/.config/aria2/aria2.conf` | web/aria.nix | — | [ ] |
-| `~/.config/yt-dlp/config` | web/yt-dlp.nix | — | [ ] |
+| `~/.config/aria2/aria2.conf` | web/aria.nix | dot_config/aria2/aria2.conf | [x] |
+| `~/.config/yt-dlp/config` | web/yt-dlp.nix | dot_config/yt-dlp/config | [x] |
 
 ## 15. Spell Checking
 
 | Config file | NixOS source | Dotfiles path | Status |
 |---|---|---|---|
-| `~/.config/enchant/enchant.ordering` | sys/enchant.nix | — | [ ] |
+| `~/.config/enchant/enchant.ordering` | sys/enchant.nix | dot_config/enchant/enchant.ordering | [x] |
 
 ## 16. Browser (Firefox/Floorp)
 
@@ -199,8 +197,8 @@ Status legend: `[x]` migrated, `[~]` partial, `[ ]` not migrated, `[n/a]` not ne
 
 | Config file | NixOS source | Dotfiles path | Status |
 |---|---|---|---|
-| `~/.config/Antigravity/User/settings.json` | apps/antigravity.nix | — | [ ] |
-| `~/.config/opencode/opencode.json` | apps/opencode.nix | — | [ ] |
+| `~/.config/Antigravity/User/settings.json` | apps/antigravity.nix | dot_config/Antigravity/User/settings.json | [x] |
+| `~/.config/opencode/opencode.json` | apps/opencode.nix | — | [ ] contains API keys |
 
 ## 18. Application Launcher (Walker)
 
@@ -225,7 +223,7 @@ Status legend: `[x]` migrated, `[~]` partial, `[ ]` not migrated, `[n/a]` not ne
 ## Summary Statistics
 
 - **Total config groups**: 20
-- **Fully migrated** `[x]`: ~50 files across 12 groups
-- **Partially migrated** `[~]`: 4 items
-- **Not migrated** `[ ]`: ~40 items across 14 groups
-- **Priority for next migration**: GTK theme, Qt theme, XDG mime, search tools (bat/fd/rg), yazi, env vars
+- **Fully migrated** `[x]`: ~75 files across 17 groups
+- **Partially migrated** `[~]`: 4 items (permissions.conf, plugins.conf, vdirsyncer, pinentry)
+- **Not migrated** `[ ]`: ~15 items across 6 groups
+- **Remaining**: Yazi, MPV scripts, MPD/beets/scrobblers, mail system, browser, opencode, khal, systemd services
