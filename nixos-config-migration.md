@@ -49,10 +49,12 @@ Status legend: `[x]` migrated, `[~]` partial, `[ ]` not migrated, `[n/a]` not ne
 
 | Config file | NixOS source | Dotfiles path | Status |
 |---|---|---|---|
-| `~/.config/yazi/yazi.toml` | cli/yazi.nix (generated TOML) | — | [ ] |
-| `~/.config/yazi/theme.toml` | cli/yazi.nix (generated TOML) | — | [ ] |
-| `~/.config/yazi/keymap.toml` | cli/yazi.nix (generated TOML) | — | [ ] |
-| `~/.config/yazi/plugins/*.lua` | cli/yazi.nix (inline text) | — | [ ] |
+| `~/.config/yazi/yazi.toml` | cli/yazi.nix (generated TOML) | dot_config/yazi/yazi.toml | [x] |
+| `~/.config/yazi/theme.toml` | cli/yazi.nix (generated TOML) | dot_config/yazi/theme.toml | [x] |
+| `~/.config/yazi/keymap.toml` | cli/yazi.nix (generated TOML) | dot_config/yazi/keymap.toml | [x] |
+| `~/.config/yazi/plugins/smart-paste.yazi` | yazi-rs/plugins (fetchFromGitHub) | dot_config/yazi/plugins/smart-paste.yazi/ | [x] |
+| `~/.config/yazi/plugins/save-file.yazi` | cli/yazi.nix (inline Lua) | dot_config/yazi/plugins/save-file.yazi/ | [x] |
+| `~/.config/yazi/plugins/paste-to-select.yazi` | cli/yazi.nix (inline Lua) | dot_config/yazi/plugins/paste-to-select.yazi/ | [x] |
 
 ## 4. GUI: Hyprland
 
@@ -127,33 +129,33 @@ Status legend: `[x]` migrated, `[~]` partial, `[ ]` not migrated, `[n/a]` not ne
 | `~/.config/mpv/script-opts/osc.conf` | apps/mpv/scripts.nix | dot_config/mpv/script-opts/osc.conf | [x] |
 | `~/.config/mpv/script-opts/uosc.conf` | apps/mpv/scripts.nix | dot_config/mpv/script-opts/uosc.conf | [x] |
 | `~/.config/mpv/shaders/*` | apps/mpv/shaders.nix (fetchurl) | dot_config/mpv/shaders/ | [x] 4 GLSL files |
-
-### MPV scripts (bundled in NixOS mpv package)
-- cutter, mpris, quality-menu, sponsorblock, thumbfast, uosc
-- Status: [ ] need manual install on Fedora
+| MPV scripts (6 plugins) | apps/mpv/package.nix | system_description.sls | [x] Salt installer |
 
 ## 10. Media: MPD & Scrobblers
 
 | Config file | NixOS source | Dotfiles path | Status |
 |---|---|---|---|
-| `~/.config/mpd/mpd.conf` | sys/media.nix | — | [~] mpd.sls exists |
-| `~/.config/beets/config.yaml` | sys/media.nix (generated) | — | [ ] |
-| `~/.config/mpDris2/mpDris2.conf` | sys/media.nix | — | [ ] |
-| `~/.config/rescrobbled/config.toml` | sys/media.nix | — | [ ] |
+| `~/.config/mpd/mpd.conf` | sys/media.nix | dot_config/mpd/mpd.conf | [x] |
+| `~/.config/beets/config.yaml` | sys/media.nix (generated) | dot_config/beets/config.yaml | [x] |
+| `~/.config/mpDris2/mpDris2.conf` | sys/media.nix | dot_config/mpDris2/mpDris2.conf | [x] |
+| `~/.config/rescrobbled/config.toml` | sys/media.nix | dot_config/rescrobbled/config.toml | [x] |
 | `~/.config/rmpc/*` | static files/ | dot_config/rmpc/ | [x] |
 
 ### Systemd services
-- mpdris2 (MPRIS bridge), mpdas (Last.fm), rescrobbled (MPRIS scrobbler)
-- Status: [ ] need user services
+| Service | Status |
+|---|---|
+| mpdris2 (MPRIS bridge) | [x] Salt state in system_description.sls |
+| rescrobbled (MPRIS scrobbler) | [x] Salt state in system_description.sls |
+| mpdas (Last.fm) | [~] needs sops secret for credentials |
 
 ## 11. Mail System
 
 | Config file | NixOS source | Dotfiles path | Status |
 |---|---|---|---|
-| `~/.config/mbsync/mbsyncrc` | sys/mail.nix (credentials) | — | [ ] |
-| `~/.config/msmtp/config` | sys/mail.nix | — | [ ] |
+| `~/.config/mbsync/mbsyncrc` | sys/mail.nix (credentials) | — | [ ] needs secrets |
+| `~/.config/msmtp/config` | sys/mail.nix | — | [ ] needs secrets |
 | `~/.config/notmuch/notmuchrc` | sys/mail.nix | — | [ ] |
-| `~/.config/imapnotify/gmail.json` | sys/mail.nix | — | [ ] |
+| `~/.config/imapnotify/gmail.json` | sys/mail.nix | — | [ ] needs secrets |
 
 ## 12. GPG/SSH
 
@@ -223,7 +225,7 @@ Status legend: `[x]` migrated, `[~]` partial, `[ ]` not migrated, `[n/a]` not ne
 ## Summary Statistics
 
 - **Total config groups**: 20
-- **Fully migrated** `[x]`: ~75 files across 17 groups
-- **Partially migrated** `[~]`: 4 items (permissions.conf, plugins.conf, vdirsyncer, pinentry)
-- **Not migrated** `[ ]`: ~15 items across 6 groups
-- **Remaining**: Yazi, MPV scripts, MPD/beets/scrobblers, mail system, browser, opencode, khal, systemd services
+- **Fully migrated** `[x]`: ~85 files across 18 groups
+- **Partially migrated** `[~]`: 5 items (permissions.conf, plugins.conf, vdirsyncer, pinentry, mpdas)
+- **Not migrated** `[ ]`: ~10 items across 4 groups
+- **Remaining**: mail system (secrets), browser (complex), opencode (API keys), khal, gpg-agent service
