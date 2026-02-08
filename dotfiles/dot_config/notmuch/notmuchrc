@@ -1,0 +1,15 @@
+[database]
+path=~/.local/mail
+
+[user]
+name=Sergey Miroshnichenko
+primary_email=serg.zorg@gmail.com
+
+[new]
+tags=unread;inbox;
+
+[search]
+exclude_tags=deleted;spam;
+
+[maildir]
+synchronize_flags=true

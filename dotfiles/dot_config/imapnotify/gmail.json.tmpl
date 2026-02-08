@@ -1,0 +1,10 @@
+{
+  "host": "imap.gmail.com",
+  "port": 993,
+  "tls": true,
+  "tlsOptions": { "rejectUnauthorized": false },
+  "username": "{{ gopass "email/gmail/address" }}",
+  "passwordCmd": "gopass show -o email/gmail/app-password",
+  "onNewMail": "mbsync gmail",
+  "boxes": ["INBOX"]
+}
