@@ -222,6 +222,7 @@ sudo_timeout:
         {'name': 'asciinema',           'desc': 'Terminal session recorder, streamer and player'},
         {'name': 'cowsay',              'desc': 'Talking cow ASCII art'},
         {'name': 'cpufetch',            'desc': 'Simple yet fancy CPU architecture fetching tool'},
+        {'name': 'dash',                'desc': 'Small and fast POSIX-compliant shell'},
         {'name': 'dcfldd',              'desc': 'Enhanced dd with hashing and status output'},
         {'name': 'entr',                'desc': 'Run arbitrary commands when files change'},
         {'name': 'expect',              'desc': 'Tool for automating interactive applications'},
