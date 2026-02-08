@@ -310,7 +310,6 @@ sudo_timeout:
         {'name': 'kvantum',             'desc': 'SVG-based Qt theme engine'},
         {'name': 'openrgb',             'desc': 'Peripheral RGB LED controller'},
         {'name': 'qt5ct',               'desc': 'Qt5 configuration tool'},
-        {'name': 'qt6ct',               'desc': 'Qt6 configuration tool'},
         {'name': 'texlive-scheme-basic', 'desc': 'TeX Live basic scheme'}
     ],
     'Version Control': [
