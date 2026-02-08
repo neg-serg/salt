@@ -202,6 +202,7 @@ sudo_timeout:
         {'name': 'iftop',               'desc': 'Display bandwidth usage on an interface'},
         {'name': 'iperf',               'desc': 'Network bandwidth measurement tool'},
         {'name': 'iwd',                 'desc': 'Wireless daemon for Linux'},
+        {'name': 'nicotine+',           'desc': 'Soulseek P2P file sharing client'},
         {'name': 'nmap-ncat',           'desc': 'Netcat from nmap project'},
         {'name': 'ollama',              'desc': 'Local LLM runner'},
         {'name': 'prettyping',          'desc': 'Wrapper around ping to make output prettier'},
