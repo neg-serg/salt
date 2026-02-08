@@ -1,5 +1,5 @@
 #!/bin/sh
-# unlock: unlock SSH keys (optionally Yubikey) via expect using pass(1) secrets
+# unlock: unlock SSH keys (optionally Yubikey) via expect using gopass secrets
 # Usage: unlock
 
 cleanup() { unset pp0 pp1 pp2 || true; }
@@ -9,17 +9,17 @@ trap cleanup EXIT HUP INT TERM
 gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
 
 # Retrieve secrets
-pp0="$(pass show ssh-key)"
+pp0="$(gopass show -o ssh-key)"
 # Quietly try to get the work key, ignore if missing
-if pass show wrk/ssh-key >/dev/null 2>&1; then
-    pp2="$(pass show wrk/ssh-key)"
+if gopass show -o wrk/ssh-key >/dev/null 2>&1; then
+    pp2="$(gopass show -o wrk/ssh-key)"
 fi
 
 # YubiKey handling
 if lsusb | grep -q "0407 Yubico"; then
-    pp1="$(pass show pin)"
+    pp1="$(gopass show -o yubikey-pin)"
     expect << EOF
-        spawn "$XDG_CONFIG_HOME/zsh-nix/ylock"
+        spawn "$XDG_CONFIG_HOME/zsh/ylock"
         expect "Enter passphrase"
         send "$pp1\r"
         expect eof
@@ -28,7 +28,7 @@ fi
 
 # Main key handling
 expect << EOF
-    spawn ssh-add $HOME/.ssh/id_neg
+    spawn ssh-add $HOME/.ssh/id_ed25519
     expect "Enter passphrase"
     send "$pp0\r"
     expect eof
