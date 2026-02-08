@@ -242,7 +242,6 @@ sudo_timeout:
         {'name': 'netmask',             'desc': 'IP address and netmask manipulation'},
         {'name': 'par',                 'desc': 'Paragraph reformatter, vaguely like fmt, but more elaborate'},
         {'name': 'parallel',            'desc': 'Shell tool for executing jobs in parallel'},
-        {'name': 'pass',                'desc': 'The standard unix password manager'},
         {'name': 'pastel',              'desc': 'CLI tool to generate, analyze, convert and manipulate colors'},
         {'name': 'pwgen',               'desc': 'Automatic password generation'},
         {'name': 'recoll',              'desc': 'Desktop full-text search tool'},
