@@ -1,7 +1,8 @@
 --no-heading
---smart-case
---follow
 --hidden
+--follow
+--max-columns=0
+--max-columns-preview
 --glob=!.git/
 --glob=!node_modules/
 --glob=!yarn.lock
@@ -10,3 +11,12 @@
 --glob=!_build/
 --glob=!tags
 --glob=!.pub-cache
+--colors=match:fg:25
+--colors=match:style:bold
+--colors=match:style:underline
+--colors=line:fg:4
+--colors=line:style:bold
+--colors=path:fg:249
+--colors=path:style:bold
+--colors=column:fg:24
+--colors=column:style:bold
