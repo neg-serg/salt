@@ -145,8 +145,36 @@ Status legend: `[x]` migrated, `[~]` partial, `[ ]` not migrated, `[n/a]` not ne
 | Service | Status |
 |---|---|
 | mpdris2 (MPRIS bridge) | [x] Salt state in system_description.sls |
-| rescrobbled (MPRIS scrobbler) | [x] Salt state in system_description.sls |
+| rescrobbled (MPRIS scrobbler) | [ ] TODO: see setup instructions below |
 | mpdas (Last.fm) | [x] Salt cmd.run + gopass in mpd.sls |
+
+### rescrobbled setup (TODO)
+
+rescrobbled is an MPRIS scrobbler that scrobbles from any MPRIS2-capable player
+(mpv, Spotify, browsers, etc.) to Last.fm/ListenBrainz. Unlike mpdas which only
+covers MPD, rescrobbled covers everything that speaks MPRIS2.
+
+Steps to enable:
+
+1. **Build the RPM** (preferred) or install via cargo:
+   - RPM: add a spec to `salt/specs/rescrobbled.spec`, add build section to
+     `salt/build-rpm.sh`, entry in `build_rpms.sls`. It's a Rust crate:
+     `cargo install rescrobbled`
+   - Or directly: `cargo install rescrobbled` (binary lands in `~/.cargo/bin/`)
+2. **Get Last.fm API credentials**:
+   - Register an app at https://www.last.fm/api/account/create
+   - Store keys in gopass: `gopass insert lastfm/api_key`, `gopass insert lastfm/secret`
+3. **Authenticate**: run `rescrobbled` once interactively to complete the OAuth
+   flow — it will write a `session_key` to the config
+4. **Deploy config** via Salt/chezmoi to `~/.config/rescrobbled/config.toml`:
+   ```toml
+   [lastfm]
+   api_key = "<from gopass>"
+   secret = "<from gopass>"
+   session_key = "<from step 3>"
+   ```
+5. **Add Salt states back**: systemd unit + enable state in `mpd.sls`
+   (see git history for the removed states as a template)
 
 ## 11. Mail System
 

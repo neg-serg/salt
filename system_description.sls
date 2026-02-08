@@ -618,23 +618,6 @@ mpdris2_user_service:
         After=mpd.service
         Wants=mpd.service
 
-rescrobbled_user_service:
-  file.managed:
-    - name: /var/home/neg/.config/systemd/user/rescrobbled.service
-    - user: neg
-    - group: neg
-    - mode: '0644'
-    - makedirs: True
-    - contents: |
-        [Unit]
-        Description=MPRIS music scrobbler daemon
-        After=network-online.target
-        [Service]
-        ExecStart=/usr/bin/rescrobbled
-        Restart=on-failure
-        [Install]
-        WantedBy=default.target
-
 chezmoi_config:
   file.managed:
     - name: /var/home/neg/.config/chezmoi/chezmoi.toml

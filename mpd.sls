@@ -167,19 +167,6 @@ mpdris2_service:
     - onlyif: rpm -q mpdris2
     - unless: systemctl --user is-enabled mpDris2.service
 
-# --- Enable rescrobbled (MPRIS scrobbler) ---
-rescrobbled_service:
-  cmd.run:
-    - name: systemctl --user enable --now rescrobbled.service
-    - runas: {{ user }}
-    - env:
-      - XDG_RUNTIME_DIR: /run/user/1000
-      - DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
-    - require:
-      - cmd: mpd_service
-    - onlyif: rpm -q mpd
-    - unless: systemctl --user is-enabled rescrobbled.service
-
 # --- Deploy mpdas config via gopass ---
 mpdas_config_dir:
   file.directory:
