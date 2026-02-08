@@ -574,6 +574,65 @@ install_flight_gtk_theme:
     - runas: neg
     - creates: /var/home/neg/.local/share/themes/Flight-Dark-GTK
 
+# --- MPV scripts (installed per-user, not in Fedora repos) ---
+install_mpv_scripts:
+  cmd.run:
+    - name: |
+        SCRIPTS_DIR=~/.config/mpv/scripts
+        mkdir -p "$SCRIPTS_DIR"
+        # uosc (modern UI)
+        TAG=$(curl -s https://api.github.com/repos/tomasklaen/uosc/releases/latest | jq -r .tag_name)
+        curl -sL "https://github.com/tomasklaen/uosc/releases/download/${TAG}/uosc.zip" -o /tmp/uosc.zip
+        unzip -qo /tmp/uosc.zip -d ~/.config/mpv/
+        rm /tmp/uosc.zip
+        # thumbfast
+        curl -sL https://raw.githubusercontent.com/po5/thumbfast/master/thumbfast.lua -o "$SCRIPTS_DIR/thumbfast.lua"
+        # sponsorblock
+        curl -sL https://raw.githubusercontent.com/po5/mpv_sponsorblock/master/sponsorblock.lua -o "$SCRIPTS_DIR/sponsorblock.lua"
+        # quality-menu
+        curl -sL https://raw.githubusercontent.com/christoph-heinrich/mpv-quality-menu/master/quality-menu.lua -o "$SCRIPTS_DIR/quality-menu.lua"
+        # mpris
+        TAG=$(curl -s https://api.github.com/repos/hoyon/mpv-mpris/releases/latest | jq -r .tag_name)
+        curl -sL "https://github.com/hoyon/mpv-mpris/releases/download/${TAG}/mpris.so" -o "$SCRIPTS_DIR/mpris.so"
+        # cutter
+        curl -sL https://raw.githubusercontent.com/rushmj/mpv-video-cutter/master/cutter.lua -o "$SCRIPTS_DIR/cutter.lua"
+    - runas: neg
+    - creates: /var/home/neg/.config/mpv/scripts/thumbfast.lua
+
+# --- Systemd user services for media ---
+mpdris2_user_service:
+  file.managed:
+    - name: /var/home/neg/.config/systemd/user/mpdris2.service
+    - user: neg
+    - group: neg
+    - mode: '0644'
+    - makedirs: True
+    - contents: |
+        [Unit]
+        Description=MPD MPRIS2 Bridge
+        [Service]
+        ExecStart=/usr/bin/mpDris2
+        Restart=on-failure
+        [Install]
+        WantedBy=default.target
+
+rescrobbled_user_service:
+  file.managed:
+    - name: /var/home/neg/.config/systemd/user/rescrobbled.service
+    - user: neg
+    - group: neg
+    - mode: '0644'
+    - makedirs: True
+    - contents: |
+        [Unit]
+        Description=MPRIS music scrobbler daemon
+        After=network-online.target
+        [Service]
+        ExecStart=/usr/bin/rescrobbled
+        Restart=on-failure
+        [Install]
+        WantedBy=default.target
+
 chezmoi_source_symlink:
   file.symlink:
     - name: /var/home/neg/.local/share/chezmoi
