@@ -168,27 +168,42 @@ mpdris2_service:
     - unless: systemctl --user is-enabled mpDris2.service
 
 # --- Deploy mpdas config via gopass ---
-mpdas_config_dir:
-  file.directory:
-    - name: {{ home }}/.config/mpdas
-    - user: {{ user }}
-    - group: {{ user }}
-    - makedirs: True
-
 mpdas_config:
   cmd.run:
     - name: |
         USER=$(gopass show -o lastfm/username)
         PASS=$(gopass show -o lastfm/password)
-        cat > {{ home }}/.config/mpdas/mpdas.rc << EOF
+        cat > {{ home }}/.config/mpdasrc << EOF
         host = localhost
         port = 6600
         service = lastfm
         username = ${USER}
         password = ${PASS}
         EOF
-        chmod 600 {{ home }}/.config/mpdas/mpdas.rc
+        chmod 600 {{ home }}/.config/mpdasrc
     - runas: {{ user }}
-    - creates: {{ home }}/.config/mpdas/mpdas.rc
+    - creates: {{ home }}/.config/mpdasrc
+
+# --- Deploy mpdas systemd user service ---
+mpdas_service_file:
+  file.managed:
+    - name: {{ home }}/.config/systemd/user/mpdas.service
+    - source: salt://dotfiles/dot_config/systemd/user/mpdas.service
+    - user: {{ user }}
+    - group: {{ user }}
+    - mode: '0644'
+    - makedirs: True
+
+mpdas_service:
+  cmd.run:
+    - name: systemctl --user enable --now mpdas.service
+    - runas: {{ user }}
+    - env:
+      - XDG_RUNTIME_DIR: /run/user/1000
+      - DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
     - require:
-      - file: mpdas_config_dir
+      - cmd: mpdas_config
+      - file: mpdas_service_file
+      - cmd: mpd_service
+    - onlyif: rpm -q mpdas
+    - unless: systemctl --user is-enabled mpdas.service
