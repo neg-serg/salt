@@ -73,39 +73,55 @@ sudo_timeout:
         {'name': 'patool',              'desc': 'Portable archive file manager'},
         {'name': 'pbzip2',              'desc': 'Parallel bzip2 implementation'},
         {'name': 'pigz',                'desc': 'Parallel gzip implementation'},
-        {'name': 'unar',                'desc': 'Universal archive unpacker'},
-        {'name': 'unrar',               'desc': 'RAR archive extractor'}
+        {'name': 'unar',                'desc': 'Universal archive unpacker'}
     ],
     'Development': [
         {'name': 'cargo',               'desc': 'Rust package manager'},
         {'name': 'clang-libs',          'desc': 'Clang runtime libraries'},
         {'name': 'cmake',               'desc': 'Cross-platform build system'},
+        {'name': 'difftastic',          'desc': 'Structural diff tool'},
+        {'name': 'direnv',              'desc': 'Per-directory shell configuration tool'},
         {'name': 'dkms',                'desc': 'Dynamic Kernel Module Support Framework'},
+        {'name': 'elfutils',            'desc': 'ELF binary analysis tools'},
         {'name': 'gcc',                 'desc': 'Various compilers (C, C++, ...)'},
         {'name': 'gdb',                 'desc': 'GNU Debugger'},
+        {'name': 'graphviz',            'desc': 'Graph visualization tools'},
+        {'name': 'helix',               'desc': 'Post-modern modal text editor'},
+        {'name': 'hexyl',               'desc': 'Hex viewer with colored output'},
         {'name': 'hyperfine',           'desc': 'Command-line benchmarking tool'},
         {'name': 'just',                'desc': 'Just a command runner'},
         {'name': 'kernel-devel',        'desc': 'Development package for building kernel modules'},
+        {'name': 'lldb',                'desc': 'LLVM debugger'},
         {'name': 'ncurses-devel',       'desc': 'Development files for ncurses'},
+        {'name': 'perf',                'desc': 'Performance analysis tools for Linux'},
+        {'name': 'pgcli',               'desc': 'PostgreSQL CLI with autocomplete'},
         {'name': 'pipewire-devel',      'desc': 'PipeWire development files'},
         {'name': 'pulseaudio-libs-devel', 'desc': 'PulseAudio development libraries'},
         {'name': 'python3-devel',       'desc': 'Libraries and header files needed for Python development'},
+        {'name': 'ruff',                'desc': 'Fast Python linter and formatter'},
         {'name': 'ShellCheck',          'desc': 'Shell script analysis tool'},
         {'name': 'shfmt',               'desc': 'Shell script formatter'},
-        {'name': 'strace',              'desc': 'System call tracer'}
+        {'name': 'strace',              'desc': 'System call tracer'},
+        {'name': 'valgrind',            'desc': 'Memory debugging and profiling'},
+        {'name': 'yamllint',            'desc': 'YAML linter'}
     ],
     'File Management': [
         {'name': 'bat',                 'desc': 'A cat(1) clone with wings'},
         {'name': 'borgbackup',          'desc': 'Deduplicating archiver with compression and encryption'},
         {'name': 'convmv',              'desc': 'Convert filename encodings'},
+        {'name': 'ddrescue',            'desc': 'Data recovery tool for failing drives'},
         {'name': 'dos2unix',            'desc': 'Text file format converters'},
         {'name': 'du-dust',             'desc': 'More intuitive version of du'},
         {'name': 'enca',                'desc': 'Character set analyzer and converter'},
         {'name': 'fd-find',             'desc': 'Fd is a simple, fast and user-friendly alternative to find'},
         {'name': 'jdupes',              'desc': 'Duplicate file finder and remover'},
         {'name': 'ncdu',                'desc': 'Text-based disk usage viewer'},
+        {'name': 'plocate',             'desc': 'Fast file locate'},
+        {'name': 'ranger',              'desc': 'Terminal file manager with vi keybindings'},
+        {'name': 'rclone',              'desc': 'Cloud storage sync tool'},
         {'name': 'rmlint',              'desc': 'Find space waste and other broken things on your filesystem'},
-        {'name': 'stow',                'desc': 'Manage the installation of software packages from source'}
+        {'name': 'stow',                'desc': 'Manage the installation of software packages from source'},
+        {'name': 'testdisk',            'desc': 'Data recovery and partition repair tool'}
     ],
     'Fonts': [
         {'name': 'material-icons-fonts', 'desc': 'Material Design icons fonts'}
@@ -114,6 +130,7 @@ sudo_timeout:
         {'name': 'advancecomp',         'desc': 'Recompression utilities for .png, .mng, .zip, .gz'},
         {'name': 'beets',               'desc': 'Music library manager and tagger'},
         {'name': 'cava',                'desc': 'Console audio visualizer'},
+        {'name': 'cdparanoia',          'desc': 'Secure CD ripper'},
         {'name': 'chafa',               'desc': 'Image-to-text converter for terminal'},
         {'name': 'darktable',           'desc': 'Utility to organize and develop raw images'},
         {'name': 'ffmpegthumbnailer',   'desc': 'Lightweight video thumbnailer'},
@@ -127,9 +144,13 @@ sudo_timeout:
         {'name': 'mpv',                 'desc': 'A free, open source, and cross-platform media player'},
         {'name': 'optipng',             'desc': 'PNG optimizer'},
         {'name': 'perl-Image-ExifTool', 'desc': 'Utility for reading and writing image meta info'},
+        {'name': 'picard',              'desc': 'MusicBrainz GUI music tagger'},
         {'name': 'pngquant',            'desc': 'PNG quantization tool for lossy compression'},
         {'name': 'qpwgraph',            'desc': 'Qt PipeWire patchbay'},
         {'name': 'rawtherapee',         'desc': 'Raw image processing application'},
+        {'name': 'raysession',          'desc': 'Session manager for audio production'},
+        {'name': 'rnnoise',             'desc': 'Real-time noise suppression library'},
+        {'name': 'sonic-visualiser',    'desc': 'Audio analysis and visualization'},
         {'name': 'sox',                 'desc': 'A general purpose sound file conversion tool'},
         {'name': 'swayimg',             'desc': 'Image viewer for Sway/Wayland'},
         {'name': 'tesseract',           'desc': 'OCR engine'},
@@ -137,29 +158,62 @@ sudo_timeout:
     ],
     'Monitoring & System': [
         {'name': 'acpi',                'desc': 'ACPI battery and thermal info'},
+        {'name': 'atop',                'desc': 'Advanced system and process monitor'},
+        {'name': 'blktrace',            'desc': 'Block layer I/O tracing tools'},
         {'name': 'btop',                'desc': 'A monitor of resources (CPU, Memory, Network)'},
+        {'name': 'device-mapper-multipath', 'desc': 'Tools for managing multipath devices'},
         {'name': 'fastfetch',           'desc': 'Fast neofetch-like system information tool'},
         {'name': 'fio',                 'desc': 'Flexible I/O tester and benchmark'},
+        {'name': 'gdisk',              'desc': 'GPT partition tools (sgdisk, fixparts)'},
         {'name': 'goaccess',            'desc': 'Real-time web log analyzer and interactive viewer'},
+        {'name': 'hw-probe',            'desc': 'Hardware probe and diagnostics'},
+        {'name': 'hwinfo',              'desc': 'Detailed hardware information tool'},
+        {'name': 'inxi',                'desc': 'System information script'},
+        {'name': 'ioping',              'desc': 'Simple disk I/O latency monitor'},
+        {'name': 'iotop-c',             'desc': 'I/O monitoring tool'},
+        {'name': 'kexec-tools',         'desc': 'Directly boot into a new kernel'},
+        {'name': 'liquidctl',           'desc': 'Fan/pump/LED controller for AIO and peripherals'},
         {'name': 'lm_sensors',          'desc': 'Hardware sensor monitoring (temps, fans, voltages)'},
         {'name': 'lnav',                'desc': 'Curses-based tool for viewing and analyzing log files'},
+        {'name': 'lshw',                'desc': 'Hardware lister'},
+        {'name': 'memtester',           'desc': 'User-space memory stress test'},
+        {'name': 'nethogs',             'desc': 'Per-process network bandwidth monitor'},
+        {'name': 'nvtop',               'desc': 'GPU process monitor'},
+        {'name': 'parted',              'desc': 'GNU Partition Editor'},
+        {'name': 'powertop',            'desc': 'Power consumption analyzer'},
         {'name': 'progress',            'desc': 'Coreutils Viewer'},
         {'name': 'pv',                  'desc': 'A tool for monitoring the progress of data through a pipeline'},
         {'name': 's-tui',               'desc': 'Stress terminal UI for CPU monitoring'},
+        {'name': 'schedtool',           'desc': 'CPU scheduling policy control'},
         {'name': 'smartmontools',       'desc': 'S.M.A.R.T. disk monitoring tools'},
-        {'name': 'sysstat',             'desc': 'Performance monitoring tools'}
+        {'name': 'sysstat',             'desc': 'Performance monitoring tools'},
+        {'name': 'vmtouch',             'desc': 'Virtual memory touch / file paging tool'},
+        {'name': 'vnstat',              'desc': 'Network traffic monitor'}
     ],
     'Network': [
         {'name': 'aria2',               'desc': 'High speed download utility with resuming and segmented downloading'},
+        {'name': 'axel',                'desc': 'Multi-threaded download accelerator'},
+        {'name': 'fping',               'desc': 'Fast ping utility'},
+        {'name': 'freerdp',             'desc': 'Remote Desktop Protocol client'},
         {'name': 'fuse-sshfs',          'desc': 'Mount remote directories over SSH'},
+        {'name': 'GeoIP',               'desc': 'IP-to-location lookup library and tools'},
         {'name': 'httpie',              'desc': 'Modern command-line HTTP client'},
+        {'name': 'iftop',               'desc': 'Display bandwidth usage on an interface'},
+        {'name': 'iperf',               'desc': 'Network bandwidth measurement tool'},
+        {'name': 'iwd',                 'desc': 'Wireless daemon for Linux'},
         {'name': 'nmap-ncat',           'desc': 'Netcat from nmap project'},
+        {'name': 'ollama',              'desc': 'Local LLM runner'},
         {'name': 'prettyping',          'desc': 'Wrapper around ping to make output prettier'},
         {'name': 'speedtest-cli',       'desc': 'Command-line bandwidth test'},
+        {'name': 'sshpass',             'desc': 'Non-interactive SSH password auth'},
         {'name': 'streamlink',          'desc': 'CLI for extracting streams from websites'},
         {'name': 'telegram-desktop',    'desc': 'Telegram Desktop messaging app'},
+        {'name': 'traceroute',          'desc': 'Trace packet route to host'},
         {'name': 'transmission-gtk',    'desc': 'BitTorrent client'},
-        {'name': 'w3m',                 'desc': 'Text-mode web browser'}
+        {'name': 'w3m',                 'desc': 'Text-mode web browser'},
+        {'name': 'waypipe',             'desc': 'Network transparency for Wayland'},
+        {'name': 'wayvnc',              'desc': 'VNC server for Wayland'},
+        {'name': 'zmap',                'desc': 'Fast internet-wide scanner'}
     ],
     'Shell & Tools': [
         {'name': 'abduco',              'desc': 'Session management in a clean and simple way'},
@@ -172,25 +226,36 @@ sudo_timeout:
         {'name': 'expect',              'desc': 'Tool for automating interactive applications'},
         {'name': 'figlet',              'desc': 'ASCII art text banners'},
         {'name': 'fortune-mod',         'desc': 'Random quotes and aphorisms'},
+        {'name': 'freeze',              'desc': 'Generate images of code and terminal output'},
         {'name': 'gh',                  'desc': 'GitHub CLI'},
         {'name': 'git-lfs',             'desc': 'Git Large File Storage'},
         {'name': 'glow',                'desc': 'Render markdown on the CLI'},
+        {'name': 'gopass',              'desc': 'Password store with extensions'},
         {'name': 'jc',                  'desc': 'CLI tool to convert command output to JSON'},
         {'name': 'lowdown',             'desc': 'Markdown translator'},
         {'name': 'miller',              'desc': 'Like awk, sed, cut, join, and sort for name-indexed data'},
+        {'name': 'minicom',             'desc': 'Serial console and communication program'},
         {'name': 'moreutils',           'desc': 'Additional unix utilities'},
+        {'name': 'mtools',              'desc': 'MS-DOS disk utilities'},
+        {'name': 'neo',                 'desc': 'Matrix digital rain effect'},
+        {'name': 'neomutt',             'desc': 'Terminal email client'},
+        {'name': 'netmask',             'desc': 'IP address and netmask manipulation'},
         {'name': 'par',                 'desc': 'Paragraph reformatter, vaguely like fmt, but more elaborate'},
         {'name': 'parallel',            'desc': 'Shell tool for executing jobs in parallel'},
         {'name': 'pass',                'desc': 'The standard unix password manager'},
         {'name': 'pastel',              'desc': 'CLI tool to generate, analyze, convert and manipulate colors'},
         {'name': 'pwgen',               'desc': 'Automatic password generation'},
+        {'name': 'recoll',              'desc': 'Desktop full-text search tool'},
         {'name': 'reptyr',              'desc': 'Attach a running process to a new terminal'},
         {'name': 'rlwrap',              'desc': 'Readline wrapper for interactive commands'},
         {'name': 'sad',                 'desc': 'CLI search and replace'},
         {'name': 'salt',                'desc': 'A parallel remote execution system'},
+        {'name': 'sqlite',              'desc': 'SQLite database CLI'},
         {'name': 'tealdeer',            'desc': 'A fast tldr client in Rust'},
         {'name': 'tmux',                'desc': 'Terminal multiplexer'},
         {'name': 'toilet',              'desc': 'Color ASCII art text banners'},
+        {'name': 'translate-shell',     'desc': 'Command-line online translator'},
+        {'name': 'udiskie',             'desc': 'Automounter for removable media'},
         {'name': 'ugrep',              'desc': 'Ultra fast grep with interactive query UI'},
         {'name': 'urlscan',             'desc': 'Extract and browse URLs from email messages'},
         {'name': 'yq',                  'desc': 'YAML/XML/TOML processor'},
@@ -202,8 +267,48 @@ sudo_timeout:
     'Wayland': [
         {'name': 'cliphist',            'desc': 'Clipboard history for Wayland'},
         {'name': 'pyprland',            'desc': 'Hyprland plugin system and scratchpads'},
+        {'name': 'rofi',                'desc': 'Window switcher, application launcher and dmenu replacement'},
+        {'name': 'screenkey',           'desc': 'Show keystrokes on screen'},
+        {'name': 'swappy',              'desc': 'Screenshot annotation tool for Wayland'},
+        {'name': 'swaybg',              'desc': 'Wayland background setter'},
         {'name': 'swww',                'desc': 'Animated wallpaper daemon for Wayland'},
-        {'name': 'wf-recorder',         'desc': 'Wayland screen recorder'}
+        {'name': 'wev',                 'desc': 'Wayland event viewer for debugging'},
+        {'name': 'wf-recorder',         'desc': 'Wayland screen recorder'},
+        {'name': 'wlogout',             'desc': 'Wayland logout menu'},
+        {'name': 'wtype',               'desc': 'xdotool type for Wayland'},
+        {'name': 'ydotool',             'desc': 'Generic command-line automation tool for Wayland'}
+    ],
+    'Gaming & Emulation': [
+        {'name': 'abuse',               'desc': 'Action platformer game'},
+        {'name': 'crawl-tiles',         'desc': 'Dungeon Crawl Stone Soup with tiles'},
+        {'name': 'dosbox-staging',      'desc': 'Modernized DOSBox fork'},
+        {'name': 'gamescope',           'desc': 'SteamOS session compositing window manager'},
+        {'name': 'gnuchess',            'desc': 'GNU Chess engine'},
+        {'name': 'mangohud',            'desc': 'Vulkan/OpenGL overlay for FPS and system monitoring'},
+        {'name': 'nethack',             'desc': 'Classic roguelike adventure game'},
+        {'name': 'pcem',                'desc': 'IBM PC emulator'},
+        {'name': 'protontricks',        'desc': 'Proton/Wine tricks helper'},
+        {'name': 'retroarch',           'desc': 'Multi-platform emulator frontend'},
+        {'name': 'supertuxkart',        'desc': '3D racing game'},
+        {'name': 'wesnoth',             'desc': 'Turn-based strategy game'},
+        {'name': 'xaos',                'desc': 'Interactive fractal zoomer'},
+        {'name': 'xonotic',             'desc': 'Fast-paced FPS game'}
+    ],
+    'Security': [
+        {'name': 'hashcat',             'desc': 'Advanced password recovery tool'},
+        {'name': 'tcpdump',             'desc': 'Network packet analyzer'},
+        {'name': 'wireshark-cli',       'desc': 'Network protocol analyzer CLI (tshark)'}
+    ],
+    'Virtualization': [
+        {'name': 'bottles',             'desc': 'Wine/Proton application manager'},
+        {'name': 'qemu-kvm',            'desc': 'QEMU/KVM virtual machine emulator'},
+        {'name': 'virt-manager',        'desc': 'Virtual machine manager GUI'}
+    ],
+    'Desktop': [
+        {'name': 'corectrl',            'desc': 'AMD GPU power and fan control'},
+        {'name': 'ddccontrol',          'desc': 'DDC monitor control'},
+        {'name': 'openrgb',             'desc': 'Peripheral RGB LED controller'},
+        {'name': 'texlive-scheme-basic', 'desc': 'TeX Live basic scheme'}
     ],
     'Version Control': [
         {'name': 'chezmoi',             'desc': 'Manage your dotfiles across multiple diverse machines'},
@@ -337,6 +442,37 @@ mount_one:
     - mkmnt: True
     - opts: defaults
     - persist: True
+
+# Flatpak applications (32-bit deps conflict with rpm-ostree base image)
+install_flatpak_steam:
+  cmd.run:
+    - name: flatpak install -y flathub com.valvesoftware.Steam
+    - runas: neg
+    - unless: flatpak info com.valvesoftware.Steam &>/dev/null
+
+flatpak_steam_filesystem:
+  cmd.run:
+    - name: >-
+        flatpak override --user
+        --filesystem=/mnt/zero
+        --filesystem=/mnt/one
+        com.valvesoftware.Steam
+    - runas: neg
+    - require:
+      - cmd: install_flatpak_steam
+    - unless: flatpak override --user --show com.valvesoftware.Steam | grep -q '/mnt/zero'
+
+install_flatpak_pcsx2:
+  cmd.run:
+    - name: flatpak install -y flathub net.pcsx2.PCSX2
+    - runas: neg
+    - unless: flatpak info net.pcsx2.PCSX2 &>/dev/null
+
+install_flatpak_floorp:
+  cmd.run:
+    - name: flatpak install -y flathub one.ablaze.floorp
+    - runas: neg
+    - unless: flatpak info one.ablaze.floorp &>/dev/null
 
 install_zi:
   cmd.run:
