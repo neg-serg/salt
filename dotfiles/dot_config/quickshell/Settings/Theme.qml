@@ -144,18 +144,20 @@ Singleton {
         path: Settings.themeFile
         watchChanges: true
         onFileChanged: reload()
-        // After adapter updates (file written/loaded), write and check deprecated tokens
+        // Theme/.theme.json is written exclusively by the theme-parts merge system
+        // (_performThemeMerge → setText).  Do NOT call writeAdapter() here — the
+        // JsonAdapter property var defaults are ({}) and would overwrite the merged
+        // content with empty groups, causing all tokens to fall back to hardcoded
+        // defaults.
         onAdapterUpdated: {
-            writeAdapter();
             try {
                 root._checkDeprecatedTokens();
             } catch (e) {}
             root._themeLoaded = true;
         }
         onLoadFailed: function (error) {
-            if (error.toString().includes("No such file") || error === 2) {
-                writeAdapter(); // File doesn't exist, create it with default values
-            }
+            // If the file is missing, the merge system will create it once all
+            // theme parts have been loaded — no need to seed with empty defaults.
         }
         JsonAdapter {
             id: themeData
