@@ -10,6 +10,7 @@ URL:            https://github.com/zk-org/zk
 Source0:        %{name}-%{version}.tar.gz
 
 BuildRequires:  golang
+BuildRequires:  gcc
 BuildRequires:  git
 
 %description
@@ -19,7 +20,7 @@ A plain text note-taking assistant following the Zettelkasten method.
 %setup -q -n zk-0.15.2
 
 %build
-go build -ldflags="-s -w" -o zk .
+go build -tags "fts5" -ldflags="-s -w" -o zk .
 
 %install
 mkdir -p %{buildroot}%{_bindir}
