@@ -307,7 +307,10 @@ sudo_timeout:
     'Desktop': [
         {'name': 'corectrl',            'desc': 'AMD GPU power and fan control'},
         {'name': 'ddccontrol',          'desc': 'DDC monitor control'},
+        {'name': 'kvantum',             'desc': 'SVG-based Qt theme engine'},
         {'name': 'openrgb',             'desc': 'Peripheral RGB LED controller'},
+        {'name': 'qt5ct',               'desc': 'Qt5 configuration tool'},
+        {'name': 'qt6ct',               'desc': 'Qt6 configuration tool'},
         {'name': 'texlive-scheme-basic', 'desc': 'TeX Live basic scheme'}
     ],
     'Version Control': [
@@ -542,6 +545,34 @@ install_television:
         rm -rf /tmp/tv.tar.gz /tmp/tv-${TAG}-x86_64-unknown-linux-musl
     - runas: neg
     - creates: /var/home/neg/.local/bin/tv
+
+# --- Theme packages not in Fedora repos ---
+install_kora_icons:
+  cmd.run:
+    - name: |
+        TAG=$(curl -s https://api.github.com/repos/bikass/kora/releases/latest | jq -r .tag_name)
+        curl -L "https://github.com/bikass/kora/archive/refs/tags/${TAG}.tar.gz" -o /tmp/kora.tar.gz
+        tar -xzf /tmp/kora.tar.gz -C /tmp
+        mkdir -p ~/.local/share/icons
+        cp -r /tmp/kora-*/kora ~/.local/share/icons/
+        cp -r /tmp/kora-*/kora-light ~/.local/share/icons/
+        cp -r /tmp/kora-*/kora-light-panel ~/.local/share/icons/
+        cp -r /tmp/kora-*/kora-pgrey ~/.local/share/icons/
+        gtk-update-icon-cache ~/.local/share/icons/kora 2>/dev/null || true
+        rm -rf /tmp/kora.tar.gz /tmp/kora-*
+    - runas: neg
+    - creates: /var/home/neg/.local/share/icons/kora
+
+install_flight_gtk_theme:
+  cmd.run:
+    - name: |
+        git clone --depth=1 https://github.com/niceflight/Flight-GTK.git /tmp/flight-gtk
+        mkdir -p ~/.local/share/themes
+        cp -r /tmp/flight-gtk/Flight-Dark-GTK ~/.local/share/themes/
+        cp -r /tmp/flight-gtk/Flight-light-GTK ~/.local/share/themes/
+        rm -rf /tmp/flight-gtk
+    - runas: neg
+    - creates: /var/home/neg/.local/share/themes/Flight-Dark-GTK
 
 chezmoi_source_symlink:
   file.symlink:
