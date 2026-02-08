@@ -84,8 +84,10 @@ if [ "$want_offsets" -eq 1 ] && [ "$have_xoff" -eq 0 ] && [ "$have_yoff" -eq 0 ]
     # Default: subtract full menuYOffset so the menu sits flush to panel
     extra=$(awk -v a="$ay" 'BEGIN{print a}')
   fi
-  # Hyprland monitor scale (focused)
-  scale=$("$hyprctl_bin" -j monitors 2> /dev/null | "$jq_bin" -r 'try (.[ ] | select(.focused==true) | .scale) // 1' 2> /dev/null || echo 1)
+  # Monitor scale: try Hyprland first, fall back to wlr-randr
+  scale=$("$hyprctl_bin" -j monitors 2> /dev/null | "$jq_bin" -r 'try (.[] | select(.focused==true) | .scale) // 1' 2> /dev/null || \
+         wlr-randr --json 2> /dev/null | "$jq_bin" -r 'try ([.[] | select(.enabled) | .scale] | first) // 1' 2> /dev/null || \
+         echo 1)
   # reduce y-offset by adjustment (clamp >=0)
   ay=$(awk -v a="$ay" -v e="$extra" 'BEGIN{v=a-e; if(v<0)v=0; print v}')
   # Round offsets to ints
