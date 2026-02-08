@@ -1,0 +1,64 @@
+# Missing packages: nixos-config → salt (Fedora Atomic)
+# Generated: 2026-02-08
+# Status: [ ] = to add, [x] = done
+
+## Available in Fedora repos (rpm-ostree install)
+
+### Wayland/Hyprland
+[ ] swww                    # Animated wallpaper daemon (used by wl script)
+[ ] pyprland                # Hyprland plugin system / scratchpads
+[ ] wf-recorder             # Wayland screen recorder (used by screenrec script)
+[ ] cliphist                # Clipboard history for Wayland (used by clip script)
+
+### Audio/Music
+[ ] beets                   # Music library manager and tagger (used by beet-update script)
+[ ] mpdris2                 # MPD to MPRIS2 bridge daemon
+[ ] mpdas                   # Last.fm/Libre.fm scrobbler for MPD
+[ ] helvum                  # GTK patchbay for PipeWire
+[ ] id3v2                   # Command-line ID3 tag editor
+[ ] qpwgraph                # Qt PipeWire graph/patchbay
+
+### Network
+[ ] httpie                  # Modern HTTP client CLI
+[ ] nmap-ncat               # Netcat from nmap (used by pypr-client and other scripts)
+[ ] fuse-sshfs              # Mount remote dirs over SSH
+[ ] w3m                     # Text-mode web browser
+
+### System/Hardware
+[ ] smartmontools           # S.M.A.R.T. disk monitoring
+[ ] acpi                    # ACPI battery/thermal info
+[ ] lm_sensors              # Hardware sensor monitoring (temperatures, fans, voltages)
+[ ] fio                     # Flexible I/O tester / disk benchmarking
+
+### GUI Applications
+[ ] transmission-gtk        # BitTorrent client
+
+### Tools
+[ ] age                     # Modern file encryption (alternative to GPG)
+[ ] figlet                  # ASCII art text banners
+[ ] toilet                  # Color ASCII art text banners
+[ ] fortune-mod             # Random quotes/aphorisms
+[ ] cowsay                  # Talking cow ASCII art
+
+### Misc
+[ ] tesseract               # OCR engine (used by screenshot script for OCR mode)
+[ ] zathura                 # Minimal PDF/document viewer (used by read_documents script)
+[ ] zathura-pdf-poppler     # PDF plugin for zathura
+
+## NOT in Fedora repos (need custom RPM or other install method)
+
+### Could build as custom RPM (like existing 31 packages)
+[ ] bandwhich               # Network utilization per process (Rust)
+[ ] curlie                  # curl wrapper with HTTPie UI (Go)
+[ ] doggo                   # DNS client CLI (Go)
+[ ] xh                      # Friendly HTTP client (Rust, like httpie but faster)
+[ ] carapace                # Multi-shell completion engine (Go)
+
+### Probably skip / low priority
+[ ] rescrobbled             # MPRIS scrobbler daemon (Rust)
+[ ] coppwr                  # PipeWire control tool (Rust)
+[ ] pw-volume               # PipeWire volume control
+[ ] camilladsp              # Audio DSP engine
+[ ] unflac                  # FLAC cuesheet splitter
+[ ] evhz                    # Input device polling rate monitor
+[ ] act                     # Run GitHub Actions locally (Go)
