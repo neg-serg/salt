@@ -142,7 +142,8 @@ sudo_timeout:
         {'name': 'aria2',               'desc': 'High speed download utility with resuming and segmented downloading'},
         {'name': 'prettyping',          'desc': 'Wrapper around ping to make output prettier'},
         {'name': 'speedtest-cli',       'desc': 'Command-line bandwidth test'},
-        {'name': 'streamlink',          'desc': 'CLI for extracting streams from websites'}
+        {'name': 'streamlink',          'desc': 'CLI for extracting streams from websites'},
+        {'name': 'telegram-desktop',    'desc': 'Telegram Desktop messaging app'}
     ],
     'Shell & Tools': [
         {'name': 'abduco',              'desc': 'Session management in a clean and simple way'},
