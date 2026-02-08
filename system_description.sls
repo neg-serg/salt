@@ -192,6 +192,7 @@ include:
   - amnezia
   - build_rpms
   - fira-code-nerd
+  - hy3
   - install_rpms
 
 # Install all packages in a single transaction.
