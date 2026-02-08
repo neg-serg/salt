@@ -1,0 +1,3 @@
+[filechooser]
+cmd=/home/neg/.local/bin/yazi-filechooser
+default_dir=/home/neg
