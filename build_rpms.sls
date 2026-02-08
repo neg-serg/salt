@@ -36,7 +36,8 @@
     {'name': 'bandwhich',         'version': '0.23.1'},
     {'name': 'xh',                'version': '0.25.3'},
     {'name': 'curlie',            'version': '1.8.2'},
-    {'name': 'doggo',             'version': '1.1.2'}
+    {'name': 'doggo',             'version': '1.1.2'},
+    {'name': 'wallust',           'version': '3.3.0'}
 ] %}
 
 {% set iosevka = {
