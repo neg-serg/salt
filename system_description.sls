@@ -574,7 +574,7 @@ install_kora_icons:
 install_flight_gtk_theme:
   cmd.run:
     - name: |
-        git clone --depth=1 https://github.com/niceflight/Flight-GTK.git /tmp/flight-gtk
+        git clone --depth=1 https://github.com/neg-serg/Flight-Plasma-Themes.git /tmp/flight-gtk
         mkdir -p ~/.local/share/themes
         cp -r /tmp/flight-gtk/Flight-Dark-GTK ~/.local/share/themes/
         cp -r /tmp/flight-gtk/Flight-light-GTK ~/.local/share/themes/
@@ -841,8 +841,27 @@ wallust_hyprland_defaults:
     - mode: '0644'
     - replace: false
     - contents: |
-        $col_border_active_base = rgb(89b4fa)
+        $col_border_active_base = rgba(00285981)
         $col_border_inactive   = rgba(00000000)
-        $shadow_color          = rgba(1e1e2eaa)
+        $shadow_color          = rgba(005fafaa)
     - require:
       - file: wallust_cache_dir
+
+# --- dconf: GTK/icon/font/cursor theme for Wayland apps ---
+set_dconf_gtk_theme:
+  cmd.run:
+    - name: dconf write /org/gnome/desktop/interface/gtk-theme "'Flight-Dark-GTK'"
+    - runas: neg
+    - unless: test "$(dconf read /org/gnome/desktop/interface/gtk-theme)" = "'Flight-Dark-GTK'"
+
+set_dconf_icon_theme:
+  cmd.run:
+    - name: dconf write /org/gnome/desktop/interface/icon-theme "'kora'"
+    - runas: neg
+    - unless: test "$(dconf read /org/gnome/desktop/interface/icon-theme)" = "'kora'"
+
+set_dconf_font_name:
+  cmd.run:
+    - name: dconf write /org/gnome/desktop/interface/font-name "'Iosevka 10'"
+    - runas: neg
+    - unless: test "$(dconf read /org/gnome/desktop/interface/font-name)" = "'Iosevka 10'"
