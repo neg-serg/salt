@@ -1,0 +1,54 @@
+daemonize
+show-failed-attempts
+show-keyboard-layout
+indicator-caps-lock
+
+# Colors matching hyprlock simple.conf theme
+# Surface: rgba(24, 28, 37, 0.95)
+# Accent: rgba(0, 111, 204)
+# Text: rgba(203, 214, 229)
+# Error: rgba(255, 107, 129)
+# Warning: rgba(255, 200, 100)
+# Success: rgba(14, 107, 77)
+
+inside-color=181c25f2
+inside-clear-color=181c25f2
+inside-caps-lock-color=181c25f2
+inside-ver-color=006fcc80
+inside-wrong-color=ff6b8180
+
+ring-color=3b4c5ccc
+ring-clear-color=006fcccc
+ring-caps-lock-color=ffc864cc
+ring-ver-color=006fcccc
+ring-wrong-color=ff6b81cc
+
+line-color=00000000
+line-clear-color=00000000
+line-caps-lock-color=00000000
+line-ver-color=00000000
+line-wrong-color=00000000
+
+separator-color=00000000
+
+key-hl-color=006fcc
+bs-hl-color=ff6b81
+caps-lock-bs-hl-color=ffc864
+caps-lock-key-hl-color=0e6b4d
+
+text-color=cbd6e5ff
+text-clear-color=cbd6e5ff
+text-caps-lock-color=ffc864ff
+text-ver-color=cbd6e5ff
+text-wrong-color=ff6b81ff
+
+layout-bg-color=181c25f2
+layout-border-color=3b4c5ccc
+layout-text-color=aeb9c899
+
+font=Iosevka
+font-size=24
+indicator-radius=100
+indicator-thickness=7
+
+color=181c25ff

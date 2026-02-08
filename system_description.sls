@@ -60,10 +60,13 @@ sudo_timeout:
 
 # Use rpm-ostree for Silverblue.
 # Batch packages for speed and correct dependency resolution.
+# Base image: Wayblue-Wayfire (ghcr.io/wayblueorg/wayfire:latest)
 # Packages already in Wayblue base image (do NOT layer):
 #   7zip-standalone (obsoletes p7zip), fzf, ImageMagick, inotify-tools, jq,
 #   lsof, make, mtr, procps-ng, psmisc, qrencode, ripgrep, rust,
 #   tree-sitter-cli, unzip, xz, yt-dlp, zip
+# Wayfire-specific (shipped by image): wayfire, wf-shell, wf-config,
+#   wayfire-config-manager, foot, swaylock, swayidle, xdg-desktop-portal-wlr
 {% set categories = {
     'Archives & Compression': [
         {'name': 'lbzip2',              'desc': 'Parallel bzip2 compression utility'},
@@ -169,6 +172,7 @@ sudo_timeout:
         {'name': 'tmux',                'desc': 'Terminal multiplexer'},
         {'name': 'ugrep',              'desc': 'Ultra fast grep with interactive query UI'},
         {'name': 'urlscan',             'desc': 'Extract and browse URLs from email messages'},
+        {'name': 'waybar',              'desc': 'Highly customizable Wayland bar'},
         {'name': 'yq',                  'desc': 'YAML/XML/TOML processor'},
         {'name': 'zoxide',              'desc': 'Smarter cd command for your terminal'},
         {'name': 'zsh',                 'desc': 'Powerful interactive shell'}
