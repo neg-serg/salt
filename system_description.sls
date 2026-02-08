@@ -138,6 +138,7 @@ sudo_timeout:
         {'name': 'id3v2',               'desc': 'Command-line ID3v2 tag editor'},
         {'name': 'jpegoptim',           'desc': 'Utility to optimize JPEG files'},
         {'name': 'mediainfo',           'desc': 'Media file information utility'},
+        {'name': 'mpd',                 'desc': 'Music Player Daemon'},
         {'name': 'mpc',                 'desc': 'Command-line MPD client'},
         {'name': 'mpdas',               'desc': 'Last.fm scrobbler for MPD'},
         {'name': 'mpdris2',             'desc': 'MPRIS2 bridge for MPD'},
@@ -330,6 +331,7 @@ include:
   - fira-code-nerd
   - hy3
   - install_rpms
+  - mpd
 
 # Install all packages in a single transaction.
 install_system_packages:
@@ -608,6 +610,8 @@ mpdris2_user_service:
     - contents: |
         [Unit]
         Description=MPD MPRIS2 Bridge
+        After=mpd.service
+        Wants=mpd.service
         [Service]
         ExecStart=/usr/bin/mpDris2
         Restart=on-failure
