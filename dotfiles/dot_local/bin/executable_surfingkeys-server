@@ -1,49 +1,57 @@
 #!/usr/bin/env python3
-"""HTTP server for Surfingkeys browser extension.
-
-Handles actions that content scripts cannot perform directly:
-  /focus  → focus address bar (Ctrl+L via hyprctl)
-  /close  → close current tab (Ctrl+W via hyprctl)
-"""
 
 import http.server
 import socketserver
 import subprocess
+import os
+import sys
 
 PORT = 18888
+DIR = os.path.expanduser("~/.config")
 
+class Handler(http.server.SimpleHTTPRequestHandler):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, directory=DIR, **kwargs)
 
-class Handler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
-        if self.path.startswith("/focus"):
-            self._hyprctl_shortcut("CTRL,l")
-        elif self.path.startswith("/close"):
-            self._hyprctl_shortcut("CTRL,w")
+        print(f"Request: {self.path}", flush=True)
+        if self.path.startswith('/focus'):
+            try:
+                # Press Ctrl+L using hyprctl (cleaner than wtype)
+                subprocess.run(["hyprctl", "dispatch", "sendshortcut", "CTRL,l,activewindow"])
+                self.send_response(200)
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(b'OK')
+            except Exception as e:
+                print(f"Error: {e}", flush=True)
+                self.send_response(500)
+                self.end_headers()
+                self.wfile.write(str(e).encode())
+
+        elif self.path.startswith('/close'):
+            try:
+                # Press Ctrl+W using hyprctl
+                subprocess.run(["hyprctl", "dispatch", "sendshortcut", "CTRL,w,activewindow"])
+                self.send_response(200)
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(b'OK')
+            except Exception as e:
+                print(f"Error: {e}", flush=True)
+                self.send_response(500)
+                self.end_headers()
+                self.wfile.write(str(e).encode())
         else:
-            self.send_response(404)
-            self.end_headers()
+            return super().do_GET()
 
-    def _hyprctl_shortcut(self, keys):
-        try:
-            subprocess.run(
-                ["hyprctl", "dispatch", "sendshortcut", f"{keys},activewindow"],
-                check=True,
-            )
-            self.send_response(200)
-            self.send_header("Access-Control-Allow-Origin", "*")
-            self.end_headers()
-            self.wfile.write(b"OK")
-        except Exception as e:
-            self.send_response(500)
-            self.send_header("Access-Control-Allow-Origin", "*")
-            self.end_headers()
-            self.wfile.write(str(e).encode())
+    def end_headers(self):
+        self.send_header('Access-Control-Allow-Origin', '*')
+        super().end_headers()
 
-    def log_message(self, format, *args):
-        pass  # silence per-request logging
-
-
+# Allow reuse address to prevent "Address already in use" on restarts
 socketserver.TCPServer.allow_reuse_address = True
 
-with socketserver.TCPServer(("127.0.0.1", PORT), Handler) as httpd:
+with socketserver.TCPServer(("", PORT), Handler) as httpd:
+    print(f"Serving at port {PORT} from {DIR}")
     httpd.serve_forever()
