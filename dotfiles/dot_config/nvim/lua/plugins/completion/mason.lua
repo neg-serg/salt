@@ -2,42 +2,53 @@
 -- │ █▓▒░ mason.nvim — portable LSP/formatter/linter installer                        │
 -- └───────────────────────────────────────────────────────────────────────────────────┘
 return {
-  'mason-org/mason.nvim',
-  lazy = false,
-  dependencies = {
-    {
-      'mason-org/mason-lspconfig.nvim',
-      opts = {
-        ensure_installed = {
-          'autotools_ls',
-          'awk_ls',
-          'bashls',
-          'clangd',
-          'cmake',
-          'cssls',
-          'dotls',
-          'html',
-          'jsonls',
-          'lemminx',
-          'marksman',
-          'nil_ls',
-          'pyright',
-          'qmlls',
-          'taplo',
-          'ts_ls',
-          'yamlls',
-        },
-      },
+  {
+    'mason-org/mason.nvim',
+    lazy = false,
+    opts = {},
+  },
+  {
+    'mason-org/mason-lspconfig.nvim',
+    lazy = false,
+    dependencies = {
+      'mason-org/mason.nvim',
+      'neovim/nvim-lspconfig',
     },
-    {
-      'WhoIsSethDaniel/mason-tool-installer.nvim',
-      opts = {
-        ensure_installed = {
-          'prettierd',
-          'stylua',
-        },
+    opts = {
+      automatic_enable = false,
+      ensure_installed = {
+        'autotools_ls',
+        'awk_ls',
+        'bashls',
+        'clangd',
+        'cmake',
+        'cssls',
+        'dotls',
+        'html',
+        'jsonls',
+        'just',
+        'lemminx',
+        'marksman',
+        'nginx_language_server',
+        'nil_ls',
+        'pyright',
+        'qmlls',
+        'systemd_ls',
+        'taplo',
+        'ts_ls',
+        'yamlls',
       },
     },
   },
-  opts = {},
+  {
+    'WhoIsSethDaniel/mason-tool-installer.nvim',
+    lazy = false,
+    dependencies = { 'mason-org/mason.nvim' },
+    opts = {
+      ensure_installed = {
+        'prettierd',
+        'stylua',
+      },
+    },
+  },
 }

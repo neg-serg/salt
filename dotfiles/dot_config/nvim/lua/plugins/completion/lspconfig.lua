@@ -4,8 +4,6 @@
 return {
   'neovim/nvim-lspconfig',
   dependencies = {
-    'mason-org/mason.nvim',
-    'mason-org/mason-lspconfig.nvim',
     {
       'SmiteshP/nvim-navbuddy',
       dependencies = { 'SmiteshP/nvim-navic', 'MunifTanjim/nui.nvim' },
@@ -79,7 +77,7 @@ return {
       'nginx_language_server',     -- nginx configs
       'nil_ls',                    -- Nix (nil by oxalica)
       'qmlls',                     -- QML (Qt)
-      'systemd_language_server',   -- systemd units
+      'systemd_ls',                -- systemd units
       'taplo',                     -- TOML
       'ts_ls',                     -- TypeScript/JavaScript
       'yamlls',                    -- YAML
