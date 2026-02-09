@@ -844,6 +844,36 @@ vdirsyncer_timer:
         [Install]
         WantedBy=timers.target
 
+# --- Surfingkeys HTTP server (browser extension helper) ---
+surfingkeys_server_service:
+  file.managed:
+    - name: /var/home/neg/.config/systemd/user/surfingkeys-server.service
+    - user: neg
+    - group: neg
+    - mode: '0644'
+    - makedirs: True
+    - contents: |
+        [Unit]
+        Description=Surfingkeys HTTP server (browser extension helper)
+        After=graphical-session.target
+        PartOf=graphical-session.target
+        [Service]
+        ExecStart=%h/.local/bin/surfingkeys-server
+        Restart=on-failure
+        RestartSec=5
+        [Install]
+        WantedBy=graphical-session.target
+
+surfingkeys_server_enable:
+  cmd.run:
+    - name: systemctl --user daemon-reload && systemctl --user enable --now surfingkeys-server.service
+    - runas: neg
+    - env:
+      - XDG_RUNTIME_DIR: /run/user/1000
+    - unless: systemctl --user is-enabled surfingkeys-server.service
+    - require:
+      - file: surfingkeys_server_service
+
 # --- GPG agent with SSH support ---
 gpg_agent_socket:
   cmd.run:
