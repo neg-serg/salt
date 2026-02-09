@@ -73,7 +73,7 @@ sudo_timeout:
 # Base image: Wayblue-Hyprland (ghcr.io/wayblueorg/hyprland:latest)
 # Packages already in Wayblue base image (do NOT layer):
 #   7zip-standalone (obsoletes p7zip), fzf, ImageMagick, inotify-tools, jq,
-#   kitty, lsof, make, mtr, procps-ng, psmisc, qrencode, ripgrep, rust,
+#   kitty, lsof, make, mtr, procps-ng, psmisc, qrencode, rust,
 #   tree-sitter-cli, unzip, waybar, xz, yt-dlp, zip
 # Hyprland-specific (shipped by image): hyprland, hyprland-qtutils, hyprlock,
 #   hypridle, hyprpaper, xdg-desktop-portal-hyprland
@@ -127,6 +127,7 @@ sudo_timeout:
         {'name': 'jdupes',              'desc': 'Duplicate file finder and remover'},
         {'name': 'ncdu',                'desc': 'Text-based disk usage viewer'},
         {'name': 'plocate',             'desc': 'Fast file locate'},
+        {'name': 'ripgrep',             'desc': 'Fast regex search tool'},
         {'name': 'ranger',              'desc': 'Terminal file manager with vi keybindings'},
         {'name': 'rclone',              'desc': 'Cloud storage sync tool'},
         {'name': 'rmlint',              'desc': 'Find space waste and other broken things on your filesystem'},
