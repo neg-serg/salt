@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# pinentry-rofi wrapper — injects Wayland/DBus env vars for gpg-agent
+# gpg-agent starts early via socket activation, before GUI vars are set.
+# This wrapper detects them at invocation time and falls back to gnome3.
+
+if [ -z "$WAYLAND_DISPLAY" ] && [ -n "$XDG_RUNTIME_DIR" ]; then
+    wayland_socket=$(find "$XDG_RUNTIME_DIR" -maxdepth 1 -name 'wayland-*' ! -name '*.lock' -print -quit 2>/dev/null)
+    if [ -n "$wayland_socket" ]; then
+        export WAYLAND_DISPLAY
+        WAYLAND_DISPLAY=$(basename "$wayland_socket")
+    fi
+fi
+
+if [ -z "$DISPLAY" ] && [ -n "$WAYLAND_DISPLAY" ]; then
+    export DISPLAY=:0
+fi
+
+if [ -z "$DBUS_SESSION_BUS_ADDRESS" ] && [ -n "$XDG_RUNTIME_DIR" ] && [ -S "$XDG_RUNTIME_DIR/bus" ]; then
+    export DBUS_SESSION_BUS_ADDRESS="unix:path=$XDG_RUNTIME_DIR/bus"
+fi
+
+if command -v pinentry-rofi >/dev/null 2>&1; then
+    exec pinentry-rofi "$@"
+fi
+
+exec /usr/bin/pinentry-gnome3 "$@"
