@@ -3,4 +3,4 @@ log_file: /var/home/neg/src/salt/salt_config/var/log/salt/minion
 cachedir: /var/home/neg/src/salt/salt_config/var/cache/salt
 file_roots:
   base:
-    - /var/home/neg/src/salt/
+    - /var/home/neg/src/salt/states/

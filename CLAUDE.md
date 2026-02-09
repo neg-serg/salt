@@ -9,9 +9,10 @@ Migrated from NixOS (nix-maid/mkHomeFiles). NixOS source: `~/src/nixos-config/`.
 
 | Path | Purpose |
 |---|---|
-| `system_description.sls` | Main Salt state: packages, services, installers |
-| `build_rpms.sls` | Salt state: orchestrates RPM builds via podman |
-| `install_rpms.sls` | Salt state: installs custom RPMs via rpm-ostree |
+| `states/` | Salt state files (`.sls`) |
+| `states/system_description.sls` | Main Salt state: packages, services, installers |
+| `states/build_rpms.sls` | Salt state: orchestrates RPM builds via podman |
+| `states/install_rpms.sls` | Salt state: installs custom RPMs via rpm-ostree |
 | `build/build-rpm.sh` | Build script run inside containers |
 | `build/specs/*.spec` | RPM spec files |
 | `build/iosevka-neg.toml` | Custom Iosevka font build config |
@@ -24,7 +25,7 @@ Migrated from NixOS (nix-maid/mkHomeFiles). NixOS source: `~/src/nixos-config/`.
 ## Conventions
 
 - **Chezmoi naming**: `dot_config/foo/bar` deploys to `~/.config/foo/bar`
-- **RPM builds**: Each package has a section in `build/build-rpm.sh` + entry in `build_rpms.sls` + a `build/specs/*.spec` file
+- **RPM builds**: Each package has a section in `build/build-rpm.sh` + entry in `states/build_rpms.sls` + a `build/specs/*.spec` file
 - **Build containers**: `registry.fedoraproject.org/fedora-toolbox:43`, ephemeral (`--rm`)
 - **Salt creates guard**: `creates:` directive prevents re-running completed builds
 - **Commit style**: `[scope] description` — scopes: `salt`, `dotfiles`, `docs`, `rpm`

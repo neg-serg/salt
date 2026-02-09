@@ -28,7 +28,7 @@ clean:
 lint:
     .venv/bin/ruff check .
     .venv/bin/ruff format --check .
-    .venv/bin/salt-lint *.sls
+    .venv/bin/salt-lint states/*.sls
 
 # Format Python scripts
 fmt:
