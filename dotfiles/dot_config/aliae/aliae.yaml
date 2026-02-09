@@ -33,6 +33,10 @@ alias:
     value: git status -sb
   - name: als
     value: ls
+  - name: acp
+    value: cp
+  - name: fc
+    value: fc -liE 100
 
   # Git shortcuts
   - name: add
@@ -45,6 +49,26 @@ alias:
     value: git add
   - name: gaa
     value: git add --all
+  - name: gam
+    value: git am
+  - name: gama
+    value: git am --abort
+  - name: gamc
+    value: git am --continue
+  - name: gams
+    value: git am --skip
+  - name: gamscp
+    value: git am --show-current-patch
+  - name: gap
+    value: git apply
+  - name: gapa
+    value: git add --patch
+  - name: gapt
+    value: git apply --3way
+  - name: gau
+    value: git add --update
+  - name: gav
+    value: git add --verbose
   - name: gb
     value: git branch
   - name: gbD
@@ -53,6 +77,22 @@ alias:
     value: git branch -a
   - name: gbd
     value: git branch -d
+  - name: gbl
+    value: git blame -b -w
+  - name: gbnm
+    value: git branch --no-merged
+  - name: gbr
+    value: git branch --remote
+  - name: gbs
+    value: git bisect
+  - name: gbsb
+    value: git bisect bad
+  - name: gbsg
+    value: git bisect good
+  - name: gbsr
+    value: git bisect reset
+  - name: gbss
+    value: git bisect start
   - name: gc
     value: git commit -v
   - name: "gc!"
@@ -61,38 +101,174 @@ alias:
     value: git commit -v -a
   - name: "gca!"
     value: git commit -v -a --amend
+  - name: gcam
+    value: git commit -a -m
+  - name: "gcan!"
+    value: git commit -v -a --no-edit --amend
+  - name: "gcans!"
+    value: git commit -v -a -s --no-edit --amend
+  - name: gcas
+    value: git commit -a -s
+  - name: gcasm
+    value: git commit -a -s -m
   - name: gcb
     value: git checkout -b
+  - name: gcl
+    value: git clone --recurse-submodules
+  - name: gclean
+    value: git clean -id
+  - name: gcmsg
+    value: git commit -m
+  - name: "gcn!"
+    value: git commit -v --no-edit --amend
   - name: gco
     value: git checkout
+  - name: gcor
+    value: git checkout --recurse-submodules
+  - name: gcount
+    value: git shortlog -sn
+  - name: gcp
+    value: git cherry-pick
+  - name: gcpa
+    value: git cherry-pick --abort
+  - name: gcpc
+    value: git cherry-pick --continue
+  - name: gcs
+    value: git commit -S
+  - name: gcsm
+    value: git commit -s -m
   - name: gd
     value: git diff -w -U0 --word-diff-regex=[^[:space:]]
+  - name: gdca
+    value: git diff --cached
+  - name: gdcw
+    value: git diff --cached --word-diff
   - name: gds
     value: git diff --staged
+  - name: gdup
+    value: git diff @{upstream}
+  - name: gdw
+    value: git diff --word-diff
+  - name: gf
+    value: git fetch
+  - name: gfa
+    value: git fetch --all --prune
+  - name: gfg
+    value: git ls-files | grep
+  - name: gfo
+    value: git fetch origin
+  - name: gignore
+    value: git update-index --assume-unchanged
+  - name: gignored
+    value: "git ls-files -v | grep '^[[:lower:]]'"
   - name: gl
     value: git log -n 4 --oneline
+  - name: gm
+    value: git merge
+  - name: gma
+    value: git merge --abort
+  - name: gmtl
+    value: git mergetool --no-prompt
   - name: gp
     value: git push
+  - name: gpd
+    value: git push --dry-run
+  - name: gpf
+    value: git push --force-with-lease
   - name: "gpf!"
     value: git push --force
+  - name: gpr
+    value: git pull --rebase
+  - name: gpv
+    value: git push -v
+  - name: gr
+    value: git remote
+  - name: gra
+    value: git remote --add
   - name: grb
     value: git rebase
+  - name: grba
+    value: git rebase --abort
+  - name: grbc
+    value: git rebase --continue
   - name: grbi
     value: git rebase -i
+  - name: grbo
+    value: git rebase --onto
+  - name: grbs
+    value: git rebase --skip
+  - name: grev
+    value: git revert
+  - name: grh
+    value: git reset
+  - name: grhh
+    value: git reset --hard
+  - name: grm
+    value: git rm
+  - name: grmc
+    value: git rm --cached
+  - name: grs
+    value: git restore
+  - name: grup
+    value: git remote update
+  - name: gsh
+    value: git show
+  - name: gsi
+    value: git submodule init
+  - name: gsps
+    value: git show --pretty=short --show-signature
+  - name: gsta
+    value: git stash save
   - name: gstaa
     value: git stash apply
+  - name: gstall
+    value: git stash --all
+  - name: gstc
+    value: git stash clear
+  - name: gstd
+    value: git stash drop
   - name: gstl
     value: git stash list
   - name: gstp
     value: git stash pop
+  - name: gsts
+    value: git stash show --text
+  - name: gstu
+    value: git stash --include-untracked
+  - name: gsu
+    value: git submodule update
   - name: gsw
     value: git switch
   - name: gswc
     value: git switch -c
+  - name: gts
+    value: git tag -s
+  - name: gu
+    value: "git reset --soft 'HEAD^'"
+  - name: gup
+    value: git pull --rebase
+  - name: gupa
+    value: git pull --rebase --autostash
+  - name: gupav
+    value: git pull --rebase --autostash -v
+  - name: gupv
+    value: git pull --rebase -v
+  - name: gwch
+    value: git whatchanged -p --abbrev-commit --pretty=medium
+  - name: pull
+    value: git pull
+  - name: push
+    value: git push
+  - name: resolve
+    value: git mergetool --tool=nwim
+  - name: stash
+    value: git stash
   - name: status
     value: git status
 
   # Misc
+  - name: sudo
+    value: "sudo "
   - name: cp
     value: cp --reflink=auto
   - name: mv
@@ -103,44 +279,140 @@ alias:
     value: rmdir
   - name: x
     value: xargs
+  - name: sort
+    value: sort --parallel 8 -S 16M
   - name: ":q"
     value: exit
   - name: s
-    value: sudo 
+    value: "sudo "
+  - name: dig
+    value: dig +noall +answer
+  - name: rsync
+    value: rsync -az --compress-choice=zstd --info=FLIST,COPY,DEL,REMOVE,SKIP,SYMSAFE,MISC,NAME,PROGRESS,STATS
   - name: j
     value: journalctl
+  - name: jl
+    value: jupyter lab --no-browser
+  - name: dosbox
+    value: dosbox -conf $XDG_CONFIG_HOME/dosbox/dosbox.conf
+  - name: gdb
+    value: gdb -nh -x $XDG_CONFIG_HOME/gdb/gdbinit
+  - name: iostat
+    value: iostat --compact -p -h -s
+  - name: mtrr
+    value: mtr -wzbe
+  - name: nvidia-settings
+    value: nvidia-settings --config=$XDG_CONFIG_HOME/nvidia/settings
+  - name: ssh
+    value: TERM=xterm-256color ssh
+  - name: svn
+    value: svn --config-dir $XDG_CONFIG_HOME/subversion
   - name: scp
     value: scp -r
+  - name: dd
+    value: dd status=progress
   - name: ip
     value: ip -c
+  - name: readelf
+    value: readelf -W
+  - name: objdump
+    value: objdump -M intel -d
+  - name: strace
+    value: strace -yy
+  - name: xz
+    value: xz --threads=0
+  - name: zstd
+    value: zstd --threads=0
   - name: ctl
     value: systemctl
   - name: stl
     value: sudo systemctl
   - name: utl
     value: systemctl --user
-  - name: up
+  - name: ut
     value: systemctl --user start
   - name: un
     value: systemctl --user stop
+  - name: up
+    value: sudo systemctl start
+  - name: dn
+    value: sudo systemctl stop
 
-  # Optional tools
+  # Tool replacement aliases
   - name: mpv
     value: mpv
+  - name: mp
+    value: mpv
   - name: rg
-    value: rg
+    value: rg --max-columns=0 --max-columns-preview --glob '!*.git*' --glob '!*.obsidian' --colors=match:fg:25 --colors=match:style:underline --colors=line:fg:cyan --colors=line:style:bold --colors=path:fg:249 --colors=path:style:bold --smart-case --hidden
+  - name: nmap-vulners
+    value: nmap -sV --script=vulners/vulners.nse
+  - name: nmap-vulscan
+    value: nmap -sV --script=vulscan/vulscan.nse
+  - name: ping
+    value: prettyping
   - name: df
-    value: duf --style plain --no-header --bar-style modern --hide special
+    value: "duf --theme neg --style plain --no-header --bar-style modern --hide special --hide-mp '/var/home/neg/*,/var/lib/*'"
   - name: sp
     value: dust -r
+  - name: htop
+    value: btm -b -T --mem_as_value
+  - name: hexdump
+    value: hxd
   - name: se
     value: ouch decompress
   - name: pk
     value: ouch compress
+  - name: gzip
+    value: pigz
+  - name: bzip2
+    value: pbzip2
+  - name: locate
+    value: plocate
+  - name: wget
+    value: wget2 --hsts-file $XDG_DATA_HOME/wget-hsts
   - name: yt
     value: yt-dlp --downloader aria2c --embed-metadata --embed-thumbnail --embed-subs --sub-langs=all
+  - name: yta
+    value: yt-dlp --downloader aria2c --embed-metadata --embed-thumbnail --embed-subs --sub-langs=all --write-info-json
   - name: fd
     value: fd -H --ignore-vcs
+  - name: fda
+    value: fd -Hu
+  - name: tree
+    value: erd
+  - name: e
+    value: handlr open
+  - name: iotop
+    value: sudo iotop -oPa
+  - name: ports
+    value: sudo lsof -Pni
+  - name: kmon
+    value: sudo kmon -u --color 19683a
+
+  # rlwrap REPLs
+  - name: bb
+    value: rlwrap bb
+  - name: fennel
+    value: rlwrap fennel
+  - name: guile
+    value: rlwrap guile
+  - name: irb
+    value: rlwrap irb
+
+  # Weather/fun
+  - name: moon
+    value: curl wttr.in/Moon
+  - name: we
+    value: "curl 'wttr.in/?T'"
+  - name: wem
+    value: curl wttr.in/Moscow?lang=ru
+
+  # MPD
+  - name: love
+    value: mpc sendmessage mpdas love
+  - name: unlove
+    value: mpc sendmessage mpdas unlove
 
   # Flatpak apps
   - name: floorp
@@ -149,6 +421,34 @@ alias:
     value: flatpak run com.valvesoftware.Steam
   - name: pcsx2
     value: flatpak run net.pcsx2.PCSX2
+  - name: bottles
+    value: flatpak run com.usebottles.bottles
+  - name: obs
+    value: flatpak run com.obsproject.Studio
+  - name: onlyoffice
+    value: QT_QPA_PLATFORM=xcb flatpak run org.onlyoffice.desktopeditors
+  - name: zoom
+    value: flatpak run us.zoom.Zoom
+
+  # ugrep aliases
+  - name: grep
+    value: ug -G
+  - name: egrep
+    value: ug -E
+  - name: fgrep
+    value: ug -F
+  - name: xgrep
+    value: ug -W
+  - name: zgrep
+    value: ug -zG
+  - name: zegrep
+    value: ug -zE
+  - name: zfgrep
+    value: ug -zF
+  - name: zpgrep
+    value: ug -zP
+  - name: zxgrep
+    value: ug -zW
 
 function:
   - name: y
