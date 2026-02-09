@@ -4,9 +4,13 @@
 return {
   'neovim/nvim-lspconfig',
   dependencies = {
-    'SmiteshP/nvim-navbuddy',
-    dependencies = { 'SmiteshP/nvim-navic', 'MunifTanjim/nui.nvim' },
-    opts = { lsp = { auto_attach = true } },
+    'mason-org/mason.nvim',
+    'mason-org/mason-lspconfig.nvim',
+    {
+      'SmiteshP/nvim-navbuddy',
+      dependencies = { 'SmiteshP/nvim-navic', 'MunifTanjim/nui.nvim' },
+      opts = { lsp = { auto_attach = true } },
+    },
   },
   event = { "BufReadPre", "BufNewFile" },
   config = function()
@@ -67,10 +71,23 @@ return {
 
     -- Servers with default config
     local simple_servers = {
-      'bashls', 'cmake', 'nil_ls', 'qmlls', 'ts_ls', 'cssls', 'html', 'yamlls',
-      'taplo', 'lemminx', 'autotools_ls', 'dotls',
-      'systemd_language_server', 'nginx_language_server',
-      'awk_ls', 'just', 'marksman'
+      'autotools_ls',              -- autoconf/automake
+      'awk_ls',                    -- AWK
+      'bashls',                    -- Bash/sh
+      'cmake',                     -- CMake
+      'cssls',                     -- CSS/SCSS/Less
+      'dotls',                     -- Graphviz DOT
+      'html',                      -- HTML
+      'just',                      -- Justfiles
+      'lemminx',                   -- XML
+      'marksman',                  -- Markdown
+      'nginx_language_server',     -- nginx configs
+      'nil_ls',                    -- Nix (nil by oxalica)
+      'qmlls',                     -- QML (Qt)
+      'systemd_language_server',   -- systemd units
+      'taplo',                     -- TOML
+      'ts_ls',                     -- TypeScript/JavaScript
+      'yamlls',                    -- YAML
     }
     for _, srv in ipairs(simple_servers) do configure(srv) end
 
