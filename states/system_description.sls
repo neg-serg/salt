@@ -602,6 +602,19 @@ install_noise_suppression:
       - cmd: copr_noise_suppression
     - unless: rpm-ostree status | grep -q noise-suppression-for-voice
 
+# --- COPR: CachyOS kernel (LLVM ThinLTO build, BORE scheduler + sched-ext) ---
+copr_cachyos_kernel:
+  cmd.run:
+    - name: dnf copr enable -y bieszczaders/kernel-cachyos-lto
+    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:bieszczaders:kernel-cachyos-lto.repo
+
+install_cachyos_kernel:
+  cmd.run:
+    - name: rpm-ostree install -y --allow-inactive kernel-cachyos-lto
+    - require:
+      - cmd: copr_cachyos_kernel
+    - unless: rpm -q kernel-cachyos-lto
+
 install_yazi:
   cmd.run:
     - name: |
