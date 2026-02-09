@@ -517,6 +517,13 @@ floorp_usercontent:
     - group: neg
     - makedirs: True
 
+# --- pinentry-rofi (GPG PIN entry via rofi) ---
+install_pinentry_rofi:
+  cmd.run:
+    - name: pip install --user pinentry-rofi
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/pinentry-rofi
+
 # --- Neovim Python dependencies (nvr + pynvim) ---
 install_neovim_python_deps:
   cmd.run:
