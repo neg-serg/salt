@@ -559,7 +559,7 @@ install_noise_suppression:
     - name: rpm-ostree install -y noise-suppression-for-voice
     - require:
       - cmd: copr_noise_suppression
-    - unless: rpm -q noise-suppression-for-voice
+    - unless: rpm-ostree status | grep -q noise-suppression-for-voice
 
 install_yazi:
   cmd.run:
