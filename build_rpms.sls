@@ -40,6 +40,7 @@
     {'name': 'wallust',           'version': '3.3.0'},
     {'name': 'wl-clip-persist',   'version': '0.5.0'},
     {'name': 'quickshell',        'version': '0.2.1',  'timeout': 3600},
+    {'name': 'swayosd',          'version': '0.3.0'},
     {'name': 'xdg-desktop-portal-termfilechooser', 'version': '0.4.0'}
 ] %}
 
