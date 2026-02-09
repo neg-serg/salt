@@ -517,6 +517,32 @@ floorp_usercontent:
     - group: neg
     - makedirs: True
 
+# --- Floorp extensions (download .xpi into profile) ---
+{% set floorp_profile = '/var/home/neg/.var/app/one.ablaze.floorp/.floorp/ltjcyqj7.default-default' %}
+{% set floorp_extensions = [
+    {'id': 'tridactyl.vim@cmcaine.co.uk',                    'slug': 'tridactyl-vim'},
+    {'id': 'uBlock0@raymondhill.net',                         'slug': 'ublock-origin'},
+    {'id': 'addon@darkreader.org',                            'slug': 'darkreader'},
+    {'id': 'sponsorBlocker@ajay.app',                         'slug': 'sponsorblock'},
+    {'id': '{7a7a4a92-a2a0-41d1-9fd7-1e92480d612d}',         'slug': 'styl-us'},
+    {'id': '{aecec67f-0d10-4fa7-b7c7-609a2db280cf}',         'slug': 'violentmonkey'},
+    {'id': '{531906d3-e22f-4a6c-a102-8057b88a1a63}',         'slug': 'single-file'},
+    {'id': 'addon@fastforward.team',                          'slug': 'fastforwardteam'},
+    {'id': 'hide-scrollbars@qashto',                          'slug': 'hide-scrollbars'},
+    {'id': 'kellyc-show-youtube-dislikes@nradiowave',         'slug': 'kellyc-show-youtube-dislikes'},
+    {'id': '{4a311e5c-1ccc-49b7-9c23-3e2b47b6c6d5}',         'slug': 'скачать-музыку-с-вк-vkd'},
+] %}
+
+{% for ext in floorp_extensions %}
+floorp_ext_{{ ext.slug | replace('-', '_') }}:
+  cmd.run:
+    - name: curl -sL -o '{{ floorp_profile }}/extensions/{{ ext.id }}.xpi' 'https://addons.mozilla.org/firefox/downloads/latest/{{ ext.slug }}/latest.xpi'
+    - creates: {{ floorp_profile }}/extensions/{{ ext.id }}.xpi
+    - runas: neg
+    - require:
+      - cmd: install_flatpak_floorp
+{% endfor %}
+
 # --- Neovim Python dependencies (nvr + pynvim) ---
 install_neovim_python_deps:
   cmd.run:
