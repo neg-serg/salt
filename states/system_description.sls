@@ -343,6 +343,7 @@ include:
   - fira-code-nerd
   - hy3
   - install_rpms
+  - kernel_params
   - mpd
 
 # Install all packages in a single transaction.
