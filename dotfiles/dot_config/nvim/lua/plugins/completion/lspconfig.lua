@@ -21,17 +21,19 @@ return {
 
     vim.diagnostic.config({
       virtual_text = true,
-      signs = true,
+      signs = {
+        text = {
+          [vim.diagnostic.severity.ERROR] = '\xef\x81\x97',
+          [vim.diagnostic.severity.WARN]  = '\xef\x81\xb1',
+          [vim.diagnostic.severity.HINT]  = '\xef\x81\xaa',
+          [vim.diagnostic.severity.INFO]  = '\xef\x84\x89',
+        },
+      },
       underline = true,
       update_in_insert = false,
       severity_sort = true,
       float = { border = 'rounded', source = 'if_many' },
     })
-
-    local handlers = {
-      ['textDocument/hover'] = vim.lsp.with(vim.lsp.handlers.hover, { border = 'rounded' }),
-      ['textDocument/signatureHelp'] = vim.lsp.with(vim.lsp.handlers.signature_help, { border = 'rounded' }),
-    }
 
     if vim.lsp.inlay_hint then
       local group = vim.api.nvim_create_augroup('NegLspInlayHints', { clear = true })
@@ -53,7 +55,6 @@ return {
     end
 
     local base_config = {
-      handlers = handlers,
       capabilities = capabilities,
     }
 
@@ -61,12 +62,6 @@ return {
       local resolved = vim.tbl_deep_extend('force', {}, base_config, extra or {})
       vim.lsp.config(server, resolved)
       vim.lsp.enable(server)
-    end
-
-    local signs = { Error = '', Warn = '', Hint = '', Info = '' }
-    for type, icon in pairs(signs) do
-      local hl = 'DiagnosticSign' .. type
-      vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
     end
 
     -- Servers with default config
