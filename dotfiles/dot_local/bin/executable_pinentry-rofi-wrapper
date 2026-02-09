@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
-# pinentry-rofi wrapper — injects Wayland/DBus env vars for gpg-agent
-# gpg-agent starts early via socket activation, before GUI vars are set.
-# This wrapper detects them at invocation time and falls back to gnome3.
+# pinentry-rofi — GPG pinentry using rofi as GUI
+# Implements the Assuan pinentry protocol over stdin/stdout.
+# Injects Wayland/DBus env vars for gpg-agent socket activation.
+# Falls back to pinentry-gnome3 if rofi is unavailable.
 
+# --- Env injection (gpg-agent starts before GUI is up) ---
 if [ -z "$WAYLAND_DISPLAY" ] && [ -n "$XDG_RUNTIME_DIR" ]; then
     wayland_socket=$(find "$XDG_RUNTIME_DIR" -maxdepth 1 -name 'wayland-*' ! -name '*.lock' -print -quit 2>/dev/null)
     if [ -n "$wayland_socket" ]; then
@@ -19,8 +21,69 @@ if [ -z "$DBUS_SESSION_BUS_ADDRESS" ] && [ -n "$XDG_RUNTIME_DIR" ] && [ -S "$XDG
     export DBUS_SESSION_BUS_ADDRESS="unix:path=$XDG_RUNTIME_DIR/bus"
 fi
 
-if command -v pinentry-rofi >/dev/null 2>&1; then
-    exec pinentry-rofi "$@"
+# --- Fallback if rofi not available ---
+if ! command -v rofi >/dev/null 2>&1; then
+    exec /usr/bin/pinentry-gnome3 "$@"
 fi
 
-exec /usr/bin/pinentry-gnome3 "$@"
+# --- Assuan pinentry protocol ---
+desc="" prompt="PIN:" title="GPG" error=""
+
+echo "OK Pleased to meet you"
+
+while IFS= read -r line; do
+    cmd="${line%% *}"
+    arg="${line#* }"
+    [ "$cmd" = "$arg" ] && arg=""
+
+    case "$cmd" in
+        SETDESC)
+            desc=$(echo "$arg" | sed 's/%0A/\n/g; s/%25/%/g; s/<[^>]*>//g')
+            echo "OK" ;;
+        SETPROMPT)
+            prompt="$arg"
+            echo "OK" ;;
+        SETTITLE)
+            title="$arg"
+            echo "OK" ;;
+        SETERROR)
+            error="$arg"
+            echo "OK" ;;
+        SETOK|SETCANCEL|SETNOTOK|OPTION|SETQUALITYBAR|SETQUALITYBAR_TT)
+            echo "OK" ;;
+        GETPIN)
+            mesg="$desc"
+            [ -n "$error" ] && mesg="<b>$error</b>\n$mesg"
+            pin=$(rofi -dmenu -password -no-fixed-num-lines \
+                -p "$prompt" -mesg "$mesg" -theme-str 'window {width: 30%;}' \
+                -l 0 2>/dev/null)
+            if [ $? -eq 0 ] && [ -n "$pin" ]; then
+                echo "D $pin"
+                echo "OK"
+            else
+                echo "ERR 83886179 Operation cancelled"
+            fi
+            error="" ;;
+        CONFIRM)
+            result=$(printf "Yes\nNo" | rofi -dmenu -p "$title" -mesg "$desc" \
+                -theme-str 'window {width: 25%;}' 2>/dev/null)
+            if [ "$result" = "Yes" ]; then
+                echo "OK"
+            else
+                echo "ERR 83886179 Operation cancelled"
+            fi ;;
+        GETINFO)
+            case "$arg" in
+                pid) echo "D $$"; echo "OK" ;;
+                flavor) echo "D rofi"; echo "OK" ;;
+                version) echo "D 0.1"; echo "OK" ;;
+                ttyinfo) echo "D - - -"; echo "OK" ;;
+                *) echo "OK" ;;
+            esac ;;
+        BYE)
+            echo "OK closing connection"
+            exit 0 ;;
+        *)
+            echo "OK" ;;
+    esac
+done
