@@ -20,7 +20,7 @@ A plain text note-taking assistant following the Zettelkasten method.
 %setup -q -n zk-0.15.2
 
 %build
-go build -tags "fts5" -ldflags="-s -w" -o zk .
+CGO_ENABLED=1 go build -buildvcs=false -tags "fts5" -ldflags="-s -w -X=main.Version=%{version}" -o zk .
 
 %install
 mkdir -p %{buildroot}%{_bindir}
