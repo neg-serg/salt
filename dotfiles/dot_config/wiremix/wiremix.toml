@@ -5,10 +5,6 @@
 theme = "nocolor"
 char_set = "compat"
 
-# Naming: Clean up long device names where possible
-[names]
-stream = [ "{node:node.name}: {node:media.name}" ]
-
 # Keybindings: F-Keys for Tab Switching
 keybindings = [
  { key = { F = 1 }, action = { SelectTab = 0 } }, # Playback
@@ -17,3 +13,7 @@ keybindings = [
  { key = { F = 4 }, action = { SelectTab = 3 } }, # Input Devices
  { key = { F = 5 }, action = { SelectTab = 4 } }, # Configuration
 ]
+
+# Naming: Clean up long device names where possible
+[names]
+stream = [ "{node:node.name}: {node:media.name}" ]
