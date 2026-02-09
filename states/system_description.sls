@@ -30,8 +30,8 @@ system_timezone:
 
 system_locale:
   cmd.run:
-    - name: localectl set-locale LANG=ru_RU.UTF-8
-    - unless: localectl status | grep -q 'LANG=ru_RU.UTF-8'
+    - name: localectl set-locale LANG=en_US.UTF-8
+    - unless: localectl status | grep -q 'LANG=en_US.UTF-8'
 
 system_keymap:
   cmd.run:
