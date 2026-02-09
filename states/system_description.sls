@@ -343,8 +343,10 @@ include:
   - fira-code-nerd
   - hy3
   - install_rpms
+  - kernel_modules
   - kernel_params
   - mpd
+  - sysctl
 
 # Install all packages in a single transaction.
 install_system_packages:
