@@ -22,6 +22,7 @@ BuildRequires:  pulseaudio-libs-devel
 BuildRequires:  libinput-devel
 BuildRequires:  libevdev-devel
 BuildRequires:  systemd-devel
+BuildRequires:  dbus-devel
 
 %description
 A GTK-based on-screen display for Wayland compositors, showing indicators
