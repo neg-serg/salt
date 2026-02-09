@@ -198,7 +198,7 @@ Steps to enable:
 | `~/.local/share/gnupg/gpg-agent.conf` | sys/gpg.nix | dot_local/share/gnupg/gpg-agent.conf | [x] |
 | `~/.local/share/gnupg/scdaemon.conf` | sys/gpg.nix | dot_local/share/gnupg/scdaemon.conf | [x] |
 | pinentry-rofi wrapper | sys/gpg.nix (custom script) | — | [~] using pinentry-gnome3 |
-| gpg-agent systemd service | sys/gpg.nix | — | [ ] |
+| gpg-agent systemd service | sys/gpg.nix | system_description.sls | [x] gpg-agent.socket enabled |
 
 ## 13. Calendar & Contacts
 
@@ -225,14 +225,18 @@ Steps to enable:
 |---|---|---|---|
 | `~/.config/enchant/enchant.ordering` | sys/enchant.nix | dot_config/enchant/enchant.ordering | [x] |
 
-## 16. Browser (Firefox/Floorp)
+## 16. Browser (Floorp Flatpak)
 
 | Config file | NixOS source | Dotfiles path | Status |
 |---|---|---|---|
-| `~/.mozilla/firefox/*/user.js` | web/mozilla-common-lib.nix | — | [ ] complex |
-| `~/.mozilla/firefox/*/chrome/userChrome.css` | web/mozilla-common-lib.nix | — | [ ] complex |
-| `policies.json` | web/mozilla-common-lib.nix | — | [ ] /etc level |
-| Extensions (*.xpi) | web/mozilla-common-lib.nix (fetchurl) | — | [ ] |
+| `user.js` (Betterfox + prefs) | web/mozilla-common-lib.nix | dot_config/tridactyl/user.js | [x] Salt deploys to Floorp profile |
+| `chrome/userChrome.css` | web/mozilla-common-lib.nix | dot_config/tridactyl/mozilla/userChrome.css | [x] Salt deploys to Floorp profile |
+| `chrome/userContent.css` | web/mozilla-common-lib.nix | dot_config/tridactyl/mozilla/userContent.css | [x] Salt deploys to Floorp profile |
+| `~/.config/tridactyl/tridactylrc` | files/misc/tridactyl/ | dot_config/tridactyl/tridactylrc | [x] |
+| Tridactyl themes (4 CSS) | files/misc/tridactyl/themes/ | dot_config/tridactyl/themes/ | [x] |
+| `~/.surfingkeys.js` | files/surfingkeys.js | dot_surfingkeys.js | [x] |
+| `policies.json` | web/mozilla-common-lib.nix | — | [n/a] Flatpak, no /etc access |
+| Extensions (*.xpi) | web/mozilla-common-lib.nix (fetchurl) | — | [ ] install manually |
 
 ## 17. Editors (Antigravity, Opencode)
 
@@ -259,12 +263,179 @@ Steps to enable:
 |---|---|---|---|
 | `~/.config/nvim/*` | user/neovim.nix + static | dot_config/nvim/ | [x] |
 
+## 21. Clipboard (Wayland)
+
+| Package/config | NixOS source | Salt location | Status |
+|---|---|---|---|
+| cliphist | session/clipboard.nix | system_description.sls (Wayland category) | [x] |
+| wl-clipboard (wl-copy/wl-paste) | session/clipboard.nix | base image (Wayblue) | [x] |
+| wl-clip-persist | session/clipboard.nix | custom RPM (install_rpms.sls) | [x] |
+
+## 22. Screenshot & Recording
+
+| Package/config | NixOS source | Salt location | Status |
+|---|---|---|---|
+| grim | session/screenshot.nix | rpm-ostree layered | [x] |
+| slurp | session/screenshot.nix | rpm-ostree layered | [x] |
+| grimblast | session/screenshot.nix | system_description.sls (install_grimblast) | [x] |
+| swappy | session/screenshot.nix | system_description.sls (Wayland category) | [x] |
+| wf-recorder | session/screenshot.nix | system_description.sls (Wayland category) | [x] |
+
+## 23. Wayland Utilities
+
+| Package/config | NixOS source | Salt location | Status |
+|---|---|---|---|
+| wtype | session/utils.nix | system_description.sls (Wayland) | [x] |
+| ydotool | session/utils.nix | system_description.sls (Wayland) | [x] |
+| wev | session/utils.nix | system_description.sls (Wayland) | [x] |
+| waypipe | session/utils.nix | system_description.sls (Network) | [x] |
+| zathura + pdf-poppler | session/utils.nix | system_description.sls (Shell & Tools) | [x] |
+| udiskie | session/utils.nix | system_description.sls (Shell & Tools) | [x] |
+
+## 24. Wallpaper & Theme Tools
+
+| Package/config | NixOS source | Salt location | Status |
+|---|---|---|---|
+| swaybg | session/theme.nix | system_description.sls (Wayland) | [x] |
+| swww | session/theme.nix | system_description.sls (Wayland) | [x] |
+
+## 25. Rofi Launcher
+
+| Config file | NixOS source | Dotfiles path | Status |
+|---|---|---|---|
+| `~/.config/rofi/config.rasi` | gui-packages.nix | dot_config/rofi/config.rasi | [x] |
+| `~/.config/rofi/theme.rasi` | packages/rofi-config/ | dot_config/rofi/theme.rasi | [x] |
+| `~/.config/rofi/*.rasi` (themes) | packages/rofi-config/ | dot_config/rofi/ | [x] |
+| rofi package | gui-packages.nix | system_description.sls (Wayland) | [x] |
+
+## 26. Wlogout
+
+| Config file | NixOS source | Dotfiles path | Status |
+|---|---|---|---|
+| `~/.config/wlogout/layout*` | static files/ | dot_config/wlogout/ | [x] |
+| `~/.config/wlogout/style*.css` | static files/ | dot_config/wlogout/ | [x] |
+| `~/.config/wlogout/icons/*` | static files/ | dot_config/wlogout/icons/ | [x] |
+| wlogout package | — | system_description.sls (Wayland) | [x] |
+
+## 27. Chat Applications
+
+| Package | NixOS source | Salt location | Status |
+|---|---|---|---|
+| telegram-desktop | session/chat.nix | system_description.sls (Network) | [x] |
+
+## 28. Torrent Client
+
+| Config file | NixOS source | Dotfiles path | Status |
+|---|---|---|---|
+| transmission-gtk | torrent/default.nix | system_description.sls (Network) | [x] |
+| `~/.config/rustmission/config.toml` | files/config/rustmission/ | dot_config/rustmission/config.toml | [x] |
+| `~/.config/rustmission/categories.toml` | files/config/rustmission/ | dot_config/rustmission/categories.toml | [x] |
+| `~/.config/rustmission/keymap.toml` | files/config/rustmission/ | dot_config/rustmission/keymap.toml | [x] |
+
+## 29. Text Processing Tools
+
+| Package | NixOS source | Salt location | Status |
+|---|---|---|---|
+| jc | text/manipulate.nix | system_description.sls (Shell & Tools) | [x] |
+| yq | text/manipulate.nix | system_description.sls (Shell & Tools) | [x] |
+| glow | text/read.nix | system_description.sls (Shell & Tools) | [x] |
+| lowdown | text/read.nix | system_description.sls (Shell & Tools) | [x] |
+| par | cli/text.nix | system_description.sls (Shell & Tools) | [x] |
+| htmlq | text/manipulate.nix | custom RPM (install_rpms.sls) | [x] |
+| pup | text/manipulate.nix | custom RPM (install_rpms.sls) | [x] |
+| choose | cli/text.nix | custom RPM (install_rpms.sls) | [x] |
+
+## 30. Archive & Compression Tools
+
+| Package | NixOS source | Salt location | Status |
+|---|---|---|---|
+| patool | cli/archives/pkgs.nix | system_description.sls (Archives) | [x] |
+| lbzip2, pbzip2, pigz | cli/archives/pkgs.nix | system_description.sls (Archives) | [x] |
+| unar | cli/archives/pkgs.nix | system_description.sls (Archives) | [x] |
+| ouch | cli/archives/pkgs.nix | custom RPM (install_rpms.sls) | [x] |
+| rapidgzip | cli/archives/pkgs.nix | custom RPM (install_rpms.sls) | [x] |
+
+## 31. Network CLI Tools
+
+| Package | NixOS source | Salt location | Status |
+|---|---|---|---|
+| prettyping | cli/network.nix | system_description.sls (Network) | [x] |
+| speedtest-cli | cli/network.nix | system_description.sls (Network) | [x] |
+| urlscan | cli/network.nix | system_description.sls (Shell & Tools) | [x] |
+| xxh | cli/network.nix | custom RPM (install_rpms.sls) | [x] |
+
+## 32. PipeWire & Audio
+
+| Config file | NixOS source | Dotfiles path | Status |
+|---|---|---|---|
+| Clock rate + quantum | hardware/audio/pipewire/ | dot_config/pipewire/pipewire.conf.d/clock-rate.conf | [x] |
+| Resample quality | — | dot_config/pipewire/pipewire.conf.d/resample-quality.conf | [x] |
+| RME ADI-2 remap | — | dot_config/pipewire/pipewire.conf.d/98-adi2-remap.conf | [x] |
+| Virtual sink (Carla) | — | dot_config/pipewire/pipewire.conf.d/10-virtual-sink.conf | [x] |
+| RNNoise filter-chain | hardware/audio/pipewire/ | dot_config/pipewire/pipewire.conf.d/95-rnnoise-filter-chain.conf | [x] COPR plugin |
+| WirePlumber ALSA config | hardware/audio/pipewire/ | dot_config/wireplumber/wireplumber.conf.d/50-alsa-config.conf | [x] |
+| WirePlumber default volume | hardware/audio/pipewire/ | dot_config/wireplumber/wireplumber.conf.d/10-default-volume.conf | [x] |
+
+## 33. Fonts
+
+| Package | NixOS source | Salt location | Status |
+|---|---|---|---|
+| iosevka-neg (custom) | fonts.nix (flake input) | custom RPM (iosevka-neg-fonts) | [x] |
+| fira-code-nerd | fonts.nix | fira-code-nerd.sls Salt state | [x] |
+| material-icons-fonts | fonts.nix | system_description.sls (Fonts) | [x] |
+
+## 34. Gaming & Emulation
+
+| Package | NixOS source | Salt location | Status |
+|---|---|---|---|
+| gamescope | games/performance.nix | system_description.sls (Gaming) | [x] |
+| mangohud | games/performance.nix | system_description.sls (Gaming) | [x] |
+| dosbox-staging | emulators/pkgs.nix | system_description.sls (Gaming) | [x] |
+| retroarch | emulators/pkgs.nix | system_description.sls (Gaming) | [x] |
+| corectrl | hardware/gpu-corectrl.nix | system_description.sls (Desktop) | [x] |
+| Steam (Flatpak) | — | system_description.sls (Flatpak) | [x] |
+| PCSX2 (Flatpak) | — | system_description.sls (Flatpak) | [x] |
+| `~/.config/dosbox/*.conf` | files/config/dosbox/ | dot_config/dosbox/ | [x] |
+
+## 35. Locale & System
+
+| Setting | NixOS source | Salt location | Status |
+|---|---|---|---|
+| Timezone (Europe/Moscow) | user/locale.nix | system_description.sls (system_timezone) | [x] |
+| Locale (ru_RU.UTF-8) | user/locale.nix | system_description.sls (system_locale) | [x] |
+| Keyboard layout (ru,us) | user/locale.nix | system_description.sls (system_keymap) | [x] |
+| D-Bus broker | user/dbus.nix | system_description.sls (running_services) | [x] |
+
+## 36. Miscellaneous Configs
+
+| Config file | NixOS source | Dotfiles path | Status |
+|---|---|---|---|
+| `~/.config/amfora/config.toml` | files/config/amfora/ | dot_config/amfora/config.toml | [x] |
+| `~/.config/git/*` | files/git/ | dot_config/git/ | [x] |
+| liquidctl | hardware/liquidctl.nix | system_description.sls (Monitoring) | [x] |
+| plocate | user/locate.nix | system_description.sls (File Management) | [x] |
+| rmlint | cli/file-ops.nix | system_description.sls (File Management) | [x] |
+| ollama | llm/ | system_description.sls (Network) | [x] |
+
+---
+
+## Not Applicable on Fedora Atomic
+
+| Item | NixOS source | Reason |
+|---|---|---|
+| Firejail sandboxing | security/firejail.nix | SELinux + Flatpak sandboxing on Fedora |
+| Greetd login manager | session/greetd.nix | GDM on Fedora Atomic |
+| Plymouth theme | boot config | Fedora ships own Plymouth |
+| Nix overlays | tools/ | Not applicable |
+| USB automount scripts | hardware/usb-automount.nix | udisks2 works OOTB |
+| geoclue2 | user/locale.nix | Fedora enables by default |
+
 ---
 
 ## Summary Statistics
 
-- **Total config groups**: 20
-- **Fully migrated** `[x]`: ~95 files across 19 groups
-- **Partially migrated** `[~]`: 3 items (permissions.conf, plugins.conf, pinentry)
-- **Not migrated** `[ ]`: ~5 items (browser, gpg-agent service)
-- **Remaining**: browser (complex Flatpak integration), gpg-agent systemd service, opencode.json itself
+- **Total config groups**: 36
+- **Fully migrated** `[x]`: ~140 items across 36 groups
+- **Partially migrated** `[~]`: 2 items (hyprland permissions.conf/plugins.conf, pinentry)
+- **Not migrated** `[ ]`: 2 items (browser extensions, rescrobbled service)
+- **Not applicable** `[n/a]`: 6 items (firejail, greetd, plymouth, nix overlays, USB automount, policies.json)
