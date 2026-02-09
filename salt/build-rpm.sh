@@ -1098,7 +1098,7 @@ if [[ $# -eq 0 || "$1" == "swayosd" ]]; then
     if [ -f "/build/rpms/${SWAYOSD_RPM_NAME}" ]; then
         echo "SwayOSD RPM (${SWAYOSD_RPM_NAME}) already exists, skipping."
     else
-        dnf install -y --skip-broken git rpm-build tar rust cargo meson ninja-build pkgconf-pkg-config glib2-devel sassc gtk4-devel gtk4-layer-shell-devel pulseaudio-libs-devel libinput-devel libevdev-devel systemd-devel
+        dnf install -y --skip-broken git rpm-build tar rust cargo meson ninja-build pkgconf-pkg-config glib2-devel sassc gtk4-devel gtk4-layer-shell-devel pulseaudio-libs-devel libinput-devel libevdev-devel systemd-devel dbus-devel
         SWAYOSD_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/swayosd-${SWAYOSD_VERSION}"
         if [ ! -d "${SWAYOSD_SOURCE_DIR}" ]; then
             mkdir -p "${RPM_BUILD_ROOT}/BUILD"
