@@ -1,33 +1,11 @@
 # MPD Native Deployment
 # Salt state for setting up MPD with systemd user service and pipewire output
 
+include:
+  - bind_mounts
+
 {% set user = 'neg' %}
 {% set home = '/var/home/' ~ user %}
-
-# --- Bind mount for music directory ---
-music_mount_point:
-  file.directory:
-    - name: {{ home }}/music
-    - user: {{ user }}
-    - group: {{ user }}
-    - makedirs: True
-
-music_fstab_entry:
-  file.append:
-    - name: /etc/fstab
-    - text: |
-
-        # Bind mounts for user directories (migrated from NixOS)
-        /var/mnt/one/music {{ home }}/music none rbind,nofail,x-systemd.automount 0 0
-    - unless: grep -q '{{ home }}/music' /etc/fstab
-
-music_mount:
-  cmd.run:
-    - name: mount {{ home }}/music || true
-    - unless: mountpoint -q {{ home }}/music
-    - require:
-      - file: music_fstab_entry
-      - file: music_mount_point
 
 # --- MPD directories ---
 mpd_directories:
@@ -149,7 +127,7 @@ mpd_service:
     - require:
       - file: mpd_config
       - file: mpd_directories
-      - cmd: music_mount
+      - mount: music_mount
       - cmd: mpd_fifo
     - onlyif: rpm -q mpd
     - unless: systemctl --user is-active mpd.service
