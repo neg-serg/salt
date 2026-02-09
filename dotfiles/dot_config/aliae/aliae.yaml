@@ -390,6 +390,12 @@ alias:
   - name: kmon
     value: sudo kmon -u --color 19683a
 
+  # Local scripts
+  - name: emptydir
+    value: emptydir
+  - name: qe
+    value: qe
+
   # rlwrap REPLs
   - name: bb
     value: rlwrap bb
