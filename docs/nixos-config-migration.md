@@ -197,7 +197,7 @@ Steps to enable:
 |---|---|---|---|
 | `~/.local/share/gnupg/gpg-agent.conf` | sys/gpg.nix | dot_local/share/gnupg/gpg-agent.conf | [x] |
 | `~/.local/share/gnupg/scdaemon.conf` | sys/gpg.nix | dot_local/share/gnupg/scdaemon.conf | [x] |
-| pinentry-rofi wrapper | sys/gpg.nix (custom script) | — | [~] using pinentry-gnome3 |
+| pinentry-rofi wrapper | sys/gpg.nix (custom script) | dot_local/bin/executable_pinentry-rofi-wrapper | [x] rofi + gnome3 fallback |
 | gpg-agent systemd service | sys/gpg.nix | system_description.sls | [x] gpg-agent.socket enabled |
 
 ## 13. Calendar & Contacts
@@ -402,7 +402,7 @@ Steps to enable:
 | Setting | NixOS source | Salt location | Status |
 |---|---|---|---|
 | Timezone (Europe/Moscow) | user/locale.nix | system_description.sls (system_timezone) | [x] |
-| Locale (ru_RU.UTF-8) | user/locale.nix | system_description.sls (system_locale) | [x] |
+| Locale (en_US.UTF-8) | user/locale.nix | system_description.sls (system_locale) | [x] |
 | Keyboard layout (ru,us) | user/locale.nix | system_description.sls (system_keymap) | [x] |
 | D-Bus broker | user/dbus.nix | system_description.sls (running_services) | [x] |
 
@@ -436,6 +436,6 @@ Steps to enable:
 
 - **Total config groups**: 36
 - **Fully migrated** `[x]`: ~140 items across 36 groups
-- **Partially migrated** `[~]`: 2 items (hyprland permissions.conf/plugins.conf, pinentry)
+- **Partially migrated** `[~]`: 1 item (hyprland permissions.conf/plugins.conf)
 - **Not migrated** `[ ]`: 2 items (browser extensions, rescrobbled service)
 - **Not applicable** `[n/a]`: 6 items (firejail, greetd, plymouth, nix overlays, USB automount, policies.json)
