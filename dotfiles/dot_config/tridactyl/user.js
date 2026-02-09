@@ -7,6 +7,7 @@ user_pref("general.warnOnAboutConfig", false);
 user_pref("gfx.color_management.enabled", true);
 user_pref("gfx.color_management.enablev4", true);
 user_pref("gfx.color_management.mode", 1);
+user_pref("extensions.autoDisableScopes", 0);
 user_pref("xpinstall.signatures.required", false);
 user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
 user_pref("browser.uidensity", 1); // Be more compact

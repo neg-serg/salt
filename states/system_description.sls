@@ -544,6 +544,17 @@ floorp_ext_{{ ext.slug | replace('-', '_') }}:
       - cmd: install_flatpak_floorp
 {% endfor %}
 
+# Remove extensions.json so Floorp rebuilds it on next launch,
+# picking up extensions.autoDisableScopes=0 from user.js
+floorp_reset_extensions_json:
+  file.absent:
+    - name: {{ floorp_profile }}/extensions.json
+    - require:
+      - file: floorp_user_js
+{% for ext in floorp_extensions %}
+      - cmd: floorp_ext_{{ ext.slug | replace('-', '_') }}
+{% endfor %}
+
 # --- Neovim Python dependencies (nvr + pynvim) ---
 install_neovim_python_deps:
   cmd.run:
