@@ -236,7 +236,7 @@ Steps to enable:
 | Tridactyl themes (4 CSS) | files/misc/tridactyl/themes/ | dot_config/tridactyl/themes/ | [x] |
 | `~/.surfingkeys.js` | files/surfingkeys.js | dot_surfingkeys.js | [x] |
 | `policies.json` | web/mozilla-common-lib.nix | — | [n/a] Flatpak, no /etc access |
-| Extensions (*.xpi) | web/mozilla-common-lib.nix (fetchurl) | — | [ ] install manually |
+| Extensions (*.xpi) | web/mozilla-common-lib.nix (fetchurl) | — | [x] Salt downloads .xpi into profile |
 
 ## 17. Editors (Antigravity, Opencode)
 
@@ -437,5 +437,5 @@ Steps to enable:
 - **Total config groups**: 36
 - **Fully migrated** `[x]`: ~140 items across 36 groups
 - **Partially migrated** `[~]`: 1 item (hyprland permissions.conf/plugins.conf)
-- **Not migrated** `[ ]`: 2 items (browser extensions, rescrobbled service)
+- **Not migrated** `[ ]`: 1 item (rescrobbled service)
 - **Not applicable** `[n/a]`: 6 items (firejail, greetd, plymouth, nix overlays, USB automount, policies.json)
