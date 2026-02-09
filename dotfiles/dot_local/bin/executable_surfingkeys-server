@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+"""HTTP server for Surfingkeys browser extension.
+
+Handles actions that content scripts cannot perform directly:
+  /focus  → focus address bar (Ctrl+L via hyprctl)
+  /close  → close current tab (Ctrl+W via hyprctl)
+"""
+
+import http.server
+import socketserver
+import subprocess
+
+PORT = 18888
+
+
+class Handler(http.server.BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path.startswith("/focus"):
+            self._hyprctl_shortcut("CTRL,l")
+        elif self.path.startswith("/close"):
+            self._hyprctl_shortcut("CTRL,w")
+        else:
+            self.send_response(404)
+            self.end_headers()
+
+    def _hyprctl_shortcut(self, keys):
+        try:
+            subprocess.run(
+                ["hyprctl", "dispatch", "sendshortcut", f"{keys},activewindow"],
+                check=True,
+            )
+            self.send_response(200)
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(b"OK")
+        except Exception as e:
+            self.send_response(500)
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(str(e).encode())
+
+    def log_message(self, format, *args):
+        pass  # silence per-request logging
+
+
+socketserver.TCPServer.allow_reuse_address = True
+
+with socketserver.TCPServer(("127.0.0.1", PORT), Handler) as httpd:
+    httpd.serve_forever()
