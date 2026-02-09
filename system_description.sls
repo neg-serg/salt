@@ -28,6 +28,16 @@ system_timezone:
   timezone.system:
     - name: Europe/Moscow
 
+system_locale:
+  cmd.run:
+    - name: localectl set-locale LANG=ru_RU.UTF-8
+    - unless: localectl status | grep -q 'LANG=ru_RU.UTF-8'
+
+system_keymap:
+  cmd.run:
+    - name: localectl set-x11-keymap ru,us
+    - unless: localectl status | grep -q 'X11 Layout.*ru'
+
 system_hostname:
   cmd.run:
     - name: hostnamectl set-hostname fedora
@@ -479,6 +489,31 @@ install_flatpak_floorp:
     - runas: neg
     - unless: flatpak info one.ablaze.floorp &>/dev/null
 
+# --- Floorp browser: user.js + userChrome.css + userContent.css ---
+floorp_user_js:
+  file.managed:
+    - name: /var/home/neg/.var/app/one.ablaze.floorp/.floorp/ltjcyqj7.default-default/user.js
+    - source: salt://dotfiles/dot_config/tridactyl/user.js
+    - user: neg
+    - group: neg
+    - makedirs: True
+
+floorp_userchrome:
+  file.managed:
+    - name: /var/home/neg/.var/app/one.ablaze.floorp/.floorp/ltjcyqj7.default-default/chrome/userChrome.css
+    - source: salt://dotfiles/dot_config/tridactyl/mozilla/userChrome.css
+    - user: neg
+    - group: neg
+    - makedirs: True
+
+floorp_usercontent:
+  file.managed:
+    - name: /var/home/neg/.var/app/one.ablaze.floorp/.floorp/ltjcyqj7.default-default/chrome/userContent.css
+    - source: salt://dotfiles/dot_config/tridactyl/mozilla/userContent.css
+    - user: neg
+    - group: neg
+    - makedirs: True
+
 # --- Neovim Python dependencies (nvr + pynvim) ---
 install_neovim_python_deps:
   cmd.run:
@@ -506,6 +541,25 @@ install_aliae:
     - name: curl -L https://github.com/p-nerd/aliae/releases/latest/download/aliae-linux-amd64 -o ~/.local/bin/aliae && chmod +x ~/.local/bin/aliae
     - runas: neg
     - creates: /var/home/neg/.local/bin/aliae
+
+install_grimblast:
+  cmd.run:
+    - name: curl -sL https://raw.githubusercontent.com/hyprwm/contrib/main/grimblast/grimblast -o ~/.local/bin/grimblast && chmod +x ~/.local/bin/grimblast
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/grimblast
+
+# --- COPR: noise-suppression-for-voice (RNNoise LADSPA plugin) ---
+copr_noise_suppression:
+  cmd.run:
+    - name: dnf copr enable -y lkiesow/noise-suppression-for-voice
+    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:lkiesow:noise-suppression-for-voice.repo
+
+install_noise_suppression:
+  cmd.run:
+    - name: rpm-ostree install -y noise-suppression-for-voice
+    - require:
+      - cmd: copr_noise_suppression
+    - unless: rpm -q noise-suppression-for-voice
 
 install_yazi:
   cmd.run:
