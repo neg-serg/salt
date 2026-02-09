@@ -1,0 +1,69 @@
+# Sysctl settings migrated from NixOS
+# (modules/system/kernel/sysctl.nix, sysctl-mem-extras.nix, sysctl-writeback.nix,
+#  hosts/telfir/hardware.nix)
+#
+# Dropped into /etc/sysctl.d/ and applied via sysctl --system.
+
+sysctl_config:
+  file.managed:
+    - name: /etc/sysctl.d/99-custom.conf
+    - contents: |
+        # === Kernel security ===
+        kernel.sysrq = 0
+        kernel.dmesg_restrict = 1
+        kernel.unprivileged_bpf_disabled = 1
+        net.core.bpf_jit_harden = 2
+
+        # === IP forwarding (VPN/containers) ===
+        net.ipv4.ip_forward = 1
+        net.ipv6.conf.all.forwarding = 1
+
+        # === TCP hardening ===
+        net.ipv4.icmp_ignore_bogus_error_responses = 1
+        net.ipv4.conf.default.rp_filter = 1
+        net.ipv4.conf.all.rp_filter = 1
+        net.ipv4.conf.all.accept_source_route = 0
+        net.ipv6.conf.all.accept_source_route = 0
+        net.ipv4.conf.all.send_redirects = 0
+        net.ipv4.conf.default.send_redirects = 0
+        net.ipv4.conf.all.accept_redirects = 0
+        net.ipv4.conf.default.accept_redirects = 0
+        net.ipv4.conf.all.secure_redirects = 0
+        net.ipv4.conf.default.secure_redirects = 0
+        net.ipv6.conf.all.accept_redirects = 0
+        net.ipv6.conf.default.accept_redirects = 0
+        net.ipv4.tcp_syncookies = 1
+        net.ipv4.tcp_rfc1337 = 1
+
+        # === Log martian packets ===
+        net.ipv4.conf.all.log_martians = 1
+        net.ipv4.conf.default.log_martians = 1
+
+        # === TCP optimization ===
+        net.ipv4.tcp_fastopen = 3
+        net.ipv4.tcp_mtu_probing = 1
+        net.ipv4.tcp_congestion_control = bbr
+        net.core.default_qdisc = fq
+        net.ipv4.tcp_max_syn_backlog = 8192
+
+        # === Socket and queue sizes ===
+        net.core.rmem_max = 4194304
+        net.core.wmem_max = 4194304
+        net.core.netdev_max_backlog = 32768
+        net.core.somaxconn = 8192
+
+        # === Memory tuning (telfir host) ===
+        vm.swappiness = 10
+        vm.max_map_count = 16777216
+
+        # === Writeback tuning (reduce IO bursts) ===
+        vm.dirty_background_bytes = 67108864
+        vm.dirty_bytes = 268435456
+        vm.dirty_expire_centisecs = 3000
+        vm.dirty_writeback_centisecs = 500
+
+sysctl_apply:
+  cmd.run:
+    - name: sysctl --system
+    - onchanges:
+      - file: sysctl_config
