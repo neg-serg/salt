@@ -127,7 +127,7 @@ mpd_service:
     - require:
       - file: mpd_config
       - file: mpd_directories
-      - mount: music_mount
+      - cmd: music_mount
       - cmd: mpd_fifo
     - onlyif: rpm -q mpd
     - unless: systemctl --user is-active mpd.service
