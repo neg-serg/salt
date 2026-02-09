@@ -35,8 +35,10 @@ run_salt() {
   # Use the venv python to run the wrapper
   echo "$SUDO_PASS" | sudo -S -E "$VENV_DIR/bin/python3" "${SCRIPT_DIR}/run_salt.py" \
     --config-dir="${CONFIG_DIR}" \
-    -l info \
-    --local ${ACTION} ${STATE} ${extra_args}
+    -l warning \
+    --state-output=changes --state-verbose=False \
+    --local ${ACTION} ${STATE} ${extra_args} \
+    2>/dev/null
 }
 
 # Ensure Salt is ready
