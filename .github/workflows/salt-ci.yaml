@@ -24,26 +24,9 @@ jobs:
 
       - name: Lint Salt states
         run: |
-          # Lint all .sls files in the root and salt/ directory
-          salt-lint *.sls salt/**/*.sls || echo "Salt-lint finished"
+          salt-lint *.sls || echo "Salt-lint finished"
 
       - name: Lint Python scripts with Ruff
         run: |
           ruff check .
           ruff format --check .
-
-  nix-check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - uses: cachix/install-nix-action@v30
-        with:
-          nix_path: nixpkgs=channel:nixos-unstable
-
-      - name: Flake check
-        run: |
-          nix flake check -L
-        working-directory: nixos-config

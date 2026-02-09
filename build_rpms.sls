@@ -18,7 +18,7 @@
     {'name': 'lutgen',            'version': '0.12.1'},
     {'name': 'massren',           'version': '1.5.6'},
     {'name': 'neg-pretty-printer','version': '0.1.0',   'arch': 'noarch',
-     'extra_volumes': '-v /var/home/neg/src/salt/nixos-config/packages/pretty-printer:/build/pretty-printer:z'},
+     'extra_volumes': '-v /var/home/neg/src/nixos-config/packages/pretty-printer:/build/pretty-printer:z'},
     {'name': 'nerdctl',           'version': '2.2.1'},
     {'name': 'ouch',              'version': '0.6.1'},
     {'name': 'pipemixer',         'version': '0.4.0'},
@@ -51,7 +51,7 @@
     'release': '2',
     'arch': 'noarch',
     'timeout': 7200,
-    'extra_volumes': '-v /var/home/neg/src/salt/iosevka-neg.toml:/build/iosevka-neg.toml:z'
+    'extra_volumes': '-v /var/home/neg/src/salt/build/iosevka-neg.toml:/build/iosevka-neg.toml:z'
 } %}
 
 /var/home/neg/src/salt/rpms:
@@ -67,7 +67,7 @@
 {% set rpm_file = pkg.name ~ '-' ~ pkg.version ~ '-' ~ release ~ '.fc43.' ~ arch ~ '.rpm' %}
 build_{{ pkg.name | replace('-', '_') }}_rpm:
   cmd.run:
-    - name: podman run --rm -v /var/home/neg/src/salt/salt:/build/salt:z -v /var/home/neg/src/salt/rpms:/build/rpms:z {{ extra_vol }} registry.fedoraproject.org/fedora-toolbox:43 bash /build/salt/build-rpm.sh {{ pkg.name }}
+    - name: podman run --rm -v /var/home/neg/src/salt/build:/build/salt:z -v /var/home/neg/src/salt/rpms:/build/rpms:z {{ extra_vol }} registry.fedoraproject.org/fedora-toolbox:43 bash /build/salt/build-rpm.sh {{ pkg.name }}
     - runas: neg
     - creates: /var/home/neg/src/salt/rpms/{{ rpm_file }}
 {% if pkg.get('timeout') %}
@@ -81,7 +81,7 @@ build_{{ pkg.name | replace('-', '_') }}_rpm:
 # Iosevka font build (special: different RPM name, extra volume, long timeout)
 build_iosevka_rpm:
   cmd.run:
-    - name: podman run --rm -v /var/home/neg/src/salt/salt:/build/salt:z -v /var/home/neg/src/salt/rpms:/build/rpms:z {{ iosevka.extra_volumes }} registry.fedoraproject.org/fedora-toolbox:43 bash /build/salt/build-rpm.sh {{ iosevka.name }}
+    - name: podman run --rm -v /var/home/neg/src/salt/build:/build/salt:z -v /var/home/neg/src/salt/rpms:/build/rpms:z {{ iosevka.extra_volumes }} registry.fedoraproject.org/fedora-toolbox:43 bash /build/salt/build-rpm.sh {{ iosevka.name }}
     - runas: neg
     - creates: /var/home/neg/src/salt/rpms/{{ iosevka.rpm_name }}-{{ iosevka.version }}-{{ iosevka.release }}.fc43.{{ iosevka.arch }}.rpm
     - timeout: {{ iosevka.timeout }}
