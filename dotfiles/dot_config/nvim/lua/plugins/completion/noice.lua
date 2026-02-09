@@ -7,6 +7,7 @@ return {'folke/noice.nvim', -- better UX
         local status, noice = pcall(require, 'noice')
         if (not status) then return end
 
+        local border = 'rounded'
         noice.setup({
             cmdline={
                 enabled=true,
