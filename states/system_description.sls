@@ -410,15 +410,7 @@ install_system_packages:
           rpm-ostree install -y --allow-inactive $missing
         fi
         {% endraw %}
-    - unless: |
-        {% raw %}
-        wanted=({% endraw %}{% for cat, pkgs in categories | dictsort %}{% for pkg in pkgs %}{{ pkg.name }} {% endfor %}{% endfor %}{% raw %})
-        installed=$(rpm -qa --queryformat '%{NAME}\n' | sort -u)
-        layered=$(rpm-ostree status --json | jq -r '.deployments[]."requested-packages"[]?' | sort -u)
-        have=$(sort -u <(echo "$installed") <(echo "$layered"))
-        missing=$(comm -23 <(printf '%s\n' "${wanted[@]}" | sort -u) <(echo "$have"))
-        [ -z "$missing" ]
-        {% endraw %}
+    - unless: rpm -q {% for cat, pkgs in categories | dictsort %}{% for pkg in pkgs %}{{ pkg.name }} {% endfor %}{% endfor %}> /dev/null 2>&1
     - require:
       - file: fix_containers_policy
 
@@ -799,13 +791,7 @@ install_copr_packages:
         if [ -n "${missing[*]}" ]; then
           rpm-ostree install -y --allow-inactive "${missing[@]}"
         fi
-    - unless: |
-        installed=$(rpm -qa --queryformat '%{NAME}\n' | sort -u)
-        requested=$(rpm-ostree status --json | jq -r '.deployments[]."requested-packages"[]?' | sort -u)
-        have=$(sort -u <(echo "$installed") <(echo "$requested"))
-        {% for pkg in copr_packages %}
-        grep -qxF '{{ pkg }}' <<< "$have" || exit 1
-        {% endfor %}
+    - unless: rpm -q {% for pkg in copr_packages %}{{ pkg }} {% endfor %}> /dev/null 2>&1
     - require:
       - cmd: copr_noise_suppression
       - cmd: copr_dualsensectl
