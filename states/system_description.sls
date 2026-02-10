@@ -395,27 +395,23 @@ install_system_packages:
   cmd.run:
     - name: |
         {% raw %}
-        pkgs=({% endraw %}{% for cat, pkgs in categories | dictsort %}{% for pkg in pkgs %}{{ pkg.name }} {% endfor %}{% endfor %}{% raw %})
-        to_install=()
+        wanted=({% endraw %}{% for cat, pkgs in categories | dictsort %}{% for pkg in pkgs %}{{ pkg.name }} {% endfor %}{% endfor %}{% raw %})
+        installed=$(rpm -qa --queryformat '%{NAME}\n' | sort -u)
         layered=$(rpm-ostree status --json | jq -r '.deployments[]."requested-packages"[]?' | sort -u)
-        for pkg in "${pkgs[@]}"; do
-          if ! rpm -q "$pkg" &>/dev/null && ! echo "$layered" | grep -Fqx "$pkg"; then
-            to_install+=("$pkg")
-          fi
-        done
-        if [ ${#to_install[@]} -gt 0 ]; then
-          rpm-ostree install -y --allow-inactive "${to_install[@]}"
+        have=$(sort -u <(echo "$installed") <(echo "$layered"))
+        missing=$(comm -23 <(printf '%s\n' "${wanted[@]}" | sort -u) <(echo "$have"))
+        if [ -n "$missing" ]; then
+          rpm-ostree install -y --allow-inactive $missing
         fi
         {% endraw %}
     - unless: |
         {% raw %}
-        pkgs=({% endraw %}{% for cat, pkgs in categories | dictsort %}{% for pkg in pkgs %}{{ pkg.name }} {% endfor %}{% endfor %}{% raw %})
+        wanted=({% endraw %}{% for cat, pkgs in categories | dictsort %}{% for pkg in pkgs %}{{ pkg.name }} {% endfor %}{% endfor %}{% raw %})
+        installed=$(rpm -qa --queryformat '%{NAME}\n' | sort -u)
         layered=$(rpm-ostree status --json | jq -r '.deployments[]."requested-packages"[]?' | sort -u)
-        for pkg in "${pkgs[@]}"; do
-          if ! rpm -q "$pkg" &>/dev/null && ! echo "$layered" | grep -Fqx "$pkg"; then
-            exit 1
-          fi
-        done
+        have=$(sort -u <(echo "$installed") <(echo "$layered"))
+        missing=$(comm -23 <(printf '%s\n' "${wanted[@]}" | sort -u) <(echo "$have"))
+        [ -z "$missing" ]
         {% endraw %}
     - require:
       - file: fix_containers_policy
@@ -504,11 +500,47 @@ mount_one:
     - persist: True
 
 # Flatpak applications (32-bit deps conflict with rpm-ostree base image)
-install_flatpak_steam:
+{% set flatpak_apps = [
+    'com.valvesoftware.Steam',
+    'net.pcsx2.PCSX2',
+    'net.davidotek.pupgui2',
+    'io.github.dimtpap.coppwr',
+    'com.github.tmewett.BrogueCE',
+    'org.zdoom.GZDoom',
+    'tk.deat.Jazz2Resurrection',
+    'net.veloren.airshipper',
+    'com.shatteredpixel.shatteredpixeldungeon',
+    'one.ablaze.floorp',
+    'me.timschneeberger.jdsp4linux',
+    'com.vysp3r.ProtonPlus',
+    'com.obsproject.Studio',
+    'net.sapples.LiveCaptions',
+    'md.obsidian.Obsidian',
+    'org.chromium.Chromium',
+    'org.gimp.GIMP',
+    'com.google.Chrome',
+    'org.libreoffice.LibreOffice',
+    'net.lutris.Lutris',
+    'com.github.qarmin.czkawka',
+] %}
+
+install_flatpak_apps:
   cmd.run:
-    - name: flatpak install --user -y flathub com.valvesoftware.Steam
+    - name: |
+        installed=$(flatpak list --user --app --columns=application)
+        missing=()
+        {% for app in flatpak_apps %}
+        grep -qxF '{{ app }}' <<< "$installed" || missing+=('{{ app }}')
+        {% endfor %}
+        if [ -n "${missing[*]}" ]; then
+          flatpak install --user -y flathub "${missing[@]}"
+        fi
     - runas: neg
-    - unless: flatpak info com.valvesoftware.Steam &>/dev/null
+    - unless: |
+        installed=$(flatpak list --user --app --columns=application)
+        {% for app in flatpak_apps %}
+        grep -qxF '{{ app }}' <<< "$installed" || exit 1
+        {% endfor %}
 
 flatpak_steam_filesystem:
   cmd.run:
@@ -519,128 +551,8 @@ flatpak_steam_filesystem:
         com.valvesoftware.Steam
     - runas: neg
     - require:
-      - cmd: install_flatpak_steam
+      - cmd: install_flatpak_apps
     - unless: flatpak override --user --show com.valvesoftware.Steam | grep -q '/mnt/zero'
-
-install_flatpak_pcsx2:
-  cmd.run:
-    - name: flatpak install --user -y flathub net.pcsx2.PCSX2
-    - runas: neg
-    - unless: flatpak info net.pcsx2.PCSX2 &>/dev/null
-
-install_flatpak_protonup_qt:
-  cmd.run:
-    - name: flatpak install --user -y flathub net.davidotek.pupgui2
-    - runas: neg
-    - unless: flatpak info net.davidotek.pupgui2 &>/dev/null
-
-install_flatpak_coppwr:
-  cmd.run:
-    - name: flatpak install --user -y flathub io.github.dimtpap.coppwr
-    - runas: neg
-    - unless: flatpak info io.github.dimtpap.coppwr &>/dev/null
-
-install_flatpak_brogue_ce:
-  cmd.run:
-    - name: flatpak install --user -y flathub com.github.tmewett.BrogueCE
-    - runas: neg
-    - unless: flatpak info com.github.tmewett.BrogueCE &>/dev/null
-
-install_flatpak_gzdoom:
-  cmd.run:
-    - name: flatpak install --user -y flathub org.zdoom.GZDoom
-    - runas: neg
-    - unless: flatpak info org.zdoom.GZDoom &>/dev/null
-
-install_flatpak_jazz2:
-  cmd.run:
-    - name: flatpak install --user -y flathub tk.deat.Jazz2Resurrection
-    - runas: neg
-    - unless: flatpak info tk.deat.Jazz2Resurrection &>/dev/null
-
-install_flatpak_airshipper:
-  cmd.run:
-    - name: flatpak install --user -y flathub net.veloren.airshipper
-    - runas: neg
-    - unless: flatpak info net.veloren.airshipper &>/dev/null
-
-install_flatpak_shattered_pixel_dungeon:
-  cmd.run:
-    - name: flatpak install --user -y flathub com.shatteredpixel.shatteredpixeldungeon
-    - runas: neg
-    - unless: flatpak info com.shatteredpixel.shatteredpixeldungeon &>/dev/null
-
-install_flatpak_floorp:
-  cmd.run:
-    - name: flatpak install --user -y flathub one.ablaze.floorp
-    - runas: neg
-    - unless: flatpak info one.ablaze.floorp &>/dev/null
-
-install_flatpak_jamesdsp:
-  cmd.run:
-    - name: flatpak install --user -y flathub me.timschneeberger.jdsp4linux
-    - runas: neg
-    - unless: flatpak info me.timschneeberger.jdsp4linux &>/dev/null
-
-install_flatpak_protonplus:
-  cmd.run:
-    - name: flatpak install --user -y flathub com.vysp3r.ProtonPlus
-    - runas: neg
-    - unless: flatpak info com.vysp3r.ProtonPlus &>/dev/null
-
-install_flatpak_obs:
-  cmd.run:
-    - name: flatpak install --user -y flathub com.obsproject.Studio
-    - runas: neg
-    - unless: flatpak info com.obsproject.Studio &>/dev/null
-
-install_flatpak_live_captions:
-  cmd.run:
-    - name: flatpak install --user -y flathub net.sapples.LiveCaptions
-    - runas: neg
-    - unless: flatpak info net.sapples.LiveCaptions &>/dev/null
-
-install_flatpak_obsidian:
-  cmd.run:
-    - name: flatpak install --user -y flathub md.obsidian.Obsidian
-    - runas: neg
-    - unless: flatpak info md.obsidian.Obsidian &>/dev/null
-
-install_flatpak_chromium:
-  cmd.run:
-    - name: flatpak install --user -y flathub org.chromium.Chromium
-    - runas: neg
-    - unless: flatpak info org.chromium.Chromium &>/dev/null
-
-install_flatpak_gimp:
-  cmd.run:
-    - name: flatpak install --user -y flathub org.gimp.GIMP
-    - runas: neg
-    - unless: flatpak info org.gimp.GIMP &>/dev/null
-
-install_flatpak_chrome:
-  cmd.run:
-    - name: flatpak install --user -y flathub com.google.Chrome
-    - runas: neg
-    - unless: flatpak info com.google.Chrome &>/dev/null
-
-install_flatpak_libreoffice:
-  cmd.run:
-    - name: flatpak install --user -y flathub org.libreoffice.LibreOffice
-    - runas: neg
-    - unless: flatpak info org.libreoffice.LibreOffice &>/dev/null
-
-install_flatpak_lutris:
-  cmd.run:
-    - name: flatpak install --user -y flathub net.lutris.Lutris
-    - runas: neg
-    - unless: flatpak info net.lutris.Lutris &>/dev/null
-
-install_flatpak_czkawka:
-  cmd.run:
-    - name: flatpak install --user -y flathub com.github.qarmin.czkawka
-    - runas: neg
-    - unless: flatpak info com.github.qarmin.czkawka &>/dev/null
 
 # Flatpak global overrides: fix Wayland cursor theme + GTK dark theme
 flatpak_global_overrides:
@@ -700,7 +612,7 @@ floorp_ext_{{ ext.slug | replace('-', '_') }}:
     - creates: {{ floorp_profile }}/extensions/{{ ext.id }}.xpi
     - runas: neg
     - require:
-      - cmd: install_flatpak_floorp
+      - cmd: install_flatpak_apps
 {% endfor %}
 
 # Remove extensions.json so Floorp rebuilds it on next launch,
@@ -802,119 +714,96 @@ copr_noise_suppression:
     - name: dnf copr enable -y lkiesow/noise-suppression-for-voice
     - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:lkiesow:noise-suppression-for-voice.repo
 
-install_noise_suppression:
-  cmd.run:
-    - name: rpm-ostree install -y noise-suppression-for-voice
-    - require:
-      - cmd: copr_noise_suppression
-    - unless: rpm-ostree status | grep -q noise-suppression-for-voice
-
-# --- COPR: dualsensectl (DualSense controller management) ---
+# --- COPR repo enables (fast test -f guards) ---
 copr_dualsensectl:
   cmd.run:
     - name: dnf copr enable -y kapsh/dualsensectl
     - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:kapsh:dualsensectl.repo
 
-install_dualsensectl:
-  cmd.run:
-    - name: rpm-ostree install -y dualsensectl
-    - require:
-      - cmd: copr_dualsensectl
-    - unless: rpm-ostree status | grep -q dualsensectl
-
-# --- COPR: CachyOS kernel (LLVM ThinLTO build, BORE scheduler + sched-ext) ---
 copr_cachyos_kernel:
   cmd.run:
     - name: dnf copr enable -y bieszczaders/kernel-cachyos-lto
     - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:bieszczaders:kernel-cachyos-lto.repo
 
+copr_espanso:
+  cmd.run:
+    - name: dnf copr enable -y eclipseo/espanso
+    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:eclipseo:espanso.repo
+
+copr_himalaya:
+  cmd.run:
+    - name: dnf copr enable -y atim/himalaya
+    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:atim:himalaya.repo
+
+copr_spotifyd:
+  cmd.run:
+    - name: dnf copr enable -y mbooth/spotifyd
+    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:mbooth:spotifyd.repo
+
+copr_sbctl:
+  cmd.run:
+    - name: dnf copr enable -y chenxiaolong/sbctl
+    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:chenxiaolong:sbctl.repo
+
+copr_yabridge:
+  cmd.run:
+    - name: dnf copr enable -y patrickl/wine-tkg
+    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:patrickl:wine-tkg.repo
+
+copr_audinux:
+  cmd.run:
+    - name: dnf copr enable -y ycollet/audinux
+    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:ycollet:audinux.repo
+
+# --- COPR package installs (batched: one rpm-ostree status check) ---
+{% set copr_packages = [
+    'noise-suppression-for-voice',
+    'dualsensectl',
+    'espanso-wayland',
+    'himalaya',
+    'spotifyd',
+    'sbctl',
+    'brutefir',
+    'patchmatrix',
+    'supercollider-sc3-plugins',
+] %}
+
+install_copr_packages:
+  cmd.run:
+    - name: |
+        installed=$(rpm -qa --queryformat '%{NAME}\n' | sort -u)
+        requested=$(rpm-ostree status --json | jq -r '.deployments[]."requested-packages"[]?' | sort -u)
+        have=$(sort -u <(echo "$installed") <(echo "$requested"))
+        missing=()
+        {% for pkg in copr_packages %}
+        grep -qxF '{{ pkg }}' <<< "$have" || missing+=('{{ pkg }}')
+        {% endfor %}
+        if [ -n "${missing[*]}" ]; then
+          rpm-ostree install -y --allow-inactive "${missing[@]}"
+        fi
+    - unless: |
+        installed=$(rpm -qa --queryformat '%{NAME}\n' | sort -u)
+        requested=$(rpm-ostree status --json | jq -r '.deployments[]."requested-packages"[]?' | sort -u)
+        have=$(sort -u <(echo "$installed") <(echo "$requested"))
+        {% for pkg in copr_packages %}
+        grep -qxF '{{ pkg }}' <<< "$have" || exit 1
+        {% endfor %}
+    - require:
+      - cmd: copr_noise_suppression
+      - cmd: copr_dualsensectl
+      - cmd: copr_espanso
+      - cmd: copr_himalaya
+      - cmd: copr_spotifyd
+      - cmd: copr_sbctl
+      - cmd: copr_audinux
+
+# --- CachyOS kernel (special: override remove + install, stays separate) ---
 install_cachyos_kernel:
   cmd.run:
     - name: rpm-ostree override remove kernel kernel-core kernel-modules kernel-modules-core kernel-modules-extra --install kernel-cachyos-lto --install kernel-cachyos-lto-devel-matched
     - require:
       - cmd: copr_cachyos_kernel
     - unless: rpm -q kernel-cachyos-lto || rpm-ostree status --json | grep -q kernel-cachyos-lto
-
-# --- COPR: espanso (text expansion daemon for Wayland) ---
-copr_espanso:
-  cmd.run:
-    - name: dnf copr enable -y eclipseo/espanso
-    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:eclipseo:espanso.repo
-
-install_espanso:
-  cmd.run:
-    - name: rpm-ostree install -y espanso-wayland
-    - require:
-      - cmd: copr_espanso
-    - unless: rpm-ostree status | grep -q espanso-wayland
-
-# --- COPR: himalaya (async email CLI) ---
-copr_himalaya:
-  cmd.run:
-    - name: dnf copr enable -y atim/himalaya
-    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:atim:himalaya.repo
-
-install_himalaya:
-  cmd.run:
-    - name: rpm-ostree install -y himalaya
-    - require:
-      - cmd: copr_himalaya
-    - unless: rpm-ostree status | grep -q himalaya
-
-# --- COPR: spotifyd (Spotify connect daemon) ---
-copr_spotifyd:
-  cmd.run:
-    - name: dnf copr enable -y mbooth/spotifyd
-    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:mbooth:spotifyd.repo
-
-install_spotifyd:
-  cmd.run:
-    - name: rpm-ostree install -y spotifyd
-    - require:
-      - cmd: copr_spotifyd
-    - unless: rpm-ostree status | grep -q spotifyd
-
-# --- COPR: sbctl (Secure Boot key manager) ---
-copr_sbctl:
-  cmd.run:
-    - name: dnf copr enable -y chenxiaolong/sbctl
-    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:chenxiaolong:sbctl.repo
-
-install_sbctl:
-  cmd.run:
-    - name: rpm-ostree install -y sbctl
-    - require:
-      - cmd: copr_sbctl
-    - unless: rpm-ostree status | grep -q sbctl
-
-# --- COPR: yabridge (Windows VST bridge for Linux DAWs, via wine-tkg) ---
-copr_yabridge:
-  cmd.run:
-    - name: dnf copr enable -y patrickl/wine-tkg
-    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:patrickl:wine-tkg.repo
-
-# NOTE: yabridge requires wine(x86-32) → mesa-dri-drivers(x86-32),
-# which conflicts with Wayblue base image's mesa-dri-drivers epoch.
-# Skipped until base image epoch aligns with repo packages.
-# install_yabridge:
-#   cmd.run:
-#     - name: rpm-ostree install -y yabridge
-#     - require:
-#       - cmd: copr_yabridge
-#     - unless: rpm-ostree status | grep -q yabridge
-
-# --- COPR: Audinux (audio production packages: brutefir, patchmatrix, sc3-plugins) ---
-copr_audinux:
-  cmd.run:
-    - name: dnf copr enable -y ycollet/audinux
-    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:ycollet:audinux.repo
-
-install_audinux_packages:
-  cmd.run:
-    - name: rpm-ostree install -y --allow-inactive brutefir patchmatrix supercollider-sc3-plugins
-    - require:
-      - cmd: copr_audinux
-    - unless: (rpm -q brutefir &>/dev/null || rpm-ostree status --json | jq -r '.deployments[]."requested-packages"[]' | grep -q brutefir) && (rpm -q patchmatrix &>/dev/null || rpm-ostree status --json | jq -r '.deployments[]."requested-packages"[]' | grep -q patchmatrix)
 
 install_yazi:
   cmd.run:
