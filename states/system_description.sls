@@ -1180,6 +1180,13 @@ install_iwmenu:
     - runas: neg
     - creates: /var/home/neg/.cargo/bin/iwmenu
 
+# --- openclaw (local AI assistant agent) ---
+install_openclaw:
+  cmd.run:
+    - name: npm install -g openclaw
+    - runas: neg
+    - creates: /var/home/neg/.npm-global/bin/openclaw
+
 # --- rofi-pass (password-store rofi frontend) ---
 install_rofi_pass:
   cmd.run:
