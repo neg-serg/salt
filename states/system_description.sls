@@ -1213,15 +1213,16 @@ ollama_service_unit:
 ollama_enable:
   cmd.run:
     - name: systemctl daemon-reload && systemctl enable ollama
-    - unless: systemctl is-enabled ollama
-    - require:
+    - onchanges:
       - file: ollama_service_unit
+    - require:
       - cmd: install_system_packages
 
 ollama_start:
   cmd.run:
     - name: |
-        systemctl start ollama
+        systemctl daemon-reload
+        systemctl restart ollama
         for i in $(seq 1 30); do
           curl -sf http://127.0.0.1:11434/api/tags >/dev/null 2>&1 && exit 0
           sleep 1
