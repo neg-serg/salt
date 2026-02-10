@@ -49,4 +49,5 @@ install_custom_rpms:
           [[ -z "${have[$name]+x}" ]] && exit 1
         done
         {% endraw %}
+    - shell: /bin/bash
     - runas: root
