@@ -1,8 +1,7 @@
 # NixOS Package Inventory — Remaining Items
 
 Packages from `~/src/nixos-config/` **not yet migrated** to the Fedora Atomic workstation.
-Already-migrated items have been removed. See [nix-only-utilities.md](nix-only-utilities.md)
-for reference on items that required special effort.
+See [nix-only-utilities.md](nix-only-utilities.md) for the full resolution log.
 
 ---
 
@@ -10,12 +9,7 @@ for reference on items that required special effort.
 
 | Package | Category | Status |
 |---------|----------|--------|
-| throne (opt) | VPN proxy | URL unclear; deferred |
-| overskride (opt) | Bluetooth | Needs Flatpak or COPR; deferred |
-| droidcam | Hardware | Skip on Atomic (v4l2loopback DKMS problematic); use scrcpy + v4l2loopback from RPMFusion |
-| opensoundmeter (opt) | Audio | AppImage available; not yet automated |
-| unflac | Audio | Go project; needs custom RPM or binary build |
-| matugen-themes | Theming | Check if templates are bundled with matugen binary |
+| droidcam | Hardware | Skip on Atomic (v4l2loopback DKMS problematic); use scrcpy instead |
 
 ## Not Applicable on Fedora
 
@@ -27,6 +21,5 @@ for reference on items that required special effort.
 
 ---
 
-_Last bulk update: all 9 phases of `remaining-packages-plan.md` executed._
-_~40 packages added to `states/system_description.sls` across Fedora RPM, COPR, Flatpak,_
-_GitHub binary, pip, cargo, script install, and custom RPM categories._
+_All other items resolved. ~46 packages added to Salt states._
+_Only droidcam remains blocked (kernel module on Atomic)._
