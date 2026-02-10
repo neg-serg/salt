@@ -42,3 +42,4 @@ features:
 - **Unreal Engine** — heavy UE5 env, toolbox container
 - **Open WebUI** — Ollama web UI, podman container
 - **voxinput** — voice→text, cargo install
+- **Groq API** — free cloud LLM (500-1000 tok/s via LPU), OpenAI-compatible endpoint `https://api.groq.com/openai/v1`, key via `gopass insert api/groq` + `GROQ_API_KEY` env
