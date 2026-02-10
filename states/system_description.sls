@@ -87,6 +87,8 @@ sudo_timeout:
         {'name': 'unar',                'desc': 'Universal archive unpacker'}
     ],
     'Development': [
+        {'name': 'ansible',             'desc': 'IT automation and configuration management'},
+        {'name': 'bpftrace',            'desc': 'High-level eBPF tracing language'},
         {'name': 'cargo',               'desc': 'Rust package manager'},
         {'name': 'clang-libs',          'desc': 'Clang runtime libraries'},
         {'name': 'cmake',               'desc': 'Cross-platform build system'},
@@ -103,6 +105,7 @@ sudo_timeout:
         {'name': 'just',                'desc': 'Just a command runner'},
         {'name': 'kernel-devel',        'desc': 'Development package for building kernel modules'},
         {'name': 'lldb',                'desc': 'LLVM debugger'},
+        {'name': 'openocd',             'desc': 'On-chip debugger for embedded systems'},
         {'name': 'ncurses-devel',       'desc': 'Development files for ncurses'},
         {'name': 'perf',                'desc': 'Performance analysis tools for Linux'},
         {'name': 'pgcli',               'desc': 'PostgreSQL CLI with autocomplete'},
@@ -140,6 +143,7 @@ sudo_timeout:
     ],
     'Media': [
         {'name': 'advancecomp',         'desc': 'Recompression utilities for .png, .mng, .zip, .gz'},
+        {'name': 'Carla',               'desc': 'Audio plugin host (LADSPA, DSSI, LV2, VST2/3)'},
         {'name': 'beets',               'desc': 'Music library manager and tagger'},
         {'name': 'cava',                'desc': 'Console audio visualizer'},
         {'name': 'cdparanoia',          'desc': 'Secure CD ripper'},
@@ -149,6 +153,7 @@ sudo_timeout:
         {'name': 'helvum',              'desc': 'GTK patchbay for PipeWire'},
         {'name': 'id3v2',               'desc': 'Command-line ID3v2 tag editor'},
         {'name': 'jpegoptim',           'desc': 'Utility to optimize JPEG files'},
+        {'name': 'lsp-plugins',         'desc': 'Linux Studio Plugins for audio production'},
         {'name': 'mediainfo',           'desc': 'Media file information utility'},
         {'name': 'mpd',                 'desc': 'Music Player Daemon'},
         {'name': 'mpc',                 'desc': 'Command-line MPD client'},
@@ -164,6 +169,7 @@ sudo_timeout:
         {'name': 'raysession',          'desc': 'Session manager for audio production'},
         {'name': 'rnnoise',             'desc': 'Real-time noise suppression library'},
         {'name': 'sonic-visualiser',    'desc': 'Audio analysis and visualization'},
+        {'name': 'supercollider',       'desc': 'Audio synthesis engine and programming IDE'},
         {'name': 'sox',                 'desc': 'A general purpose sound file conversion tool'},
         {'name': 'swayimg',             'desc': 'Image viewer for Sway/Wayland'},
         {'name': 'tesseract',           'desc': 'OCR engine'},
@@ -317,6 +323,7 @@ sudo_timeout:
     ],
     'Security': [
         {'name': 'hashcat',             'desc': 'Advanced password recovery tool'},
+        {'name': 'pcsc-tools',          'desc': 'Smartcard reader debugging tools'},
         {'name': 'tcpdump',             'desc': 'Network packet analyzer'},
         {'name': 'wireshark-cli',       'desc': 'Network protocol analyzer CLI (tshark)'}
     ],
@@ -327,6 +334,7 @@ sudo_timeout:
     ],
     'Desktop': [
         {'name': 'corectrl',            'desc': 'AMD GPU power and fan control'},
+        {'name': 'hunspell-ru',         'desc': 'Russian dictionary for spellchecking'},
         {'name': 'ddccontrol',          'desc': 'DDC monitor control'},
         {'name': 'kvantum',             'desc': 'SVG-based Qt theme engine'},
         {'name': 'openrgb',             'desc': 'Peripheral RGB LED controller'},
