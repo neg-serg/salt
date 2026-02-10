@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -uo pipefail
 
 # --- Bootstrap Environment ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -8,6 +8,11 @@ CONFIG_DIR="${SCRIPT_DIR}/salt_config"
 SUDO_PASS=$(cat "${SCRIPT_DIR}/.password")
 ACTION="state.sls"
 STATE="system_description"
+LOG_DIR="${SCRIPT_DIR}/logs"
+TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+LOG_FILE="${LOG_DIR}/${STATE}-${TIMESTAMP}.log"
+
+mkdir -p "${LOG_DIR}"
 
 bootstrap_salt() {
   if [[ ! -d "$VENV_DIR" ]]; then
@@ -31,25 +36,36 @@ bootstrap_salt() {
 }
 
 run_salt() {
-  local extra_args="$1"
-  # Use the venv python to run the wrapper
+  local extra_args="${1:-}"
+  echo "=== Applying ${STATE} ($(date)) ==="
+  echo "Log: ${LOG_FILE}"
   echo "$SUDO_PASS" | sudo -S -E "$VENV_DIR/bin/python3" "${SCRIPT_DIR}/run_salt.py" \
     --config-dir="${CONFIG_DIR}" \
-    -l warning \
-    --state-output=changes --state-verbose=False \
-    --local ${ACTION} ${STATE} ${extra_args} \
-    2>/dev/null
+    --local \
+    --log-level=info \
+    --log-file="${LOG_FILE}" \
+    --log-file-level=debug \
+    ${ACTION} ${STATE} ${extra_args} 2>&1 | tee -a "${LOG_FILE}"
+  return "${PIPESTATUS[0]}"
 }
 
 # Ensure Salt is ready
 bootstrap_salt
 
-if [[ "$1" == "--dry-run" ]]; then
+if [[ "${1:-}" == "--dry-run" ]]; then
   echo "--- Running in test mode (no changes will be applied) ---"
   run_salt "test=True"
 else
-  echo "--- Applying configuration ---"
   run_salt ""
-  echo "--- Applying dotfiles (chezmoi) ---"
-  chezmoi apply --force --source "${SCRIPT_DIR}/dotfiles"
+  RC=$?
+  echo ""
+  echo "=== Finished salt (exit code: ${RC}) at $(date) ==="
+  echo "Full log: ${LOG_FILE}"
+  if [[ $RC -eq 0 ]]; then
+    echo "--- Applying dotfiles (chezmoi) ---"
+    chezmoi apply --force --source "${SCRIPT_DIR}/dotfiles"
+  else
+    echo "--- Skipping chezmoi (salt failed) ---"
+    exit $RC
+  fi
 fi
