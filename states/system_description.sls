@@ -663,6 +663,54 @@ install_grimblast:
     - runas: neg
     - creates: /var/home/neg/.local/bin/grimblast
 
+install_sops:
+  cmd.run:
+    - name: curl -sL https://github.com/getsops/sops/releases/latest/download/sops-v3.11.0.linux.amd64 -o ~/.local/bin/sops && chmod +x ~/.local/bin/sops
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/sops
+
+install_xdg_ninja:
+  cmd.run:
+    - name: curl -fsSL https://github.com/b3nj5m1n/xdg-ninja/releases/latest/download/xdgnj -o ~/.local/bin/xdg-ninja && chmod +x ~/.local/bin/xdg-ninja
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/xdg-ninja
+
+install_rmpc:
+  cmd.run:
+    - name: |
+        curl -sL https://github.com/mierak/rmpc/releases/latest/download/rmpc-x86_64-unknown-linux-gnu.tar.gz -o /tmp/rmpc.tar.gz
+        tar -xzf /tmp/rmpc.tar.gz -C /tmp
+        mv /tmp/rmpc ~/.local/bin/
+        rm -f /tmp/rmpc.tar.gz
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/rmpc
+
+install_rustmission:
+  cmd.run:
+    - name: |
+        curl -sL https://github.com/intuis/rustmission/releases/latest/download/rustmission-x86_64-unknown-linux-gnu.tar.xz -o /tmp/rustmission.tar.xz
+        tar -xJf /tmp/rustmission.tar.xz -C /tmp
+        mv /tmp/rustmission ~/.local/bin/
+        rm -f /tmp/rustmission.tar.xz
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/rustmission
+
+install_httpstat:
+  cmd.run:
+    - name: pip install --user httpstat
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/httpstat
+
+install_ssh_to_age:
+  cmd.run:
+    - name: |
+        curl -sL https://github.com/Mic92/ssh-to-age/releases/latest/download/ssh-to-age-linux-amd64.tar.gz -o /tmp/ssh-to-age.tar.gz
+        tar -xzf /tmp/ssh-to-age.tar.gz -C /tmp
+        mv /tmp/ssh-to-age ~/.local/bin/
+        rm -f /tmp/ssh-to-age.tar.gz
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/ssh-to-age
+
 # --- COPR: noise-suppression-for-voice (RNNoise LADSPA plugin) ---
 copr_noise_suppression:
   cmd.run:
