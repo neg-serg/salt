@@ -60,13 +60,13 @@ rmpc_config:
 cargo_packages:
   cmd.run:
     - name: |
-        export PATH="{{ home }}/.cargo/bin:$PATH"
+        export PATH="{{ home }}/.local/share/cargo/bin:$PATH"
         cargo install rmpc 2>/dev/null || true
         BINDGEN_EXTRA_CLANG_ARGS="-I/usr/lib/clang/21/include" cargo install wiremix 2>/dev/null || true
     - runas: {{ user }}
     - env:
       - HOME: {{ home }}
-    - unless: test -f {{ home }}/.cargo/bin/rmpc
+    - unless: test -f {{ home }}/.local/share/cargo/bin/rmpc && test -f {{ home }}/.local/share/cargo/bin/wiremix
 
 # --- MPD FIFO for visualizers (cava, etc.) ---
 mpd_fifo:

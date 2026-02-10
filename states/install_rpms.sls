@@ -36,18 +36,7 @@ install_custom_rpms:
         shopt -s nullglob
         rpm_files=("$RPM_DIR"/*.rpm)
         [ ${#rpm_files[@]} -eq 0 ] && exit 0
-        mapfile -t pkg_names < <(rpm -qp --queryformat '%{NAME}\n' "${rpm_files[@]}" 2>/dev/null)
-        installed=$(rpm -qa --queryformat '%{NAME}\n' | sort -u)
-        layered=$(rpm-ostree status --json | jq -r '.deployments[]."requested-local-packages"[]?')
-        declare -A have
-        while IFS= read -r name; do [[ -n "$name" ]] && have["$name"]=1; done <<< "$installed"
-        while IFS= read -r entry; do
-          name="${entry%%-[0-9]*}"
-          [[ -n "$name" ]] && have["$name"]=1
-        done <<< "$layered"
-        for name in "${pkg_names[@]}"; do
-          [[ -z "${have[$name]+x}" ]] && exit 1
-        done
+        rpm -q $(rpm -qp --queryformat '%{NAME} ' "${rpm_files[@]}" 2>/dev/null) > /dev/null 2>&1
         {% endraw %}
     - shell: /bin/bash
     - runas: root
