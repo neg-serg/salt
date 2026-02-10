@@ -102,23 +102,12 @@ Each file remaining in the submodule = unmigrated item.
 
 ---
 
-## Hardware (modules/hardware/)
+## ~~Hardware: Fan Control, QMK, Udev Rules~~ — MIGRATED
 
-### Fan Control — `hardware/cooling.nix`
-**Priority: High** — Motherboard + GPU fan curve management.
-- Loads nct6775 Super I/O driver (ASUS motherboards)
-- Auto-generates /etc/fancontrol from detected hwmon devices
-- CPU fans: 35–75°C ramp, min PWM 70, hysteresis 3°C, 2s interval
-- GPU fans: 50–85°C ramp, separate PWM channels
-- Reapplies PWM ownership after suspend (system-sleep hook)
-- **Salt approach**: Install lm_sensors, create systemd units for fancontrol-setup + fancontrol, sleep hook script
-
-### QMK Keyboard — `hardware/qmk/default.nix`
-**Priority: Medium** — USB udev rules for QMK keyboard flashing.
-- Comprehensive rules for: Atmel DFU, STM32duino, BootloadHID, Caterina (Pro Micro), HalfKay, APM32, GD32V, WB32, AT32, hidraw
-- Creates `plugdev` group, adds user
-- Excludes ModemManager for bootloader devices
-- **Salt approach**: Install qmk-udev-rules package or deploy rules file to /etc/udev/rules.d/
+Fan control (fancontrol-setup + systemd services + resume hook), custom udev rules
+(I/O schedulers, RME audio, SATA ALPM), and QMK keyboard rules migrated to
+`states/hardware.sls` + `scripts/fancontrol-setup.sh`. QMK rules were already in
+`system_description.sls` (install_qmk_udev_rules).
 
 ### Audio DSP — `hardware/audio/dsp/default.nix`
 **Priority: Low** — Pro audio DSP plugins.
