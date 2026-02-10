@@ -10,7 +10,7 @@ install_samba:
 
 samba_share_dir:
   file.directory:
-    - name: /zero/sync/smb
+    - name: /mnt/zero/sync/smb
     - mode: '0777'
     - makedirs: True
 
@@ -28,7 +28,7 @@ samba_config:
         security = user
 
         [shared]
-        path = /zero/sync/smb
+        path = /mnt/zero/sync/smb
         browseable = yes
         read only = no
         guest ok = yes
