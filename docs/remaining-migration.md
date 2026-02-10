@@ -231,14 +231,10 @@ Each file remaining in the submodule = unmigrated item.
 
 ---
 
-## Flatpak Apps (modules/flatpak/)
+## ~~Flatpak Apps~~ — MIGRATED
 
-### Managed Installs — `flatpak/default.nix`, `flatpak/pkgs.nix`
-**Priority: Medium** — Auto-install Flatpak apps on system activation.
-- Default apps: OBS, Live Captions, Obsidian, Chromium, GIMP, Chrome
-- Conditional: LibreOffice, Lutris
-- Cursor/theme env overrides for Wayland
-- **Salt approach**: Salt state with `cmd.run flatpak install --noninteractive` + creates guard
+All Flatpak apps (OBS, Live Captions, Obsidian, Chromium, GIMP, Chrome, LibreOffice, Lutris)
+and global Wayland overrides (XCURSOR_PATH, GTK_THEME) migrated to `states/system_description.sls`.
 
 ---
 
