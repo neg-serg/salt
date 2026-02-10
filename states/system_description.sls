@@ -994,13 +994,13 @@ install_handlr:
   cmd.run:
     - name: cargo install handlr-regex
     - runas: neg
-    - creates: /var/home/neg/.cargo/bin/handlr
+    - creates: /var/home/neg/.local/share/cargo/bin/handlr
 
 install_agg:
   cmd.run:
     - name: cargo install --git https://github.com/asciinema/agg
     - runas: neg
-    - creates: /var/home/neg/.cargo/bin/agg
+    - creates: /var/home/neg/.local/share/cargo/bin/agg
 
 # NOTE: tailray needs dbus-devel (libdbus-sys). May fail on first run
 # if dbus-devel was just layered and not yet active (requires reboot).
@@ -1008,7 +1008,7 @@ install_tailray:
   cmd.run:
     - name: cargo install --git https://github.com/NotAShelf/tailray
     - runas: neg
-    - creates: /var/home/neg/.cargo/bin/tailray
+    - creates: /var/home/neg/.local/share/cargo/bin/tailray
     - onlyif: pkg-config --exists dbus-1
     - require:
       - cmd: install_system_packages
@@ -1017,7 +1017,7 @@ install_pzip:
   cmd.run:
     - name: cargo install pzip
     - runas: neg
-    - creates: /var/home/neg/.cargo/bin/pzip
+    - creates: /var/home/neg/.local/share/cargo/bin/pz
 
 # --- Script and file installs ---
 install_mpvc:
@@ -1160,12 +1160,11 @@ install_blesh:
     - name: |
         set -eo pipefail
         curl -fsSL https://github.com/akinomyoga/ble.sh/releases/download/nightly/ble-nightly.tar.xz -o /tmp/blesh.tar.xz
-        mkdir -p ~/.local/share/blesh
         tar -xJf /tmp/blesh.tar.xz -C ~/.local/share/ --strip-components=1
         rm -f /tmp/blesh.tar.xz
     - runas: neg
     - shell: /bin/bash
-    - creates: /var/home/neg/.local/share/blesh/ble.sh
+    - creates: /var/home/neg/.local/share/ble.sh
 
 # --- hishtory (synced shell history search) ---
 install_hishtory:
@@ -1184,7 +1183,7 @@ install_iwmenu:
   cmd.run:
     - name: cargo install --git https://github.com/e-tho/iwmenu
     - runas: neg
-    - creates: /var/home/neg/.cargo/bin/iwmenu
+    - creates: /var/home/neg/.local/share/cargo/bin/iwmenu
 
 # --- ollama: systemd service + models ---
 ollama_service_unit:
