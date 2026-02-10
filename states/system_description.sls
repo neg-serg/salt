@@ -1204,13 +1204,23 @@ ollama_service_unit:
         WorkingDirectory=/var/home/neg
         Environment="HOME=/var/home/neg"
         Environment="OLLAMA_HOST=127.0.0.1:11434"
-        ReadWritePaths=/var/home/neg/.ollama
+        Environment="OLLAMA_MODELS=/var/mnt/one/ollama/models"
+        ReadWritePaths=/var/home/neg/.ollama /var/mnt/one/ollama
 
         [Install]
         WantedBy=default.target
     - user: root
     - group: root
     - mode: '0644'
+
+ollama_models_dir:
+  file.directory:
+    - name: /var/mnt/one/ollama/models
+    - user: neg
+    - group: neg
+    - makedirs: True
+    - require:
+      - mount: mount_one
 
 ollama_enable:
   cmd.run:
@@ -1219,6 +1229,7 @@ ollama_enable:
       - file: ollama_service_unit
     - require:
       - cmd: install_system_packages
+      - file: ollama_models_dir
 
 ollama_start:
   cmd.run:
