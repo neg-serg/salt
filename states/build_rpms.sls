@@ -57,6 +57,7 @@
     {'name': 'nginx-language-server', 'version': '0.9.0'},
     {'name': 'systemd-language-server', 'version': '0.3.5'},
     {'name': 'croc',                  'version': '10.3.1'},
+    {'name': 'faker',                 'version': '40.4.0',  'arch': 'noarch'},
 ] %}
 
 {% set iosevka = {
