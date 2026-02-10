@@ -302,6 +302,7 @@ sudo_timeout:
         {'name': 'pcem',                'desc': 'IBM PC emulator'},
         {'name': 'protontricks',        'desc': 'Proton/Wine tricks helper'},
         {'name': 'retroarch',           'desc': 'Multi-platform emulator frontend'},
+        {'name': 'vkBasalt',            'desc': 'Vulkan post-processing layer (ReShade-like)'},
         {'name': 'supertuxkart',        'desc': '3D racing game'},
         {'name': 'wesnoth',             'desc': 'Turn-based strategy game'},
         {'name': 'xaos',                'desc': 'Interactive fractal zoomer'},
@@ -487,6 +488,12 @@ install_flatpak_pcsx2:
     - runas: neg
     - unless: flatpak info net.pcsx2.PCSX2 &>/dev/null
 
+install_flatpak_protonup_qt:
+  cmd.run:
+    - name: flatpak install -y flathub net.davidotek.pupgui2
+    - runas: neg
+    - unless: flatpak info net.davidotek.pupgui2 &>/dev/null
+
 install_flatpak_floorp:
   cmd.run:
     - name: flatpak install -y flathub one.ablaze.floorp
@@ -601,6 +608,19 @@ install_noise_suppression:
     - require:
       - cmd: copr_noise_suppression
     - unless: rpm-ostree status | grep -q noise-suppression-for-voice
+
+# --- COPR: dualsensectl (DualSense controller management) ---
+copr_dualsensectl:
+  cmd.run:
+    - name: dnf copr enable -y kapsh/dualsensectl
+    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:kapsh:dualsensectl.repo
+
+install_dualsensectl:
+  cmd.run:
+    - name: rpm-ostree install -y dualsensectl
+    - require:
+      - cmd: copr_dualsensectl
+    - unless: rpm-ostree status | grep -q dualsensectl
 
 # --- COPR: CachyOS kernel (LLVM ThinLTO build, BORE scheduler + sched-ext) ---
 copr_cachyos_kernel:
