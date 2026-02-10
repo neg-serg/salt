@@ -1201,8 +1201,10 @@ ollama_service_unit:
         Group=neg
         Restart=always
         RestartSec=3
+        WorkingDirectory=/var/home/neg
         Environment="HOME=/var/home/neg"
         Environment="OLLAMA_HOST=127.0.0.1:11434"
+        ReadWritePaths=/var/home/neg/.ollama
 
         [Install]
         WantedBy=default.target
