@@ -87,6 +87,7 @@ sudo_timeout:
         {'name': 'unar',                'desc': 'Universal archive unpacker'}
     ],
     'Development': [
+        {'name': 'act',                 'desc': 'Run GitHub Actions locally'},
         {'name': 'ansible',             'desc': 'IT automation and configuration management'},
         {'name': 'bpftrace',            'desc': 'High-level eBPF tracing language'},
         {'name': 'cargo',               'desc': 'Rust package manager'},
@@ -101,6 +102,7 @@ sudo_timeout:
         {'name': 'graphviz',            'desc': 'Graph visualization tools'},
         {'name': 'helix',               'desc': 'Post-modern modal text editor'},
         {'name': 'hexyl',               'desc': 'Hex viewer with colored output'},
+        {'name': 'hxtools',             'desc': 'Misc CLI utilities and git helpers'},
         {'name': 'hyperfine',           'desc': 'Command-line benchmarking tool'},
         {'name': 'just',                'desc': 'Just a command runner'},
         {'name': 'kernel-devel',        'desc': 'Development package for building kernel modules'},
@@ -169,6 +171,7 @@ sudo_timeout:
         {'name': 'raysession',          'desc': 'Session manager for audio production'},
         {'name': 'rnnoise',             'desc': 'Real-time noise suppression library'},
         {'name': 'sonic-visualiser',    'desc': 'Audio analysis and visualization'},
+        {'name': 'wiremix',             'desc': 'PipeWire terminal volume mixer'},
         {'name': 'supercollider',       'desc': 'Audio synthesis engine and programming IDE'},
         {'name': 'sox',                 'desc': 'A general purpose sound file conversion tool'},
         {'name': 'swayimg',             'desc': 'Image viewer for Sway/Wayland'},
@@ -198,6 +201,7 @@ sudo_timeout:
         {'name': 'nethogs',             'desc': 'Per-process network bandwidth monitor'},
         {'name': 'nvtop',               'desc': 'GPU process monitor'},
         {'name': 'parted',              'desc': 'GNU Partition Editor'},
+        {'name': 'procdump',            'desc': 'Linux process core dump generator'},
         {'name': 'progress',            'desc': 'Coreutils Viewer'},
         {'name': 'pv',                  'desc': 'A tool for monitoring the progress of data through a pipeline'},
         {'name': 's-tui',               'desc': 'Stress terminal UI for CPU monitoring'},
@@ -227,6 +231,7 @@ sudo_timeout:
         {'name': 'streamlink',          'desc': 'CLI for extracting streams from websites'},
         {'name': 'telegram-desktop',    'desc': 'Telegram Desktop messaging app'},
         {'name': 'traceroute',          'desc': 'Trace packet route to host'},
+        {'name': 'vdirsyncer',         'desc': 'CalDAV/CardDAV synchronization tool'},
         {'name': 'transmission-gtk',    'desc': 'BitTorrent client'},
         {'name': 'w3m',                 'desc': 'Text-mode web browser'},
         {'name': 'waypipe',             'desc': 'Network transparency for Wayland'},
@@ -278,6 +283,7 @@ sudo_timeout:
         {'name': 'udiskie',             'desc': 'Automounter for removable media'},
         {'name': 'ugrep',              'desc': 'Ultra fast grep with interactive query UI'},
         {'name': 'urlscan',             'desc': 'Extract and browse URLs from email messages'},
+        {'name': 'urlwatch',            'desc': 'Web page change monitor and notifier'},
         {'name': 'yq',                  'desc': 'YAML/XML/TOML processor'},
         {'name': 'zathura',             'desc': 'Minimal document viewer'},
         {'name': 'zathura-pdf-poppler', 'desc': 'PDF plugin for zathura'},
@@ -314,6 +320,7 @@ sudo_timeout:
         {'name': 'openmw',              'desc': 'Open-source Morrowind engine reimplementation'},
         {'name': 'pcem',                'desc': 'IBM PC emulator'},
         {'name': 'protontricks',        'desc': 'Proton/Wine tricks helper'},
+        {'name': 'python3-vkbasalt-cli', 'desc': 'CLI for vkBasalt Vulkan post-processing config'},
         {'name': 'retroarch',           'desc': 'Multi-platform emulator frontend'},
         {'name': 'supertux',            'desc': '2D platformer inspired by Super Mario'},
         {'name': 'vkBasalt',            'desc': 'Vulkan post-processing layer (ReShade-like)'},
@@ -334,8 +341,9 @@ sudo_timeout:
     ],
     'Desktop': [
         {'name': 'corectrl',            'desc': 'AMD GPU power and fan control'},
-        {'name': 'hunspell-ru',         'desc': 'Russian dictionary for spellchecking'},
         {'name': 'ddccontrol',          'desc': 'DDC monitor control'},
+        {'name': 'hunspell-ru',         'desc': 'Russian dictionary for spellchecking'},
+        {'name': 'nuspell',             'desc': 'Modern spellchecker library and CLI'},
         {'name': 'kvantum',             'desc': 'SVG-based Qt theme engine'},
         {'name': 'openrgb',             'desc': 'Peripheral RGB LED controller'},
         {'name': 'qt5ct',               'desc': 'Qt5 configuration tool'},
@@ -516,6 +524,12 @@ install_flatpak_protonup_qt:
     - name: flatpak install -y flathub net.davidotek.pupgui2
     - runas: neg
     - unless: flatpak info net.davidotek.pupgui2 &>/dev/null
+
+install_flatpak_coppwr:
+  cmd.run:
+    - name: flatpak install -y flathub io.github.dimtpap.coppwr
+    - runas: neg
+    - unless: flatpak info io.github.dimtpap.coppwr &>/dev/null
 
 install_flatpak_brogue_ce:
   cmd.run:
