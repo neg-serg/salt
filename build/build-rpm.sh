@@ -1204,7 +1204,7 @@ if [[ $# -eq 0 || "$1" == "newsraft" ]]; then
     if [ -f "/build/rpms/${NEWSRAFT_RPM_NAME}" ]; then
         echo "Newsraft RPM (${NEWSRAFT_RPM_NAME}) already exists, skipping."
     else
-        dnf install -y --skip-broken git rpm-build tar gcc make ncurses-devel libcurl-devel yajl-devel gumbo-parser-devel scdoc
+        dnf install -y --skip-broken git rpm-build tar gcc make ncurses-devel libcurl-devel yajl-devel gumbo-parser-devel sqlite-devel scdoc
 
         NEWSRAFT_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/newsraft-${NEWSRAFT_VERSION}"
         if [ ! -d "${NEWSRAFT_SOURCE_DIR}" ]; then
@@ -1339,7 +1339,7 @@ if [[ $# -eq 0 || "$1" == "systemd-language-server" ]]; then
     if [ -f "/build/rpms/${SYSTEMD_LS_RPM_NAME}" ]; then
         echo "systemd-language-server RPM (${SYSTEMD_LS_RPM_NAME}) already exists, skipping."
     else
-        dnf install -y --skip-broken git rpm-build tar python3-devel python3-pip python3-setuptools python3-wheel libxml2-devel libxslt-devel
+        dnf install -y --skip-broken git rpm-build tar gcc python3-devel python3-pip python3-setuptools python3-wheel libxml2-devel libxslt-devel
 
         SYSTEMD_LS_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/systemd-language-server-${SYSTEMD_LS_VERSION}"
         if [ ! -d "${SYSTEMD_LS_SOURCE_DIR}" ]; then

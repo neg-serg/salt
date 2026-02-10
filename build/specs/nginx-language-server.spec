@@ -32,6 +32,7 @@ pip3 install --ignore-requires-python --no-warn-script-location --prefix=/usr --
 %{_bindir}/nginx-language-server
 %{python3_sitelib}/nginx_language_server/
 %{python3_sitelib}/nginx_language_server-*.dist-info/
+%{_bindir}/crossplane
 %{python3_sitelib}/crossplane/
 %{python3_sitelib}/crossplane-*.dist-info/
 %{python3_sitearch}/pydantic/
