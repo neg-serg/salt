@@ -682,8 +682,9 @@ install_rmpc:
   cmd.run:
     - name: |
         set -eo pipefail
-        curl -fsSL https://github.com/mierak/rmpc/releases/latest/download/rmpc-x86_64-unknown-linux-gnu.tar.gz -o /tmp/rmpc.tar.gz
-        tar -xzf /tmp/rmpc.tar.gz -C /tmp
+        TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}' https://github.com/mierak/rmpc/releases/latest | sed 's|.*/tag/||')
+        curl -fsSL "https://github.com/mierak/rmpc/releases/download/${TAG}/rmpc-${TAG}-x86_64-unknown-linux-gnu.tar.gz" -o /tmp/rmpc.tar.gz
+        tar -xzf /tmp/rmpc.tar.gz -C /tmp rmpc
         mv /tmp/rmpc ~/.local/bin/
         rm -f /tmp/rmpc.tar.gz
     - runas: neg
@@ -695,7 +696,7 @@ install_rustmission:
     - name: |
         set -eo pipefail
         curl -fsSL https://github.com/intuis/rustmission/releases/download/v0.5.0/rustmission-x86_64-unknown-linux-gnu.tar.xz -o /tmp/rustmission.tar.xz
-        tar -xJf /tmp/rustmission.tar.xz -C /tmp
+        tar -xJf /tmp/rustmission.tar.xz -C /tmp --strip-components=1 --wildcards '*/rustmission'
         mv /tmp/rustmission ~/.local/bin/
         rm -f /tmp/rustmission.tar.xz
     - runas: neg
