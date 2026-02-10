@@ -47,6 +47,9 @@ TAOUP_VERSION="1.1.23"
 NEWSRAFT_VERSION="0.26"
 UNFLAC_VERSION="1.4"
 ALBUMDETAILS_VERSION="0.1"
+CMAKE_LS_VERSION="0.1.11"
+NGINX_LS_VERSION="0.9.0"
+SYSTEMD_LS_VERSION="0.3.5"
 
 # RPM build root directory inside the container
 RPM_BUILD_ROOT="/rpmbuild"
@@ -1272,6 +1275,87 @@ if [[ $# -eq 0 || "$1" == "albumdetails" ]]; then
 
         echo "--- Copying Albumdetails RPMs to /build/rpms/ ---"
         find "${RPMS_DIR}" -name "albumdetails-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build cmake-language-server RPM ---
+CMAKE_LS_RPM_NAME="cmake-language-server-${CMAKE_LS_VERSION}-1.fc43.noarch.rpm"
+if [[ $# -eq 0 || "$1" == "cmake-language-server" ]]; then
+    echo "--- Preparing cmake-language-server ---"
+    if [ -f "/build/rpms/${CMAKE_LS_RPM_NAME}" ]; then
+        echo "cmake-language-server RPM (${CMAKE_LS_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar python3-devel python3-pip python3-setuptools python3-wheel
+
+        CMAKE_LS_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/cmake-language-server-${CMAKE_LS_VERSION}"
+        if [ ! -d "${CMAKE_LS_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${CMAKE_LS_VERSION}" https://github.com/regen100/cmake-language-server.git "${CMAKE_LS_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/cmake-language-server-${CMAKE_LS_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "cmake-language-server-${CMAKE_LS_VERSION}"
+        cp /build/salt/specs/cmake-language-server.spec "${SPECS_DIR}/cmake-language-server.spec"
+
+        echo "--- Building cmake-language-server RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/cmake-language-server.spec"
+
+        echo "--- Copying cmake-language-server RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "cmake-language-server-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build nginx-language-server RPM ---
+NGINX_LS_RPM_NAME="nginx-language-server-${NGINX_LS_VERSION}-1.fc43.noarch.rpm"
+if [[ $# -eq 0 || "$1" == "nginx-language-server" ]]; then
+    echo "--- Preparing nginx-language-server ---"
+    if [ -f "/build/rpms/${NGINX_LS_RPM_NAME}" ]; then
+        echo "nginx-language-server RPM (${NGINX_LS_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar python3-devel python3-pip python3-setuptools python3-wheel
+
+        NGINX_LS_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/nginx-language-server-${NGINX_LS_VERSION}"
+        if [ ! -d "${NGINX_LS_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${NGINX_LS_VERSION}" https://github.com/pappasam/nginx-language-server.git "${NGINX_LS_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/nginx-language-server-${NGINX_LS_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "nginx-language-server-${NGINX_LS_VERSION}"
+        cp /build/salt/specs/nginx-language-server.spec "${SPECS_DIR}/nginx-language-server.spec"
+
+        echo "--- Building nginx-language-server RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/nginx-language-server.spec"
+
+        echo "--- Copying nginx-language-server RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "nginx-language-server-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build systemd-language-server RPM ---
+SYSTEMD_LS_RPM_NAME="systemd-language-server-${SYSTEMD_LS_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "systemd-language-server" ]]; then
+    echo "--- Preparing systemd-language-server ---"
+    if [ -f "/build/rpms/${SYSTEMD_LS_RPM_NAME}" ]; then
+        echo "systemd-language-server RPM (${SYSTEMD_LS_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar python3-devel python3-pip python3-setuptools python3-wheel libxml2-devel libxslt-devel
+
+        SYSTEMD_LS_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/systemd-language-server-${SYSTEMD_LS_VERSION}"
+        if [ ! -d "${SYSTEMD_LS_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${SYSTEMD_LS_VERSION}" https://github.com/psacawa/systemd-language-server.git "${SYSTEMD_LS_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/systemd-language-server-${SYSTEMD_LS_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "systemd-language-server-${SYSTEMD_LS_VERSION}"
+        cp /build/salt/specs/systemd-language-server.spec "${SPECS_DIR}/systemd-language-server.spec"
+
+        echo "--- Building systemd-language-server RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/systemd-language-server.spec"
+
+        echo "--- Copying systemd-language-server RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "systemd-language-server-*.rpm" -exec cp -v {} /build/rpms/ \;
     fi
 fi
 
