@@ -1,0 +1,13 @@
+[Unit]
+Description=Quickshell panel
+After=graphical-session.target
+
+[Service]
+Type=simple
+Environment=QML_XHR_ALLOW_FILE_READ=1
+ExecStart=/bin/qs
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=graphical-session.target
