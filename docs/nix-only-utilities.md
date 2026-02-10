@@ -48,6 +48,7 @@ Most items have been resolved. See `states/system_description.sls` for the actua
 | unflac | Custom RPM build (Go) | `build_unflac_rpm` |
 | matugen | Prebuilt binary (GitHub) | `install_matugen` |
 | matugen-themes | Git clone templates | `install_matugen_themes` |
+| droidcam | akmod-v4l2loopback + binary | `install_v4l2loopback` + `install_droidcam` |
 
 ## Skipped — Not Needed
 
@@ -67,5 +68,4 @@ Most items have been resolved. See `states/system_description.sls` for the actua
 
 | Package | Issue | Notes |
 |---------|-------|-------|
-| droidcam | DKMS on Atomic | Kernel module problematic; use scrcpy instead |
 | winapps | Manual setup | Windows apps in KVM; complex, not automatable |

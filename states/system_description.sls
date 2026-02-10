@@ -1113,6 +1113,24 @@ install_matugen_themes:
     - runas: neg
     - creates: /var/home/neg/.config/matugen/templates
 
+# --- DroidCam (phone as webcam via v4l2loopback) ---
+install_v4l2loopback:
+  cmd.run:
+    - name: rpm-ostree install -y akmod-v4l2loopback
+    - unless: rpm -q akmod-v4l2loopback &>/dev/null || rpm-ostree status | grep -q v4l2loopback
+
+install_droidcam:
+  cmd.run:
+    - name: |
+        curl -sL https://files.dev47apps.net/linux/droidcam_2.1.3.zip -o /tmp/droidcam.zip
+        unzip -o /tmp/droidcam.zip -d /tmp/droidcam
+        mv /tmp/droidcam/droidcam ~/.local/bin/
+        mv /tmp/droidcam/droidcam-cli ~/.local/bin/
+        chmod +x ~/.local/bin/droidcam ~/.local/bin/droidcam-cli
+        rm -rf /tmp/droidcam.zip /tmp/droidcam
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/droidcam
+
 # --- Theme packages not in Fedora repos ---
 install_kora_icons:
   cmd.run:
