@@ -39,9 +39,11 @@ pip3 install --no-warn-script-location --prefix=/usr --root=%{buildroot} .
 %{python3_sitelib}/lsprotocol-*.dist-info/
 %{python3_sitelib}/cattrs/
 %{python3_sitelib}/cattrs-*.dist-info/
+%{python3_sitelib}/cattr/
 %{python3_sitelib}/attrs/
 %{python3_sitelib}/attrs-*.dist-info/
 %{python3_sitelib}/attr/
+%{python3_sitelib}/typing_extensions*
 %{python3_sitearch}/lxml/
 %{python3_sitearch}/lxml-*.dist-info/
 

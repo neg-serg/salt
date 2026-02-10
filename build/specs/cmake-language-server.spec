@@ -38,9 +38,11 @@ pip3 install --ignore-requires-python --no-warn-script-location --prefix=/usr --
 %{python3_sitelib}/lsprotocol-*.dist-info/
 %{python3_sitelib}/cattrs/
 %{python3_sitelib}/cattrs-*.dist-info/
+%{python3_sitelib}/cattr/
 %{python3_sitelib}/attrs/
 %{python3_sitelib}/attrs-*.dist-info/
 %{python3_sitelib}/attr/
+%{python3_sitelib}/typing_extensions*
 
 %changelog
 * Mon Feb 10 2026 neg-serg <neg-serg@example.com> - 0.1.11-1

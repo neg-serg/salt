@@ -4,7 +4,7 @@ Name:           nginx-language-server
 Version:        0.9.0
 Release:        1%{?dist}
 Summary:        Language Server Protocol implementation for nginx config files
-BuildArch:      noarch
+# Not noarch: pydantic has C extensions that install to sitearch
 
 License:        GPL-3.0
 URL:            https://github.com/pappasam/nginx-language-server
@@ -34,14 +34,17 @@ pip3 install --ignore-requires-python --no-warn-script-location --prefix=/usr --
 %{python3_sitelib}/nginx_language_server-*.dist-info/
 %{python3_sitelib}/crossplane/
 %{python3_sitelib}/crossplane-*.dist-info/
-%{python3_sitelib}/pydantic/
-%{python3_sitelib}/pydantic-*.dist-info/
+%{python3_sitearch}/pydantic/
+%{python3_sitearch}/pydantic-*.dist-info/
+%{python3_sitearch}/pydantic_core/
+%{python3_sitearch}/pydantic_core-*.dist-info/
 %{python3_sitelib}/pygls/
 %{python3_sitelib}/pygls-*.dist-info/
 %{python3_sitelib}/lsprotocol/
 %{python3_sitelib}/lsprotocol-*.dist-info/
 %{python3_sitelib}/cattrs/
 %{python3_sitelib}/cattrs-*.dist-info/
+%{python3_sitelib}/cattr/
 %{python3_sitelib}/attrs/
 %{python3_sitelib}/attrs-*.dist-info/
 %{python3_sitelib}/attr/
