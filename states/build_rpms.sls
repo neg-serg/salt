@@ -18,7 +18,7 @@
     {'name': 'lutgen',            'version': '0.12.1'},
     {'name': 'massren',           'version': '1.5.6'},
     {'name': 'neg-pretty-printer','version': '0.1.0',   'arch': 'noarch',
-     'extra_volumes': '-v /var/home/neg/src/nixos-config/packages/pretty-printer:/build/pretty-printer:z'},
+     'extra_volumes': '-v /var/home/neg/src/salt/build/pretty-printer:/build/pretty-printer:z'},
     {'name': 'nerdctl',           'version': '2.2.1'},
     {'name': 'ouch',              'version': '0.6.1'},
     {'name': 'pipemixer',         'version': '0.4.0'},
