@@ -506,7 +506,7 @@ mount_one:
 # Flatpak applications (32-bit deps conflict with rpm-ostree base image)
 install_flatpak_steam:
   cmd.run:
-    - name: flatpak install -y flathub com.valvesoftware.Steam
+    - name: flatpak install --user -y flathub com.valvesoftware.Steam
     - runas: neg
     - unless: flatpak info com.valvesoftware.Steam &>/dev/null
 
@@ -524,115 +524,115 @@ flatpak_steam_filesystem:
 
 install_flatpak_pcsx2:
   cmd.run:
-    - name: flatpak install -y flathub net.pcsx2.PCSX2
+    - name: flatpak install --user -y flathub net.pcsx2.PCSX2
     - runas: neg
     - unless: flatpak info net.pcsx2.PCSX2 &>/dev/null
 
 install_flatpak_protonup_qt:
   cmd.run:
-    - name: flatpak install -y flathub net.davidotek.pupgui2
+    - name: flatpak install --user -y flathub net.davidotek.pupgui2
     - runas: neg
     - unless: flatpak info net.davidotek.pupgui2 &>/dev/null
 
 install_flatpak_coppwr:
   cmd.run:
-    - name: flatpak install -y flathub io.github.dimtpap.coppwr
+    - name: flatpak install --user -y flathub io.github.dimtpap.coppwr
     - runas: neg
     - unless: flatpak info io.github.dimtpap.coppwr &>/dev/null
 
 install_flatpak_brogue_ce:
   cmd.run:
-    - name: flatpak install -y flathub com.github.tmewett.BrogueCE
+    - name: flatpak install --user -y flathub com.github.tmewett.BrogueCE
     - runas: neg
     - unless: flatpak info com.github.tmewett.BrogueCE &>/dev/null
 
 install_flatpak_gzdoom:
   cmd.run:
-    - name: flatpak install -y flathub org.zdoom.GZDoom
+    - name: flatpak install --user -y flathub org.zdoom.GZDoom
     - runas: neg
     - unless: flatpak info org.zdoom.GZDoom &>/dev/null
 
 install_flatpak_jazz2:
   cmd.run:
-    - name: flatpak install -y flathub tk.deat.Jazz2Resurrection
+    - name: flatpak install --user -y flathub tk.deat.Jazz2Resurrection
     - runas: neg
     - unless: flatpak info tk.deat.Jazz2Resurrection &>/dev/null
 
 install_flatpak_airshipper:
   cmd.run:
-    - name: flatpak install -y flathub net.veloren.airshipper
+    - name: flatpak install --user -y flathub net.veloren.airshipper
     - runas: neg
     - unless: flatpak info net.veloren.airshipper &>/dev/null
 
 install_flatpak_shattered_pixel_dungeon:
   cmd.run:
-    - name: flatpak install -y flathub com.shatteredpixel.shatteredpixeldungeon
+    - name: flatpak install --user -y flathub com.shatteredpixel.shatteredpixeldungeon
     - runas: neg
     - unless: flatpak info com.shatteredpixel.shatteredpixeldungeon &>/dev/null
 
 install_flatpak_floorp:
   cmd.run:
-    - name: flatpak install -y flathub one.ablaze.floorp
+    - name: flatpak install --user -y flathub one.ablaze.floorp
     - runas: neg
     - unless: flatpak info one.ablaze.floorp &>/dev/null
 
 install_flatpak_jamesdsp:
   cmd.run:
-    - name: flatpak install -y flathub me.timschneeberger.jdsp4linux
+    - name: flatpak install --user -y flathub me.timschneeberger.jdsp4linux
     - runas: neg
     - unless: flatpak info me.timschneeberger.jdsp4linux &>/dev/null
 
 install_flatpak_protonplus:
   cmd.run:
-    - name: flatpak install -y flathub com.vysp3r.ProtonPlus
+    - name: flatpak install --user -y flathub com.vysp3r.ProtonPlus
     - runas: neg
     - unless: flatpak info com.vysp3r.ProtonPlus &>/dev/null
 
 install_flatpak_obs:
   cmd.run:
-    - name: flatpak install -y flathub com.obsproject.Studio
+    - name: flatpak install --user -y flathub com.obsproject.Studio
     - runas: neg
     - unless: flatpak info com.obsproject.Studio &>/dev/null
 
 install_flatpak_live_captions:
   cmd.run:
-    - name: flatpak install -y flathub net.sapples.LiveCaptions
+    - name: flatpak install --user -y flathub net.sapples.LiveCaptions
     - runas: neg
     - unless: flatpak info net.sapples.LiveCaptions &>/dev/null
 
 install_flatpak_obsidian:
   cmd.run:
-    - name: flatpak install -y flathub md.obsidian.Obsidian
+    - name: flatpak install --user -y flathub md.obsidian.Obsidian
     - runas: neg
     - unless: flatpak info md.obsidian.Obsidian &>/dev/null
 
 install_flatpak_chromium:
   cmd.run:
-    - name: flatpak install -y flathub org.chromium.Chromium
+    - name: flatpak install --user -y flathub org.chromium.Chromium
     - runas: neg
     - unless: flatpak info org.chromium.Chromium &>/dev/null
 
 install_flatpak_gimp:
   cmd.run:
-    - name: flatpak install -y flathub org.gimp.GIMP
+    - name: flatpak install --user -y flathub org.gimp.GIMP
     - runas: neg
     - unless: flatpak info org.gimp.GIMP &>/dev/null
 
 install_flatpak_chrome:
   cmd.run:
-    - name: flatpak install -y flathub com.google.Chrome
+    - name: flatpak install --user -y flathub com.google.Chrome
     - runas: neg
     - unless: flatpak info com.google.Chrome &>/dev/null
 
 install_flatpak_libreoffice:
   cmd.run:
-    - name: flatpak install -y flathub org.libreoffice.LibreOffice
+    - name: flatpak install --user -y flathub org.libreoffice.LibreOffice
     - runas: neg
     - unless: flatpak info org.libreoffice.LibreOffice &>/dev/null
 
 install_flatpak_lutris:
   cmd.run:
-    - name: flatpak install -y flathub net.lutris.Lutris
+    - name: flatpak install --user -y flathub net.lutris.Lutris
     - runas: neg
     - unless: flatpak info net.lutris.Lutris &>/dev/null
 
@@ -824,7 +824,7 @@ copr_cachyos_kernel:
 
 install_cachyos_kernel:
   cmd.run:
-    - name: rpm-ostree install -y --allow-inactive kernel-cachyos-lto
+    - name: rpm-ostree install -y --allow-inactive kernel-cachyos-lto kernel-cachyos-lto-devel-matched
     - require:
       - cmd: copr_cachyos_kernel
     - unless: rpm -q kernel-cachyos-lto
@@ -881,11 +881,11 @@ install_sbctl:
       - cmd: copr_sbctl
     - unless: rpm-ostree status | grep -q sbctl
 
-# --- COPR: yabridge (Windows VST bridge for Linux DAWs) ---
+# --- COPR: yabridge (Windows VST bridge for Linux DAWs, via wine-tkg) ---
 copr_yabridge:
   cmd.run:
-    - name: dnf copr enable -y patrickl/yabridge-stable
-    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:patrickl:yabridge-stable.repo
+    - name: dnf copr enable -y patrickl/wine-tkg
+    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:patrickl:wine-tkg.repo
 
 install_yabridge:
   cmd.run:
@@ -897,8 +897,8 @@ install_yabridge:
 # --- COPR: Audinux (audio production packages: brutefir, patchmatrix, sc3-plugins) ---
 copr_audinux:
   cmd.run:
-    - name: dnf copr enable -y ycollet/linuxmao
-    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:ycollet:linuxmao.repo
+    - name: dnf copr enable -y ycollet/audinux
+    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:ycollet:audinux.repo
 
 install_audinux_packages:
   cmd.run:
@@ -1030,11 +1030,11 @@ install_realesrgan:
 install_essentia_extractor:
   cmd.run:
     - name: |
-        curl -sL https://essentia.upf.edu/extractors/essentia-extractor-v2.1_beta5-linux-x86_64.tar.gz -o /tmp/essentia.tar.gz
+        curl -sL https://data.metabrainz.org/pub/musicbrainz/acousticbrainz/extractors/essentia-extractor-v2.1_beta2-linux-x86_64.tar.gz -o /tmp/essentia.tar.gz
         tar -xzf /tmp/essentia.tar.gz -C /tmp
-        find /tmp -name 'essentia_streaming_extractor_music' -exec mv {} ~/.local/bin/ \;
+        mv /tmp/streaming_extractor_music ~/.local/bin/essentia_streaming_extractor_music
         chmod +x ~/.local/bin/essentia_streaming_extractor_music
-        rm -rf /tmp/essentia.tar.gz /tmp/essentia-extractor-*
+        rm -rf /tmp/essentia.tar.gz
     - runas: neg
     - creates: /var/home/neg/.local/bin/essentia_streaming_extractor_music
 
@@ -1047,7 +1047,7 @@ install_scdl:
 
 install_dr14_tmeter:
   cmd.run:
-    - name: pip install --user DR14-T.meter
+    - name: pip install --user dr14-tmeter
     - runas: neg
     - creates: /var/home/neg/.local/bin/dr14_tmeter
 
@@ -1066,7 +1066,7 @@ install_agg:
 
 install_tailray:
   cmd.run:
-    - name: cargo install tailray
+    - name: cargo install --git https://github.com/NotAShelf/tailray
     - runas: neg
     - creates: /var/home/neg/.cargo/bin/tailray
 
@@ -1219,7 +1219,7 @@ install_hishtory:
 # --- iwmenu (interactive Wi-Fi menu for iwd/Wayland) ---
 install_iwmenu:
   cmd.run:
-    - name: cargo install iwmenu
+    - name: cargo install --git https://github.com/e-tho/iwmenu
     - runas: neg
     - creates: /var/home/neg/.cargo/bin/iwmenu
 
