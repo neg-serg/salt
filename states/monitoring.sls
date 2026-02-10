@@ -1,13 +1,21 @@
+{% from 'host_config.jinja' import host %}
+{% set mon = host.features.monitoring %}
+
 # --- Simple service enables (packages already in system_description.sls) ---
+{% if mon.sysstat %}
 sysstat_enabled:
   service.enabled:
     - name: sysstat
+{% endif %}
 
+{% if mon.vnstat %}
 vnstat_enabled:
   service.enabled:
     - name: vnstatd
+{% endif %}
 
 # --- Netdata: systemd override for conservative resource limits ---
+{% if mon.netdata %}
 netdata_override_dir:
   file.directory:
     - name: /etc/systemd/system/netdata.service.d
@@ -33,8 +41,10 @@ netdata_reload:
     - name: systemctl daemon-reload
     - onchanges:
       - file: netdata_override
+{% endif %}
 
 # --- Loki: log aggregation ---
+{% if mon.loki %}
 install_loki:
   cmd.run:
     - name: |
@@ -148,8 +158,10 @@ loki_enabled:
       - cmd: install_loki
       - file: loki_config
       - file: loki_data_dirs
+{% endif %}
 
 # --- Promtail: log shipper to Loki ---
+{% if mon.promtail %}
 install_promtail:
   cmd.run:
     - name: |
@@ -235,8 +247,10 @@ promtail_enabled:
       - file: promtail_service
       - cmd: install_promtail
       - file: promtail_config
+{% endif %}
 
 # --- Grafana: dashboard with Loki datasource ---
+{% if mon.grafana %}
 grafana_repo:
   file.managed:
     - name: /etc/yum.repos.d/grafana.repo
@@ -308,3 +322,4 @@ grafana_enabled:
     - require:
       - file: grafana_config
       - file: grafana_loki_datasource
+{% endif %}

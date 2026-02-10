@@ -42,7 +42,7 @@ udev_reload_custom:
       - file: custom_udev_rules
 
 # --- Fan control: auto-generate /etc/fancontrol from detected hwmon ---
-{% if not host.get('is_laptop', false) %}
+{% if host.features.fancontrol %}
 
 fancontrol_setup_script:
   file.managed:

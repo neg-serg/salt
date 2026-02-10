@@ -19,6 +19,17 @@
     'hostname':       grains['host'],
     'extra_kargs':    [],
     'extra_modules':  [],
+    'features': {
+        'monitoring': {
+            'sysstat':  True,
+            'vnstat':   True,
+            'netdata':  True,
+            'loki':     False,
+            'promtail': False,
+            'grafana':  False,
+        },
+        'fancontrol':   False,
+    },
 } %}
 
 {% set hosts = {
@@ -29,6 +40,17 @@
         'display':        '3840x2160@240',
         'hostname':       'telfir',
         'extra_modules':  ['ec_sys', 'asus_ec_sensors'],
+        'features': {
+            'monitoring': {
+                'sysstat':  True,
+                'vnstat':   True,
+                'netdata':  True,
+                'loki':     False,
+                'promtail': False,
+                'grafana':  False,
+            },
+            'fancontrol':   True,
+        },
     },
 } %}
 
@@ -37,21 +59,50 @@
     'fedora': 'telfir',
 } %}
 
-{# Merge: overlay host-specific values on top of defaults #}
+{# Merge: overlay host-specific values on top of defaults.
+   For nested dicts (features), merge sub-keys individually. #}
 {% set current_host = aliases.get(grains['host'], grains['host']) %}
 {% set _host = {} %}
-{% if current_host in hosts %}
-    {% for key, val in defaults.items() %}
-        {% if key in hosts[current_host] %}
-            {% do _host.update({key: hosts[current_host][key]}) %}
+{% set _src = hosts.get(current_host, {}) %}
+
+{% for key, val in defaults.items() %}
+    {% if key in _src %}
+        {% if val is mapping and _src[key] is mapping %}
+            {# Two-level merge for nested dicts like features #}
+            {% set _merged = {} %}
+            {% for sk, sv in val.items() %}
+                {% if sk in _src[key] %}
+                    {% if sv is mapping and _src[key][sk] is mapping %}
+                        {# Third level: merge monitoring sub-dict etc. #}
+                        {% set _sub = {} %}
+                        {% for ssk, ssv in sv.items() %}
+                            {% do _sub.update({ssk: _src[key][sk].get(ssk, ssv)}) %}
+                        {% endfor %}
+                        {% for ssk, ssv in _src[key][sk].items() %}
+                            {% if ssk not in sv %}
+                                {% do _sub.update({ssk: ssv}) %}
+                            {% endif %}
+                        {% endfor %}
+                        {% do _merged.update({sk: _sub}) %}
+                    {% else %}
+                        {% do _merged.update({sk: _src[key][sk]}) %}
+                    {% endif %}
+                {% else %}
+                    {% do _merged.update({sk: sv}) %}
+                {% endif %}
+            {% endfor %}
+            {% for sk, sv in _src[key].items() %}
+                {% if sk not in val %}
+                    {% do _merged.update({sk: sv}) %}
+                {% endif %}
+            {% endfor %}
+            {% do _host.update({key: _merged}) %}
         {% else %}
-            {% do _host.update({key: val}) %}
+            {% do _host.update({key: _src[key]}) %}
         {% endif %}
-    {% endfor %}
-{% else %}
-    {% for key, val in defaults.items() %}
+    {% else %}
         {% do _host.update({key: val}) %}
-    {% endfor %}
-{% endif %}
+    {% endif %}
+{% endfor %}
 
 {% set host = _host %}
