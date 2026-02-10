@@ -61,9 +61,21 @@
 {% do kargs.append(karg) %}
 {% endfor %}
 
-{% for karg in kargs %}
-karg_{{ karg | replace('=', '_') | replace('.', '_') | replace('-', '_') | replace('!', 'not') }}:
+set_kernel_params:
   cmd.run:
-    - name: rpm-ostree kargs --append='{{ karg }}'
-    - unless: rpm-ostree kargs | grep -qF '{{ karg }}'
-{% endfor %}
+    - name: |
+        current=$(rpm-ostree kargs)
+        missing=()
+        {% for karg in kargs %}
+        [[ "$current" == *'{{ karg }}'* ]] || missing+=('{{ karg }}')
+        {% endfor %}
+        if [ -n "${missing[*]}" ]; then
+          args=()
+          for k in "${missing[@]}"; do args+=("--append=$k"); done
+          rpm-ostree kargs "${args[@]}"
+        fi
+    - unless: |
+        current=$(rpm-ostree kargs)
+        {% for karg in kargs %}
+        [[ "$current" == *'{{ karg }}'* ]] || exit 1
+        {% endfor %}

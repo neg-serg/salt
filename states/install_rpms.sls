@@ -5,13 +5,26 @@ install_custom_rpms:
   cmd.run:
     - name: |
         {% raw %}
+        RPM_DIR=/var/home/neg/src/salt/rpms
+        shopt -s nullglob
+        rpm_files=("$RPM_DIR"/*.rpm)
+        [ ${#rpm_files[@]} -eq 0 ] && exit 0
+        # Batch: get package names from all RPM files (one rpm call)
+        mapfile -t pkg_names < <(rpm -qp --queryformat '%{NAME}\n' "${rpm_files[@]}" 2>/dev/null)
+        # Batch: all installed packages (one rpm call)
+        installed=$(rpm -qa --queryformat '%{NAME}\n' | sort -u)
+        # Batch: all layered local packages (one rpm-ostree call)
         layered=$(rpm-ostree status --json | jq -r '.deployments[]."requested-local-packages"[]?')
+        # Build lookup set
+        declare -A have
+        while IFS= read -r name; do [[ -n "$name" ]] && have["$name"]=1; done <<< "$installed"
+        while IFS= read -r entry; do
+          name="${entry%%-[0-9]*}"
+          [[ -n "$name" ]] && have["$name"]=1
+        done <<< "$layered"
         to_install=()
-        for rpm_file in /var/home/neg/src/salt/rpms/*.rpm; do
-          pkg_name=$(rpm -qp --queryformat '%{NAME}' "$rpm_file" 2>/dev/null)
-          if ! rpm -q "$pkg_name" &>/dev/null && ! echo "$layered" | grep -q "^${pkg_name}-[0-9]"; then
-            to_install+=("$rpm_file")
-          fi
+        for i in "${!pkg_names[@]}"; do
+          [[ -z "${have[${pkg_names[$i]}]+x}" ]] && to_install+=("${rpm_files[$i]}")
         done
         if [ ${#to_install[@]} -gt 0 ]; then
           rpm-ostree install "${to_install[@]}"
@@ -19,12 +32,21 @@ install_custom_rpms:
         {% endraw %}
     - unless: |
         {% raw %}
+        RPM_DIR=/var/home/neg/src/salt/rpms
+        shopt -s nullglob
+        rpm_files=("$RPM_DIR"/*.rpm)
+        [ ${#rpm_files[@]} -eq 0 ] && exit 0
+        mapfile -t pkg_names < <(rpm -qp --queryformat '%{NAME}\n' "${rpm_files[@]}" 2>/dev/null)
+        installed=$(rpm -qa --queryformat '%{NAME}\n' | sort -u)
         layered=$(rpm-ostree status --json | jq -r '.deployments[]."requested-local-packages"[]?')
-        for rpm_file in /var/home/neg/src/salt/rpms/*.rpm; do
-          pkg_name=$(rpm -qp --queryformat '%{NAME}' "$rpm_file" 2>/dev/null)
-          if ! rpm -q "$pkg_name" &>/dev/null && ! echo "$layered" | grep -q "^${pkg_name}-[0-9]"; then
-            exit 1
-          fi
+        declare -A have
+        while IFS= read -r name; do [[ -n "$name" ]] && have["$name"]=1; done <<< "$installed"
+        while IFS= read -r entry; do
+          name="${entry%%-[0-9]*}"
+          [[ -n "$name" ]] && have["$name"]=1
+        done <<< "$layered"
+        for name in "${pkg_names[@]}"; do
+          [[ -z "${have[$name]+x}" ]] && exit 1
         done
         {% endraw %}
     - runas: root
