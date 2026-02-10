@@ -1,0 +1,3 @@
+[submodule "docs/nixos-config-ref"]
+	path = docs/nixos-config-ref
+	url = git@github.com:neg-serg/nixos-config.git
