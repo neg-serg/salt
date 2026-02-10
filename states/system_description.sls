@@ -238,6 +238,7 @@ sudo_timeout:
         {'name': 'streamlink',          'desc': 'CLI for extracting streams from websites'},
         {'name': 'telegram-desktop',    'desc': 'Telegram Desktop messaging app'},
         {'name': 'traceroute',          'desc': 'Trace packet route to host'},
+        {'name': 'ttyd',               'desc': 'Share terminal over the web'},
         {'name': 'whois',               'desc': 'Domain registration information lookup'},
         {'name': 'vdirsyncer',         'desc': 'CalDAV/CardDAV synchronization tool'},
         {'name': 'transmission-gtk',    'desc': 'BitTorrent client'},
