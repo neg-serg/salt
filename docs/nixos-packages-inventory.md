@@ -49,7 +49,7 @@ _Source: modules/cli/network.nix_
 - [x] prettyping (RPM)
 - [x] speedtest-cli (RPM)
 - [x] urlscan (RPM)
-- [ ] urlwatch — page change monitor; not installed
+- [x] urlwatch — page change monitor (RPM)
 - [x] whois (RPM)
 - [x] abduco (RPM)
 - [x] xxh (CRPM)
@@ -154,10 +154,10 @@ _Source: modules/dev/git/pkgs.nix_
 - [x] git-extras (RPM)
 - [x] git-filter-repo (CRPM)
 - [x] git-lfs (RPM)
-- [ ] act — run GitHub Actions locally; not installed
+- [x] act — run GitHub Actions locally (RPM)
 - [x] gh (RPM)
 - [x] gist (CRPM)
-- [ ] hxtools (opt) — git/stats helpers; not installed
+- [x] hxtools — git/stats helpers (RPM)
 
 ## Development — Editor
 _Source: modules/dev/editor/pkgs.nix_
@@ -379,7 +379,7 @@ _Source: modules/monitoring/pkgs/default.nix_
 - [x] nethogs (RPM)
 - [ ] adguardian — AdGuard Home terminal dashboard; not installed
 - [x] powertop (RPM)
-- [ ] procdump — Linux procdump; not installed
+- [x] procdump — Linux procdump (RPM)
 - [x] sysstat (RPM)
 - [x] vmtouch (RPM)
 - [x] mtr (RPM) — via `programs.mtr.enable`
@@ -391,7 +391,7 @@ _Source: modules/media/audio/core-packages.nix_
 
 - [x] alsa-utils (RPM)
 - [ ] pw-volume — minimal PipeWire volume control; not installed (use `pamixer` or `wpctl`)
-- [ ] coppwr — PipeWire graph copy/paste; not installed
+- [x] coppwr — PipeWire graph copy/paste; Flatpak (`io.github.dimtpap.coppwr`)
 - [x] helvum (RPM) — GTK patchbay
 - [ ] patchmatrix — LV2/JACK matrix; not installed
 - [x] qpwgraph (RPM)
@@ -406,7 +406,7 @@ _Source: modules/media/audio/apps-packages.nix_
 - [ ] roomeqwizard (opt) — acoustic measurement; not installed
 - [x] sox (RPM)
 - [x] pipemixer (CRPM)
-- [ ] wiremix — PipeWire terminal mixer; not installed
+- [x] wiremix — PipeWire terminal mixer (RPM)
 - [x] cdparanoia (RPM)
 - [ ] unflac — FLAC cuesheet converter; not installed
 - [ ] cider (opt) — Apple Music player; not installed
@@ -590,7 +590,7 @@ _Source: modules/user/locale-pkgs.nix_
 - [x] hunspell-en-US (RPM)
 - [x] hunspell-ru — Russian dictionary (RPM)
 - [x] hyphen (RPM)
-- [ ] nuspell — modern spellchecker; not installed
+- [x] nuspell — modern spellchecker (RPM)
 
 ## User — Locate
 _Source: modules/user/locate.nix_
@@ -602,7 +602,7 @@ _Source: modules/user/mail.nix_
 
 - [ ] himalaya — async email CLI; not installed
 - [x] neomutt (RPM)
-- [ ] vdirsyncer — Cal/CardDAV sync; not installed
+- [x] vdirsyncer — Cal/CardDAV sync (RPM)
 
 ---
 
@@ -679,7 +679,7 @@ _Source: modules/fun/launchers-packages.nix_
 - [x] protontricks (RPM)
 - [x] protonup-ng — Proton-GE installer; ProtonUp-Qt Flatpak (`net.davidotek.pupgui2`)
 - [x] vkbasalt — `vkBasalt` (RPM)
-- [ ] vkbasalt-cli — `python3-vkbasalt-cli` (RPM)
+- [x] vkbasalt-cli — `python3-vkbasalt-cli` (RPM)
 - [x] mangohud (RPM)
 
 ## Games — Emulators
