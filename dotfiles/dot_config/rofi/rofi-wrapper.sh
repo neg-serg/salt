@@ -1,12 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
-rofi_bin="@ROFI_BIN@"
-jq_bin="@JQ_BIN@"
-hyprctl_bin="@HYPRCTL_BIN@"
-# Fallback to PATH if not substituted by Nix
-if [ "$hyprctl_bin" = "@HYPRCTL_BIN@" ] || [ -z "$hyprctl_bin" ]; then
-  hyprctl_bin="${ROFI_WRAPPER_HYPRCTL:-hyprctl}"
-fi
+rofi_bin="rofi"
+jq_bin="jq"
+hyprctl_bin="${ROFI_WRAPPER_HYPRCTL:-hyprctl}"
 xdg_data="${XDG_DATA_HOME:-$HOME/.local/share}"
 xdg_conf="${XDG_CONFIG_HOME:-$HOME/.config}"
 themes_dir="$xdg_data/rofi/themes"
@@ -100,7 +96,6 @@ if [ "$want_offsets" -eq 1 ] && [ "$have_xoff" -eq 0 ] && [ "$have_yoff" -eq 0 ]
   fi
 fi
 
-# Avoid parsing user/system config if not explicitly requested (rofi 2.0 parser is strict)
 # Avoid parsing user/system config if not explicitly requested (rofi 2.0 parser is strict)
 if [ "$have_cfg" -eq 0 ]; then
   set -- -no-config "$@"
