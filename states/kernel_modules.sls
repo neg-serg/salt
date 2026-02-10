@@ -1,3 +1,4 @@
+{% from 'host_config.jinja' import host %}
 # Kernel module loading and blacklisting migrated from NixOS
 # (modules/system/kernel/params.nix, hosts/telfir/hardware.nix)
 #
@@ -8,22 +9,25 @@ kernel_modules_load:
   file.managed:
     - name: /etc/modules-load.d/custom.conf
     - contents: |
-        # AMD virtualization
-        kvm-amd
+        # KVM virtualization ({{ host.cpu_vendor }})
+        {{ host.kvm_module }}
         # BBR TCP congestion control
         tcp_bbr
         # NT synchronization primitives (Wine/Proton)
         ntsync
-        # ASUS embedded controller sensors
-        ec_sys
-        asus_ec_sensors
+{% for mod in host.extra_modules %}
+        # Host-specific: {{ mod }}
+        {{ mod }}
+{% endfor %}
 
 kernel_modules_blacklist:
   file.managed:
     - name: /etc/modprobe.d/blacklist-custom.conf
     - contents: |
+{% if host.cpu_vendor == 'amd' %}
         # Watchdog (sp5100_tco causes spurious resets on AMD)
         blacklist sp5100_tco
+{% endif %}
 
         # TPM (unused on this host, avoids tpmrm device wait)
         blacklist tpm
@@ -85,7 +89,7 @@ kernel_modules_blacklist:
         blacklist udf
 
 # Load modules that aren't already loaded (no reboot needed for most)
-{% for mod in ['kvm-amd', 'tcp_bbr'] %}
+{% for mod in [host.kvm_module, 'tcp_bbr'] %}
 load_{{ mod | replace('-', '_') }}:
   cmd.run:
     - name: modprobe {{ mod }}

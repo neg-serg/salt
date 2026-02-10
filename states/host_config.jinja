@@ -1,0 +1,57 @@
+{#
+    Per-host configuration map.
+
+    Usage in any .sls file:
+      {% from 'host_config.jinja' import host %}
+      {% if host.is_laptop %}
+        ...laptop-specific states...
+      {% endif %}
+
+    To add a new host, create a new entry in the `hosts` dict.
+    Any key not specified inherits from `defaults`.
+#}
+
+{% set defaults = {
+    'is_laptop':      False,
+    'cpu_vendor':     'amd',
+    'kvm_module':     'kvm-amd',
+    'display':        '',
+    'hostname':       grains['host'],
+    'extra_kargs':    [],
+    'extra_modules':  [],
+} %}
+
+{% set hosts = {
+    'telfir': {
+        'is_laptop':      False,
+        'cpu_vendor':     'amd',
+        'kvm_module':     'kvm-amd',
+        'display':        '3840x2160@240',
+        'hostname':       'telfir',
+        'extra_modules':  ['ec_sys', 'asus_ec_sensors'],
+    },
+} %}
+
+{# Hostname aliases for migration (e.g. first run before rename) #}
+{% set aliases = {
+    'fedora': 'telfir',
+} %}
+
+{# Merge: overlay host-specific values on top of defaults #}
+{% set current_host = aliases.get(grains['host'], grains['host']) %}
+{% set _host = {} %}
+{% if current_host in hosts %}
+    {% for key, val in defaults.items() %}
+        {% if key in hosts[current_host] %}
+            {% do _host.update({key: hosts[current_host][key]}) %}
+        {% else %}
+            {% do _host.update({key: val}) %}
+        {% endif %}
+    {% endfor %}
+{% else %}
+    {% for key, val in defaults.items() %}
+        {% do _host.update({key: val}) %}
+    {% endfor %}
+{% endif %}
+
+{% set host = _host %}
