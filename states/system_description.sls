@@ -167,6 +167,7 @@ sudo_timeout:
         {'name': 'mpv',                 'desc': 'A free, open source, and cross-platform media player'},
         {'name': 'optipng',             'desc': 'PNG optimizer'},
         {'name': 'perl-Image-ExifTool', 'desc': 'Utility for reading and writing image meta info'},
+        {'name': 'chromaprint-tools',   'desc': 'AcoustID audio fingerprint calculator (fpcalc)'},
         {'name': 'picard',              'desc': 'MusicBrainz GUI music tagger'},
         {'name': 'pngquant',            'desc': 'PNG quantization tool for lossy compression'},
         {'name': 'qpwgraph',            'desc': 'Qt PipeWire patchbay'},
@@ -650,7 +651,7 @@ install_oh_my_posh:
 
 install_aliae:
   cmd.run:
-    - name: curl -fsSL https://github.com/p-nerd/aliae/releases/latest/download/aliae-linux-amd64 -o ~/.local/bin/aliae && chmod +x ~/.local/bin/aliae
+    - name: curl -fsSL https://github.com/JanDeDobbeleer/aliae/releases/latest/download/aliae-linux-amd64 -o ~/.local/bin/aliae && chmod +x ~/.local/bin/aliae
     - runas: neg
     - creates: /var/home/neg/.local/bin/aliae
 
@@ -662,8 +663,13 @@ install_grimblast:
 
 install_sops:
   cmd.run:
-    - name: curl -fsSL https://github.com/getsops/sops/releases/latest/download/sops-v3.11.0.linux.amd64 -o ~/.local/bin/sops && chmod +x ~/.local/bin/sops
+    - name: |
+        set -eo pipefail
+        TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}' https://github.com/getsops/sops/releases/latest | sed 's|.*/tag/||')
+        curl -fsSL "https://github.com/getsops/sops/releases/download/${TAG}/sops-${TAG}.linux.amd64" -o ~/.local/bin/sops
+        chmod +x ~/.local/bin/sops
     - runas: neg
+    - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/sops
 
 install_xdg_ninja:
@@ -688,7 +694,7 @@ install_rustmission:
   cmd.run:
     - name: |
         set -eo pipefail
-        curl -fsSL https://github.com/intuis/rustmission/releases/latest/download/rustmission-x86_64-unknown-linux-gnu.tar.xz -o /tmp/rustmission.tar.xz
+        curl -fsSL https://github.com/intuis/rustmission/releases/download/v0.5.0/rustmission-x86_64-unknown-linux-gnu.tar.xz -o /tmp/rustmission.tar.xz
         tar -xJf /tmp/rustmission.tar.xz -C /tmp
         mv /tmp/rustmission ~/.local/bin/
         rm -f /tmp/rustmission.tar.xz
@@ -940,8 +946,7 @@ install_realesrgan:
   cmd.run:
     - name: |
         set -eo pipefail
-        TAG=$(gh release view --repo xinntao/Real-ESRGAN-ncnn-vulkan --json tagName -q .tagName)
-        curl -fsSL "https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan/releases/download/${TAG}/realesrgan-ncnn-vulkan-${TAG}-ubuntu.zip" -o /tmp/realesrgan.zip
+        curl -fsSL "https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan/releases/download/v0.2.0/realesrgan-ncnn-vulkan-v0.2.0-ubuntu.zip" -o /tmp/realesrgan.zip
         unzip -o /tmp/realesrgan.zip -d /tmp/realesrgan
         mv /tmp/realesrgan/realesrgan-ncnn-vulkan ~/.local/bin/
         chmod +x ~/.local/bin/realesrgan-ncnn-vulkan
