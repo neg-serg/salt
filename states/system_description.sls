@@ -948,7 +948,7 @@ install_realesrgan:
         set -eo pipefail
         curl -fsSL "https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan/releases/download/v0.2.0/realesrgan-ncnn-vulkan-v0.2.0-ubuntu.zip" -o /tmp/realesrgan.zip
         unzip -o /tmp/realesrgan.zip -d /tmp/realesrgan
-        mv /tmp/realesrgan/realesrgan-ncnn-vulkan ~/.local/bin/
+        mv /tmp/realesrgan/realesrgan-ncnn-vulkan-v0.2.0-ubuntu/realesrgan-ncnn-vulkan ~/.local/bin/
         chmod +x ~/.local/bin/realesrgan-ncnn-vulkan
         rm -rf /tmp/realesrgan.zip /tmp/realesrgan
     - runas: neg
