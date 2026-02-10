@@ -356,7 +356,7 @@ _Source: modules/hardware/ (various)_
 - [x] liquidctl (RPM) — liquid cooler control
 - [ ] qmk-udev-rules — QMK keyboard rules; not installed as RPM
 - [ ] droidcam — phone as webcam; not installed
-- [x] dualsensectl — DualSense controller (RPM? check)
+- [x] dualsensectl — DualSense controller; COPR `kapsh/dualsensectl`
 
 ## System — AMD GPU
 _Source: modules/hardware/amdgpu.nix_
@@ -670,14 +670,14 @@ _Source: modules/games/default.nix, modules/fun/ (various)_
 ## Games — Controllers
 _Source: modules/games/controllers.nix_
 
-- [ ] dualsensectl — DualSense config; not installed
+- [x] dualsensectl — DualSense config; COPR `kapsh/dualsensectl`
 
 ## Games — Launchers & Proton
 _Source: modules/fun/launchers-packages.nix_
 
 - [ ] protonplus — Proton prefix manager; not installed
 - [x] protontricks (RPM)
-- [ ] protonup-ng — Proton-GE installer; not installed
+- [x] protonup-ng — Proton-GE installer; ProtonUp-Qt Flatpak (`net.davidotek.pupgui2`)
 - [x] vkbasalt — `vkBasalt` (RPM)
 - [ ] vkbasalt-cli — `python3-vkbasalt-cli` (RPM)
 - [x] mangohud (RPM)

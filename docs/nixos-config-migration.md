@@ -396,6 +396,9 @@ Steps to enable:
 | Steam (Flatpak) | — | system_description.sls (Flatpak) | [x] |
 | PCSX2 (Flatpak) | — | system_description.sls (Flatpak) | [x] |
 | `~/.config/dosbox/*.conf` | files/config/dosbox/ | dot_config/dosbox/ | [x] |
+| vkBasalt | games/performance.nix | system_description.sls (Gaming) | [x] |
+| dualsensectl | games/controllers.nix | system_description.sls (COPR) | [x] |
+| ProtonUp-Qt (Flatpak) | fun/launchers-packages.nix | system_description.sls (Flatpak) | [x] |
 
 ## 35. Locale & System
 
