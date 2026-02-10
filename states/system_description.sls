@@ -509,6 +509,36 @@ install_flatpak_protonup_qt:
     - runas: neg
     - unless: flatpak info net.davidotek.pupgui2 &>/dev/null
 
+install_flatpak_brogue_ce:
+  cmd.run:
+    - name: flatpak install -y flathub com.github.tmewett.BrogueCE
+    - runas: neg
+    - unless: flatpak info com.github.tmewett.BrogueCE &>/dev/null
+
+install_flatpak_gzdoom:
+  cmd.run:
+    - name: flatpak install -y flathub org.zdoom.GZDoom
+    - runas: neg
+    - unless: flatpak info org.zdoom.GZDoom &>/dev/null
+
+install_flatpak_jazz2:
+  cmd.run:
+    - name: flatpak install -y flathub tk.deat.Jazz2Resurrection
+    - runas: neg
+    - unless: flatpak info tk.deat.Jazz2Resurrection &>/dev/null
+
+install_flatpak_airshipper:
+  cmd.run:
+    - name: flatpak install -y flathub net.veloren.airshipper
+    - runas: neg
+    - unless: flatpak info net.veloren.airshipper &>/dev/null
+
+install_flatpak_shattered_pixel_dungeon:
+  cmd.run:
+    - name: flatpak install -y flathub com.shatteredpixel.shatteredpixeldungeon
+    - runas: neg
+    - unless: flatpak info com.shatteredpixel.shatteredpixeldungeon &>/dev/null
+
 install_flatpak_floorp:
   cmd.run:
     - name: flatpak install -y flathub one.ablaze.floorp
