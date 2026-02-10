@@ -607,7 +607,7 @@ floorp_usercontent:
     {'id': '{531906d3-e22f-4a6c-a102-8057b88a1a63}',         'slug': 'single-file'},
     {'id': 'addon@fastforward.team',                          'slug': 'fastforwardteam'},
     {'id': 'hide-scrollbars@qashto',                          'slug': 'hide-scrollbars'},
-    {'id': 'kellyc-show-youtube-dislikes@nradiowave',         'slug': 'kellyc-show-youtube-dislikes'},
+    {'id': 'kellyc-show-youtube-dislikes@nradiowave',         'slug': 'return-youtube-dislike'},
     {'id': '{4a311e5c-1ccc-49b7-9c23-3e2b47b6c6d5}',         'slug': 'скачать-музыку-с-вк-vkd'},
 ] %}
 
@@ -1184,12 +1184,39 @@ install_iwmenu:
     - runas: neg
     - creates: /var/home/neg/.cargo/bin/iwmenu
 
-# --- ollama: enable service and pull models ---
+# --- ollama: systemd service + models ---
+ollama_service_unit:
+  file.managed:
+    - name: /etc/systemd/system/ollama.service
+    - contents: |
+        [Unit]
+        Description=Ollama LLM Server
+        After=network-online.target
+
+        [Service]
+        ExecStart=/usr/bin/ollama serve
+        User=neg
+        Group=neg
+        Restart=always
+        RestartSec=3
+        Environment="HOME=/var/home/neg"
+        Environment="OLLAMA_MODELS=/var/home/neg/.ollama/models"
+
+        [Install]
+        WantedBy=default.target
+    - user: root
+    - group: root
+    - mode: '0644'
+
 ollama_enabled:
-  service.enabled:
+  service.running:
     - name: ollama
+    - enable: True
     - require:
+      - file: ollama_service_unit
       - cmd: install_system_packages
+    - watch:
+      - file: ollama_service_unit
 
 pull_deepseek_r1_8b:
   cmd.run:
