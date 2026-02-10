@@ -659,7 +659,7 @@ _Source: modules/games/default.nix, modules/fun/ (various)_
 - [ ] jazz2 — Jazz Jackrabbit 2; not installed
 - [ ] shattered-pixel-dungeon — roguelike; not installed
 - [ ] superTux — 2D platformer; not installed
-- [x] superTuxKart — `supertuxkart` (RPM)
+- [ ] superTuxKart — removed
 - [x] wesnoth (RPM)
 - [x] xaos (RPM)
 - [x] xonotic (RPM)

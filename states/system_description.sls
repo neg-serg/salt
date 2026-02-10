@@ -302,7 +302,6 @@ sudo_timeout:
         {'name': 'protontricks',        'desc': 'Proton/Wine tricks helper'},
         {'name': 'retroarch',           'desc': 'Multi-platform emulator frontend'},
         {'name': 'vkBasalt',            'desc': 'Vulkan post-processing layer (ReShade-like)'},
-        {'name': 'supertuxkart',        'desc': '3D racing game'},
         {'name': 'wesnoth',             'desc': 'Turn-based strategy game'},
         {'name': 'xaos',                'desc': 'Interactive fractal zoomer'},
         {'name': 'xonotic',             'desc': 'Fast-paced FPS game'}
