@@ -44,6 +44,7 @@ SWAYOSD_VERSION="0.3.0"
 XDG_TERMFILECHOOSER_VERSION="0.4.0"
 BUCKLESPRING_VERSION="1.5.1"
 TAOUP_VERSION="1.1.23"
+NEWSRAFT_VERSION="0.26"
 
 # RPM build root directory inside the container
 RPM_BUILD_ROOT="/rpmbuild"
@@ -1188,6 +1189,33 @@ if [[ $# -eq 0 || "$1" == "taoup" ]]; then
 
         echo "--- Copying Taoup RPMs to /build/rpms/ ---"
         find "${RPMS_DIR}" -name "taoup-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Newsraft RPM ---
+NEWSRAFT_RPM_NAME="newsraft-${NEWSRAFT_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "newsraft" ]]; then
+    echo "--- Preparing Newsraft ---"
+    if [ -f "/build/rpms/${NEWSRAFT_RPM_NAME}" ]; then
+        echo "Newsraft RPM (${NEWSRAFT_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar gcc make ncurses-devel libcurl-devel yajl-devel gumbo-parser-devel scdoc
+
+        NEWSRAFT_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/newsraft-${NEWSRAFT_VERSION}"
+        if [ ! -d "${NEWSRAFT_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "newsraft-${NEWSRAFT_VERSION}" https://codeberg.org/grstratos/newsraft.git "${NEWSRAFT_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/newsraft-${NEWSRAFT_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "newsraft-${NEWSRAFT_VERSION}"
+        cp /build/salt/specs/newsraft.spec "${SPECS_DIR}/newsraft.spec"
+
+        echo "--- Building Newsraft RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/newsraft.spec"
+
+        echo "--- Copying Newsraft RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "newsraft-*.rpm" -exec cp -v {} /build/rpms/ \;
     fi
 fi
 
