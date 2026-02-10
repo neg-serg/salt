@@ -1,4 +1,3 @@
-# Aliae configuration ported from nixos-config
 alias:
   # Core eza/ls aliases
   - name: ls
