@@ -833,7 +833,7 @@ install_cachyos_kernel:
     - name: rpm-ostree override remove kernel kernel-core kernel-modules kernel-modules-core kernel-modules-extra --install kernel-cachyos-lto --install kernel-cachyos-lto-devel-matched
     - require:
       - cmd: copr_cachyos_kernel
-    - unless: rpm -q kernel-cachyos-lto
+    - unless: rpm -q kernel-cachyos-lto || rpm-ostree status --json | grep -q kernel-cachyos-lto
 
 # --- COPR: espanso (text expansion daemon for Wayland) ---
 copr_espanso:
@@ -1080,6 +1080,7 @@ install_tailray:
     - name: cargo install --git https://github.com/NotAShelf/tailray
     - runas: neg
     - creates: /var/home/neg/.cargo/bin/tailray
+    - onlyif: pkg-config --exists dbus-1
     - require:
       - cmd: install_system_packages
 

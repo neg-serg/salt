@@ -16,6 +16,7 @@ BuildRequires:  libcurl-devel
 BuildRequires:  yajl-devel
 BuildRequires:  gumbo-parser-devel
 BuildRequires:  sqlite-devel
+BuildRequires:  expat-devel
 BuildRequires:  scdoc
 
 %description
@@ -33,6 +34,7 @@ make install DESTDIR=%{buildroot} PREFIX=/usr
 %files
 %{_bindir}/newsraft
 %{_mandir}/man1/newsraft.1*
+%{_datadir}/newsraft/
 
 %changelog
 * Mon Feb 10 2026 neg-serg <neg-serg@example.com> - 0.26-1

@@ -1204,7 +1204,7 @@ if [[ $# -eq 0 || "$1" == "newsraft" ]]; then
     if [ -f "/build/rpms/${NEWSRAFT_RPM_NAME}" ]; then
         echo "Newsraft RPM (${NEWSRAFT_RPM_NAME}) already exists, skipping."
     else
-        dnf install -y --skip-broken git rpm-build tar gcc make ncurses-devel libcurl-devel yajl-devel gumbo-parser-devel sqlite-devel scdoc
+        dnf install -y --skip-broken git rpm-build tar gcc make ncurses-devel libcurl-devel yajl-devel gumbo-parser-devel sqlite-devel expat-devel scdoc
 
         NEWSRAFT_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/newsraft-${NEWSRAFT_VERSION}"
         if [ ! -d "${NEWSRAFT_SOURCE_DIR}" ]; then
