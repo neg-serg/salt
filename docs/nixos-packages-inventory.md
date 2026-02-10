@@ -647,25 +647,25 @@ _Source: modules/games/default.nix, modules/fun/ (various)_
 
 - [x] abuse (RPM)
 - [ ] airshipper — Veloren launcher; not installed
-- [ ] angband — roguelike; not installed
+- [x] angband — roguelike (RPM)
 - [ ] brogue-ce — roguelike; not installed
 - [x] crawl (RPM)
 - [x] crawl-tiles (RPM)
-- [ ] endless-sky — space exploration; not installed
-- [ ] fheroes2 — free Heroes 2; not installed
-- [ ] flare — fantasy action RPG; not installed
+- [x] endless-sky — space exploration (RPM)
+- [x] fheroes2 — free Heroes 2 (RPM)
+- [x] flare — fantasy action RPG (RPM)
 - [x] gnuchess (RPM)
 - [ ] gzdoom — Doom engine; not installed
 - [ ] jazz2 — Jazz Jackrabbit 2; not installed
 - [ ] shattered-pixel-dungeon — roguelike; not installed
-- [ ] superTux — 2D platformer; not installed
+- [x] superTux — 2D platformer; `supertux` (RPM)
 - [ ] superTuxKart — removed
 - [x] wesnoth (RPM)
 - [x] xaos (RPM)
 - [x] xonotic (RPM)
-- [ ] zeroad — ancient warfare RTS; not installed
+- [x] zeroad — ancient warfare RTS; `0ad` (RPM)
 - [x] nethack (RPM)
-- [ ] openmw (opt) — Morrowind engine; not installed
+- [x] openmw — Morrowind engine (RPM)
 
 ## Games — Controllers
 _Source: modules/games/controllers.nix_
@@ -695,12 +695,12 @@ _Source: modules/emulators/pkgs.nix_
 _Source: modules/fun/misc-packages.nix_
 
 - [ ] bucklespring — keyboard click sounds; not installed
-- [ ] dotacat — colorful cat; not installed (cowsay available)
+- [x] dotacat — `lolcat` (RPM, similar functionality)
 - [x] figlet (RPM)
 - [x] fortune — `fortune-mod` (RPM)
 - [x] neo-cowsay — `cowsay` (RPM, slightly different)
 - [x] neo — matrix rain (RPM)
-- [ ] nms — "No More Secrets" effect; not installed
+- [x] nms — `no-more-secrets` (RPM)
 - [ ] taoup — Tao of Unix Programming; not installed
 - [x] toilet (RPM)
 
