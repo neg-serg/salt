@@ -478,7 +478,7 @@ _Source: modules/media/vapoursynth-packages.nix_
 _Source: modules/media/ai-upscale-packages.nix_
 
 - [ ] realesrgan-ncnn-vulkan (opt) — GPU upscaler; not installed
-- [ ] ffmpeg-full (opt) — full ffmpeg with Vulkan/CUDA; using standard ffmpeg
+- [x] ffmpeg-full (opt) — N/A; using standard ffmpeg
 
 ## Media — Spotifyd
 _Source: modules/media/audio/spotifyd.nix_
@@ -659,7 +659,7 @@ _Source: modules/games/default.nix, modules/fun/ (various)_
 - [x] jazz2 — Jazz Jackrabbit 2; Flatpak (`tk.deat.Jazz2Resurrection`)
 - [x] shattered-pixel-dungeon — roguelike; Flatpak (`com.shatteredpixel.shatteredpixeldungeon`)
 - [x] superTux — 2D platformer; `supertux` (RPM)
-- [ ] superTuxKart — removed
+- [x] superTuxKart — removed (not needed)
 - [x] wesnoth (RPM)
 - [x] xaos (RPM)
 - [x] xonotic (RPM)
@@ -687,7 +687,7 @@ _Source: modules/emulators/pkgs.nix_
 
 - [x] retroarch (RPM)
 - [x] retroarch-assets (RPM)
-- [ ] dosbox-staging (opt) (RPM) — actually installed
+- [x] dosbox-staging (RPM) — installed
 - [x] pcem (opt) (RPM)
 - [x] pcsx2 (FP) — `net.pcsx2.PCSX2`
 
