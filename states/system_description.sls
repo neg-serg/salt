@@ -1184,6 +1184,37 @@ install_iwmenu:
     - runas: neg
     - creates: /var/home/neg/.cargo/bin/iwmenu
 
+# --- ollama: enable service and pull models ---
+ollama_enabled:
+  service.enabled:
+    - name: ollama
+    - require:
+      - cmd: install_system_packages
+
+pull_deepseek_r1_8b:
+  cmd.run:
+    - name: ollama pull deepseek-r1:8b
+    - runas: neg
+    - unless: ollama list | grep -q 'deepseek-r1:8b'
+    - require:
+      - service: ollama_enabled
+
+pull_llama3_2_3b:
+  cmd.run:
+    - name: ollama pull llama3.2:3b
+    - runas: neg
+    - unless: ollama list | grep -q 'llama3.2:3b'
+    - require:
+      - service: ollama_enabled
+
+pull_qwen2_5_coder_7b:
+  cmd.run:
+    - name: ollama pull qwen2.5-coder:7b
+    - runas: neg
+    - unless: ollama list | grep -q 'qwen2.5-coder:7b'
+    - require:
+      - service: ollama_enabled
+
 # --- openclaw (local AI assistant agent) ---
 install_openclaw:
   cmd.run:
