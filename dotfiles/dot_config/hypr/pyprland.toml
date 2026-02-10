@@ -43,7 +43,7 @@ process_tracking = false
 
 [scratchpads.mixer]
 animation = "fromRight"
-command = "kitty --class mixer -e ncpamixer"
+command = "kitty --class mixer -e pipemixer"
 class = "mixer"
 lazy = true
 size = "40% 90%"

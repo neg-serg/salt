@@ -68,33 +68,6 @@ cargo_packages:
       - HOME: {{ home }}
     - unless: test -f {{ home }}/.cargo/bin/rmpc
 
-# --- Build ncpamixer from source ---
-ncpamixer_clone:
-  git.cloned:
-    - name: https://github.com/fulhax/ncpamixer.git
-    - target: /tmp/ncpamixer
-    - user: {{ user }}
-    - unless: test -f {{ home }}/.local/bin/ncpamixer
-
-ncpamixer_build:
-  cmd.run:
-    - name: cd /tmp/ncpamixer && rm -rf build && make RELEASE=1
-    - runas: {{ user }}
-    - require:
-      - git: ncpamixer_clone
-    - unless: test -f {{ home }}/.local/bin/ncpamixer
-
-ncpamixer_install:
-  file.managed:
-    - name: {{ home }}/.local/bin/ncpamixer
-    - source: /tmp/ncpamixer/build/ncpamixer
-    - user: {{ user }}
-    - group: {{ user }}
-    - mode: '0755'
-    - require:
-      - cmd: ncpamixer_build
-    - unless: test -f {{ home }}/.local/bin/ncpamixer
-
 # --- MPD FIFO for visualizers (cava, etc.) ---
 mpd_fifo:
   cmd.run:
