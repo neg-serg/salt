@@ -1220,8 +1220,15 @@ ollama_enable:
 
 ollama_start:
   cmd.run:
-    - name: systemctl start ollama && sleep 2
-    - unless: systemctl is-active ollama
+    - name: |
+        systemctl start ollama
+        for i in $(seq 1 30); do
+          curl -sf http://127.0.0.1:11434/api/tags >/dev/null 2>&1 && exit 0
+          sleep 1
+        done
+        echo "ollama failed to start within 30s" >&2
+        exit 1
+    - unless: curl -sf http://127.0.0.1:11434/api/tags >/dev/null 2>&1
     - require:
       - cmd: ollama_enable
 
