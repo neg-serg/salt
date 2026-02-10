@@ -1,0 +1,14 @@
+#!/bin/sh
+set -e
+
+if [ ! -d "$HOME/.local/share/antigravity" ]; then
+  echo "Google Antigravity not found. Please download it from:"
+  echo "https://antigravity.google/"
+  echo ""
+  echo "And extract it to: $HOME/.local/share/antigravity/"
+  echo ""
+  echo "Or run: antigravity-install /path/to/antigravity.zip"
+  exit 1
+fi
+
+exec "$HOME/.local/share/antigravity/Antigravity" "$@"

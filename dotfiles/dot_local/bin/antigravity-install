@@ -1,0 +1,22 @@
+#!/bin/sh
+set -e
+
+INSTALL_DIR="$HOME/.local/share/antigravity"
+
+if [ -z "$1" ] || [ ! -f "$1" ]; then
+  echo "Google Antigravity installer"
+  echo ""
+  echo "1. Download from https://antigravity.google/ (Linux version)"
+  echo "2. Run: antigravity-install /path/to/antigravity.zip"
+  exit 1
+fi
+
+echo "Installing from: $1"
+TEMP_DIR=$(mktemp -d)
+unzip -q "$1" -d "$TEMP_DIR"
+mkdir -p "$INSTALL_DIR"
+cp -r "$TEMP_DIR"/* "$INSTALL_DIR/"
+chmod +x "$INSTALL_DIR/Antigravity"
+rm -rf "$TEMP_DIR"
+echo "Installed to $INSTALL_DIR"
+echo "Run with: antigravity"
