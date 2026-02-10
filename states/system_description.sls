@@ -58,6 +58,7 @@ user_neg:
     - groups:
       - neg
       - wheel
+      - libvirt
 
 sudo_timeout:
   file.managed:
@@ -347,6 +348,7 @@ sudo_timeout:
     ],
     'Virtualization': [
         {'name': 'bottles',             'desc': 'Wine/Proton application manager'},
+        {'name': 'libvirt-daemon-config-network', 'desc': 'Libvirt default NAT network config'},
         {'name': 'qemu-kvm',            'desc': 'QEMU/KVM virtual machine emulator'},
         {'name': 'virt-manager',        'desc': 'Virtual machine manager GUI'}
     ],
@@ -473,6 +475,7 @@ running_services:
       - chronyd
       - dbus-broker
       - bluetooth
+      - libvirtd
     - enable: True
 
 /mnt/zero:
@@ -524,6 +527,7 @@ mount_one:
     'org.libreoffice.LibreOffice',
     'net.lutris.Lutris',
     'com.github.qarmin.czkawka',
+    'com.google.AndroidStudio',
 ] %}
 
 install_flatpak_apps:
