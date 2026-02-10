@@ -1,31 +1,35 @@
 #!/bin/sh
-# unlock: unlock SSH keys (optionally Yubikey) via expect using gopass secrets
+# unlock: add SSH key to agent, passphrase from gopass
 # Usage: unlock
 
-cleanup() { unset pp0 pp1 || true; }
+set -e
+
+cleanup() { rm -f "$_askpass"; unset _pp 2>/dev/null || true; }
 trap cleanup EXIT HUP INT TERM
 
-# Ensure gpg-agent is ready (provides SSH agent via enable-ssh-support)
+# Ensure gpg-agent is ready (provides SSH via enable-ssh-support)
 gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
+: "${SSH_AUTH_SOCK:=$(gpgconf --list-dirs agent-ssh-socket)}"
+export SSH_AUTH_SOCK
 
-# Retrieve secrets
-pp0="$(gopass show -o ssh-key)"
-
-# YubiKey handling
-if lsusb | grep -q "0407 Yubico"; then
-    pp1="$(gopass show -o yubikey-pin)"
-    expect << EOF
-        spawn "$XDG_CONFIG_HOME/zsh/ylock"
-        expect "Enter passphrase"
-        send "$pp1\r"
-        expect eof
-EOF
+# Skip if key already loaded
+_fp="$(ssh-keygen -lf "$HOME/.ssh/id_ed25519" 2>/dev/null | awk '{print $2}')"
+if [ -n "$_fp" ] && ssh-add -l 2>/dev/null | grep -qF "$_fp"; then
+    echo "key already loaded"
+    exit 0
 fi
 
-# Main key handling
-expect << EOF
-    spawn ssh-add $HOME/.ssh/id_ed25519
-    expect "Enter passphrase"
-    send "$pp0\r"
-    expect eof
+# Retrieve passphrase (pinentry handles GPG/Yubikey interaction)
+_pp="$(gopass show -o ssh-key)"
+
+# Temporary askpass helper — avoids expect dependency
+_askpass="$(mktemp)"
+chmod 700 "$_askpass"
+cat > "$_askpass" << 'EOF'
+#!/bin/sh
+echo "$UNLOCK_PP"
 EOF
+
+# Add key
+UNLOCK_PP="$_pp" SSH_ASKPASS="$_askpass" SSH_ASKPASS_REQUIRE=force \
+    ssh-add "$HOME/.ssh/id_ed25519" </dev/null
