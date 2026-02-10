@@ -893,12 +893,15 @@ copr_yabridge:
     - name: dnf copr enable -y patrickl/wine-tkg
     - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:patrickl:wine-tkg.repo
 
-install_yabridge:
-  cmd.run:
-    - name: rpm-ostree install -y yabridge
-    - require:
-      - cmd: copr_yabridge
-    - unless: rpm-ostree status | grep -q yabridge
+# NOTE: yabridge requires wine(x86-32) → mesa-dri-drivers(x86-32),
+# which conflicts with Wayblue base image's mesa-dri-drivers epoch.
+# Skipped until base image epoch aligns with repo packages.
+# install_yabridge:
+#   cmd.run:
+#     - name: rpm-ostree install -y yabridge
+#     - require:
+#       - cmd: copr_yabridge
+#     - unless: rpm-ostree status | grep -q yabridge
 
 # --- COPR: Audinux (audio production packages: brutefir, patchmatrix, sc3-plugins) ---
 copr_audinux:
@@ -911,7 +914,7 @@ install_audinux_packages:
     - name: rpm-ostree install -y --allow-inactive brutefir patchmatrix supercollider-sc3-plugins
     - require:
       - cmd: copr_audinux
-    - unless: rpm -q brutefir &>/dev/null && rpm -q patchmatrix &>/dev/null && rpm -q supercollider-sc3-plugins &>/dev/null
+    - unless: (rpm -q brutefir &>/dev/null || rpm-ostree status --json | jq -r '.deployments[]."requested-packages"[]' | grep -q brutefir) && (rpm -q patchmatrix &>/dev/null || rpm-ostree status --json | jq -r '.deployments[]."requested-packages"[]' | grep -q patchmatrix)
 
 install_yazi:
   cmd.run:
@@ -1070,11 +1073,15 @@ install_agg:
     - runas: neg
     - creates: /var/home/neg/.cargo/bin/agg
 
+# NOTE: tailray needs dbus-devel (libdbus-sys). May fail on first run
+# if dbus-devel was just layered and not yet active (requires reboot).
 install_tailray:
   cmd.run:
     - name: cargo install --git https://github.com/NotAShelf/tailray
     - runas: neg
     - creates: /var/home/neg/.cargo/bin/tailray
+    - require:
+      - cmd: install_system_packages
 
 install_pzip:
   cmd.run:
