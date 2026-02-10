@@ -1,5 +1,11 @@
 # Salt state for building custom RPMs
-# Each package is built in an ephemeral podman container
+# Packages are built in parallel using ephemeral podman containers
+# Concurrency is limited to max_parallel using a FIFO-based semaphore
+
+{% set max_parallel = 4 %}
+{% set rpms_dir = '/var/home/neg/src/salt/rpms' %}
+{% set build_dir = '/var/home/neg/src/salt/build' %}
+{% set base_image = 'registry.fedoraproject.org/fedora-toolbox:43' %}
 
 {% set rpms = [
     {'name': 'choose',            'version': '1.3.7'},
@@ -13,7 +19,7 @@
     {'name': 'gist',              'version': '6.0.0',   'arch': 'noarch'},
     {'name': 'grex',              'version': '1.4.6'},
     {'name': 'htmlq',             'version': '0.4.0'},
-    {'name': 'jujutsu',           'version': '0.38.0',  'timeout': 3600},
+    {'name': 'jujutsu',           'version': '0.38.0'},
     {'name': 'kmon',              'version': '1.7.1'},
     {'name': 'lutgen',            'version': '0.12.1'},
     {'name': 'massren',           'version': '1.5.6'},
@@ -34,15 +40,15 @@
     {'name': 'zfxtop',            'version': '0.3.2'},
     {'name': 'zk',                'version': '0.15.2'},
     {'name': 'bandwhich',         'version': '0.23.1'},
-    {'name': 'bucklespring',     'version': '1.5.1'},
-    {'name': 'taoup',            'version': '1.1.23', 'arch': 'noarch'},
+    {'name': 'bucklespring',      'version': '1.5.1'},
+    {'name': 'taoup',             'version': '1.1.23',  'arch': 'noarch'},
     {'name': 'xh',                'version': '0.25.3'},
     {'name': 'curlie',            'version': '1.8.2'},
     {'name': 'doggo',             'version': '1.1.2'},
     {'name': 'wallust',           'version': '3.3.0'},
     {'name': 'wl-clip-persist',   'version': '0.5.0'},
-    {'name': 'quickshell',        'version': '0.2.1',  'timeout': 3600},
-    {'name': 'swayosd',          'version': '0.3.0'},
+    {'name': 'quickshell',        'version': '0.2.1'},
+    {'name': 'swayosd',           'version': '0.3.0'},
     {'name': 'xdg-desktop-portal-termfilechooser', 'version': '0.4.0'},
     {'name': 'newsraft',          'version': '0.26'},
     {'name': 'unflac',            'version': '1.4'},
@@ -62,37 +68,95 @@
     'extra_volumes': '-v /var/home/neg/src/salt/build/iosevka-neg.toml:/build/iosevka-neg.toml:z'
 } %}
 
-/var/home/neg/src/salt/rpms:
+{{ rpms_dir }}:
   file.directory:
     - user: neg
     - group: neg
     - makedirs: True
 
-{% for pkg in rpms %}
-{% set arch = pkg.get('arch', 'x86_64') %}
-{% set release = pkg.get('release', '1') %}
-{% set extra_vol = pkg.get('extra_volumes', '') %}
-{% set rpm_file = pkg.name ~ '-' ~ pkg.version ~ '-' ~ release ~ '.fc43.' ~ arch ~ '.rpm' %}
-build_{{ pkg.name | replace('-', '_') }}_rpm:
+# Build all standard packages in parallel (up to max_parallel concurrent containers)
+build_rpms_parallel:
   cmd.run:
-    - name: podman run --rm -v /var/home/neg/src/salt/build:/build/salt:z -v /var/home/neg/src/salt/rpms:/build/rpms:z {{ extra_vol }} registry.fedoraproject.org/fedora-toolbox:43 bash /build/salt/build-rpm.sh {{ pkg.name }}
+    - name: |
+        #!/bin/bash
+        set -uo pipefail
+
+        MAX_JOBS={{ max_parallel }}
+        RPMS_DIR="{{ rpms_dir }}"
+        BUILD_DIR="{{ build_dir }}"
+        IMG="{{ base_image }}"
+
+        # FIFO semaphore: limits concurrent podman containers to MAX_JOBS
+        SEM=$(mktemp -u)
+        mkfifo "$SEM"
+        exec 3<>"$SEM"
+        rm -f "$SEM"
+        for ((i=0; i<MAX_JOBS; i++)); do echo >&3; done
+
+        PIDS=()
+        NAMES=()
+        LAUNCHED=0
+        SKIPPED=0
+
+        {% for pkg in rpms %}
+        {% set arch = pkg.get('arch', 'x86_64') %}
+        {% set release = pkg.get('release', '1') %}
+        {% set extra_vol = pkg.get('extra_volumes', '') %}
+        {% set rpm_file = pkg.name ~ '-' ~ pkg.version ~ '-' ~ release ~ '.fc43.' ~ arch ~ '.rpm' %}
+        if [ ! -f "${RPMS_DIR}/{{ rpm_file }}" ]; then
+            read -u 3
+            (
+                echo "[BUILD] {{ pkg.name }}"
+                RC=0
+                podman run --rm \
+                    -v "${BUILD_DIR}:/build/salt:z" \
+                    -v "${RPMS_DIR}:/build/rpms:z" \
+                    {{ extra_vol }} \
+                    "$IMG" bash /build/salt/build-rpm.sh "{{ pkg.name }}" || RC=$?
+                echo >&3
+                [ $RC -eq 0 ] && echo "[  OK ] {{ pkg.name }}" || echo "[ FAIL] {{ pkg.name }}" >&2
+                exit $RC
+            ) &
+            PIDS+=($!)
+            NAMES+=("{{ pkg.name }}")
+            LAUNCHED=$((LAUNCHED + 1))
+        else
+            SKIPPED=$((SKIPPED + 1))
+        fi
+        {% endfor %}
+
+        # Collect results from all background jobs
+        FAILURES=0
+        for i in "${!PIDS[@]}"; do
+            if ! wait "${PIDS[$i]}"; then
+                echo "FAILED: ${NAMES[$i]}" >&2
+                FAILURES=$((FAILURES + 1))
+            fi
+        done
+
+        exec 3>&-
+        echo "=== Parallel build: ${LAUNCHED} built, ${SKIPPED} skipped, ${FAILURES} failed ==="
+        [ "$FAILURES" -eq 0 ]
     - runas: neg
-    - creates: /var/home/neg/src/salt/rpms/{{ rpm_file }}
-{% if pkg.get('timeout') %}
-    - timeout: {{ pkg.timeout }}
-{% endif %}
+    - timeout: 7200
+    - unless: >-
+        {% for pkg in rpms %}
+        {% set arch = pkg.get('arch', 'x86_64') %}
+        {% set release = pkg.get('release', '1') %}
+        {% set rpm_file = pkg.name ~ '-' ~ pkg.version ~ '-' ~ release ~ '.fc43.' ~ arch ~ '.rpm' %}
+        test -f "{{ rpms_dir }}/{{ rpm_file }}" &&
+        {% endfor %}
+        true
     - require:
-      - file: /var/home/neg/src/salt/rpms
+      - file: {{ rpms_dir }}
 
-{% endfor %}
-
-# Iosevka font build (special: different RPM name, extra volume, long timeout)
+# Iosevka font build (separate — 2h build time, extra volume for config)
 build_iosevka_rpm:
   cmd.run:
-    - name: podman run --rm -v /var/home/neg/src/salt/build:/build/salt:z -v /var/home/neg/src/salt/rpms:/build/rpms:z {{ iosevka.extra_volumes }} registry.fedoraproject.org/fedora-toolbox:43 bash /build/salt/build-rpm.sh {{ iosevka.name }}
+    - name: podman run --rm -v {{ build_dir }}:/build/salt:z -v {{ rpms_dir }}:/build/rpms:z {{ iosevka.extra_volumes }} {{ base_image }} bash /build/salt/build-rpm.sh {{ iosevka.name }}
     - runas: neg
-    - creates: /var/home/neg/src/salt/rpms/{{ iosevka.rpm_name }}-{{ iosevka.version }}-{{ iosevka.release }}.fc43.{{ iosevka.arch }}.rpm
+    - creates: {{ rpms_dir }}/{{ iosevka.rpm_name }}-{{ iosevka.version }}-{{ iosevka.release }}.fc43.{{ iosevka.arch }}.rpm
     - timeout: {{ iosevka.timeout }}
     - output_loglevel: info
     - require:
-      - file: /var/home/neg/src/salt/rpms
+      - file: {{ rpms_dir }}
