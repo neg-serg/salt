@@ -46,6 +46,7 @@ BUCKLESPRING_VERSION="1.5.1"
 TAOUP_VERSION="1.1.23"
 NEWSRAFT_VERSION="0.26"
 UNFLAC_VERSION="1.4"
+ALBUMDETAILS_VERSION="0.1"
 
 # RPM build root directory inside the container
 RPM_BUILD_ROOT="/rpmbuild"
@@ -1244,6 +1245,33 @@ if [[ $# -eq 0 || "$1" == "unflac" ]]; then
 
         echo "--- Copying Unflac RPMs to /build/rpms/ ---"
         find "${RPMS_DIR}" -name "unflac-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Albumdetails RPM ---
+ALBUMDETAILS_RPM_NAME="albumdetails-${ALBUMDETAILS_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "albumdetails" ]]; then
+    echo "--- Preparing Albumdetails ---"
+    if [ -f "/build/rpms/${ALBUMDETAILS_RPM_NAME}" ]; then
+        echo "Albumdetails RPM (${ALBUMDETAILS_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar gcc make taglib-devel
+
+        ALBUMDETAILS_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/albumdetails-master"
+        if [ ! -d "${ALBUMDETAILS_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 https://github.com/neg-serg/albumdetails.git "${ALBUMDETAILS_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/albumdetails-master.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "albumdetails-master"
+        cp /build/salt/specs/albumdetails.spec "${SPECS_DIR}/albumdetails.spec"
+
+        echo "--- Building Albumdetails RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/albumdetails.spec"
+
+        echo "--- Copying Albumdetails RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "albumdetails-*.rpm" -exec cp -v {} /build/rpms/ \;
     fi
 fi
 
