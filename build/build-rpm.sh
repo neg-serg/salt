@@ -1209,7 +1209,7 @@ if [[ $# -eq 0 || "$1" == "newsraft" ]]; then
         NEWSRAFT_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/newsraft-${NEWSRAFT_VERSION}"
         if [ ! -d "${NEWSRAFT_SOURCE_DIR}" ]; then
             mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "newsraft-${NEWSRAFT_VERSION}" https://codeberg.org/grstratos/newsraft.git "${NEWSRAFT_SOURCE_DIR}"
+            git clone --depth 1 --branch "newsraft-${NEWSRAFT_VERSION}" https://codeberg.org/newsraft/newsraft.git "${NEWSRAFT_SOURCE_DIR}"
         fi
         tar -czf "${SOURCES_DIR}/newsraft-${NEWSRAFT_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "newsraft-${NEWSRAFT_VERSION}"
         cp /build/salt/specs/newsraft.spec "${SPECS_DIR}/newsraft.spec"
@@ -1236,7 +1236,7 @@ if [[ $# -eq 0 || "$1" == "unflac" ]]; then
         UNFLAC_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/unflac-${UNFLAC_VERSION}"
         if [ ! -d "${UNFLAC_SOURCE_DIR}" ]; then
             mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${UNFLAC_VERSION}" https://git.sr.ht/~ft/unflac "${UNFLAC_SOURCE_DIR}"
+            git clone --depth 1 --branch "${UNFLAC_VERSION}" https://git.sr.ht/~ft/unflac "${UNFLAC_SOURCE_DIR}"
         fi
         tar -czf "${SOURCES_DIR}/unflac-${UNFLAC_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "unflac-${UNFLAC_VERSION}"
         cp /build/salt/specs/unflac.spec "${SPECS_DIR}/unflac.spec"
@@ -1344,7 +1344,7 @@ if [[ $# -eq 0 || "$1" == "systemd-language-server" ]]; then
         SYSTEMD_LS_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/systemd-language-server-${SYSTEMD_LS_VERSION}"
         if [ ! -d "${SYSTEMD_LS_SOURCE_DIR}" ]; then
             mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${SYSTEMD_LS_VERSION}" https://github.com/psacawa/systemd-language-server.git "${SYSTEMD_LS_SOURCE_DIR}"
+            git clone --depth 1 --branch "${SYSTEMD_LS_VERSION}" https://github.com/psacawa/systemd-language-server.git "${SYSTEMD_LS_SOURCE_DIR}"
         fi
         tar -czf "${SOURCES_DIR}/systemd-language-server-${SYSTEMD_LS_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "systemd-language-server-${SYSTEMD_LS_VERSION}"
         cp /build/salt/specs/systemd-language-server.spec "${SPECS_DIR}/systemd-language-server.spec"
