@@ -16,7 +16,7 @@ download_fira_code_nerd:
         unzip -o /tmp/FiraCode.zip -d {{ home }}/.local/share/fonts/FiraCodeNerd
         rm /tmp/FiraCode.zip
         fc-cache -f
-    - user: {{ user }}
+    - runas: {{ user }}
     - unless: "ls {{ home }}/.local/share/fonts/FiraCodeNerd/FiraCodeNerdFontMono-Regular.ttf"
     - require:
       - file: /var/home/neg/.local/share/fonts/FiraCodeNerd

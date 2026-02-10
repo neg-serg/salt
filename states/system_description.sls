@@ -1553,16 +1553,22 @@ set_dconf_gtk_theme:
   cmd.run:
     - name: dconf write /org/gnome/desktop/interface/gtk-theme "'Flight-Dark-GTK'"
     - runas: neg
+    - env:
+      - DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/1000/bus"
     - unless: test "$(dconf read /org/gnome/desktop/interface/gtk-theme)" = "'Flight-Dark-GTK'"
 
 set_dconf_icon_theme:
   cmd.run:
     - name: dconf write /org/gnome/desktop/interface/icon-theme "'kora'"
     - runas: neg
+    - env:
+      - DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/1000/bus"
     - unless: test "$(dconf read /org/gnome/desktop/interface/icon-theme)" = "'kora'"
 
 set_dconf_font_name:
   cmd.run:
     - name: dconf write /org/gnome/desktop/interface/font-name "'Iosevka 10'"
     - runas: neg
+    - env:
+      - DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/1000/bus"
     - unless: test "$(dconf read /org/gnome/desktop/interface/font-name)" = "'Iosevka 10'"
