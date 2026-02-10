@@ -1,3 +1,4 @@
+{% from 'host_config.jinja' import host %}
 # Salt state for Fedora Silverblue
 # Handles filesystem immutability
 
@@ -40,8 +41,8 @@ system_keymap:
 
 system_hostname:
   cmd.run:
-    - name: hostnamectl set-hostname fedora
-    - unless: test "$(hostname)" = "fedora"
+    - name: hostnamectl set-hostname {{ host.hostname }}
+    - unless: test "$(hostname)" = "{{ host.hostname }}"
 
 user_root:
   user.present:
@@ -169,7 +170,6 @@ sudo_timeout:
         {'name': 'zbar',                'desc': 'Bar code reader'}
     ],
     'Monitoring & System': [
-        {'name': 'acpi',                'desc': 'ACPI battery and thermal info'},
         {'name': 'atop',                'desc': 'Advanced system and process monitor'},
         {'name': 'blktrace',            'desc': 'Block layer I/O tracing tools'},
         {'name': 'btop',                'desc': 'A monitor of resources (CPU, Memory, Network)'},
@@ -192,7 +192,6 @@ sudo_timeout:
         {'name': 'nethogs',             'desc': 'Per-process network bandwidth monitor'},
         {'name': 'nvtop',               'desc': 'GPU process monitor'},
         {'name': 'parted',              'desc': 'GNU Partition Editor'},
-        {'name': 'powertop',            'desc': 'Power consumption analyzer'},
         {'name': 'progress',            'desc': 'Coreutils Viewer'},
         {'name': 'pv',                  'desc': 'A tool for monitoring the progress of data through a pipeline'},
         {'name': 's-tui',               'desc': 'Stress terminal UI for CPU monitoring'},
@@ -338,6 +337,14 @@ sudo_timeout:
         {'name': 'tig',                 'desc': 'Text-mode interface for the git revision control system'}
     ]
 } %}
+
+{# Laptop-only packages: battery info, power analysis #}
+{% if host.is_laptop %}
+{% do categories['Monitoring & System'].extend([
+    {'name': 'acpi',     'desc': 'ACPI battery and thermal info'},
+    {'name': 'powertop', 'desc': 'Power consumption analyzer'},
+]) %}
+{% endif %}
 
 include:
   - amnezia
