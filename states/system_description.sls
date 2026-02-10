@@ -29,15 +29,15 @@ system_timezone:
   timezone.system:
     - name: Europe/Moscow
 
-system_locale:
+system_locale_keymap:
   cmd.run:
-    - name: localectl set-locale LANG=en_US.UTF-8
-    - unless: localectl status | grep -q 'LANG=en_US.UTF-8'
-
-system_keymap:
-  cmd.run:
-    - name: localectl set-x11-keymap ru,us
-    - unless: localectl status | grep -q 'X11 Layout.*ru'
+    - name: |
+        localectl set-locale LANG=en_US.UTF-8
+        localectl set-x11-keymap ru,us
+    - unless: |
+        status=$(localectl status)
+        echo "$status" | grep -q 'LANG=en_US.UTF-8' &&
+        echo "$status" | grep -q 'X11 Layout.*ru'
 
 system_hostname:
   cmd.run:
@@ -542,27 +542,18 @@ install_flatpak_apps:
         grep -qxF '{{ app }}' <<< "$installed" || exit 1
         {% endfor %}
 
-flatpak_steam_filesystem:
+# Flatpak overrides: Steam filesystems + Wayland cursor/GTK dark theme
+flatpak_overrides:
   cmd.run:
-    - name: >-
-        flatpak override --user
-        --filesystem=/mnt/zero
-        --filesystem=/mnt/one
-        com.valvesoftware.Steam
+    - name: |
+        flatpak override --user --filesystem=/mnt/zero --filesystem=/mnt/one com.valvesoftware.Steam
+        flatpak override --user --env=XCURSOR_PATH=/run/host/user-share/icons:/run/host/share/icons --env=GTK_THEME=Adwaita:dark
     - runas: neg
     - require:
       - cmd: install_flatpak_apps
-    - unless: flatpak override --user --show com.valvesoftware.Steam | grep -q '/mnt/zero'
-
-# Flatpak global overrides: fix Wayland cursor theme + GTK dark theme
-flatpak_global_overrides:
-  cmd.run:
-    - name: >-
-        flatpak override --user
-        --env=XCURSOR_PATH=/run/host/user-share/icons:/run/host/share/icons
-        --env=GTK_THEME=Adwaita:dark
-    - runas: neg
-    - unless: flatpak override --user --show | grep -q XCURSOR_PATH
+    - unless: |
+        flatpak override --user --show com.valvesoftware.Steam 2>/dev/null | grep -q '/mnt/zero' &&
+        flatpak override --user --show 2>/dev/null | grep -q XCURSOR_PATH
 
 # --- Floorp browser: user.js + userChrome.css + userContent.css ---
 floorp_user_js:
@@ -1618,27 +1609,17 @@ wallust_hyprland_defaults:
     - require:
       - file: wallust_cache_dir
 
-# --- dconf: GTK/icon/font/cursor theme for Wayland apps ---
-set_dconf_gtk_theme:
+# --- dconf: GTK/icon/font theme for Wayland apps ---
+set_dconf_themes:
   cmd.run:
-    - name: dconf write /org/gnome/desktop/interface/gtk-theme "'Flight-Dark-GTK'"
+    - name: |
+        dconf write /org/gnome/desktop/interface/gtk-theme "'Flight-Dark-GTK'"
+        dconf write /org/gnome/desktop/interface/icon-theme "'kora'"
+        dconf write /org/gnome/desktop/interface/font-name "'Iosevka 10'"
     - runas: neg
     - env:
       - DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/1000/bus"
-    - unless: test "$(dconf read /org/gnome/desktop/interface/gtk-theme)" = "'Flight-Dark-GTK'"
-
-set_dconf_icon_theme:
-  cmd.run:
-    - name: dconf write /org/gnome/desktop/interface/icon-theme "'kora'"
-    - runas: neg
-    - env:
-      - DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/1000/bus"
-    - unless: test "$(dconf read /org/gnome/desktop/interface/icon-theme)" = "'kora'"
-
-set_dconf_font_name:
-  cmd.run:
-    - name: dconf write /org/gnome/desktop/interface/font-name "'Iosevka 10'"
-    - runas: neg
-    - env:
-      - DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/1000/bus"
-    - unless: test "$(dconf read /org/gnome/desktop/interface/font-name)" = "'Iosevka 10'"
+    - unless: |
+        test "$(dconf read /org/gnome/desktop/interface/gtk-theme)" = "'Flight-Dark-GTK'" &&
+        test "$(dconf read /org/gnome/desktop/interface/icon-theme)" = "'kora'" &&
+        test "$(dconf read /org/gnome/desktop/interface/font-name)" = "'Iosevka 10'"
