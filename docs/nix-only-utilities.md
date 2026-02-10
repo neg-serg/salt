@@ -1,81 +1,70 @@
 # Nix-Only & Hard-to-Port Utilities
 
-Packages from `nixos-config` that don't have straightforward Fedora equivalents.
-These require special effort (custom RPM build, cargo/pip install, or are truly
-Nix-specific). Organized by installation difficulty.
+Packages from `nixos-config` that required special effort to install on Fedora Atomic.
+Most items have been resolved. See `states/system_description.sls` for the actual states.
 
-## Easy: pip / cargo install
+## Resolved — Installation Method Used
 
-| Package | Type | Install Command | Notes |
-|---------|------|-----------------|-------|
-| handlr-regex | Rust | `cargo install handlr-regex` | xdg-open replacement; also has GitHub binary |
-| scdl | Python | `pip install --user scdl` | SoundCloud downloader |
+| Package | Method | Salt State |
+|---------|--------|------------|
+| handlr-regex | `cargo install` | `install_handlr` |
+| scdl | `pip install --user` | `install_scdl` |
+| dr14_tmeter | `pip install --user DR14-T.meter` | `install_dr14_tmeter` |
+| pzip | `cargo install` | `install_pzip` |
+| asciinema-agg | `cargo install --git` | `install_agg` |
+| tailray | `cargo install` | `install_tailray` |
+| espanso | COPR `eclipseo/espanso` | `install_espanso` |
+| himalaya | COPR `atim/himalaya` | `install_himalaya` |
+| spotifyd | COPR `mbooth/spotifyd` | `install_spotifyd` |
+| sbctl | COPR `chenxiaolong/sbctl` | `install_sbctl` |
+| yabridge + yabridgectl | COPR `patrickl/yabridge-stable` | `install_yabridge` |
+| brutefir | COPR `ycollet/linuxmao` (Audinux) | `install_audinux_packages` |
+| patchmatrix | COPR `ycollet/linuxmao` (Audinux) | `install_audinux_packages` |
+| sc3-plugins | COPR `ycollet/linuxmao` (Audinux) | `install_audinux_packages` |
+| below | Fedora RPM (categories dict) | `install_system_packages` |
+| kernel-tools | Fedora RPM (categories dict) | `install_system_packages` |
+| media-player-info | Fedora RPM (categories dict) | `install_system_packages` |
+| jamesdsp | Flatpak `me.timschneeberger.jdsp4linux` | `install_flatpak_jamesdsp` |
+| protonplus | Flatpak `com.vysp3r.ProtonPlus` | `install_flatpak_protonplus` |
+| xray | GitHub binary (zip) | `install_xray` |
+| sing-box | GitHub binary (tar.gz) | `install_sing_box` |
+| tdl | GitHub binary (tar.gz) | `install_tdl` |
+| camilladsp | GitHub binary (tar.gz) | `install_camilladsp` |
+| opencode | GitHub binary (tar.gz) | `install_opencode` |
+| adguardian | GitHub binary (direct) | `install_adguardian` |
+| realesrgan-ncnn-vulkan | GitHub binary (zip) | `install_realesrgan` |
+| essentia-extractor | Static binary (essentia.upf.edu) | `install_essentia_extractor` |
+| roomeqwizard | Java app (direct download) | `install_roomeqwizard` |
+| mpvc | Shell script (GitHub raw) | `install_mpvc` |
+| rofi-systemd | Shell script (GitHub raw) | `install_rofi_systemd` |
+| dool | Git clone + copy | `install_dool` |
+| qmk-udev-rules | Udev rules file (GitHub raw) | `install_qmk_udev_rules` |
+| oldschool-pc-font-pack | Font archive (int10h.org) | `install_oldschool_pc_fonts` |
+| newsraft | Custom RPM build | `build_newsraft_rpm` |
+| hy3 | Podman build (hy3.sls) | `build_hy3` |
 
-## Medium: GitHub Binary / AppImage
-
-| Package | Source | Notes |
-|---------|--------|-------|
-| espanso | [espanso.org](https://espanso.org) | AppImage available; text expansion daemon |
-| below | [github.com/facebookincubator/below](https://github.com/facebookincubator/below) | BPF-based system monitor; has releases |
-| realesrgan-ncnn-vulkan | [github.com/xinntao/Real-ESRGAN-ncnn-vulkan](https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan) | GPU image upscaler; prebuilt Linux binary |
-| xray | [github.com/XTLS/Xray-core](https://github.com/XTLS/Xray-core) | VLESS/Reality proxy; Go binary |
-| sing-box | [github.com/SagerNet/sing-box](https://github.com/SagerNet/sing-box) | Universal proxy platform; Go binary |
-| tdl | [github.com/iyear/tdl](https://github.com/iyear/tdl) | Telegram downloader; Go binary |
-| spotifyd | [github.com/Spotifyd/spotifyd](https://github.com/Spotifyd/spotifyd) | Spotify daemon; Rust, has releases |
-| himalaya | [github.com/pimalaya/himalaya](https://github.com/pimalaya/himalaya) | Async email CLI; Rust, has releases |
-| droidcam | [dev47apps.com](https://www.dev47apps.com) | Phone as webcam; proprietary installer |
-
-## Hard: Custom RPM Build Needed
-
-| Package | Language | Complexity | Notes |
-|---------|----------|------------|-------|
-| asciinema-agg | Rust | Low | GIF renderer for asciinema recordings |
-| unflac | Go | Low | FLAC cuesheet splitter |
-| mpvc | Shell/C | Low | mpv IPC controller |
-| pzip | Rust | Low | Parallel zip implementation |
-| dr14_tmeter | Python | Low | Dynamic range measurement |
-| camilladsp | Rust | Medium | Flexible audio DSP pipeline |
-| brutefir | C | Medium | Digital convolution engine |
-| jamesdsp | C++ | Medium | Audio effect processor (EQ, bass boost) |
-| opensoundmeter | Qt/C++ | Medium | FFT acoustic analysis |
-| roomeqwizard | Java | Medium | Acoustic measurement (JAR, not RPM) |
-
-## Complex: Build System / Dependencies
-
-| Package | Issue | Notes |
-|---------|-------|-------|
-| yabridge + yabridgectl | Wine + VST bridge | Complex C++ build with Wine deps; bridges Windows VST plugins |
-| supercolliderPlugins.sc3-plugins | CMake + SuperCollider SDK | Needs SC source headers to build |
-| essentia-extractor | C++ + many deps | MIR audio feature extraction; complex build |
-| patchmatrix | JACK + LV2 | JACK patchbay matrix; niche audio routing |
-
-## Low Priority / Questionable Need
+## Skipped — Not Needed
 
 | Package | Reason |
 |---------|--------|
-| sbctl | Secure Boot debugging; only needed if using Secure Boot with custom keys |
-| turbostat | Kernel power tool; usually in `kernel-tools` RPM |
-| adguardian | Only useful with AdGuard Home server |
-| media-player-info | udev hardware DB; may already be in base image |
-| matugen-themes | Template pack for matugen; check if bundled with binary |
-| oldschool-pc-font-pack | Retro PC fonts; cosmetic |
-| cider | Apple Music client; proprietary/paid |
-| spotify-tui | Unmaintained; superseded by other tools |
-| protonplus | Proton prefix manager; ProtonUp-Qt already installed as Flatpak |
-| dool | dstat replacement; `sysstat` covers most use cases |
-| overskride | Bluetooth OBEX client; `bluez-tools` covers basics |
-| wirelesstools | iwconfig helpers; `iw` from base image is modern replacement |
-| read-edid | EDID reader; `ddcutil` already installed |
-| qmk-udev-rules | Only needed with QMK keyboards |
-| update-resolv-conf | OpenVPN DNS helper; NetworkManager handles this |
-| throne | VPN proxy; niche |
-| opencode | AI coding agent; experimental |
-| rofi-systemd | systemd picker for rofi; low priority |
+| spotify-tui | Abandoned (2021), broken Spotify API |
+| wireless-tools | Deprecated; `iw` is the modern replacement |
+| update-resolv-conf | Fedora uses systemd-resolved |
+| read-edid | Use `edid-decode`; `ddcutil` already installed |
+| cider | Paid app; Apple Music only |
+| beautifulsoup4 | Python library, not a standalone tool |
+| pynvim | Already present via pip |
+| fontforge | Not needed |
+| fonttools | Not needed |
 
-## Flake Inputs (External Nix Sources)
+## Still Pending
 
-| Input | Status | Notes |
-|-------|--------|-------|
-| hy3 | Not installed | Hyprland i3-like layout plugin; check if COPR available |
-| winapps | Not set up | Windows apps in KVM; complex setup |
-| tailray | Not installed | Tailscale + xray integration |
+| Package | Issue | Notes |
+|---------|-------|-------|
+| throne (opt) | URL unclear | VPN proxy; niche |
+| overskride (opt) | No Flatpak/COPR found | Bluetooth OBEX client; `bluez-tools` covers basics |
+| droidcam | DKMS on Atomic | Kernel module problematic; consider scrcpy + v4l2loopback |
+| opensoundmeter (opt) | AppImage only | FFT acoustic analysis; not yet automated |
+| unflac | Needs Go build | FLAC cuesheet splitter; needs custom RPM |
+| matugen-themes | Unknown source | Check if templates are bundled with matugen binary |
+| winapps | Manual setup | Windows apps in KVM; complex, not automatable |

@@ -176,7 +176,8 @@ sudo_timeout:
         {'name': 'sox',                 'desc': 'A general purpose sound file conversion tool'},
         {'name': 'swayimg',             'desc': 'Image viewer for Sway/Wayland'},
         {'name': 'tesseract',           'desc': 'OCR engine'},
-        {'name': 'zbar',                'desc': 'Bar code reader'}
+        {'name': 'zbar',                'desc': 'Bar code reader'},
+        {'name': 'media-player-info',   'desc': 'udev data for media players'}
     ],
     'Monitoring & System': [
         {'name': 'atop',                'desc': 'Advanced system and process monitor'},
@@ -209,7 +210,9 @@ sudo_timeout:
         {'name': 'smartmontools',       'desc': 'S.M.A.R.T. disk monitoring tools'},
         {'name': 'sysstat',             'desc': 'Performance monitoring tools'},
         {'name': 'vmtouch',             'desc': 'Virtual memory touch / file paging tool'},
-        {'name': 'vnstat',              'desc': 'Network traffic monitor'}
+        {'name': 'vnstat',              'desc': 'Network traffic monitor'},
+        {'name': 'below',               'desc': 'BPF time-traveling system monitor'},
+        {'name': 'kernel-tools',        'desc': 'Kernel utilities (turbostat, cpupower)'}
     ],
     'Network': [
         {'name': 'aria2',               'desc': 'High speed download utility with resuming and segmented downloading'},
@@ -567,6 +570,18 @@ install_flatpak_floorp:
     - runas: neg
     - unless: flatpak info one.ablaze.floorp &>/dev/null
 
+install_flatpak_jamesdsp:
+  cmd.run:
+    - name: flatpak install -y flathub me.timschneeberger.jdsp4linux
+    - runas: neg
+    - unless: flatpak info me.timschneeberger.jdsp4linux &>/dev/null
+
+install_flatpak_protonplus:
+  cmd.run:
+    - name: flatpak install -y flathub com.vysp3r.ProtonPlus
+    - runas: neg
+    - unless: flatpak info com.vysp3r.ProtonPlus &>/dev/null
+
 # --- Floorp browser: user.js + userChrome.css + userContent.css ---
 floorp_user_js:
   file.managed:
@@ -750,6 +765,84 @@ install_cachyos_kernel:
       - cmd: copr_cachyos_kernel
     - unless: rpm -q kernel-cachyos-lto
 
+# --- COPR: espanso (text expansion daemon for Wayland) ---
+copr_espanso:
+  cmd.run:
+    - name: dnf copr enable -y eclipseo/espanso
+    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:eclipseo:espanso.repo
+
+install_espanso:
+  cmd.run:
+    - name: rpm-ostree install -y espanso-wayland
+    - require:
+      - cmd: copr_espanso
+    - unless: rpm-ostree status | grep -q espanso-wayland
+
+# --- COPR: himalaya (async email CLI) ---
+copr_himalaya:
+  cmd.run:
+    - name: dnf copr enable -y atim/himalaya
+    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:atim:himalaya.repo
+
+install_himalaya:
+  cmd.run:
+    - name: rpm-ostree install -y himalaya
+    - require:
+      - cmd: copr_himalaya
+    - unless: rpm-ostree status | grep -q himalaya
+
+# --- COPR: spotifyd (Spotify connect daemon) ---
+copr_spotifyd:
+  cmd.run:
+    - name: dnf copr enable -y mbooth/spotifyd
+    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:mbooth:spotifyd.repo
+
+install_spotifyd:
+  cmd.run:
+    - name: rpm-ostree install -y spotifyd
+    - require:
+      - cmd: copr_spotifyd
+    - unless: rpm-ostree status | grep -q spotifyd
+
+# --- COPR: sbctl (Secure Boot key manager) ---
+copr_sbctl:
+  cmd.run:
+    - name: dnf copr enable -y chenxiaolong/sbctl
+    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:chenxiaolong:sbctl.repo
+
+install_sbctl:
+  cmd.run:
+    - name: rpm-ostree install -y sbctl
+    - require:
+      - cmd: copr_sbctl
+    - unless: rpm-ostree status | grep -q sbctl
+
+# --- COPR: yabridge (Windows VST bridge for Linux DAWs) ---
+copr_yabridge:
+  cmd.run:
+    - name: dnf copr enable -y patrickl/yabridge-stable
+    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:patrickl:yabridge-stable.repo
+
+install_yabridge:
+  cmd.run:
+    - name: rpm-ostree install -y yabridge yabridgectl
+    - require:
+      - cmd: copr_yabridge
+    - unless: rpm-ostree status | grep -q yabridge
+
+# --- COPR: Audinux (audio production packages: brutefir, patchmatrix, sc3-plugins) ---
+copr_audinux:
+  cmd.run:
+    - name: dnf copr enable -y ycollet/linuxmao
+    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:ycollet:linuxmao.repo
+
+install_audinux_packages:
+  cmd.run:
+    - name: rpm-ostree install -y --allow-inactive brutefir patchmatrix supercollider-sc3-plugins
+    - require:
+      - cmd: copr_audinux
+    - unless: rpm -q brutefir &>/dev/null && rpm -q patchmatrix &>/dev/null && rpm -q supercollider-sc3-plugins &>/dev/null
+
 install_yazi:
   cmd.run:
     - name: |
@@ -797,6 +890,178 @@ install_television:
         rm -rf /tmp/tv.tar.gz /tmp/tv-${TAG}-x86_64-unknown-linux-musl
     - runas: neg
     - creates: /var/home/neg/.local/bin/tv
+
+# --- GitHub binary downloads (remaining migration packages) ---
+install_xray:
+  cmd.run:
+    - name: |
+        curl -sL https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip -o /tmp/xray.zip
+        unzip -o /tmp/xray.zip -d /tmp/xray
+        mv /tmp/xray/xray ~/.local/bin/
+        chmod +x ~/.local/bin/xray
+        rm -rf /tmp/xray.zip /tmp/xray
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/xray
+
+install_sing_box:
+  cmd.run:
+    - name: |
+        TAG=$(curl -s https://api.github.com/repos/SagerNet/sing-box/releases/latest | jq -r .tag_name)
+        VER=${TAG#v}
+        curl -sL "https://github.com/SagerNet/sing-box/releases/download/${TAG}/sing-box-${VER}-linux-amd64.tar.gz" -o /tmp/sing-box.tar.gz
+        tar -xzf /tmp/sing-box.tar.gz -C /tmp
+        mv /tmp/sing-box-${VER}-linux-amd64/sing-box ~/.local/bin/
+        rm -rf /tmp/sing-box.tar.gz /tmp/sing-box-${VER}-linux-amd64
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/sing-box
+
+install_tdl:
+  cmd.run:
+    - name: |
+        curl -sL https://github.com/iyear/tdl/releases/latest/download/tdl_Linux_64bit.tar.gz -o /tmp/tdl.tar.gz
+        tar -xzf /tmp/tdl.tar.gz -C /tmp tdl
+        mv /tmp/tdl ~/.local/bin/
+        rm -f /tmp/tdl.tar.gz
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/tdl
+
+install_camilladsp:
+  cmd.run:
+    - name: |
+        curl -sL https://github.com/HEnquist/camilladsp/releases/latest/download/camilladsp-linux-amd64.tar.gz -o /tmp/camilladsp.tar.gz
+        tar -xzf /tmp/camilladsp.tar.gz -C /tmp
+        mv /tmp/camilladsp ~/.local/bin/
+        rm -f /tmp/camilladsp.tar.gz
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/camilladsp
+
+install_opencode:
+  cmd.run:
+    - name: |
+        curl -sL https://github.com/opencode-ai/opencode/releases/latest/download/opencode_linux_amd64.tar.gz -o /tmp/opencode.tar.gz
+        tar -xzf /tmp/opencode.tar.gz -C /tmp opencode
+        mv /tmp/opencode ~/.local/bin/
+        rm -f /tmp/opencode.tar.gz
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/opencode
+
+install_adguardian:
+  cmd.run:
+    - name: curl -sL https://github.com/Lissy93/AdGuardian-Term/releases/latest/download/adguardian-linux -o ~/.local/bin/adguardian && chmod +x ~/.local/bin/adguardian
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/adguardian
+
+install_realesrgan:
+  cmd.run:
+    - name: |
+        TAG=$(curl -s https://api.github.com/repos/xinntao/Real-ESRGAN-ncnn-vulkan/releases/latest | jq -r .tag_name)
+        curl -sL "https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan/releases/download/${TAG}/realesrgan-ncnn-vulkan-${TAG}-ubuntu.zip" -o /tmp/realesrgan.zip
+        unzip -o /tmp/realesrgan.zip -d /tmp/realesrgan
+        mv /tmp/realesrgan/realesrgan-ncnn-vulkan ~/.local/bin/
+        chmod +x ~/.local/bin/realesrgan-ncnn-vulkan
+        rm -rf /tmp/realesrgan.zip /tmp/realesrgan
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/realesrgan-ncnn-vulkan
+
+install_essentia_extractor:
+  cmd.run:
+    - name: |
+        curl -sL https://essentia.upf.edu/extractors/essentia-extractor-v2.1_beta5-linux-x86_64.tar.gz -o /tmp/essentia.tar.gz
+        tar -xzf /tmp/essentia.tar.gz -C /tmp
+        find /tmp -name 'essentia_streaming_extractor_music' -exec mv {} ~/.local/bin/ \;
+        chmod +x ~/.local/bin/essentia_streaming_extractor_music
+        rm -rf /tmp/essentia.tar.gz /tmp/essentia-extractor-*
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/essentia_streaming_extractor_music
+
+# --- pip installs ---
+install_scdl:
+  cmd.run:
+    - name: pip install --user scdl
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/scdl
+
+install_dr14_tmeter:
+  cmd.run:
+    - name: pip install --user DR14-T.meter
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/dr14_tmeter
+
+# --- cargo installs ---
+install_handlr:
+  cmd.run:
+    - name: cargo install handlr-regex
+    - runas: neg
+    - creates: /var/home/neg/.cargo/bin/handlr
+
+install_agg:
+  cmd.run:
+    - name: cargo install --git https://github.com/asciinema/agg
+    - runas: neg
+    - creates: /var/home/neg/.cargo/bin/agg
+
+install_tailray:
+  cmd.run:
+    - name: cargo install tailray
+    - runas: neg
+    - creates: /var/home/neg/.cargo/bin/tailray
+
+install_pzip:
+  cmd.run:
+    - name: cargo install pzip
+    - runas: neg
+    - creates: /var/home/neg/.cargo/bin/pzip
+
+# --- Script and file installs ---
+install_mpvc:
+  cmd.run:
+    - name: curl -sL https://raw.githubusercontent.com/lwilletts/mpvc/master/mpvc -o ~/.local/bin/mpvc && chmod +x ~/.local/bin/mpvc
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/mpvc
+
+install_rofi_systemd:
+  cmd.run:
+    - name: curl -sL https://raw.githubusercontent.com/IvanMalison/rofi-systemd/master/rofi-systemd -o ~/.local/bin/rofi-systemd && chmod +x ~/.local/bin/rofi-systemd
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/rofi-systemd
+
+install_dool:
+  cmd.run:
+    - name: |
+        git clone --depth=1 https://github.com/scottchiefbaker/dool.git /tmp/dool
+        cp /tmp/dool/dool ~/.local/bin/
+        chmod +x ~/.local/bin/dool
+        rm -rf /tmp/dool
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/dool
+
+install_qmk_udev_rules:
+  cmd.run:
+    - name: curl -sL https://raw.githubusercontent.com/qmk/qmk_firmware/master/util/udev/50-qmk.rules -o /etc/udev/rules.d/50-qmk.rules && udevadm control --reload-rules
+    - creates: /etc/udev/rules.d/50-qmk.rules
+
+install_oldschool_pc_fonts:
+  cmd.run:
+    - name: |
+        mkdir -p ~/.local/share/fonts/oldschool-pc
+        curl -sL https://int10h.org/oldschool-pc-fonts/download/oldschool_pc_font_pack_v2.2_linux.zip -o /tmp/fonts.zip
+        unzip -o /tmp/fonts.zip -d /tmp/oldschool-fonts
+        find /tmp/oldschool-fonts -name '*.otf' -exec cp {} ~/.local/share/fonts/oldschool-pc/ \;
+        fc-cache -f ~/.local/share/fonts/oldschool-pc/
+        rm -rf /tmp/fonts.zip /tmp/oldschool-fonts
+    - runas: neg
+    - creates: /var/home/neg/.local/share/fonts/oldschool-pc
+
+# --- Special: RoomEQ Wizard (Java acoustic measurement) ---
+install_roomeqwizard:
+  cmd.run:
+    - name: |
+        mkdir -p ~/.local/opt/roomeqwizard
+        curl -sL 'https://www.roomeqwizard.com/installers/REW_linux_no_jre_5_33.zip' -o /tmp/rew.zip
+        unzip -o /tmp/rew.zip -d ~/.local/opt/roomeqwizard
+        rm -f /tmp/rew.zip
+    - runas: neg
+    - creates: /var/home/neg/.local/opt/roomeqwizard
 
 # --- Theme packages not in Fedora repos ---
 install_kora_icons:
