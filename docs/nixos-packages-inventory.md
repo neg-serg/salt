@@ -646,18 +646,18 @@ _Source: modules/secrets/pkgs.nix_
 _Source: modules/games/default.nix, modules/fun/ (various)_
 
 - [x] abuse (RPM)
-- [ ] airshipper — Veloren launcher; not installed
+- [x] airshipper — Veloren launcher; Flatpak (`net.veloren.airshipper`)
 - [x] angband — roguelike (RPM)
-- [ ] brogue-ce — roguelike; not installed
+- [x] brogue-ce — roguelike; Flatpak (`com.github.tmewett.BrogueCE`)
 - [x] crawl (RPM)
 - [x] crawl-tiles (RPM)
 - [x] endless-sky — space exploration (RPM)
 - [x] fheroes2 — free Heroes 2 (RPM)
 - [x] flare — fantasy action RPG (RPM)
 - [x] gnuchess (RPM)
-- [ ] gzdoom — Doom engine; not installed
-- [ ] jazz2 — Jazz Jackrabbit 2; not installed
-- [ ] shattered-pixel-dungeon — roguelike; not installed
+- [x] gzdoom — Doom engine; Flatpak (`org.zdoom.GZDoom`)
+- [x] jazz2 — Jazz Jackrabbit 2; Flatpak (`tk.deat.Jazz2Resurrection`)
+- [x] shattered-pixel-dungeon — roguelike; Flatpak (`com.shatteredpixel.shatteredpixeldungeon`)
 - [x] superTux — 2D platformer; `supertux` (RPM)
 - [ ] superTuxKart — removed
 - [x] wesnoth (RPM)
@@ -694,14 +694,14 @@ _Source: modules/emulators/pkgs.nix_
 ## Fun — Misc
 _Source: modules/fun/misc-packages.nix_
 
-- [ ] bucklespring — keyboard click sounds; not installed
+- [x] bucklespring — keyboard click sounds; custom RPM
 - [x] dotacat — `lolcat` (RPM, similar functionality)
 - [x] figlet (RPM)
 - [x] fortune — `fortune-mod` (RPM)
 - [x] neo-cowsay — `cowsay` (RPM, slightly different)
 - [x] neo — matrix rain (RPM)
 - [x] nms — `no-more-secrets` (RPM)
-- [ ] taoup — Tao of Unix Programming; not installed
+- [x] taoup — Tao of Unix Programming; custom RPM
 - [x] toilet (RPM)
 
 ---
