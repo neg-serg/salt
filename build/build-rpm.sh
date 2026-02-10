@@ -42,6 +42,8 @@ WALLUST_VERSION="3.3.0"
 QUICKSHELL_VERSION="0.2.1"
 SWAYOSD_VERSION="0.3.0"
 XDG_TERMFILECHOOSER_VERSION="0.4.0"
+BUCKLESPRING_VERSION="1.5.1"
+TAOUP_VERSION="1.1.23"
 
 # RPM build root directory inside the container
 RPM_BUILD_ROOT="/rpmbuild"
@@ -1132,6 +1134,60 @@ if [[ $# -eq 0 || "$1" == "xdg-desktop-portal-termfilechooser" ]]; then
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/xdg-desktop-portal-termfilechooser.spec"
         echo "--- Copying xdg-desktop-portal-termfilechooser RPMs to /build/rpms/ ---"
         find "${RPMS_DIR}" -name "xdg-desktop-portal-termfilechooser-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Bucklespring RPM ---
+BUCKLESPRING_RPM_NAME="bucklespring-${BUCKLESPRING_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "bucklespring" ]]; then
+    echo "--- Preparing Bucklespring ---"
+    if [ -f "/build/rpms/${BUCKLESPRING_RPM_NAME}" ]; then
+        echo "Bucklespring RPM (${BUCKLESPRING_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar gcc make pkgconf-pkg-config openal-soft-devel alure-devel libX11-devel libXtst-devel
+
+        BUCKLESPRING_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/bucklespring-${BUCKLESPRING_VERSION}"
+        if [ ! -d "${BUCKLESPRING_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${BUCKLESPRING_VERSION}" https://github.com/zevv/bucklespring.git "${BUCKLESPRING_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/bucklespring-${BUCKLESPRING_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "bucklespring-${BUCKLESPRING_VERSION}"
+        cp /build/salt/specs/bucklespring.spec "${SPECS_DIR}/bucklespring.spec"
+
+        echo "--- Building Bucklespring RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/bucklespring.spec"
+
+        echo "--- Copying Bucklespring RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "bucklespring-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Taoup RPM ---
+TAOUP_RPM_NAME="taoup-${TAOUP_VERSION}-1.fc43.noarch.rpm"
+if [[ $# -eq 0 || "$1" == "taoup" ]]; then
+    echo "--- Preparing Taoup ---"
+    if [ -f "/build/rpms/${TAOUP_RPM_NAME}" ]; then
+        echo "Taoup RPM (${TAOUP_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar ruby
+
+        TAOUP_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/taoup-${TAOUP_VERSION}"
+        if [ ! -d "${TAOUP_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${TAOUP_VERSION}" https://github.com/globalcitizen/taoup.git "${TAOUP_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/taoup-${TAOUP_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "taoup-${TAOUP_VERSION}"
+        cp /build/salt/specs/taoup.spec "${SPECS_DIR}/taoup.spec"
+
+        echo "--- Building Taoup RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/taoup.spec"
+
+        echo "--- Copying Taoup RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "taoup-*.rpm" -exec cp -v {} /build/rpms/ \;
     fi
 fi
 

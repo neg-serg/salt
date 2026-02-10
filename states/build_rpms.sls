@@ -34,6 +34,8 @@
     {'name': 'zfxtop',            'version': '0.3.2'},
     {'name': 'zk',                'version': '0.15.2'},
     {'name': 'bandwhich',         'version': '0.23.1'},
+    {'name': 'bucklespring',     'version': '1.5.1'},
+    {'name': 'taoup',            'version': '1.1.23', 'arch': 'noarch'},
     {'name': 'xh',                'version': '0.25.3'},
     {'name': 'curlie',            'version': '1.8.2'},
     {'name': 'doggo',             'version': '1.1.2'},
