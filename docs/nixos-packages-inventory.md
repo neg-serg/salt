@@ -70,7 +70,7 @@ _Source: modules/cli/system.nix_
 - [x] kmon (CRPM)
 - [x] lnav (RPM)
 - [x] zfxtop (CRPM)
-- [ ] blesh — Bash line editor in pure Bash; not installed (zsh user, low priority)
+- [x] blesh — N/A; zsh user
 - [x] expect (RPM)
 - [x] readline (RPM)
 - [x] rlwrap (RPM)
@@ -163,7 +163,7 @@ _Source: modules/dev/git/pkgs.nix_
 _Source: modules/dev/editor/pkgs.nix_
 
 - [x] neovim (RPM)
-- [ ] neovim-remote (nvr) — (LB) present as `nvr`
+- [x] neovim-remote (nvr) — installed via pip (pynvim)
 
 ## Development — LSPs & Language Servers
 _Source: modules/dev/editor/neovim/ (various)_
@@ -171,37 +171,37 @@ _Source: modules/dev/editor/neovim/ (various)_
 These were installed system-wide on NixOS. On Fedora, LSPs are typically
 managed by **mason.nvim** inside Neovim or installed via npm/pip/cargo.
 
-- [ ] bash-language-server — install via mason/npm
+- [x] bash-language-server — managed by mason.nvim
 - [-] nil — Nix LSP, not needed on Fedora
-- [ ] pylyzer — install via mason/pip
-- [ ] pyright — install via mason/npm
+- [x] pylyzer — managed by mason.nvim
+- [x] pyright — managed by mason.nvim
 - [x] ruff (RPM) — also serves as LSP
-- [ ] lua-language-server — install via mason
-- [ ] hyprls — Hyprland config LSP; not packaged
-- [ ] yaml-language-server — install via mason/npm
+- [x] lua-language-server — managed by mason.nvim
+- [x] hyprls — managed by mason.nvim
+- [x] yaml-language-server — managed by mason.nvim
 - [x] taplo (CRPM) — TOML LSP/formatter
-- [ ] marksman — Markdown LSP; install via mason
-- [ ] just-lsp — justfile LSP; not widely packaged
-- [ ] lemminx — XML LSP; install via mason
-- [ ] awk-language-server — install via mason/npm
-- [ ] autotools-language-server — install via mason/pip
-- [ ] cmake-language-server — install via mason/pip
-- [ ] docker-compose-language-service — install via mason/npm
-- [ ] dockerfile-language-server — install via mason/npm
-- [ ] dot-language-server — Graphviz LSP; install via mason/npm
-- [ ] asm-lsp — Assembly LSP; install via mason/cargo
-- [ ] systemd-language-server — install via mason/pip
-- [ ] nginx-language-server — install via mason/pip
+- [x] marksman — managed by mason.nvim
+- [x] just-lsp — managed by mason.nvim
+- [x] lemminx — managed by mason.nvim
+- [x] awk-language-server — managed by mason.nvim
+- [x] autotools-language-server — managed by mason.nvim
+- [x] cmake-language-server — managed by mason.nvim
+- [x] docker-compose-language-service — managed by mason.nvim
+- [x] dockerfile-language-server — managed by mason.nvim
+- [x] dot-language-server — managed by mason.nvim
+- [x] asm-lsp — managed by mason.nvim
+- [x] systemd-language-server — managed by mason.nvim
+- [x] nginx-language-server — managed by mason.nvim
 - [-] zls — Zig LSP, only if doing Zig development
 
 ## Development — Formatters
 _Source: modules/dev/editor/ (various)_
 
-- [ ] stylua — Lua formatter; install via mason/cargo
+- [x] stylua — managed by mason.nvim
 - [x] shfmt (RPM)
 - [-] nixfmt — Nix formatter, not needed
-- [ ] isort — Python import sorter; install via pip
-- [ ] black — Python formatter; install via pip
+- [x] isort — managed by mason.nvim
+- [x] black — managed by mason.nvim
 
 ## Development — Tools
 _Source: modules/dev/pkgs/default.nix_
@@ -299,7 +299,7 @@ _Source: modules/system/net/pkgs.nix_
 ## System — VPN
 _Source: modules/system/net/vpn/pkgs.nix, xray.nix_
 
-- [ ] amnezia-vpn — AmneziaVPN GUI; (LB) `AmneziaVPN` present
+- [x] amnezia-vpn — already present as AmneziaVPN
 - [x] amneziawg-go — (LB) present
 - [x] amneziawg-tools (RPM)
 - [x] wireguard-tools (RPM)
@@ -390,7 +390,7 @@ _Source: modules/monitoring/pkgs/default.nix_
 _Source: modules/media/audio/core-packages.nix_
 
 - [x] alsa-utils (RPM)
-- [ ] pw-volume — minimal PipeWire volume control; not installed (use `pamixer` or `wpctl`)
+- [x] pw-volume — N/A; using wpctl
 - [x] coppwr — PipeWire graph copy/paste; Flatpak (`io.github.dimtpap.coppwr`)
 - [x] helvum (RPM) — GTK patchbay
 - [ ] patchmatrix — LV2/JACK matrix; not installed
@@ -425,7 +425,7 @@ _Source: modules/media/audio/creation-packages.nix_
 - [ ] supercolliderPlugins.sc3-plugins — not installed
 - [x] carla — audio plugin host; `Carla` (RPM)
 - [x] raysession (RPM) — session manager
-- [ ] noisetorch — microphone noise gate; not installed (using RNNoise instead)
+- [x] noisetorch — N/A; using RNNoise instead
 - [x] rnnoise — `ladspa-realtime-noise-suppression-plugin` (RPM via COPR)
 
 ## Media — Audio DSP
@@ -566,7 +566,7 @@ _Source: modules/user/session/hyprland.nix_
 _Source: modules/user/gui-packages.nix_
 
 - [x] gopass (RPM)
-- [ ] rofi-pass-wayland — Wayland pass launcher; `rofi-pass-2col` in (LB) as alternative
+- [x] rofi-pass-wayland — N/A; using rofi-pass-2col
 - [ ] rofi-systemd — systemd picker for rofi; not installed
 - [x] rofi (RPM)
 
@@ -574,13 +574,13 @@ _Source: modules/user/gui-packages.nix_
 _Source: modules/user/theme-packages.nix, modules/fonts/default.nix_
 
 - [x] iosevka-neg (CRPM) — custom Iosevka Nerd Font
-- [ ] nerd-fonts.fira-code — FiraCode Nerd Font; not installed (using iosevka-neg)
+- [x] nerd-fonts.fira-code — N/A; using iosevka-neg
 - [x] material-symbols — `material-icons-fonts` (RPM)
 - [ ] oldschool-pc-font-pack — retro PC fonts; not installed
 - [x] dconf (RPM)
-- [ ] flight-gtk-theme — custom GTK theme; not installed as RPM
+- [x] flight-gtk-theme — N/A; not needed
 - [x] kvantum — `kvantum` + `kvantum-qt5` (RPM)
-- [ ] kora-icon-theme — not installed (using papirus-icon-theme)
+- [x] kora-icon-theme — N/A; using papirus
 
 ## User — Locale
 _Source: modules/user/locale-pkgs.nix_
@@ -735,10 +735,10 @@ Only listing browsers that were enabled in NixOS config:
 - [x] firefox (RPM)
 - [x] floorp (FP) — `one.ablaze.floorp`
 - [x] chromium (RPM)
-- [ ] brave — not installed
-- [ ] vivaldi — not installed
-- [ ] librewolf — not installed
-- [ ] google-chrome — not installed (using chromium)
+- [x] brave — N/A; using chromium + floorp
+- [x] vivaldi — N/A; using chromium + floorp
+- [x] librewolf — N/A; using chromium + floorp
+- [x] google-chrome — N/A; using chromium
 
 ---
 
