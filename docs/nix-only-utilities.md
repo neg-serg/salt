@@ -8,10 +8,6 @@ Nix-specific). Organized by installation difficulty.
 
 | Package | Type | Install Command | Notes |
 |---------|------|-----------------|-------|
-| beautifulsoup4 | Python | `pip install --user beautifulsoup4` | Web scraping lib |
-| pynvim | Python | `pip install --user pynvim` | Neovim Python bindings (for nvr) |
-| fonttools | Python | `pip install --user fonttools` | Font manipulation |
-| fontforge | Python | `dnf install fontforge` | Check if Python bindings included |
 | handlr-regex | Rust | `cargo install handlr-regex` | xdg-open replacement; also has GitHub binary |
 | scdl | Python | `pip install --user scdl` | SoundCloud downloader |
 

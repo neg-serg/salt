@@ -20,10 +20,7 @@ See [nix-only-utilities.md](nix-only-utilities.md) for the detailed plan on each
 
 ## Development — Python
 
-- [ ] beautifulsoup4 — `python3-beautifulsoup4`; check if installed
-- [ ] pynvim — install via pip; `nvr` in ~/.local/bin suggests it's present
-- [ ] fontforge (Python bindings) — not installed
-- [ ] fonttools — install via pip
+_All items removed — not needed on Fedora (beautifulsoup4, pynvim, fontforge, fonttools)._
 
 ## Development — Misc
 
