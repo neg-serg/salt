@@ -1153,7 +1153,7 @@ cmake-language-server)
     fi
     ;;
 nginx-language-server)
-    NGINX_LS_RPM_NAME="nginx-language-server-${NGINX_LS_VERSION}-1.fc43.noarch.rpm"
+    NGINX_LS_RPM_NAME="nginx-language-server-${NGINX_LS_VERSION}-1.fc43.x86_64.rpm"
     echo "--- Preparing nginx-language-server ---"
     if [ -f "/build/rpms/${NGINX_LS_RPM_NAME}" ]; then
         echo "nginx-language-server RPM (${NGINX_LS_RPM_NAME}) already exists, skipping."

@@ -54,7 +54,7 @@
     {'name': 'unflac',            'version': '1.4'},
     {'name': 'albumdetails',      'version': '0.1'},
     {'name': 'cmake-language-server', 'version': '0.1.11', 'arch': 'noarch'},
-    {'name': 'nginx-language-server', 'version': '0.9.0',  'arch': 'noarch'},
+    {'name': 'nginx-language-server', 'version': '0.9.0'},
     {'name': 'systemd-language-server', 'version': '0.3.5'},
 ] %}
 
@@ -98,11 +98,11 @@ build_rpms_parallel:
         LAUNCHED=0
         SKIPPED=0
 
-        {% for pkg in rpms %}
-        {% set arch = pkg.get('arch', 'x86_64') %}
-        {% set release = pkg.get('release', '1') %}
-        {% set extra_vol = pkg.get('extra_volumes', '') %}
-        {% set rpm_file = pkg.name ~ '-' ~ pkg.version ~ '-' ~ release ~ '.fc43.' ~ arch ~ '.rpm' %}
+        {%- for pkg in rpms %}
+        {%- set arch = pkg.get('arch', 'x86_64') %}
+        {%- set release = pkg.get('release', '1') %}
+        {%- set extra_vol = pkg.get('extra_volumes', '') %}
+        {%- set rpm_file = pkg.name ~ '-' ~ pkg.version ~ '-' ~ release ~ '.fc43.' ~ arch ~ '.rpm' %}
         if [ ! -f "${RPMS_DIR}/{{ rpm_file }}" ]; then
             read -u 3
             (
@@ -123,7 +123,7 @@ build_rpms_parallel:
         else
             SKIPPED=$((SKIPPED + 1))
         fi
-        {% endfor %}
+        {%- endfor %}
 
         # Collect results from all background jobs
         FAILURES=0
@@ -139,14 +139,15 @@ build_rpms_parallel:
         [ "$FAILURES" -eq 0 ]
     - runas: neg
     - timeout: 7200
-    - unless: >-
-        {% for pkg in rpms %}
-        {% set arch = pkg.get('arch', 'x86_64') %}
-        {% set release = pkg.get('release', '1') %}
-        {% set rpm_file = pkg.name ~ '-' ~ pkg.version ~ '-' ~ release ~ '.fc43.' ~ arch ~ '.rpm' %}
-        test -f "{{ rpms_dir }}/{{ rpm_file }}" &&
-        {% endfor %}
-        true
+    - unless: |
+        for f in \
+        {%- for pkg in rpms %}
+        {%- set arch = pkg.get('arch', 'x86_64') %}
+        {%- set release = pkg.get('release', '1') %}
+        {%- set rpm_file = pkg.name ~ '-' ~ pkg.version ~ '-' ~ release ~ '.fc43.' ~ arch ~ '.rpm' %}
+          "{{ rpms_dir }}/{{ rpm_file }}" \
+        {%- endfor %}
+        ; do [ -f "$f" ] || exit 1; done
     - require:
       - file: {{ rpms_dir }}
 
