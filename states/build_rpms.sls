@@ -44,7 +44,8 @@
     {'name': 'quickshell',        'version': '0.2.1',  'timeout': 3600},
     {'name': 'swayosd',          'version': '0.3.0'},
     {'name': 'xdg-desktop-portal-termfilechooser', 'version': '0.4.0'},
-    {'name': 'newsraft',          'version': '0.26'}
+    {'name': 'newsraft',          'version': '0.26'},
+    {'name': 'unflac',            'version': '1.4'}
 ] %}
 
 {% set iosevka = {

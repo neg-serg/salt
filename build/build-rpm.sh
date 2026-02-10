@@ -45,6 +45,7 @@ XDG_TERMFILECHOOSER_VERSION="0.4.0"
 BUCKLESPRING_VERSION="1.5.1"
 TAOUP_VERSION="1.1.23"
 NEWSRAFT_VERSION="0.26"
+UNFLAC_VERSION="1.4"
 
 # RPM build root directory inside the container
 RPM_BUILD_ROOT="/rpmbuild"
@@ -1216,6 +1217,33 @@ if [[ $# -eq 0 || "$1" == "newsraft" ]]; then
 
         echo "--- Copying Newsraft RPMs to /build/rpms/ ---"
         find "${RPMS_DIR}" -name "newsraft-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+fi
+
+# --- Build Unflac RPM ---
+UNFLAC_RPM_NAME="unflac-${UNFLAC_VERSION}-1.fc43.x86_64.rpm"
+if [[ $# -eq 0 || "$1" == "unflac" ]]; then
+    echo "--- Preparing Unflac ---"
+    if [ -f "/build/rpms/${UNFLAC_RPM_NAME}" ]; then
+        echo "Unflac RPM (${UNFLAC_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar golang
+
+        UNFLAC_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/unflac-${UNFLAC_VERSION}"
+        if [ ! -d "${UNFLAC_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${UNFLAC_VERSION}" https://git.sr.ht/~ft/unflac "${UNFLAC_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/unflac-${UNFLAC_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "unflac-${UNFLAC_VERSION}"
+        cp /build/salt/specs/unflac.spec "${SPECS_DIR}/unflac.spec"
+
+        echo "--- Building Unflac RPM ---"
+        rpmbuild \
+            --define "_topdir ${RPM_BUILD_ROOT}" \
+            -ba "${SPECS_DIR}/unflac.spec"
+
+        echo "--- Copying Unflac RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "unflac-*.rpm" -exec cp -v {} /build/rpms/ \;
     fi
 fi
 

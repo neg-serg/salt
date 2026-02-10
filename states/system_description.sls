@@ -1063,6 +1063,56 @@ install_roomeqwizard:
     - runas: neg
     - creates: /var/home/neg/.local/opt/roomeqwizard
 
+# --- Throne (sing-box GUI proxy frontend, bundled Qt) ---
+install_throne:
+  cmd.run:
+    - name: |
+        mkdir -p ~/.local/opt/throne
+        curl -sL https://github.com/throneproj/Throne/releases/download/1.0.13/Throne-1.0.13-linux-amd64.zip -o /tmp/throne.zip
+        unzip -o /tmp/throne.zip -d ~/.local/opt/throne
+        ln -sf ~/.local/opt/throne/Throne ~/.local/bin/throne
+        rm -f /tmp/throne.zip
+    - runas: neg
+    - creates: /var/home/neg/.local/opt/throne
+
+# --- Overskride (Bluetooth GTK4 client, Flatpak bundle from GitHub) ---
+install_overskride:
+  cmd.run:
+    - name: |
+        curl -sL https://github.com/kaii-lb/overskride/releases/download/v0.6.6/overskride.flatpak -o /tmp/overskride.flatpak
+        flatpak install --user -y /tmp/overskride.flatpak
+        rm -f /tmp/overskride.flatpak
+    - runas: neg
+    - unless: flatpak info io.github.kaii_lb.Overskride &>/dev/null
+
+# --- Open Sound Meter (FFT acoustic analysis, AppImage) ---
+install_opensoundmeter:
+  cmd.run:
+    - name: curl -sL https://github.com/psmokotnin/osm/releases/download/v1.5.2/Open_Sound_Meter-v1.5.2-x86_64.AppImage -o ~/.local/bin/opensoundmeter && chmod +x ~/.local/bin/opensoundmeter
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/opensoundmeter
+
+# --- matugen (Material You color generation) ---
+install_matugen:
+  cmd.run:
+    - name: |
+        curl -sL https://github.com/InioX/matugen/releases/download/v3.1.0/matugen-3.1.0-x86_64.tar.gz -o /tmp/matugen.tar.gz
+        tar -xzf /tmp/matugen.tar.gz -C /tmp
+        mv /tmp/matugen ~/.local/bin/
+        rm -f /tmp/matugen.tar.gz
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/matugen
+
+install_matugen_themes:
+  cmd.run:
+    - name: |
+        git clone --depth=1 https://github.com/InioX/matugen-themes.git /tmp/matugen-themes
+        mkdir -p ~/.config/matugen/templates
+        cp -r /tmp/matugen-themes/*/ ~/.config/matugen/templates/
+        rm -rf /tmp/matugen-themes
+    - runas: neg
+    - creates: /var/home/neg/.config/matugen/templates
+
 # --- Theme packages not in Fedora repos ---
 install_kora_icons:
   cmd.run:

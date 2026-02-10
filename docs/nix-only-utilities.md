@@ -42,6 +42,12 @@ Most items have been resolved. See `states/system_description.sls` for the actua
 | oldschool-pc-font-pack | Font archive (int10h.org) | `install_oldschool_pc_fonts` |
 | newsraft | Custom RPM build | `build_newsraft_rpm` |
 | hy3 | Podman build (hy3.sls) | `build_hy3` |
+| throne | GitHub zip (bundled Qt) | `install_throne` |
+| overskride | Flatpak bundle (GitHub) | `install_overskride` |
+| opensoundmeter | AppImage (GitHub) | `install_opensoundmeter` |
+| unflac | Custom RPM build (Go) | `build_unflac_rpm` |
+| matugen | Prebuilt binary (GitHub) | `install_matugen` |
+| matugen-themes | Git clone templates | `install_matugen_themes` |
 
 ## Skipped — Not Needed
 
@@ -61,10 +67,5 @@ Most items have been resolved. See `states/system_description.sls` for the actua
 
 | Package | Issue | Notes |
 |---------|-------|-------|
-| throne (opt) | URL unclear | VPN proxy; niche |
-| overskride (opt) | No Flatpak/COPR found | Bluetooth OBEX client; `bluez-tools` covers basics |
-| droidcam | DKMS on Atomic | Kernel module problematic; consider scrcpy + v4l2loopback |
-| opensoundmeter (opt) | AppImage only | FFT acoustic analysis; not yet automated |
-| unflac | Needs Go build | FLAC cuesheet splitter; needs custom RPM |
-| matugen-themes | Unknown source | Check if templates are bundled with matugen binary |
+| droidcam | DKMS on Atomic | Kernel module problematic; use scrcpy instead |
 | winapps | Manual setup | Windows apps in KVM; complex, not automatable |
