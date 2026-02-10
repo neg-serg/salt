@@ -3,7 +3,8 @@
 set -uo pipefail
 
 SALT_DIR="/var/home/neg/src/salt"
-VENV="${SALT_DIR}/.venv/bin"
+VENV="${SALT_DIR}/.venv"
+CONFIG_DIR="${SALT_DIR}/salt_config"
 LOG_DIR="${SALT_DIR}/logs"
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 LOG_FILE="${LOG_DIR}/system_description-${TIMESTAMP}.log"
@@ -13,12 +14,13 @@ mkdir -p "${LOG_DIR}"
 echo "=== Applying system_description ($(date)) ==="
 echo "Log: ${LOG_FILE}"
 
-sudo "${VENV}/salt-call" --local \
-    --file-root="${SALT_DIR}/states" \
+sudo -E "${VENV}/bin/python3" "${SALT_DIR}/run_salt.py" \
+    --config-dir="${CONFIG_DIR}" \
+    --local \
     --log-level=info \
     --log-file="${LOG_FILE}" \
     --log-file-level=debug \
-    state.apply system_description 2>&1 | tee -a "${LOG_FILE}"
+    state.sls system_description 2>&1 | tee -a "${LOG_FILE}"
 
 RC=${PIPESTATUS[0]}
 echo ""
