@@ -608,7 +608,7 @@ floorp_usercontent:
 {% for ext in floorp_extensions %}
 floorp_ext_{{ ext.slug | replace('-', '_') }}:
   cmd.run:
-    - name: curl -sL -o '{{ floorp_profile }}/extensions/{{ ext.id }}.xpi' 'https://addons.mozilla.org/firefox/downloads/latest/{{ ext.slug }}/latest.xpi'
+    - name: curl -fsSL -o '{{ floorp_profile }}/extensions/{{ ext.id }}.xpi' 'https://addons.mozilla.org/firefox/downloads/latest/{{ ext.slug }}/latest.xpi'
     - creates: {{ floorp_profile }}/extensions/{{ ext.id }}.xpi
     - runas: neg
     - require:
@@ -644,25 +644,25 @@ install_zi:
 
 install_oh_my_posh:
   cmd.run:
-    - name: curl -s https://ohmyposh.dev/install.sh | bash -s -- -d ~/.local/bin
+    - name: curl -fsSL https://ohmyposh.dev/install.sh | bash -s -- -d ~/.local/bin
     - runas: neg
     - creates: /var/home/neg/.local/bin/oh-my-posh
 
 install_aliae:
   cmd.run:
-    - name: curl -L https://github.com/p-nerd/aliae/releases/latest/download/aliae-linux-amd64 -o ~/.local/bin/aliae && chmod +x ~/.local/bin/aliae
+    - name: curl -fsSL https://github.com/p-nerd/aliae/releases/latest/download/aliae-linux-amd64 -o ~/.local/bin/aliae && chmod +x ~/.local/bin/aliae
     - runas: neg
     - creates: /var/home/neg/.local/bin/aliae
 
 install_grimblast:
   cmd.run:
-    - name: curl -sL https://raw.githubusercontent.com/hyprwm/contrib/main/grimblast/grimblast -o ~/.local/bin/grimblast && chmod +x ~/.local/bin/grimblast
+    - name: curl -fsSL https://raw.githubusercontent.com/hyprwm/contrib/main/grimblast/grimblast -o ~/.local/bin/grimblast && chmod +x ~/.local/bin/grimblast
     - runas: neg
     - creates: /var/home/neg/.local/bin/grimblast
 
 install_sops:
   cmd.run:
-    - name: curl -sL https://github.com/getsops/sops/releases/latest/download/sops-v3.11.0.linux.amd64 -o ~/.local/bin/sops && chmod +x ~/.local/bin/sops
+    - name: curl -fsSL https://github.com/getsops/sops/releases/latest/download/sops-v3.11.0.linux.amd64 -o ~/.local/bin/sops && chmod +x ~/.local/bin/sops
     - runas: neg
     - creates: /var/home/neg/.local/bin/sops
 
@@ -675,21 +675,25 @@ install_xdg_ninja:
 install_rmpc:
   cmd.run:
     - name: |
-        curl -sL https://github.com/mierak/rmpc/releases/latest/download/rmpc-x86_64-unknown-linux-gnu.tar.gz -o /tmp/rmpc.tar.gz
+        set -eo pipefail
+        curl -fsSL https://github.com/mierak/rmpc/releases/latest/download/rmpc-x86_64-unknown-linux-gnu.tar.gz -o /tmp/rmpc.tar.gz
         tar -xzf /tmp/rmpc.tar.gz -C /tmp
         mv /tmp/rmpc ~/.local/bin/
         rm -f /tmp/rmpc.tar.gz
     - runas: neg
+    - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/rmpc
 
 install_rustmission:
   cmd.run:
     - name: |
-        curl -sL https://github.com/intuis/rustmission/releases/latest/download/rustmission-x86_64-unknown-linux-gnu.tar.xz -o /tmp/rustmission.tar.xz
+        set -eo pipefail
+        curl -fsSL https://github.com/intuis/rustmission/releases/latest/download/rustmission-x86_64-unknown-linux-gnu.tar.xz -o /tmp/rustmission.tar.xz
         tar -xJf /tmp/rustmission.tar.xz -C /tmp
         mv /tmp/rustmission ~/.local/bin/
         rm -f /tmp/rustmission.tar.xz
     - runas: neg
+    - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/rustmission
 
 install_httpstat:
@@ -701,11 +705,13 @@ install_httpstat:
 install_ssh_to_age:
   cmd.run:
     - name: |
-        curl -sL https://github.com/Mic92/ssh-to-age/releases/latest/download/ssh-to-age-linux-amd64.tar.gz -o /tmp/ssh-to-age.tar.gz
+        set -eo pipefail
+        curl -fsSL https://github.com/Mic92/ssh-to-age/releases/latest/download/ssh-to-age-linux-amd64.tar.gz -o /tmp/ssh-to-age.tar.gz
         tar -xzf /tmp/ssh-to-age.tar.gz -C /tmp
         mv /tmp/ssh-to-age ~/.local/bin/
         rm -f /tmp/ssh-to-age.tar.gz
     - runas: neg
+    - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/ssh-to-age
 
 # --- COPR: noise-suppression-for-voice (RNNoise LADSPA plugin) ---
@@ -808,132 +814,155 @@ install_cachyos_kernel:
 install_yazi:
   cmd.run:
     - name: |
-        curl -L https://github.com/sxyazi/yazi/releases/latest/download/yazi-x86_64-unknown-linux-musl.zip -o /tmp/yazi.zip
+        set -eo pipefail
+        curl -fsSL https://github.com/sxyazi/yazi/releases/latest/download/yazi-x86_64-unknown-linux-musl.zip -o /tmp/yazi.zip
         unzip -o /tmp/yazi.zip -d /tmp/yazi_extracted
         mv /tmp/yazi_extracted/yazi-x86_64-unknown-linux-musl/yazi ~/.local/bin/
         mv /tmp/yazi_extracted/yazi-x86_64-unknown-linux-musl/ya ~/.local/bin/
         rm -rf /tmp/yazi.zip /tmp/yazi_extracted
     - runas: neg
+    - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/yazi
 
 install_broot:
   cmd.run:
-    - name: curl -L https://dystroy.org/broot/download/x86_64-linux/broot -o ~/.local/bin/broot && chmod +x ~/.local/bin/broot
+    - name: curl -fsSL https://dystroy.org/broot/download/x86_64-linux/broot -o ~/.local/bin/broot && chmod +x ~/.local/bin/broot
     - runas: neg
     - creates: /var/home/neg/.local/bin/broot
 
 install_nushell:
   cmd.run:
     - name: |
-        curl -L https://github.com/nushell/nushell/releases/latest/download/nu-$(curl -s https://api.github.com/repos/nushell/nushell/releases/latest | jq -r .tag_name)-x86_64-unknown-linux-musl.tar.gz -o /tmp/nu.tar.gz
+        set -eo pipefail
+        TAG=$(curl -fsSL https://api.github.com/repos/nushell/nushell/releases/latest | jq -r .tag_name)
+        curl -fsSL "https://github.com/nushell/nushell/releases/latest/download/nu-${TAG}-x86_64-unknown-linux-musl.tar.gz" -o /tmp/nu.tar.gz
         tar -xzf /tmp/nu.tar.gz -C /tmp
         mv /tmp/nu-*-x86_64-unknown-linux-musl/nu* ~/.local/bin/
         rm -rf /tmp/nu.tar.gz /tmp/nu-*-x86_64-unknown-linux-musl
     - runas: neg
+    - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/nu
 
 install_eza:
   cmd.run:
     - name: |
-        curl -L https://github.com/eza-community/eza/releases/latest/download/eza_x86_64-unknown-linux-musl.tar.gz -o /tmp/eza.tar.gz
+        set -eo pipefail
+        curl -fsSL https://github.com/eza-community/eza/releases/latest/download/eza_x86_64-unknown-linux-musl.tar.gz -o /tmp/eza.tar.gz
         tar -xzf /tmp/eza.tar.gz -C /tmp
         mv /tmp/eza ~/.local/bin/
         rm /tmp/eza.tar.gz
     - runas: neg
+    - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/eza
 
 install_television:
   cmd.run:
     - name: |
-        TAG=$(curl -s https://api.github.com/repos/alexpasmantier/television/releases/latest | jq -r .tag_name)
-        curl -L "https://github.com/alexpasmantier/television/releases/download/${TAG}/tv-${TAG}-x86_64-unknown-linux-musl.tar.gz" -o /tmp/tv.tar.gz
+        set -eo pipefail
+        TAG=$(curl -fsSL https://api.github.com/repos/alexpasmantier/television/releases/latest | jq -r .tag_name)
+        curl -fsSL "https://github.com/alexpasmantier/television/releases/download/${TAG}/tv-${TAG}-x86_64-unknown-linux-musl.tar.gz" -o /tmp/tv.tar.gz
         tar -xzf /tmp/tv.tar.gz -C /tmp
         mv /tmp/tv-${TAG}-x86_64-unknown-linux-musl/tv ~/.local/bin/
         rm -rf /tmp/tv.tar.gz /tmp/tv-${TAG}-x86_64-unknown-linux-musl
     - runas: neg
+    - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/tv
 
 # --- GitHub binary downloads (remaining migration packages) ---
 install_xray:
   cmd.run:
     - name: |
-        curl -sL https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip -o /tmp/xray.zip
+        set -eo pipefail
+        curl -fsSL https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip -o /tmp/xray.zip
         unzip -o /tmp/xray.zip -d /tmp/xray
         mv /tmp/xray/xray ~/.local/bin/
         chmod +x ~/.local/bin/xray
         rm -rf /tmp/xray.zip /tmp/xray
     - runas: neg
+    - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/xray
 
 install_sing_box:
   cmd.run:
     - name: |
-        TAG=$(curl -s https://api.github.com/repos/SagerNet/sing-box/releases/latest | jq -r .tag_name)
+        set -eo pipefail
+        TAG=$(curl -fsSL https://api.github.com/repos/SagerNet/sing-box/releases/latest | jq -r .tag_name)
         VER=${TAG#v}
-        curl -sL "https://github.com/SagerNet/sing-box/releases/download/${TAG}/sing-box-${VER}-linux-amd64.tar.gz" -o /tmp/sing-box.tar.gz
+        curl -fsSL "https://github.com/SagerNet/sing-box/releases/download/${TAG}/sing-box-${VER}-linux-amd64.tar.gz" -o /tmp/sing-box.tar.gz
         tar -xzf /tmp/sing-box.tar.gz -C /tmp
         mv /tmp/sing-box-${VER}-linux-amd64/sing-box ~/.local/bin/
         rm -rf /tmp/sing-box.tar.gz /tmp/sing-box-${VER}-linux-amd64
     - runas: neg
+    - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/sing-box
 
 install_tdl:
   cmd.run:
     - name: |
-        curl -sL https://github.com/iyear/tdl/releases/latest/download/tdl_Linux_64bit.tar.gz -o /tmp/tdl.tar.gz
+        set -eo pipefail
+        curl -fsSL https://github.com/iyear/tdl/releases/latest/download/tdl_Linux_64bit.tar.gz -o /tmp/tdl.tar.gz
         tar -xzf /tmp/tdl.tar.gz -C /tmp tdl
         mv /tmp/tdl ~/.local/bin/
         rm -f /tmp/tdl.tar.gz
     - runas: neg
+    - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/tdl
 
 install_camilladsp:
   cmd.run:
     - name: |
-        curl -sL https://github.com/HEnquist/camilladsp/releases/latest/download/camilladsp-linux-amd64.tar.gz -o /tmp/camilladsp.tar.gz
+        set -eo pipefail
+        curl -fsSL https://github.com/HEnquist/camilladsp/releases/latest/download/camilladsp-linux-amd64.tar.gz -o /tmp/camilladsp.tar.gz
         tar -xzf /tmp/camilladsp.tar.gz -C /tmp
         mv /tmp/camilladsp ~/.local/bin/
         rm -f /tmp/camilladsp.tar.gz
     - runas: neg
+    - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/camilladsp
 
 install_opencode:
   cmd.run:
     - name: |
-        curl -sL https://github.com/opencode-ai/opencode/releases/latest/download/opencode_linux_amd64.tar.gz -o /tmp/opencode.tar.gz
+        set -eo pipefail
+        curl -fsSL https://github.com/opencode-ai/opencode/releases/latest/download/opencode_linux_amd64.tar.gz -o /tmp/opencode.tar.gz
         tar -xzf /tmp/opencode.tar.gz -C /tmp opencode
         mv /tmp/opencode ~/.local/bin/
         rm -f /tmp/opencode.tar.gz
     - runas: neg
+    - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/opencode
 
 install_adguardian:
   cmd.run:
-    - name: curl -sL https://github.com/Lissy93/AdGuardian-Term/releases/latest/download/adguardian-linux -o ~/.local/bin/adguardian && chmod +x ~/.local/bin/adguardian
+    - name: curl -fsSL https://github.com/Lissy93/AdGuardian-Term/releases/latest/download/adguardian-linux -o ~/.local/bin/adguardian && chmod +x ~/.local/bin/adguardian
     - runas: neg
     - creates: /var/home/neg/.local/bin/adguardian
 
 install_realesrgan:
   cmd.run:
     - name: |
-        TAG=$(curl -s https://api.github.com/repos/xinntao/Real-ESRGAN-ncnn-vulkan/releases/latest | jq -r .tag_name)
-        curl -sL "https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan/releases/download/${TAG}/realesrgan-ncnn-vulkan-${TAG}-ubuntu.zip" -o /tmp/realesrgan.zip
+        set -eo pipefail
+        TAG=$(curl -fsSL https://api.github.com/repos/xinntao/Real-ESRGAN-ncnn-vulkan/releases/latest | jq -r .tag_name)
+        curl -fsSL "https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan/releases/download/${TAG}/realesrgan-ncnn-vulkan-${TAG}-ubuntu.zip" -o /tmp/realesrgan.zip
         unzip -o /tmp/realesrgan.zip -d /tmp/realesrgan
         mv /tmp/realesrgan/realesrgan-ncnn-vulkan ~/.local/bin/
         chmod +x ~/.local/bin/realesrgan-ncnn-vulkan
         rm -rf /tmp/realesrgan.zip /tmp/realesrgan
     - runas: neg
+    - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/realesrgan-ncnn-vulkan
 
 install_essentia_extractor:
   cmd.run:
     - name: |
-        curl -sL https://data.metabrainz.org/pub/musicbrainz/acousticbrainz/extractors/essentia-extractor-v2.1_beta2-linux-x86_64.tar.gz -o /tmp/essentia.tar.gz
+        set -eo pipefail
+        curl -fsSL https://data.metabrainz.org/pub/musicbrainz/acousticbrainz/extractors/essentia-extractor-v2.1_beta2-linux-x86_64.tar.gz -o /tmp/essentia.tar.gz
         tar -xzf /tmp/essentia.tar.gz -C /tmp
         mv /tmp/streaming_extractor_music ~/.local/bin/essentia_streaming_extractor_music
         chmod +x ~/.local/bin/essentia_streaming_extractor_music
         rm -rf /tmp/essentia.tar.gz
     - runas: neg
+    - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/essentia_streaming_extractor_music
 
 # --- pip installs ---
@@ -982,80 +1011,90 @@ install_pzip:
 # --- Script and file installs ---
 install_mpvc:
   cmd.run:
-    - name: curl -sL https://raw.githubusercontent.com/lwilletts/mpvc/master/mpvc -o ~/.local/bin/mpvc && chmod +x ~/.local/bin/mpvc
+    - name: curl -fsSL https://raw.githubusercontent.com/lwilletts/mpvc/master/mpvc -o ~/.local/bin/mpvc && chmod +x ~/.local/bin/mpvc
     - runas: neg
     - creates: /var/home/neg/.local/bin/mpvc
 
 install_rofi_systemd:
   cmd.run:
-    - name: curl -sL https://raw.githubusercontent.com/IvanMalison/rofi-systemd/master/rofi-systemd -o ~/.local/bin/rofi-systemd && chmod +x ~/.local/bin/rofi-systemd
+    - name: curl -fsSL https://raw.githubusercontent.com/IvanMalison/rofi-systemd/master/rofi-systemd -o ~/.local/bin/rofi-systemd && chmod +x ~/.local/bin/rofi-systemd
     - runas: neg
     - creates: /var/home/neg/.local/bin/rofi-systemd
 
 install_dool:
   cmd.run:
     - name: |
+        set -eo pipefail
         git clone --depth=1 https://github.com/scottchiefbaker/dool.git /tmp/dool
         cp /tmp/dool/dool ~/.local/bin/
         chmod +x ~/.local/bin/dool
         rm -rf /tmp/dool
     - runas: neg
+    - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/dool
 
 install_qmk_udev_rules:
   cmd.run:
-    - name: curl -sL https://raw.githubusercontent.com/qmk/qmk_firmware/master/util/udev/50-qmk.rules -o /etc/udev/rules.d/50-qmk.rules && udevadm control --reload-rules
+    - name: curl -fsSL https://raw.githubusercontent.com/qmk/qmk_firmware/master/util/udev/50-qmk.rules -o /etc/udev/rules.d/50-qmk.rules && udevadm control --reload-rules
     - creates: /etc/udev/rules.d/50-qmk.rules
 
 install_oldschool_pc_fonts:
   cmd.run:
     - name: |
+        set -eo pipefail
         mkdir -p ~/.local/share/fonts/oldschool-pc
-        curl -sL https://int10h.org/oldschool-pc-fonts/download/oldschool_pc_font_pack_v2.2_linux.zip -o /tmp/fonts.zip
+        curl -fsSL https://int10h.org/oldschool-pc-fonts/download/oldschool_pc_font_pack_v2.2_linux.zip -o /tmp/fonts.zip
         unzip -o /tmp/fonts.zip -d /tmp/oldschool-fonts
         find /tmp/oldschool-fonts -name '*.otf' -exec cp {} ~/.local/share/fonts/oldschool-pc/ \;
         fc-cache -f ~/.local/share/fonts/oldschool-pc/
         rm -rf /tmp/fonts.zip /tmp/oldschool-fonts
     - runas: neg
+    - shell: /bin/bash
     - creates: /var/home/neg/.local/share/fonts/oldschool-pc
 
 # --- Special: RoomEQ Wizard (Java acoustic measurement) ---
 install_roomeqwizard:
   cmd.run:
     - name: |
+        set -eo pipefail
         mkdir -p ~/.local/opt/roomeqwizard
-        curl -sL 'https://www.roomeqwizard.com/installers/REW_linux_no_jre_5_33.zip' -o /tmp/rew.zip
+        curl -fsSL 'https://www.roomeqwizard.com/installers/REW_linux_no_jre_5_33.zip' -o /tmp/rew.zip
         unzip -o /tmp/rew.zip -d ~/.local/opt/roomeqwizard
         rm -f /tmp/rew.zip
     - runas: neg
+    - shell: /bin/bash
     - creates: /var/home/neg/.local/opt/roomeqwizard
 
 # --- Throne (sing-box GUI proxy frontend, bundled Qt) ---
 install_throne:
   cmd.run:
     - name: |
+        set -eo pipefail
         mkdir -p ~/.local/opt/throne
-        curl -sL https://github.com/throneproj/Throne/releases/download/1.0.13/Throne-1.0.13-linux-amd64.zip -o /tmp/throne.zip
+        curl -fsSL https://github.com/throneproj/Throne/releases/download/1.0.13/Throne-1.0.13-linux-amd64.zip -o /tmp/throne.zip
         unzip -o /tmp/throne.zip -d ~/.local/opt/throne
         ln -sf ~/.local/opt/throne/Throne ~/.local/bin/throne
         rm -f /tmp/throne.zip
     - runas: neg
+    - shell: /bin/bash
     - creates: /var/home/neg/.local/opt/throne
 
 # --- Overskride (Bluetooth GTK4 client, Flatpak bundle from GitHub) ---
 install_overskride:
   cmd.run:
     - name: |
-        curl -sL https://github.com/kaii-lb/overskride/releases/download/v0.6.6/overskride.flatpak -o /tmp/overskride.flatpak
+        set -eo pipefail
+        curl -fsSL https://github.com/kaii-lb/overskride/releases/download/v0.6.6/overskride.flatpak -o /tmp/overskride.flatpak
         flatpak install --user -y /tmp/overskride.flatpak
         rm -f /tmp/overskride.flatpak
     - runas: neg
+    - shell: /bin/bash
     - unless: flatpak info io.github.kaii_lb.Overskride &>/dev/null
 
 # --- Open Sound Meter (FFT acoustic analysis, AppImage) ---
 install_opensoundmeter:
   cmd.run:
-    - name: curl -sL https://github.com/psmokotnin/osm/releases/download/v1.5.2/Open_Sound_Meter-v1.5.2-x86_64.AppImage -o ~/.local/bin/opensoundmeter && chmod +x ~/.local/bin/opensoundmeter
+    - name: curl -fsSL https://github.com/psmokotnin/osm/releases/download/v1.5.2/Open_Sound_Meter-v1.5.2-x86_64.AppImage -o ~/.local/bin/opensoundmeter && chmod +x ~/.local/bin/opensoundmeter
     - runas: neg
     - creates: /var/home/neg/.local/bin/opensoundmeter
 
@@ -1063,21 +1102,25 @@ install_opensoundmeter:
 install_matugen:
   cmd.run:
     - name: |
-        curl -sL https://github.com/InioX/matugen/releases/download/v3.1.0/matugen-3.1.0-x86_64.tar.gz -o /tmp/matugen.tar.gz
+        set -eo pipefail
+        curl -fsSL https://github.com/InioX/matugen/releases/download/v3.1.0/matugen-3.1.0-x86_64.tar.gz -o /tmp/matugen.tar.gz
         tar -xzf /tmp/matugen.tar.gz -C /tmp
         mv /tmp/matugen ~/.local/bin/
         rm -f /tmp/matugen.tar.gz
     - runas: neg
+    - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/matugen
 
 install_matugen_themes:
   cmd.run:
     - name: |
+        set -eo pipefail
         git clone --depth=1 https://github.com/InioX/matugen-themes.git /tmp/matugen-themes
         mkdir -p ~/.config/matugen/templates
         cp -r /tmp/matugen-themes/*/ ~/.config/matugen/templates/
         rm -rf /tmp/matugen-themes
     - runas: neg
+    - shell: /bin/bash
     - creates: /var/home/neg/.config/matugen/templates
 
 # --- DroidCam (phone as webcam via v4l2loopback) ---
@@ -1089,34 +1132,40 @@ install_v4l2loopback:
 install_droidcam:
   cmd.run:
     - name: |
-        curl -sL https://files.dev47apps.net/linux/droidcam_2.1.3.zip -o /tmp/droidcam.zip
+        set -eo pipefail
+        curl -fsSL https://files.dev47apps.net/linux/droidcam_2.1.3.zip -o /tmp/droidcam.zip
         unzip -o /tmp/droidcam.zip -d /tmp/droidcam
         mv /tmp/droidcam/droidcam ~/.local/bin/
         mv /tmp/droidcam/droidcam-cli ~/.local/bin/
         chmod +x ~/.local/bin/droidcam ~/.local/bin/droidcam-cli
         rm -rf /tmp/droidcam.zip /tmp/droidcam
     - runas: neg
+    - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/droidcam
 
 # --- blesh (Bash Line Editor) ---
 install_blesh:
   cmd.run:
     - name: |
-        curl -sL https://github.com/akinomyoga/ble.sh/releases/download/nightly/ble-nightly.tar.xz -o /tmp/blesh.tar.xz
+        set -eo pipefail
+        curl -fsSL https://github.com/akinomyoga/ble.sh/releases/download/nightly/ble-nightly.tar.xz -o /tmp/blesh.tar.xz
         mkdir -p ~/.local/share/blesh
         tar -xJf /tmp/blesh.tar.xz -C ~/.local/share/ --strip-components=1
         rm -f /tmp/blesh.tar.xz
     - runas: neg
+    - shell: /bin/bash
     - creates: /var/home/neg/.local/share/blesh/ble.sh
 
 # --- hishtory (synced shell history search) ---
 install_hishtory:
   cmd.run:
     - name: |
-        TAG=$(curl -s https://api.github.com/repos/ddworken/hishtory/releases/latest | jq -r .tag_name)
-        curl -sL "https://github.com/ddworken/hishtory/releases/download/${TAG}/hishtory-linux-amd64" -o ~/.local/bin/hishtory
+        set -eo pipefail
+        TAG=$(curl -fsSL https://api.github.com/repos/ddworken/hishtory/releases/latest | jq -r .tag_name)
+        curl -fsSL "https://github.com/ddworken/hishtory/releases/download/${TAG}/hishtory-linux-amd64" -o ~/.local/bin/hishtory
         chmod +x ~/.local/bin/hishtory
     - runas: neg
+    - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/hishtory
 
 # --- iwmenu (interactive Wi-Fi menu for iwd/Wayland) ---
@@ -1130,17 +1179,20 @@ install_iwmenu:
 install_rofi_pass:
   cmd.run:
     - name: |
-        curl -sL https://raw.githubusercontent.com/carnager/rofi-pass/master/rofi-pass -o ~/.local/bin/rofi-pass
+        set -eo pipefail
+        curl -fsSL https://raw.githubusercontent.com/carnager/rofi-pass/master/rofi-pass -o ~/.local/bin/rofi-pass
         chmod +x ~/.local/bin/rofi-pass
     - runas: neg
+    - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/rofi-pass
 
 # --- Theme packages not in Fedora repos ---
 install_kora_icons:
   cmd.run:
     - name: |
-        TAG=$(curl -s https://api.github.com/repos/bikass/kora/releases/latest | jq -r .tag_name)
-        curl -L "https://github.com/bikass/kora/archive/refs/tags/${TAG}.tar.gz" -o /tmp/kora.tar.gz
+        set -eo pipefail
+        TAG=$(curl -fsSL https://api.github.com/repos/bikass/kora/releases/latest | jq -r .tag_name)
+        curl -fsSL "https://github.com/bikass/kora/archive/refs/tags/${TAG}.tar.gz" -o /tmp/kora.tar.gz
         tar -xzf /tmp/kora.tar.gz -C /tmp
         mkdir -p ~/.local/share/icons
         cp -r /tmp/kora-*/kora ~/.local/share/icons/
@@ -1150,42 +1202,47 @@ install_kora_icons:
         gtk-update-icon-cache ~/.local/share/icons/kora 2>/dev/null || true
         rm -rf /tmp/kora.tar.gz /tmp/kora-*
     - runas: neg
+    - shell: /bin/bash
     - creates: /var/home/neg/.local/share/icons/kora
 
 install_flight_gtk_theme:
   cmd.run:
     - name: |
+        set -eo pipefail
         git clone --depth=1 https://github.com/neg-serg/Flight-Plasma-Themes.git /tmp/flight-gtk
         mkdir -p ~/.local/share/themes
         cp -r /tmp/flight-gtk/Flight-Dark-GTK ~/.local/share/themes/
         cp -r /tmp/flight-gtk/Flight-light-GTK ~/.local/share/themes/
         rm -rf /tmp/flight-gtk
     - runas: neg
+    - shell: /bin/bash
     - creates: /var/home/neg/.local/share/themes/Flight-Dark-GTK
 
 # --- MPV scripts (installed per-user, not in Fedora repos) ---
 install_mpv_scripts:
   cmd.run:
     - name: |
+        set -eo pipefail
         SCRIPTS_DIR=~/.config/mpv/scripts
         mkdir -p "$SCRIPTS_DIR"
         # uosc (modern UI)
-        TAG=$(curl -s https://api.github.com/repos/tomasklaen/uosc/releases/latest | jq -r .tag_name)
-        curl -sL "https://github.com/tomasklaen/uosc/releases/download/${TAG}/uosc.zip" -o /tmp/uosc.zip
+        TAG=$(curl -fsSL https://api.github.com/repos/tomasklaen/uosc/releases/latest | jq -r .tag_name)
+        curl -fsSL "https://github.com/tomasklaen/uosc/releases/download/${TAG}/uosc.zip" -o /tmp/uosc.zip
         unzip -qo /tmp/uosc.zip -d ~/.config/mpv/
         rm /tmp/uosc.zip
         # thumbfast
-        curl -sL https://raw.githubusercontent.com/po5/thumbfast/master/thumbfast.lua -o "$SCRIPTS_DIR/thumbfast.lua"
+        curl -fsSL https://raw.githubusercontent.com/po5/thumbfast/master/thumbfast.lua -o "$SCRIPTS_DIR/thumbfast.lua"
         # sponsorblock
-        curl -sL https://raw.githubusercontent.com/po5/mpv_sponsorblock/master/sponsorblock.lua -o "$SCRIPTS_DIR/sponsorblock.lua"
+        curl -fsSL https://raw.githubusercontent.com/po5/mpv_sponsorblock/master/sponsorblock.lua -o "$SCRIPTS_DIR/sponsorblock.lua"
         # quality-menu
-        curl -sL https://raw.githubusercontent.com/christoph-heinrich/mpv-quality-menu/master/quality-menu.lua -o "$SCRIPTS_DIR/quality-menu.lua"
+        curl -fsSL https://raw.githubusercontent.com/christoph-heinrich/mpv-quality-menu/master/quality-menu.lua -o "$SCRIPTS_DIR/quality-menu.lua"
         # mpris
-        TAG=$(curl -s https://api.github.com/repos/hoyon/mpv-mpris/releases/latest | jq -r .tag_name)
-        curl -sL "https://github.com/hoyon/mpv-mpris/releases/download/${TAG}/mpris.so" -o "$SCRIPTS_DIR/mpris.so"
+        TAG=$(curl -fsSL https://api.github.com/repos/hoyon/mpv-mpris/releases/latest | jq -r .tag_name)
+        curl -fsSL "https://github.com/hoyon/mpv-mpris/releases/download/${TAG}/mpris.so" -o "$SCRIPTS_DIR/mpris.so"
         # cutter
-        curl -sL https://raw.githubusercontent.com/rushmj/mpv-video-cutter/master/cutter.lua -o "$SCRIPTS_DIR/cutter.lua"
+        curl -fsSL https://raw.githubusercontent.com/rushmj/mpv-video-cutter/master/cutter.lua -o "$SCRIPTS_DIR/cutter.lua"
     - runas: neg
+    - shell: /bin/bash
     - creates: /var/home/neg/.config/mpv/scripts/thumbfast.lua
 
 # --- Systemd user services for media ---
@@ -1206,6 +1263,15 @@ mpdris2_user_service:
         [Unit]
         After=mpd.service
         Wants=mpd.service
+
+mpdris2_daemon_reload:
+  cmd.run:
+    - name: systemctl --user daemon-reload
+    - runas: neg
+    - env:
+      - XDG_RUNTIME_DIR: /run/user/1000
+    - onchanges:
+      - file: mpdris2_user_service
 
 chezmoi_config:
   file.managed:
@@ -1296,6 +1362,16 @@ imapnotify_gmail_service:
         [Install]
         WantedBy=default.target
 
+enable_imapnotify:
+  cmd.run:
+    - name: systemctl --user daemon-reload && systemctl --user enable imapnotify-gmail.service
+    - runas: neg
+    - env:
+      - XDG_RUNTIME_DIR: /run/user/1000
+    - unless: systemctl --user is-enabled imapnotify-gmail.service
+    - require:
+      - file: imapnotify_gmail_service
+
 # --- Systemd user services for calendar ---
 vdirsyncer_service:
   file.managed:
@@ -1328,6 +1404,17 @@ vdirsyncer_timer:
         OnUnitActiveSec=5min
         [Install]
         WantedBy=timers.target
+
+enable_mail_timers:
+  cmd.run:
+    - name: systemctl --user daemon-reload && systemctl --user enable --now mbsync-gmail.timer vdirsyncer.timer
+    - runas: neg
+    - env:
+      - XDG_RUNTIME_DIR: /run/user/1000
+    - unless: systemctl --user is-enabled mbsync-gmail.timer && systemctl --user is-enabled vdirsyncer.timer
+    - require:
+      - file: mbsync_gmail_timer
+      - file: vdirsyncer_timer
 
 # --- Surfingkeys HTTP server (browser extension helper) ---
 surfingkeys_server_service:
