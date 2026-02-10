@@ -56,6 +56,7 @@
     {'name': 'cmake-language-server', 'version': '0.1.11', 'arch': 'noarch'},
     {'name': 'nginx-language-server', 'version': '0.9.0'},
     {'name': 'systemd-language-server', 'version': '0.3.5'},
+    {'name': 'croc',                  'version': '10.3.1'},
 ] %}
 
 {% set iosevka = {

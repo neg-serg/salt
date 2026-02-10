@@ -51,6 +51,7 @@ CMAKE_LS_VERSION="0.1.11"
 NGINX_LS_VERSION="0.9.0"
 SYSTEMD_LS_VERSION="0.3.5"
 MASSREN_VERSION="1.5.6"
+CROC_VERSION="10.3.1"
 
 # RPM build root directory inside the container
 RPM_BUILD_ROOT="/rpmbuild"
@@ -71,7 +72,7 @@ ALL_PACKAGES=(
     doggo carapace wallust wl-clip-persist quickshell swayosd
     xdg-desktop-portal-termfilechooser bucklespring taoup
     newsraft unflac albumdetails cmake-language-server
-    nginx-language-server systemd-language-server
+    nginx-language-server systemd-language-server croc
 )
 
 # Build all packages when called with no arguments
@@ -1196,6 +1197,29 @@ systemd-language-server)
 
         echo "--- Copying systemd-language-server RPMs to /build/rpms/ ---"
         find "${RPMS_DIR}" -name "systemd-language-server-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+    ;;
+croc)
+    CROC_RPM_NAME="croc-${CROC_VERSION}-1.fc43.x86_64.rpm"
+    echo "--- Preparing Croc ---"
+    if [ -f "/build/rpms/${CROC_RPM_NAME}" ]; then
+        echo "Croc RPM (${CROC_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar golang
+
+        CROC_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/croc-${CROC_VERSION}"
+        if [ ! -d "${CROC_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${CROC_VERSION}" https://github.com/schollz/croc.git "${CROC_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/croc-${CROC_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "croc-${CROC_VERSION}"
+        cp /build/salt/specs/croc.spec "${SPECS_DIR}/croc.spec"
+
+        echo "--- Building Croc RPM ---"
+        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/croc.spec"
+
+        echo "--- Copying Croc RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "croc-*.rpm" -exec cp -v {} /build/rpms/ \;
     fi
     ;;
 *)
