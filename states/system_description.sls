@@ -55,10 +55,12 @@ user_neg:
     - shell: /usr/bin/zsh
     - uid: 1000
     - gid: 1000
-    - groups:
-      - neg
-      - wheel
-      - libvirt
+
+# user.present groups broken on Python 3.14 (crypt module removed)
+neg_groups:
+  cmd.run:
+    - name: usermod -aG wheel,libvirt neg
+    - unless: id -nG neg | tr ' ' '\n' | grep -qx libvirt
 
 sudo_timeout:
   file.managed:
@@ -607,7 +609,7 @@ floorp_usercontent:
     {'id': '{531906d3-e22f-4a6c-a102-8057b88a1a63}',         'slug': 'single-file'},
     {'id': 'addon@fastforward.team',                          'slug': 'fastforwardteam'},
     {'id': 'hide-scrollbars@qashto',                          'slug': 'hide-scrollbars'},
-    {'id': 'kellyc-show-youtube-dislikes@nradiowave',         'slug': 'return-youtube-dislike'},
+    {'id': 'kellyc-show-youtube-dislikes@nradiowave',         'slug': 'return-youtube-dislikes'},
     {'id': '{4a311e5c-1ccc-49b7-9c23-3e2b47b6c6d5}',         'slug': 'скачать-музыку-с-вк-vkd'},
 ] %}
 
@@ -1200,7 +1202,7 @@ ollama_service_unit:
         Restart=always
         RestartSec=3
         Environment="HOME=/var/home/neg"
-        Environment="OLLAMA_MODELS=/var/home/neg/.ollama/models"
+        Environment="OLLAMA_HOST=127.0.0.1:11434"
 
         [Install]
         WantedBy=default.target
@@ -1208,39 +1210,30 @@ ollama_service_unit:
     - group: root
     - mode: '0644'
 
-ollama_enabled:
-  service.running:
-    - name: ollama
-    - enable: True
+ollama_enable:
+  cmd.run:
+    - name: systemctl daemon-reload && systemctl enable ollama
+    - unless: systemctl is-enabled ollama
     - require:
       - file: ollama_service_unit
       - cmd: install_system_packages
-    - watch:
-      - file: ollama_service_unit
 
-pull_deepseek_r1_8b:
+ollama_start:
   cmd.run:
-    - name: ollama pull deepseek-r1:8b
-    - runas: neg
-    - unless: ollama list | grep -q 'deepseek-r1:8b'
+    - name: systemctl start ollama && sleep 2
+    - unless: systemctl is-active ollama
     - require:
-      - service: ollama_enabled
+      - cmd: ollama_enable
 
-pull_llama3_2_3b:
+{% for model in ['deepseek-r1:8b', 'llama3.2:3b', 'qwen2.5-coder:7b'] %}
+pull_{{ model | replace('.', '_') | replace(':', '_') | replace('-', '_') }}:
   cmd.run:
-    - name: ollama pull llama3.2:3b
+    - name: ollama pull {{ model }}
     - runas: neg
-    - unless: ollama list | grep -q 'llama3.2:3b'
+    - unless: ollama list | grep -q '{{ model }}'
     - require:
-      - service: ollama_enabled
-
-pull_qwen2_5_coder_7b:
-  cmd.run:
-    - name: ollama pull qwen2.5-coder:7b
-    - runas: neg
-    - unless: ollama list | grep -q 'qwen2.5-coder:7b'
-    - require:
-      - service: ollama_enabled
+      - cmd: ollama_start
+{% endfor %}
 
 # --- openclaw (local AI assistant agent) ---
 install_openclaw:
