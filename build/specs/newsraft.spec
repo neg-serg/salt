@@ -6,7 +6,7 @@ Release:        1%{?dist}
 Summary:        Feed reader for terminal
 
 License:        ISC
-URL:            https://codeberg.org/grstratos/newsraft
+URL:            https://codeberg.org/newsraft/newsraft
 Source0:        %{name}-%{version}.tar.gz
 
 BuildRequires:  gcc
@@ -15,6 +15,7 @@ BuildRequires:  ncurses-devel
 BuildRequires:  libcurl-devel
 BuildRequires:  yajl-devel
 BuildRequires:  gumbo-parser-devel
+BuildRequires:  sqlite-devel
 BuildRequires:  scdoc
 
 %description

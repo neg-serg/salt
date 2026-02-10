@@ -95,6 +95,7 @@ sudo_timeout:
         {'name': 'clang-libs',          'desc': 'Clang runtime libraries'},
         {'name': 'cmake',               'desc': 'Cross-platform build system'},
         {'name': 'difftastic',          'desc': 'Structural diff tool'},
+        {'name': 'dbus-devel',           'desc': 'D-Bus development headers (for building Rust crates like libdbus-sys)'},
         {'name': 'direnv',              'desc': 'Per-directory shell configuration tool'},
         {'name': 'dkms',                'desc': 'Dynamic Kernel Module Support Framework'},
         {'name': 'elfutils',            'desc': 'ELF binary analysis tools'},
@@ -131,7 +132,6 @@ sudo_timeout:
         {'name': 'du-dust',             'desc': 'More intuitive version of du'},
         {'name': 'enca',                'desc': 'Character set analyzer and converter'},
         {'name': 'fd-find',             'desc': 'Fd is a simple, fast and user-friendly alternative to find'},
-        {'name': 'czkawka-gui',         'desc': 'Duplicate and similar file finder'},
         {'name': 'jdupes',              'desc': 'Duplicate file finder and remover'},
         {'name': 'ncdu',                'desc': 'Text-based disk usage viewer'},
         {'name': 'nnn',                 'desc': 'Terminal file browser'},
@@ -636,6 +636,12 @@ install_flatpak_lutris:
     - runas: neg
     - unless: flatpak info net.lutris.Lutris &>/dev/null
 
+install_flatpak_czkawka:
+  cmd.run:
+    - name: flatpak install --user -y flathub com.github.qarmin.czkawka
+    - runas: neg
+    - unless: flatpak info com.github.qarmin.czkawka &>/dev/null
+
 # Flatpak global overrides: fix Wayland cursor theme + GTK dark theme
 flatpak_global_overrides:
   cmd.run:
@@ -824,7 +830,7 @@ copr_cachyos_kernel:
 
 install_cachyos_kernel:
   cmd.run:
-    - name: rpm-ostree install -y --allow-inactive kernel-cachyos-lto kernel-cachyos-lto-devel-matched
+    - name: rpm-ostree override remove kernel kernel-core kernel-modules kernel-modules-core kernel-modules-extra --install kernel-cachyos-lto --install kernel-cachyos-lto-devel-matched
     - require:
       - cmd: copr_cachyos_kernel
     - unless: rpm -q kernel-cachyos-lto
@@ -889,7 +895,7 @@ copr_yabridge:
 
 install_yabridge:
   cmd.run:
-    - name: rpm-ostree install -y yabridge yabridgectl
+    - name: rpm-ostree install -y yabridge
     - require:
       - cmd: copr_yabridge
     - unless: rpm-ostree status | grep -q yabridge
@@ -1047,7 +1053,7 @@ install_scdl:
 
 install_dr14_tmeter:
   cmd.run:
-    - name: pip install --user dr14-tmeter
+    - name: pip install --user git+https://github.com/simon-r/dr14_t.meter.git
     - runas: neg
     - creates: /var/home/neg/.local/bin/dr14_tmeter
 

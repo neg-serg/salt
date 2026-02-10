@@ -43,6 +43,7 @@ pip3 install --ignore-requires-python --no-warn-script-location --prefix=/usr --
 %{python3_sitelib}/attrs-*.dist-info/
 %{python3_sitelib}/attr/
 %{python3_sitelib}/typing_extensions*
+%{python3_sitelib}/__pycache__/typing_extensions*
 
 %changelog
 * Mon Feb 10 2026 neg-serg <neg-serg@example.com> - 0.1.11-1
