@@ -130,8 +130,10 @@ sudo_timeout:
         {'name': 'du-dust',             'desc': 'More intuitive version of du'},
         {'name': 'enca',                'desc': 'Character set analyzer and converter'},
         {'name': 'fd-find',             'desc': 'Fd is a simple, fast and user-friendly alternative to find'},
+        {'name': 'czkawka-gui',         'desc': 'Duplicate and similar file finder'},
         {'name': 'jdupes',              'desc': 'Duplicate file finder and remover'},
         {'name': 'ncdu',                'desc': 'Text-based disk usage viewer'},
+        {'name': 'nnn',                 'desc': 'Terminal file browser'},
         {'name': 'plocate',             'desc': 'Fast file locate'},
         {'name': 'ripgrep',             'desc': 'Fast regex search tool'},
         {'name': 'ranger',              'desc': 'Terminal file manager with vi keybindings'},
@@ -234,6 +236,7 @@ sudo_timeout:
         {'name': 'streamlink',          'desc': 'CLI for extracting streams from websites'},
         {'name': 'telegram-desktop',    'desc': 'Telegram Desktop messaging app'},
         {'name': 'traceroute',          'desc': 'Trace packet route to host'},
+        {'name': 'whois',               'desc': 'Domain registration information lookup'},
         {'name': 'vdirsyncer',         'desc': 'CalDAV/CardDAV synchronization tool'},
         {'name': 'transmission-gtk',    'desc': 'BitTorrent client'},
         {'name': 'w3m',                 'desc': 'Text-mode web browser'},
@@ -246,6 +249,7 @@ sudo_timeout:
         {'name': 'age',                 'desc': 'Modern file encryption tool'},
         {'name': 'asciinema',           'desc': 'Terminal session recorder, streamer and player'},
         {'name': 'cowsay',              'desc': 'Talking cow ASCII art'},
+        {'name': 'libnotify',           'desc': 'Desktop notification library (notify-send)'},
         {'name': 'cpufetch',            'desc': 'Simple yet fancy CPU architecture fetching tool'},
         {'name': 'dash',                'desc': 'Small and fast POSIX-compliant shell'},
         {'name': 'dcfldd',              'desc': 'Enhanced dd with hashing and status output'},
@@ -295,6 +299,7 @@ sudo_timeout:
     ],
     'Wayland': [
         {'name': 'cliphist',            'desc': 'Clipboard history for Wayland'},
+        {'name': 'dunst',               'desc': 'Lightweight notification daemon'},
         {'name': 'pyprland',            'desc': 'Hyprland plugin system and scratchpads'},
         {'name': 'rofi',                'desc': 'Window switcher, application launcher and dmenu replacement'},
         {'name': 'screenkey',           'desc': 'Show keystrokes on screen'},
@@ -1130,6 +1135,43 @@ install_droidcam:
         rm -rf /tmp/droidcam.zip /tmp/droidcam
     - runas: neg
     - creates: /var/home/neg/.local/bin/droidcam
+
+# --- blesh (Bash Line Editor) ---
+install_blesh:
+  cmd.run:
+    - name: |
+        curl -sL https://github.com/akinomyoga/ble.sh/releases/download/nightly/ble-nightly.tar.xz -o /tmp/blesh.tar.xz
+        mkdir -p ~/.local/share/blesh
+        tar -xJf /tmp/blesh.tar.xz -C ~/.local/share/ --strip-components=1
+        rm -f /tmp/blesh.tar.xz
+    - runas: neg
+    - creates: /var/home/neg/.local/share/blesh/ble.sh
+
+# --- hishtory (synced shell history search) ---
+install_hishtory:
+  cmd.run:
+    - name: |
+        TAG=$(curl -s https://api.github.com/repos/ddworken/hishtory/releases/latest | jq -r .tag_name)
+        curl -sL "https://github.com/ddworken/hishtory/releases/download/${TAG}/hishtory-linux-amd64" -o ~/.local/bin/hishtory
+        chmod +x ~/.local/bin/hishtory
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/hishtory
+
+# --- iwmenu (interactive Wi-Fi menu for iwd/Wayland) ---
+install_iwmenu:
+  cmd.run:
+    - name: cargo install iwmenu
+    - runas: neg
+    - creates: /var/home/neg/.cargo/bin/iwmenu
+
+# --- rofi-pass (password-store rofi frontend) ---
+install_rofi_pass:
+  cmd.run:
+    - name: |
+        curl -sL https://raw.githubusercontent.com/carnager/rofi-pass/master/rofi-pass -o ~/.local/bin/rofi-pass
+        chmod +x ~/.local/bin/rofi-pass
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/rofi-pass
 
 # --- Theme packages not in Fedora repos ---
 install_kora_icons:
