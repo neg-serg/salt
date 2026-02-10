@@ -29,6 +29,22 @@
             'grafana':  False,
         },
         'fancontrol':   False,
+        'dns': {
+            'unbound':      False,
+            'adguardhome':  False,
+            'avahi':        True,
+        },
+        'services': {
+            'samba':     False,
+            'jellyfin':  False,
+            'bitcoind':  False,
+            'duckdns':   False,
+        },
+        'network': {
+            'vm_bridge': False,
+            'xray':      False,
+            'singbox':   False,
+        },
     },
 } %}
 
@@ -50,6 +66,11 @@
                 'grafana':  False,
             },
             'fancontrol':   True,
+            'dns': {
+                'unbound':      True,
+                'adguardhome':  True,
+                'avahi':        True,
+            },
         },
     },
 } %}

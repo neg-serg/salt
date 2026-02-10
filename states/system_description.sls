@@ -88,6 +88,7 @@ sudo_timeout:
     ],
     'Development': [
         {'name': 'act',                 'desc': 'Run GitHub Actions locally'},
+        {'name': 'android-tools',       'desc': 'Android platform tools (adb, fastboot)'},
         {'name': 'ansible',             'desc': 'IT automation and configuration management'},
         {'name': 'bpftrace',            'desc': 'High-level eBPF tracing language'},
         {'name': 'cargo',               'desc': 'Rust package manager'},
