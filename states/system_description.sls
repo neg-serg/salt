@@ -587,6 +587,64 @@ install_flatpak_protonplus:
     - runas: neg
     - unless: flatpak info com.vysp3r.ProtonPlus &>/dev/null
 
+install_flatpak_obs:
+  cmd.run:
+    - name: flatpak install -y flathub com.obsproject.Studio
+    - runas: neg
+    - unless: flatpak info com.obsproject.Studio &>/dev/null
+
+install_flatpak_live_captions:
+  cmd.run:
+    - name: flatpak install -y flathub net.sapples.LiveCaptions
+    - runas: neg
+    - unless: flatpak info net.sapples.LiveCaptions &>/dev/null
+
+install_flatpak_obsidian:
+  cmd.run:
+    - name: flatpak install -y flathub md.obsidian.Obsidian
+    - runas: neg
+    - unless: flatpak info md.obsidian.Obsidian &>/dev/null
+
+install_flatpak_chromium:
+  cmd.run:
+    - name: flatpak install -y flathub org.chromium.Chromium
+    - runas: neg
+    - unless: flatpak info org.chromium.Chromium &>/dev/null
+
+install_flatpak_gimp:
+  cmd.run:
+    - name: flatpak install -y flathub org.gimp.GIMP
+    - runas: neg
+    - unless: flatpak info org.gimp.GIMP &>/dev/null
+
+install_flatpak_chrome:
+  cmd.run:
+    - name: flatpak install -y flathub com.google.Chrome
+    - runas: neg
+    - unless: flatpak info com.google.Chrome &>/dev/null
+
+install_flatpak_libreoffice:
+  cmd.run:
+    - name: flatpak install -y flathub org.libreoffice.LibreOffice
+    - runas: neg
+    - unless: flatpak info org.libreoffice.LibreOffice &>/dev/null
+
+install_flatpak_lutris:
+  cmd.run:
+    - name: flatpak install -y flathub net.lutris.Lutris
+    - runas: neg
+    - unless: flatpak info net.lutris.Lutris &>/dev/null
+
+# Flatpak global overrides: fix Wayland cursor theme + GTK dark theme
+flatpak_global_overrides:
+  cmd.run:
+    - name: >-
+        flatpak override --user
+        --env=XCURSOR_PATH=/run/host/user-share/icons:/run/host/share/icons
+        --env=GTK_THEME=Adwaita:dark
+    - runas: neg
+    - unless: flatpak override --user --show | grep -q XCURSOR_PATH
+
 # --- Floorp browser: user.js + userChrome.css + userContent.css ---
 floorp_user_js:
   file.managed:
