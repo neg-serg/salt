@@ -45,7 +45,8 @@
     {'name': 'swayosd',          'version': '0.3.0'},
     {'name': 'xdg-desktop-portal-termfilechooser', 'version': '0.4.0'},
     {'name': 'newsraft',          'version': '0.26'},
-    {'name': 'unflac',            'version': '1.4'}
+    {'name': 'unflac',            'version': '1.4'},
+    {'name': 'albumdetails',      'version': '0.1'}
 ] %}
 
 {% set iosevka = {
