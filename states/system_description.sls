@@ -706,10 +706,8 @@ install_ssh_to_age:
   cmd.run:
     - name: |
         set -eo pipefail
-        curl -fsSL https://github.com/Mic92/ssh-to-age/releases/latest/download/ssh-to-age-linux-amd64.tar.gz -o /tmp/ssh-to-age.tar.gz
-        tar -xzf /tmp/ssh-to-age.tar.gz -C /tmp
-        mv /tmp/ssh-to-age ~/.local/bin/
-        rm -f /tmp/ssh-to-age.tar.gz
+        curl -fsSL https://github.com/Mic92/ssh-to-age/releases/latest/download/ssh-to-age.linux-amd64 -o ~/.local/bin/ssh-to-age
+        chmod +x ~/.local/bin/ssh-to-age
     - runas: neg
     - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/ssh-to-age
@@ -924,7 +922,7 @@ install_opencode:
   cmd.run:
     - name: |
         set -eo pipefail
-        curl -fsSL https://github.com/opencode-ai/opencode/releases/latest/download/opencode_linux_amd64.tar.gz -o /tmp/opencode.tar.gz
+        curl -fsSL https://github.com/opencode-ai/opencode/releases/latest/download/opencode-linux-x86_64.tar.gz -o /tmp/opencode.tar.gz
         tar -xzf /tmp/opencode.tar.gz -C /tmp opencode
         mv /tmp/opencode ~/.local/bin/
         rm -f /tmp/opencode.tar.gz
@@ -942,7 +940,7 @@ install_realesrgan:
   cmd.run:
     - name: |
         set -eo pipefail
-        TAG=$(curl -fsSL https://api.github.com/repos/xinntao/Real-ESRGAN-ncnn-vulkan/releases/latest | jq -r .tag_name)
+        TAG=$(gh release view --repo xinntao/Real-ESRGAN-ncnn-vulkan --json tagName -q .tagName)
         curl -fsSL "https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan/releases/download/${TAG}/realesrgan-ncnn-vulkan-${TAG}-ubuntu.zip" -o /tmp/realesrgan.zip
         unzip -o /tmp/realesrgan.zip -d /tmp/realesrgan
         mv /tmp/realesrgan/realesrgan-ncnn-vulkan ~/.local/bin/
