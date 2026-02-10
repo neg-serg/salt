@@ -280,7 +280,7 @@ _Source: modules/system/net/pkgs.nix_
 - [x] cacert — `ca-certificates` (RPM)
 - [x] curlie (CRPM)
 - [x] httpie (RPM)
-- [ ] httpstat — curl statistics visualizer; not installed
+- [x] httpstat — curl statistics visualizer; pip install
 - [x] xh (CRPM)
 - [x] fping (RPM)
 - [x] geoip — `GeoIP` (RPM)
@@ -415,7 +415,7 @@ _Source: modules/media/audio/apps-packages.nix_
 - [x] id3v2 (RPM)
 - [x] picard (RPM)
 - [x] screenkey (RPM)
-- [ ] rmpc — minimal MPD CLI; not installed
+- [x] rmpc — minimal MPD CLI; GitHub binary
 - [ ] spotify-tui (opt) — TUI Spotify; not installed
 
 ## Media — Audio Creation
@@ -544,9 +544,9 @@ _Source: modules/user/session/utils.nix_
 - [x] waypipe (RPM)
 - [x] wev (RPM)
 - [ ] espanso (opt) — text expansion; not installed
-- [ ] handlr — xdg-open replacement; not installed
+- [ ] handlr — xdg-open replacement; TODO: cargo install handlr-regex
 - [x] xdg-utils (RPM)
-- [ ] xdg-ninja — detect mislocated dotfiles; not installed
+- [x] xdg-ninja — detect mislocated dotfiles; GitHub binary
 
 ## Session — XDG Portals
 _Source: modules/user/xdg.nix_
@@ -637,8 +637,8 @@ _Source: modules/secrets/pkgs.nix_
 - [x] opensc (RPM)
 - [x] p11-kit (RPM)
 - [x] pcsc-tools — smartcard debugging (RPM)
-- [ ] sops — Mozilla SOPS secrets editor; not installed
-- [ ] ssh-to-age — SSH to age key converter; not installed
+- [x] sops — Mozilla SOPS secrets editor; GitHub binary
+- [x] ssh-to-age — SSH to age key converter; GitHub binary
 
 ---
 
@@ -715,7 +715,7 @@ _Source: modules/flatpak/pkgs.nix_
 _Source: modules/torrent/default.nix_
 
 - [x] transmission — `transmission-gtk` (RPM)
-- [ ] rustmission — Rust TUI for Transmission; not installed
+- [x] rustmission — Rust TUI for Transmission; GitHub binary
 
 ---
 
