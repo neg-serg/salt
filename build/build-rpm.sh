@@ -52,6 +52,7 @@ NGINX_LS_VERSION="0.9.0"
 SYSTEMD_LS_VERSION="0.3.5"
 MASSREN_VERSION="1.5.6"
 CROC_VERSION="10.3.1"
+FAKER_VERSION="40.4.0"
 
 # RPM build root directory inside the container
 RPM_BUILD_ROOT="/rpmbuild"
@@ -72,7 +73,7 @@ ALL_PACKAGES=(
     doggo carapace wallust wl-clip-persist quickshell swayosd
     xdg-desktop-portal-termfilechooser bucklespring taoup
     newsraft unflac albumdetails cmake-language-server
-    nginx-language-server systemd-language-server croc
+    nginx-language-server systemd-language-server croc faker
 )
 
 # Build all packages when called with no arguments
@@ -1220,6 +1221,29 @@ croc)
 
         echo "--- Copying Croc RPMs to /build/rpms/ ---"
         find "${RPMS_DIR}" -name "croc-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+    ;;
+faker)
+    FAKER_RPM_NAME="faker-${FAKER_VERSION}-1.fc43.noarch.rpm"
+    echo "--- Preparing Faker ---"
+    if [ -f "/build/rpms/${FAKER_RPM_NAME}" ]; then
+        echo "Faker RPM (${FAKER_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar python3-devel python3-pip python3-setuptools python3-wheel
+
+        FAKER_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/faker-${FAKER_VERSION}"
+        if [ ! -d "${FAKER_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${FAKER_VERSION}" https://github.com/joke2k/faker.git "${FAKER_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/faker-${FAKER_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "faker-${FAKER_VERSION}"
+        cp /build/salt/specs/faker.spec "${SPECS_DIR}/faker.spec"
+
+        echo "--- Building Faker RPM ---"
+        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/faker.spec"
+
+        echo "--- Copying Faker RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "faker-*.rpm" -exec cp -v {} /build/rpms/ \;
     fi
     ;;
 *)
