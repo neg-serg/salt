@@ -62,43 +62,13 @@ Each file remaining in the submodule = unmigrated item.
 
 ---
 
-## Monitoring Stack (modules/monitoring/)
+## ~~Monitoring Stack~~ — MIGRATED
 
-### Grafana — `monitoring/grafana/default.nix`
-**Priority: Medium** — Dashboard with Loki datasource.
-- Port 3030 (avoids AdGuardHome 3000)
-- Auto-provisioned Loki datasource on 127.0.0.1:3100
-- Optional Caddy HTTPS reverse proxy
-- Admin password via SOPS
-- **Salt approach**: Install from Grafana repo, manage provisioning YAML, systemd unit
-
-### Loki — `monitoring/loki/default.nix`
-**Priority: Medium** — Log aggregation.
-- Port 3100, localhost only
-- Filesystem storage: /var/lib/loki/{chunks,rules}
-- 30-day retention, boltdb-shipper schema v13
-- **Salt approach**: Static binary from GitHub releases, systemd unit, config YAML
-
-### Promtail — `monitoring/promtail/default.nix`
-**Priority: Medium** — Log shipper for Loki.
-- Port 9080
-- Scrapes: systemd journal (/var/log/journal, max_age=12h) + /var/log/*.log
-- Relabels: unit, priority, host from journal metadata
-- **Salt approach**: Static binary, systemd unit, config YAML
-
-### Sysstat — `monitoring/sysstat/default.nix`
-**Priority: Low** — Already installed as package; this enables the service.
-- **Salt approach**: `systemctl enable --now sysstat`
-
-### Vnstat — `monitoring/vnstat/default.nix`
-**Priority: Low** — Network traffic statistics.
-- **Salt approach**: `systemctl enable --now vnstat`
-
-### Netdata (config) — `monitoring/netdata/default.nix`
-**Priority: Low** — Hardened Netdata with resource limits.
-- Nice=19, MemoryMax=256M, CPUWeight=10
-- Localhost only (127.0.0.1:19999)
-- **Salt approach**: systemd override for netdata.service
+Full stack migrated to `states/monitoring.sls`:
+sysstat + vnstat service enables, Netdata systemd override (Nice=19, MemoryMax=256M),
+Loki (binary + config + systemd), Promtail (binary + journal/varlogs scraping),
+Grafana (RPM repo + Loki datasource provisioning, port 3030).
+PHP-FPM exporter skipped (not needed on workstation).
 
 ---
 
