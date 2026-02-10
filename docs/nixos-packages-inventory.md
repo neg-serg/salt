@@ -135,7 +135,7 @@ _Source: modules/cli/monitoring.nix_
 - [x] kmon (CRPM)
 - [x] zfxtop (CRPM)
 - [ ] below (opt) — BPF-based time-traveling monitor; not installed
-- [ ] bpftrace (opt) — eBPF tracing language; not installed
+- [x] bpftrace — eBPF tracing language (RPM)
 
 ## CLI — Tmux
 _Source: modules/cli/tmux/default.nix_
@@ -242,7 +242,7 @@ _Source: modules/dev/gdb/default.nix_
 _Source: modules/dev/ (various)_
 
 - [ ] opencode (opt) — AI coding agent; not installed
-- [ ] ansible (opt) — IT automation; not installed
+- [x] ansible — IT automation (RPM)
 - [x] sshpass (RPM)
 
 ---
@@ -337,7 +337,7 @@ _Source: modules/hardware/pkgs.nix_
 - [x] openrgb (RPM)
 - [x] flashrom (RPM)
 - [x] minicom (RPM)
-- [ ] openocd — on-chip debugger; not installed as RPM
+- [x] openocd — on-chip debugger (RPM)
 - [x] bluez-tools (opt) (RPM)
 - [ ] overskride (opt) — Bluetooth OBEX client; not installed
 - [ ] wirelesstools (opt) — iwconfig helpers; not installed
@@ -373,7 +373,7 @@ _Source: modules/monitoring/pkgs/default.nix_
 - [ ] dool — dstat replacement; not in RPMs
 - [x] iotop — `iotop-c` (RPM)
 - [x] iperf (RPM)
-- [ ] iperf2 — older iperf; not installed
+- [x] iperf2 — N/A; `iperf` already installed
 - [x] perf (RPM)
 - [ ] turbostat — kernel tool; not installed separately
 - [x] nethogs (RPM)
@@ -421,9 +421,9 @@ _Source: modules/media/audio/apps-packages.nix_
 ## Media — Audio Creation
 _Source: modules/media/audio/creation-packages.nix_
 
-- [ ] supercollider — audio engine/IDE; not installed
+- [x] supercollider — audio engine/IDE (RPM)
 - [ ] supercolliderPlugins.sc3-plugins — not installed
-- [ ] carla — audio plugin host; not installed
+- [x] carla — audio plugin host; `Carla` (RPM)
 - [x] raysession (RPM) — session manager
 - [ ] noisetorch — microphone noise gate; not installed (using RNNoise instead)
 - [x] rnnoise — `ladspa-realtime-noise-suppression-plugin` (RPM via COPR)
@@ -434,7 +434,7 @@ _Source: modules/hardware/audio/dsp/pkgs.nix_
 - [ ] brutefir — digital convolution engine; not installed
 - [ ] camilladsp — flexible audio DSP; not installed
 - [ ] jamesdsp — audio effect processor; not installed
-- [ ] lsp-plugins — Linux Studio Plugins; not installed
+- [x] lsp-plugins — Linux Studio Plugins (RPM)
 - [ ] yabridge — VST bridge; not installed
 - [ ] yabridgectl — yabridge CLI; not installed
 
@@ -588,7 +588,7 @@ _Source: modules/user/locale-pkgs.nix_
 - [x] enchant — `enchant2` (RPM)
 - [x] hunspell (RPM)
 - [x] hunspell-en-US (RPM)
-- [ ] hunspell-ru — Russian dictionary; check if installed
+- [x] hunspell-ru — Russian dictionary (RPM)
 - [x] hyphen (RPM)
 - [ ] nuspell — modern spellchecker; not installed
 
@@ -636,7 +636,7 @@ _Source: modules/secrets/pkgs.nix_
 - [x] age (RPM)
 - [x] opensc (RPM)
 - [x] p11-kit (RPM)
-- [ ] pcsc-tools — smartcard debugging; not installed (pcsc-lite present)
+- [x] pcsc-tools — smartcard debugging (RPM)
 - [ ] sops — Mozilla SOPS secrets editor; not installed
 - [ ] ssh-to-age — SSH to age key converter; not installed
 
