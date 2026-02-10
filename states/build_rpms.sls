@@ -46,7 +46,10 @@
     {'name': 'xdg-desktop-portal-termfilechooser', 'version': '0.4.0'},
     {'name': 'newsraft',          'version': '0.26'},
     {'name': 'unflac',            'version': '1.4'},
-    {'name': 'albumdetails',      'version': '0.1'}
+    {'name': 'albumdetails',      'version': '0.1'},
+    {'name': 'cmake-language-server', 'version': '0.1.11', 'arch': 'noarch'},
+    {'name': 'nginx-language-server', 'version': '0.9.0',  'arch': 'noarch'},
+    {'name': 'systemd-language-server', 'version': '0.3.5'},
 ] %}
 
 {% set iosevka = {
