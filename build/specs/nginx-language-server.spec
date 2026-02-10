@@ -36,8 +36,6 @@ pip3 install --ignore-requires-python --no-warn-script-location --prefix=/usr --
 %{python3_sitelib}/crossplane-*.dist-info/
 %{python3_sitearch}/pydantic/
 %{python3_sitearch}/pydantic-*.dist-info/
-%{python3_sitearch}/pydantic_core/
-%{python3_sitearch}/pydantic_core-*.dist-info/
 %{python3_sitelib}/pygls/
 %{python3_sitelib}/pygls-*.dist-info/
 %{python3_sitelib}/lsprotocol/
@@ -49,6 +47,7 @@ pip3 install --ignore-requires-python --no-warn-script-location --prefix=/usr --
 %{python3_sitelib}/attrs-*.dist-info/
 %{python3_sitelib}/attr/
 %{python3_sitelib}/typing_extensions*
+%{python3_sitelib}/__pycache__/typing_extensions*
 
 %changelog
 * Mon Feb 10 2026 neg-serg <neg-serg@example.com> - 0.9.0-1

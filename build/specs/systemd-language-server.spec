@@ -13,6 +13,7 @@ BuildRequires:  python3-devel
 BuildRequires:  python3-pip
 BuildRequires:  python3-setuptools
 BuildRequires:  python3-wheel
+BuildRequires:  gcc
 BuildRequires:  libxml2-devel
 BuildRequires:  libxslt-devel
 Requires:       python3
@@ -44,6 +45,7 @@ pip3 install --no-warn-script-location --prefix=/usr --root=%{buildroot} .
 %{python3_sitelib}/attrs-*.dist-info/
 %{python3_sitelib}/attr/
 %{python3_sitelib}/typing_extensions*
+%{python3_sitelib}/__pycache__/typing_extensions*
 %{python3_sitearch}/lxml/
 %{python3_sitearch}/lxml-*.dist-info/
 
