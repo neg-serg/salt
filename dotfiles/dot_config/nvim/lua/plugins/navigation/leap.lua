@@ -1,7 +1,7 @@
 -- ┌───────────────────────────────────────────────────────────────────────────────────┐
--- │ █▓▒░ ggandor/leap.nvim                                                            │
+-- │ █▓▒░ andyg/leap.nvim                                                              │
 -- └───────────────────────────────────────────────────────────────────────────────────┘
-return {'ggandor/leap.nvim',
+return {url = 'https://codeberg.org/andyg/leap.nvim',
   config=function()
       require'leap'.opts = {
           max_phase_one_targets = nil,
