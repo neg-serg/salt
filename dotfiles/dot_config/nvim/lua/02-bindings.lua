@@ -2,7 +2,7 @@ vim.g.mapleader = ','
 Map('i', '<C-j>', '<ESC>', {nowait = true})
 Map('v', '<C-j>', '<ESC>', {nowait = true})
 for _, key in ipairs({ 'j', 'k', 'l', 'h' }) do
-  Map('n', '<C-' .. key .. '>', '<C-w>' .. key, { nowait = true })
+  Map('n', '<leader>' .. key, '<C-w>' .. key, { nowait = true })
 end
 map('n', '_', "<Cmd>exe 'e ' . getcwd()<CR>")
 

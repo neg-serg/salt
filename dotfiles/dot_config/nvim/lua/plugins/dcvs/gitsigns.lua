@@ -55,7 +55,7 @@ return {'lewis6991/gitsigns.nvim', -- fast git decorations
             },
         }
         local opts={silent=true, noremap=true}
-        map('n', '<leader>gb', '<cmd>Gitsigns blame_line<cr>', opts)
+        map('n', '<leader>gB', '<cmd>Gitsigns blame_line<cr>', opts)
         map('n', '<leader>g]', '<cmd>Gitsigns next_hunk<cr>', opts)
         map('n', '<leader>g[', '<cmd>Gitsigns prev_hunk<cr>', opts)
         map('n', '<leader>g?', '<cmd>Gitsigns preview_hunk<cr>', opts)

@@ -55,8 +55,6 @@ return {'obsidian-nvim/obsidian.nvim', version='*', ft='markdown',
                 vim.keymap.set('i', '<leader>[', '<Cmd>ObsidianLink<CR>', opts)
                 vim.keymap.set('n', '<C-S-i>', '<Cmd>ObsidianPasteImg<CR>', opts)
                 vim.keymap.set('n', '<C-a>', '<Cmd>ObsidianTags<CR>', opts)
-                vim.keymap.set('n', '<C-i>', '<Cmd>ObsidianPasteImg<CR>', opts)
-                vim.keymap.set('n', '<C-m>', '<Cmd>ObsidianFollowLink<CR>', opts)
                 vim.keymap.set('n', '<S-m>', browse_media, opts)
                 vim.keymap.set('n', '<C-t>', '<Cmd>ObsidianToggleCheckbox<CR>', opts)
                 vim.keymap.set('n', '<C-y>', yank_notelink, opts)

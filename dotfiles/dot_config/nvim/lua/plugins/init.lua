@@ -14,6 +14,7 @@ return {
   { import = "plugins.panel" },
   { import = "plugins.performance" },
   { import = "plugins.text" },
+  { import = "plugins.tools" },
   { import = "plugins.ui" },
   { import = "plugins.viz" },
 }
