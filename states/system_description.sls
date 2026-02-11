@@ -614,13 +614,13 @@ mount_one:
 # mount mechanism ignores compress= fstab option (not shown in /proc/mounts).
 btrfs_compress_home:
   cmd.run:
-    - name: btrfs property set /var/home compression zstd:1
-    - unless: btrfs property get /var/home compression 2>/dev/null | grep -q 'zstd:1'
+    - name: btrfs property set /var/home compression zstd:-1
+    - unless: btrfs property get /var/home compression 2>/dev/null | grep -q 'zstd:-1'
 
 btrfs_compress_var:
   cmd.run:
-    - name: btrfs property set /var compression zstd:1
-    - unless: btrfs property get /var compression 2>/dev/null | grep -q 'zstd:1'
+    - name: btrfs property set /var compression zstd:-1
+    - unless: btrfs property get /var compression 2>/dev/null | grep -q 'zstd:-1'
 
 # Flatpak applications (32-bit deps conflict with rpm-ostree base image)
 {% set flatpak_apps = [
