@@ -470,6 +470,7 @@ running_services:
       - dbus-broker
       - bluetooth
       - libvirtd
+      - openrgb
     - enable: True
 
 # Disable tuned: its throughput-performance profile conflicts with custom
