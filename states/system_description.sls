@@ -281,7 +281,6 @@ sudo_timeout:
         {'name': 'no-more-secrets',     'desc': 'Recreate the data decryption effect from Sneakers'},
         {'name': 'par',                 'desc': 'Paragraph reformatter, vaguely like fmt, but more elaborate'},
         {'name': 'parallel',            'desc': 'Shell tool for executing jobs in parallel'},
-        {'name': 'pass-otp',            'desc': 'pass extension for one-time-password (OTP) tokens'},
         {'name': 'pastel',              'desc': 'CLI tool to generate, analyze, convert and manipulate colors'},
         {'name': 'pwgen',               'desc': 'Automatic password generation'},
         {'name': 'recoll',              'desc': 'Desktop full-text search tool'},
@@ -651,6 +650,25 @@ install_grimblast:
     - name: curl -fsSL https://raw.githubusercontent.com/hyprwm/contrib/main/grimblast/grimblast -o ~/.local/bin/grimblast && chmod +x ~/.local/bin/grimblast
     - runas: neg
     - creates: /var/home/neg/.local/bin/grimblast
+
+install_hyprevents:
+  cmd.run:
+    - name: |
+        set -eo pipefail
+        tmpdir=$(mktemp -d)
+        cd "$tmpdir"
+        curl -fsSL https://github.com/vilari-mickopf/hyprevents/archive/refs/heads/master.tar.gz | tar xz --strip-components=1
+        install -Dm755 hyprevents event_handler event_loader -t ~/.local/bin/
+        rm -rf "$tmpdir"
+    - runas: neg
+    - shell: /bin/bash
+    - creates: /var/home/neg/.local/bin/hyprevents
+
+install_hyprprop:
+  cmd.run:
+    - name: curl -fsSL https://raw.githubusercontent.com/vilari-mickopf/hyprprop/master/hyprprop -o ~/.local/bin/hyprprop && chmod +x ~/.local/bin/hyprprop
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/hyprprop
 
 install_sops:
   cmd.run:
@@ -1222,6 +1240,16 @@ ollama_selinux_context:
     - require:
       - file: ollama_models_dir
 
+# ollama server (init_t) needs to read its key from ~/.ollama/ (user_home_t → var_lib_t)
+# uses /var/home path per equivalency rule '/home /var/home'
+ollama_selinux_homedir:
+  cmd.run:
+    - name: |
+        semanage fcontext -a -t var_lib_t "/var/home/neg/\.ollama(/.*)?" 2>/dev/null || \
+        semanage fcontext -m -t var_lib_t "/var/home/neg/\.ollama(/.*)?"
+        restorecon -Rv /var/home/neg/.ollama
+    - unless: ls -Z /var/home/neg/.ollama/id_ed25519 | grep -q var_lib_t
+
 # ollama runs as init_t (no custom SELinux type) and needs outbound HTTPS for model pulls
 ollama_selinux_network:
   cmd.run:
@@ -1265,13 +1293,19 @@ ollama_start:
     - unless: curl -sf http://127.0.0.1:11434/api/tags >/dev/null 2>&1
     - require:
       - cmd: ollama_enable
+      - cmd: ollama_selinux_homedir
 
 {% for model in ['deepseek-r1:8b', 'llama3.2:3b', 'qwen2.5-coder:7b'] %}
 pull_{{ model | replace('.', '_') | replace(':', '_') | replace('-', '_') }}:
   cmd.run:
-    - name: ollama pull {{ model }}
-    - runas: neg
-    - unless: ollama list | grep -q '{{ model }}'
+    - name: >-
+        curl -sf --max-time 600
+        -X POST http://127.0.0.1:11434/api/pull
+        -d '{"name": "{{ model }}", "stream": false}'
+    - unless: >-
+        curl -sf http://127.0.0.1:11434/api/tags |
+        grep -q '"{{ model }}"'
+    - timeout: 600
     - require:
       - cmd: ollama_start
       - cmd: ollama_selinux_network
