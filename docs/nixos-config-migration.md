@@ -229,11 +229,9 @@ Steps to enable:
 
 | Config file | NixOS source | Dotfiles path | Status |
 |---|---|---|---|
-| `user.js` (Betterfox + prefs) | web/mozilla-common-lib.nix | dot_config/tridactyl/user.js | [x] Salt deploys to Floorp profile |
-| `chrome/userChrome.css` | web/mozilla-common-lib.nix | dot_config/tridactyl/mozilla/userChrome.css | [x] Salt deploys to Floorp profile |
-| `chrome/userContent.css` | web/mozilla-common-lib.nix | dot_config/tridactyl/mozilla/userContent.css | [x] Salt deploys to Floorp profile |
-| `~/.config/tridactyl/tridactylrc` | files/misc/tridactyl/ | dot_config/tridactyl/tridactylrc | [x] |
-| Tridactyl themes (4 CSS) | files/misc/tridactyl/themes/ | dot_config/tridactyl/themes/ | [x] |
+| `user.js` (Betterfox + prefs) | web/mozilla-common-lib.nix | dot_config/floorp/user.js | [x] Salt deploys to Floorp profile |
+| `chrome/userChrome.css` | web/mozilla-common-lib.nix | dot_config/floorp/userChrome.css | [x] Salt deploys to Floorp profile |
+| `chrome/userContent.css` | web/mozilla-common-lib.nix | dot_config/floorp/userContent.css | [x] Salt deploys to Floorp profile |
 | `~/.surfingkeys.js` | files/surfingkeys.js | dot_surfingkeys.js | [x] |
 | `policies.json` | web/mozilla-common-lib.nix | — | [n/a] Flatpak, no /etc access |
 | Extensions (*.xpi) | web/mozilla-common-lib.nix (fetchurl) | — | [x] Salt downloads .xpi into profile |
