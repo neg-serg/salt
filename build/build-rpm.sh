@@ -54,6 +54,7 @@ MASSREN_VERSION="1.5.6"
 CROC_VERSION="10.3.1"
 FAKER_VERSION="40.4.0"
 SPEEDTEST_GO_VERSION="1.7.10"
+GREETD_VERSION="0.10.3"
 
 # RPM build root directory inside the container
 RPM_BUILD_ROOT="/rpmbuild"
@@ -75,7 +76,7 @@ ALL_PACKAGES=(
     xdg-desktop-portal-termfilechooser bucklespring taoup
     newsraft unflac albumdetails cmake-language-server
     nginx-language-server systemd-language-server croc faker
-    speedtest-go
+    speedtest-go greetd
 )
 
 # Build all packages when called with no arguments
@@ -1269,6 +1270,32 @@ speedtest-go)
 
         echo "--- Copying speedtest-go RPMs to /build/rpms/ ---"
         find "${RPMS_DIR}" -name "speedtest-go-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+    ;;
+greetd)
+    GREETD_RPM_NAME="greetd-${GREETD_VERSION}-1.fc43.x86_64.rpm"
+    echo "--- Preparing greetd ---"
+    if [ -f "/build/rpms/${GREETD_RPM_NAME}" ]; then
+        echo "greetd RPM (${GREETD_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar rust cargo scdoc pam-devel selinux-policy-devel systemd-rpm-macros
+        GREETD_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/greetd-${GREETD_VERSION}"
+        if [ ! -d "${GREETD_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "${GREETD_VERSION}" https://git.sr.ht/~kennylevinsen/greetd "${GREETD_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/greetd-${GREETD_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "greetd-${GREETD_VERSION}"
+        # Copy auxiliary files to SOURCES
+        cp /build/salt/greetd-files/greetd.pam "${SOURCES_DIR}/"
+        cp /build/salt/greetd-files/greetd-greeter.pam "${SOURCES_DIR}/"
+        cp /build/salt/greetd-files/greetd.sysusers "${SOURCES_DIR}/"
+        cp /build/salt/greetd-files/greetd.tmpfiles "${SOURCES_DIR}/"
+        cp /build/salt/greetd-files/greetd.fc "${SOURCES_DIR}/"
+        cp /build/salt/specs/greetd.spec "${SPECS_DIR}/greetd.spec"
+        echo "--- Building greetd RPM ---"
+        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/greetd.spec"
+        echo "--- Copying greetd RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "greetd*.rpm" ! -name "*debug*" -exec cp -v {} /build/rpms/ \;
     fi
     ;;
 *)

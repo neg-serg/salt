@@ -59,6 +59,8 @@
     {'name': 'croc',                  'version': '10.3.1'},
     {'name': 'faker',                 'version': '40.4.0',  'arch': 'noarch'},
     {'name': 'speedtest-go',            'version': '1.7.10'},
+    {'name': 'greetd',                   'version': '0.10.3',
+     'extra_volumes': '-v /var/home/neg/src/salt/build/greetd-files:/build/salt/greetd-files:z'},
 ] %}
 
 {% set iosevka = {
