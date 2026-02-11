@@ -731,6 +731,8 @@ floorp_usercontent:
     {'id': '{74145f27-f039-47ce-a470-a662b129930a}',         'slug': 'clearurls'},
     {'id': 'jid1-QoFqdK4qzUfGWQ@jetpack',                    'slug': 'dark-background-light-text'},
     {'id': 'jid1-93WyvpgvxzGATw@jetpack',                    'slug': 'to-google-translate'},
+    {'id': 'FirefoxColor@mozilla.com',                        'slug': 'firefox-color'},
+    {'id': '{a1f01957-5419-4d40-9937-bdf7bba038b4}',         'slug': 'chameleon-dynamic-theme-fixed'},
 ] %}
 
 {% for ext in floorp_extensions %}
