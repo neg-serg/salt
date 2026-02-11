@@ -42,20 +42,27 @@ return {'renerocksai/telekasten.nvim', ft='markdown', -- better md wiki stuff
                 },
             })
 
-            local opts={silent=true, noremap=true, buffer=true}
+            local function set_telekasten_keys(buf)
+                local opts={silent=true, noremap=true, buffer=buf}
+                vim.keymap.set('i', '<leader>[', '<Cmd>lua require"telekasten".insert_link({i=true})<CR>', opts)
+                vim.keymap.set('n', '<C-S-i>', '<Cmd>lua require"telekasten".insert_img_link({ i=true })<CR>', opts)
+                vim.keymap.set('n', '<C-a>', '<Cmd>lua require"telekasten".show_tags()<CR>', opts)
+                vim.keymap.set('n', '<C-i>', '<Cmd>lua require"telekasten".paste_img_and_link()<CR>', opts)
+                vim.keymap.set('n', '<C-m>', '<Cmd>lua require"telekasten".follow_link()<CR>', opts)
+                vim.keymap.set('n', '<S-m>', '<Cmd>lua require"telekasten".browse_media()<CR>', opts)
+                vim.keymap.set('n', '<C-t>', '<Cmd>lua require"telekasten".toggle_todo()<CR>', opts)
+                vim.keymap.set('n', '<C-y>', '<Cmd>lua require"telekasten".yank_notelink()<CR>', opts)
+                vim.keymap.set('n', '<leader>b', '<Cmd>lua require"telekasten".show_backlinks()<CR>', opts)
+            end
+
             vim.api.nvim_create_autocmd({"BufNewFile","BufRead"}, {
                 pattern="*.md",
                 group=vim.api.nvim_create_augroup('telekasten_only_keymap', {clear=true}),
-                callback=function()
-                    vim.keymap.set('i', '<leader>[', '<Cmd>lua require"telekasten".insert_link({i=true})<CR>', opts)
-                    vim.keymap.set('n', '<C-S-i>', '<Cmd>lua require"telekasten".insert_img_link({ i=true })<CR>', opts)
-                    vim.keymap.set('n', '<C-a>', '<Cmd>lua require"telekasten".show_tags()<CR>', opts)
-                    vim.keymap.set('n', '<C-i>', '<Cmd>lua require"telekasten".paste_img_and_link()<CR>', opts)
-                    vim.keymap.set('n', '<C-m>', '<Cmd>lua require"telekasten".follow_link()<CR>', opts)
-                    vim.keymap.set('n', '<S-m>', '<Cmd>lua require"telekasten".browse_media()<CR>', opts)
-                    vim.keymap.set('n', '<C-t>', '<Cmd>lua require"telekasten".toggle_todo()<CR>', opts)
-                    vim.keymap.set('n', '<C-y>', '<Cmd>lua require"telekasten".yank_notelink()<CR>', opts)
-                    vim.keymap.set('n', '<leader>b', '<Cmd>lua require"telekasten".show_backlinks()<CR>', opts)
-                end,
+                callback=function(ev) set_telekasten_keys(ev.buf) end,
             })
+
+            -- Apply to the current buffer (first .md that triggered ft load)
+            if vim.bo.filetype == 'markdown' then
+                set_telekasten_keys(0)
+            end
         end}
