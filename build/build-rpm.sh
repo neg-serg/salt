@@ -53,6 +53,7 @@ SYSTEMD_LS_VERSION="0.3.5"
 MASSREN_VERSION="1.5.6"
 CROC_VERSION="10.3.1"
 FAKER_VERSION="40.4.0"
+SPEEDTEST_GO_VERSION="1.7.10"
 
 # RPM build root directory inside the container
 RPM_BUILD_ROOT="/rpmbuild"
@@ -74,6 +75,7 @@ ALL_PACKAGES=(
     xdg-desktop-portal-termfilechooser bucklespring taoup
     newsraft unflac albumdetails cmake-language-server
     nginx-language-server systemd-language-server croc faker
+    speedtest-go
 )
 
 # Build all packages when called with no arguments
@@ -1244,6 +1246,29 @@ faker)
 
         echo "--- Copying Faker RPMs to /build/rpms/ ---"
         find "${RPMS_DIR}" -name "faker-*.rpm" -exec cp -v {} /build/rpms/ \;
+    fi
+    ;;
+speedtest-go)
+    SPEEDTEST_GO_RPM_NAME="speedtest-go-${SPEEDTEST_GO_VERSION}-1.fc43.x86_64.rpm"
+    echo "--- Preparing speedtest-go ---"
+    if [ -f "/build/rpms/${SPEEDTEST_GO_RPM_NAME}" ]; then
+        echo "speedtest-go RPM (${SPEEDTEST_GO_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar golang
+
+        SPEEDTEST_GO_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/speedtest-go-${SPEEDTEST_GO_VERSION}"
+        if [ ! -d "${SPEEDTEST_GO_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${SPEEDTEST_GO_VERSION}" https://github.com/showwin/speedtest-go.git "${SPEEDTEST_GO_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/speedtest-go-${SPEEDTEST_GO_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "speedtest-go-${SPEEDTEST_GO_VERSION}"
+        cp /build/salt/specs/speedtest-go.spec "${SPECS_DIR}/speedtest-go.spec"
+
+        echo "--- Building speedtest-go RPM ---"
+        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/speedtest-go.spec"
+
+        echo "--- Copying speedtest-go RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "speedtest-go-*.rpm" -exec cp -v {} /build/rpms/ \;
     fi
     ;;
 *)
