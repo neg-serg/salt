@@ -29,6 +29,15 @@ custom_udev_rules:
         SUBSYSTEMS=="usb", ATTRS{idVendor}=="31e3", ATTRS{idProduct}=="1322", GROUP="users", MODE="0666"
         SUBSYSTEMS=="usb", ATTRS{idVendor}=="31e3", ATTRS{idProduct}=="132f", GROUP="users", MODE="0666"
 
+        # NVMe: reduce read_ahead_kb (8MB default from tuned is excessive for NVMe)
+        ACTION=="add|change", KERNEL=="nvme[0-9]*", ATTR{queue/read_ahead_kb}="256"
+
+        # Device-mapper (LVM/LUKS): slightly higher read_ahead for crypto overhead
+        ACTION=="add|change", KERNEL=="dm-[0-9]*", ATTR{queue/read_ahead_kb}="512"
+
+        # NVMe: disable writeback throttling (NVMe manages its own queues)
+        ACTION=="add|change", KERNEL=="nvme[0-9]*", ATTR{queue/wbt_lat_usec}="0"
+
         # SATA Active Link Power Management: max performance (avoid spin-down latency)
         ACTION=="add", SUBSYSTEM=="scsi_host", KERNEL=="host*", \
           ATTR{link_power_management_policy}=="*", \
