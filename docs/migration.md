@@ -1,8 +1,8 @@
 ● All done. Here's a summary of everything that was implemented:
 
   ★ Insight ─────────────────────────────────────
-  Chezmoi vs Salt split strategy: Tridactylrc and themes go in chezmoi dotfiles (~/.config/tridactyl/) because they're user-level config files. But user.js and userChrome.css go to a Flatpak-specific path (~/.var/app/one.ablaze.floorp/.floorp/<profile>/) that's outside
-  chezmoi's reach, so Salt file.managed states handle those. This dual-delivery pattern is common when mixing Flatpak apps with dotfile managers.
+  Chezmoi vs Salt split strategy: Surfingkeys config (~/.surfingkeys.js) lives in chezmoi dotfiles as a user-level config file. But user.js, userChrome.css, and userContent.css go to a Flatpak-specific path (~/.var/app/one.ablaze.floorp/.floorp/<profile>/) that's outside
+  chezmoi's reach, so Salt file.managed states handle those. Source files live in dotfiles/dot_config/floorp/. This dual-delivery pattern is common when mixing Flatpak apps with dotfile managers.
 
   RNNoise LADSPA path: The Fedora COPR package uses librnnoise_ladspa (without full path) because PipeWire resolves LADSPA plugins from the standard system path. On NixOS, full Nix store paths are required — one of the key differences when migrating audio configs.
   ─────────────────────────────────────────────────
@@ -19,7 +19,7 @@
   ├───────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┤
   │ Locale — ru_RU.UTF-8 + keymap ru,us декларативно                          │ system_description.sls                                     │
   ├───────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┤
-  │ Tridactyl — tridactylrc, 4 темы, user.js, userChrome.css, userContent.css │ 8 новых файлов в dotfiles/dot_config/tridactyl/            │
+  │ Floorp browser config — user.js, userChrome.css, userContent.css           │ 3 файла в dotfiles/dot_config/floorp/                      │
   ├───────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┤
   │ Floorp — Salt states для деплоя user.js и chrome в Flatpak-профиль        │ system_description.sls                                     │
   ├───────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┤
