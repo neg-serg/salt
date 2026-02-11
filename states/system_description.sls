@@ -1215,12 +1215,19 @@ ollama_models_dir:
 ollama_selinux_context:
   cmd.run:
     - name: |
-        semanage fcontext -a -t var_lib_t "/var/mnt/one/ollama(/.*)?" 2>/dev/null || \
-        semanage fcontext -m -t var_lib_t "/var/mnt/one/ollama(/.*)?"
+        semanage fcontext -a -t var_lib_t "/mnt/one/ollama(/.*)?" 2>/dev/null || \
+        semanage fcontext -m -t var_lib_t "/mnt/one/ollama(/.*)?"
         restorecon -Rv /var/mnt/one/ollama
     - unless: matchpathcon -V /var/mnt/one/ollama/models 2>&1 | grep -q verified
     - require:
       - file: ollama_models_dir
+
+# ollama RPM ships a confined SELinux module (ollama_t) that blocks outbound HTTPS
+ollama_selinux_permissive:
+  cmd.run:
+    - name: semanage permissive -a ollama_t
+    - onlyif: semodule -l 2>/dev/null | grep -q '^ollama'
+    - unless: semanage permissive -l 2>/dev/null | grep -q ollama_t
 
 ollama_enable:
   cmd.run:
@@ -1230,6 +1237,7 @@ ollama_enable:
     - require:
       - cmd: install_system_packages
       - cmd: ollama_selinux_context
+      - cmd: ollama_selinux_permissive
 
 ollama_start:
   cmd.run:
@@ -1245,6 +1253,7 @@ ollama_start:
     - unless: curl -sf http://127.0.0.1:11434/api/tags >/dev/null 2>&1
     - require:
       - cmd: ollama_enable
+      - cmd: ollama_selinux_permissive
 
 {% for model in ['deepseek-r1:8b', 'llama3.2:3b', 'qwen2.5-coder:7b'] %}
 pull_{{ model | replace('.', '_') | replace(':', '_') | replace('-', '_') }}:
