@@ -390,7 +390,7 @@ sudo_timeout:
     'brutefir',
     'patchmatrix',
     'supercollider-sc3-plugins',
-    '86Box',
+    {# '86Box', -- needs Qt 6.10, base image pins 6.9.2 #}
 ] %}
 
 include:
@@ -453,7 +453,7 @@ install_all_packages:
       - cmd: copr_spotifyd
       - cmd: copr_sbctl
       - cmd: copr_audinux
-      - cmd: copr_86box
+      {# - cmd: copr_86box -- disabled, 86Box needs Qt 6.10 #}
 
 zsh_config_dir:
   file.directory:
@@ -720,6 +720,8 @@ floorp_usercontent:
     {'id': 'kellyc-show-youtube-dislikes@nradiowave',         'slug': 'return-youtube-dislikes'},
     {'id': '{4a311e5c-1ccc-49b7-9c23-3e2b47b6c6d5}',         'slug': 'скачать-музыку-с-вк-vkd'},
     {'id': 'BetterDark@neopolitan.uk',                       'slug': 'betterdark'},
+    {'id': 'chrome-mask@overengineer.dev',                    'slug': 'chrome-mask'},
+    {'id': '{036a55b4-5e72-4d05-a06c-cba2dfcc134a}',         'slug': 'traduzir-paginas-web'},
 ] %}
 
 {% for ext in floorp_extensions %}
@@ -901,10 +903,12 @@ copr_audinux:
     - name: dnf copr enable -y ycollet/audinux
     - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:ycollet:audinux.repo
 
+{# copr_86box: disabled, 86Box needs Qt 6.10 but base image pins 6.9.2
 copr_86box:
   cmd.run:
     - name: dnf copr enable -y rob72/86Box
     - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:rob72:86Box.repo
+#}
 
 # --- CachyOS kernel (special: override remove + install, stays separate) ---
 install_cachyos_kernel:
