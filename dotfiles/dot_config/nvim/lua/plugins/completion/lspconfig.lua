@@ -123,8 +123,10 @@ return {
       if clients and #clients > 0 then
         return vim.lsp.buf.definition()
       end
+      local ok_fzf, fzf = pcall(require, 'fzf-lua')
+      if ok_fzf and fzf.lsp_definitions then return fzf.lsp_definitions() end
       local ok_tb, tb = pcall(require, 'telescope.builtin')
       if ok_tb and tb.lsp_definitions then return tb.lsp_definitions({}) end
-    end, { desc = 'Go to definition (LSP/Telescope)' })
+    end, { desc = 'Go to definition (LSP/fzf-lua)' })
   end,
 }
