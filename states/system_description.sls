@@ -300,8 +300,6 @@ sudo_timeout:
     'Wayland': [
         {'name': 'cliphist',            'desc': 'Clipboard history for Wayland'},
         {'name': 'dunst',               'desc': 'Lightweight notification daemon'},
-        {'name': 'greetd',              'desc': 'Minimal login manager daemon'},
-        {'name': 'greetd-selinux',      'desc': 'SELinux policy for greetd'},
         {'name': 'pyprland',            'desc': 'Hyprland plugin system and scratchpads'},
         {'name': 'rofi',                'desc': 'Window switcher, application launcher and dmenu replacement'},
         {'name': 'screenkey',           'desc': 'Show keystrokes on screen'},
@@ -582,7 +580,7 @@ greetd_enabled:
     - name: greetd
     - require:
       - file: greetd_config
-      - cmd: install_all_packages
+      - cmd: install_custom_rpms
 
 /mnt/zero:
   file.directory:
