@@ -101,15 +101,15 @@ au({'TextYankPost'}, {
     callback=function() vim.hl.on_yank{timeout=60, higroup="Search"} end,
     group=hi_yank})
 au({'DirChanged'}, {pattern={'window','tab','tabpage','global'}, callback=function()
-    vim.cmd("silent !zoxide add " .. vim.fn.getcwd())
+    vim.system({'zoxide', 'add', vim.fn.getcwd()}, { detach = true })
     end,group=main})
 if true == false then
     au({'CursorHold','TextYankPost','FocusGained','FocusLost'}, {pattern={'*'}, command='if exists(":rshada") | rshada | wshada | endif', group=shada})
 end
-au({'BufWritePost'}, {pattern={'*'}, 
+au({'BufWritePost'}, {pattern={'*'},
     callback=function()
-        if string.match(vim.fn.getline(1), "^#!") ~= nil then
-            if string.match(vim.fn.getline(1), "/bin/") ~= nil then vim.cmd([[silent !chmod a+x <afile>]]) end
+        if string.match(vim.fn.getline(1), "^#!.*/bin/") then
+            vim.system({'chmod', 'a+x', vim.fn.expand('<afile>')}, { detach = true })
         end
     end, group=utils})
 au({'BufNewFile','BufWritePre'}, {pattern={'*'},
@@ -118,20 +118,10 @@ au({'BufNewFile','BufWritePre'}, {pattern={'*'},
 })
 
 vim.g.markdown_fenced_languages={'shell=bash'}
-local file_syntax_map={
-    {pattern='*.rasi',     syntax='scss'},
-    {pattern='flake.lock', syntax='json'},
-    {pattern='*.ignore',   syntax='gitignore'}, -- also ignore for fd/ripgrep
-    {pattern='*.ojs',      syntax='javascript'},
-    {pattern='*.astro',    syntax='astro'},
-    {pattern='*.mdx',      syntax='mdx'}
-}
-for _, elem in ipairs(file_syntax_map) do
-    au({'BufNewFile', 'BufRead'}, {
-        pattern=elem.pattern,
-        command='set syntax=' .. elem.syntax,
-   })
-end
+vim.filetype.add({
+  extension = { rasi = 'scss', ignore = 'gitignore', ojs = 'javascript', astro = 'astro', mdx = 'mdx' },
+  filename = { ['flake.lock'] = 'json' },
+})
 
 -- Tune 'path' and 'suffixesadd' per filetype to reduce gf collisions
 do

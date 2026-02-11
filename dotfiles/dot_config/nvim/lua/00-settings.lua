@@ -44,15 +44,21 @@ end
 vim.g.loaded_node_provider=0
 
 -- netrw is disabled elsewhere; drop redundant globals
-if vim.fn.executable('ugrep') == 1 then
-    o.grepprg='ugrep -RInk -j -u --tabs=1 --ignore-files'
-    o.grepformat='%f:%l:%c:%m,%f+%l+%c+%m,%-G%f\\|%l\\|%c\\|%m'
-end
-if vim.fn.executable('nvr') == 1 then
-    env_.GIT_EDITOR="nvr -cc split +'setl bh=delete' --remote-wait"
-    env_.EDITOR='nvr -l --remote'
-    env_.VISUAL='nvr -l --remote'
-end
+-- Defer executable() checks to VeryLazy (synchronous PATH scans are slow at startup)
+vim.api.nvim_create_autocmd('User', {
+  pattern = 'VeryLazy', once = true,
+  callback = function()
+    if vim.fn.executable('ugrep') == 1 then
+      vim.o.grepprg = 'ugrep -RInk -j -u --tabs=1 --ignore-files'
+      vim.o.grepformat = '%f:%l:%c:%m,%f+%l+%c+%m,%-G%f\\|%l\\|%c\\|%m'
+    end
+    if vim.fn.executable('nvr') == 1 then
+      vim.env.GIT_EDITOR = "nvr -cc split +'setl bh=delete' --remote-wait"
+      vim.env.EDITOR = 'nvr -l --remote'
+      vim.env.VISUAL = 'nvr -l --remote'
+    end
+  end,
+})
 o.path='.,..,'..config_dir..','..
     	config_dir..'/lua,'..
 	config_dir..'/after,'..
@@ -138,3 +144,19 @@ o.cpoptions='_$ABFWcdesa'                    -- Vim-exclusive stuff
 o.ruler=false                                -- No ruler
 o.cmdheight=0                                -- Fancy cmdheight for neovim
 o.laststatus=3                               -- One statusline for all
+
+-- Russian langmap (extracted from langmapper for fast startup)
+do
+  local function escape(str)
+    local escape_chars = [[;,."|\]]
+    return vim.fn.escape(str, escape_chars)
+  end
+  local en = [[`qwertyuiop[]asdfghjkl;'zxcvbnm]]
+  local ru = [[ёйцукенгшщзхъфывапролджэячсмить]]
+  local en_shift = [[~QWERTYUIOP{}ASDFGHJKL:"ZXCVBNM<>]]
+  local ru_shift = [[ËЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ]]
+  o.langmap = vim.fn.join({
+    escape(ru_shift) .. ';' .. escape(en_shift),
+    escape(ru) .. ';' .. escape(en),
+  }, ',')
+end
