@@ -107,6 +107,7 @@ return {
         rg_opts = '--column --line-number --no-heading --color=always --smart-case --hidden --glob !.git --glob !.obsidian --max-filesize 1M --no-binary --trim',
       },
       oldfiles = {
+        winopts = { height = 0.25 },
         previewer = false,
       },
     })
