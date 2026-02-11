@@ -28,7 +28,6 @@ return {
         'just',
         'lemminx',
         'marksman',
-        'nil_ls',
         'pyright',
         'qmlls',
         'taplo',
