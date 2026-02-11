@@ -3,12 +3,14 @@
 -- └───────────────────────────────────────────────────────────────────────────────────┘
 return {
   'nvim-treesitter/nvim-treesitter',
-  event = { "BufReadPost", "BufNewFile" },
+  event = { 'BufReadPost', 'BufNewFile' },
   config = function()
-    require('nvim-treesitter.configs').setup({
-      ensure_installed = {}, -- managed by Nix 
-      highlight = { enable = true }, -- enable highlighting
-      indent = { enable = true }, -- smart indentation
+    require('nvim-treesitter').setup()
+    vim.api.nvim_create_autocmd('FileType', {
+      callback = function(args)
+        pcall(vim.treesitter.start, args.buf)
+        vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+      end,
     })
-  end
+  end,
 }
