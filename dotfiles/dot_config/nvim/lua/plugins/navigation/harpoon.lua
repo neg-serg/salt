@@ -17,5 +17,4 @@ return {
     { "<C-S-P>", function() require("harpoon"):list():prev() end, desc = "Harpoon prev" },
     { "<C-S-N>", function() require("harpoon"):list():next() end, desc = "Harpoon next" },
   },
-  event = "VeryLazy",
 }

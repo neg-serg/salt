@@ -3,7 +3,6 @@
 -- └───────────────────────────────────────────────────────────────────────────────────┘
 return {
 	"rbong/vim-flog",
-	event = "VeryLazy",
 	dependencies = {
       "tpope/vim-fugitive",
 	},

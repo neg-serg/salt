@@ -16,8 +16,15 @@ require'01-helpers'
 require'01-plugins'
 require'02-bindings'
 require'04-aucmds'
-require'08-cmds'
-require'14-abbr'
-require'62-sort-operator'
+
+-- Defer non-critical modules (VimL parsing, abbreviations, sort operator)
+vim.api.nvim_create_autocmd('User', {
+  pattern = 'VeryLazy', once = true,
+  callback = function()
+    require'08-cmds'
+    require'14-abbr'
+    require'62-sort-operator'
+  end,
+})
 
 

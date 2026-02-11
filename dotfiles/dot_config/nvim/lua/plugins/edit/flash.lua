@@ -3,7 +3,6 @@
 -- └───────────────────────────────────────────────────────────────────────────────────┘
 return {
   "folke/flash.nvim",
-  event = "VeryLazy",
   enabled = true,
   opts = {},
   keys = {

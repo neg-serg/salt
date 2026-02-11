@@ -4,12 +4,12 @@
 return {
   {
     'mason-org/mason.nvim',
-    lazy = false,
+    cmd = { 'Mason', 'MasonInstall', 'MasonUpdate', 'MasonLog' },
     opts = {},
   },
   {
     'mason-org/mason-lspconfig.nvim',
-    lazy = false,
+    event = { 'BufReadPre', 'BufNewFile' },
     dependencies = {
       'mason-org/mason.nvim',
       'neovim/nvim-lspconfig',
@@ -39,7 +39,7 @@ return {
   },
   {
     'WhoIsSethDaniel/mason-tool-installer.nvim',
-    lazy = false,
+    event = 'VeryLazy',
     dependencies = { 'mason-org/mason.nvim' },
     opts = {
       ensure_installed = {
