@@ -1607,21 +1607,13 @@ ssh_dir:
     - mode: '0700'
 
 # --- GPG keyring migration (old ~/.gnupg → XDG ~/.local/share/gnupg) ---
-gnupg_xdg_dir:
-  file.directory:
-    - name: /var/home/neg/.local/share/gnupg
-    - user: neg
-    - group: neg
-    - mode: '0700'
-
+# Parent dir (~/.local/share/gnupg) created by chezmoi with 0700 (private_ prefix)
 gnupg_xdg_private_keys_dir:
   file.directory:
     - name: /var/home/neg/.local/share/gnupg/private-keys-v1.d
     - user: neg
     - group: neg
     - mode: '0700'
-    - require:
-      - file: gnupg_xdg_dir
 
 gnupg_migrate_pubkey:
   cmd.run:
@@ -1629,8 +1621,6 @@ gnupg_migrate_pubkey:
     - runas: neg
     - onlyif: test -f /var/home/neg/.gnupg/pubring.kbx
     - unless: gpg --homedir /var/home/neg/.local/share/gnupg --list-keys 9629B754BC0D843F7304BCF0F2CF6AB037FFADB1 2>/dev/null
-    - require:
-      - file: gnupg_xdg_dir
 
 gnupg_migrate_trust:
   cmd.run:
