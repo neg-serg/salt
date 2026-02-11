@@ -29,7 +29,7 @@ every key pressed and released.
 %setup -q -n bucklespring-%{version}
 
 %build
-make PATH_AUDIO=%{_datadir}/bucklespring/wav
+make %{?_smp_mflags} PATH_AUDIO=%{_datadir}/bucklespring/wav
 
 %install
 mkdir -p %{buildroot}%{_bindir}
