@@ -113,12 +113,11 @@ sudo_timeout:
         {'name': 'kernel-devel',        'desc': 'Development package for building kernel modules'},
         {'name': 'lldb',                'desc': 'LLVM debugger'},
         {'name': 'openocd',             'desc': 'On-chip debugger for embedded systems'},
-        {'name': 'ncurses-devel',       'desc': 'Development files for ncurses'},
+        {'name': 'nodejs',              'desc': 'JavaScript runtime (for npm global installs)'},
+        {'name': 'npm',                 'desc': 'Node.js package manager'},
         {'name': 'perf',                'desc': 'Performance analysis tools for Linux'},
         {'name': 'pgcli',               'desc': 'PostgreSQL CLI with autocomplete'},
         {'name': 'pipewire-devel',      'desc': 'PipeWire development files'},
-        {'name': 'pulseaudio-libs-devel', 'desc': 'PulseAudio development libraries'},
-        {'name': 'python3-devel',       'desc': 'Libraries and header files needed for Python development'},
         {'name': 'ruff',                'desc': 'Fast Python linter and formatter'},
         {'name': 'ShellCheck',          'desc': 'Shell script analysis tool'},
         {'name': 'shfmt',               'desc': 'Shell script formatter'},
@@ -405,7 +404,13 @@ include:
 
 # Remove packages no longer in desired state.
 # rpm-ostree only adds, never removes — this handles cleanup explicitly.
-{% set unwanted_packages = ['nnn', 'ranger', 'stow', 'axel', 'speedtest-cli', 'pcem'] %}
+{% set unwanted_packages = [
+    'nnn', 'ranger', 'stow', 'axel', 'speedtest-cli', 'pcem',
+    'python3-devel', 'ncurses-devel', 'pulseaudio-libs-devel', 'taglib-devel',
+    'pass',
+    'albumdetails-debuginfo', 'albumdetails-debugsource',
+    'amneziawg-tools-debuginfo', 'amneziawg-tools-debugsource',
+] %}
 remove_unwanted_packages:
   cmd.run:
     - name: |

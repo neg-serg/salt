@@ -7,7 +7,13 @@ install_custom_rpms:
         {% raw %}
         RPM_DIR=/var/home/neg/src/salt/rpms
         shopt -s nullglob
-        rpm_files=("$RPM_DIR"/*.rpm)
+        all_rpms=("$RPM_DIR"/*.rpm)
+        # Filter out debuginfo/debugsource packages
+        rpm_files=()
+        for f in "${all_rpms[@]}"; do
+          case "${f##*/}" in *-debuginfo-*|*-debugsource-*) continue;; esac
+          rpm_files+=("$f")
+        done
         [ ${#rpm_files[@]} -eq 0 ] && exit 0
         # Batch: get package names from all RPM files (one rpm call)
         mapfile -t pkg_names < <(rpm -qp --queryformat '%{NAME}\n' "${rpm_files[@]}" 2>/dev/null)
@@ -34,7 +40,12 @@ install_custom_rpms:
         {% raw %}
         RPM_DIR=/var/home/neg/src/salt/rpms
         shopt -s nullglob
-        rpm_files=("$RPM_DIR"/*.rpm)
+        all_rpms=("$RPM_DIR"/*.rpm)
+        rpm_files=()
+        for f in "${all_rpms[@]}"; do
+          case "${f##*/}" in *-debuginfo-*|*-debugsource-*) continue;; esac
+          rpm_files+=("$f")
+        done
         [ ${#rpm_files[@]} -eq 0 ] && exit 0
         rpm -q $(rpm -qp --queryformat '%{NAME} ' "${rpm_files[@]}" 2>/dev/null) > /dev/null 2>&1
         {% endraw %}
