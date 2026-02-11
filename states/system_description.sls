@@ -646,6 +646,7 @@ btrfs_compress_var:
     'net.lutris.Lutris',
     'com.github.qarmin.czkawka',
     'com.google.AndroidStudio',
+    'io.github.woelper.Oculante',
 ] %}
 
 install_flatpak_apps:
