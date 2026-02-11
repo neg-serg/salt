@@ -1,7 +1,7 @@
 bindkey -e
 
 autoload -Uz fg-widget && zle -N fg-widget
-autoload -Uz imv
+autoload -Uz iren
 autoload -Uz inplace_mk_dirs && zle -N inplace_mk_dirs
 autoload -Uz magic-abbrev-expand && zle -N magic-abbrev-expand
 autoload -Uz rationalise-dot && zle -N rationalise-dot
