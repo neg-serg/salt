@@ -163,6 +163,7 @@ build_rpms_parallel:
         exec 3>&-
         echo "=== Parallel build: ${LAUNCHED} built, ${SKIPPED} skipped, ${FAILURES} failed ==="
         [ "$FAILURES" -eq 0 ]
+    - shell: /bin/bash
     - runas: neg
     - timeout: 7200
     - unless: |
