@@ -291,6 +291,7 @@ Steps to enable:
 | waypipe | session/utils.nix | system_description.sls (Network) | [x] |
 | zathura + pdf-poppler | session/utils.nix | system_description.sls (Shell & Tools) | [x] |
 | udiskie | session/utils.nix | system_description.sls (Shell & Tools) | [x] |
+| greetd login manager | session/greetd.nix | system_description.sls (greetd + quickshell greeter) | [x] |
 
 ## 24. Wallpaper & Theme Tools
 
@@ -427,7 +428,6 @@ Steps to enable:
 | Item | NixOS source | Reason |
 |---|---|---|
 | Firejail sandboxing | security/firejail.nix | SELinux + Flatpak sandboxing on Fedora |
-| Greetd login manager | session/greetd.nix | GDM on Fedora Atomic |
 | Plymouth theme | boot config | Fedora ships own Plymouth |
 | Nix overlays | tools/ | Not applicable |
 | USB automount scripts | hardware/usb-automount.nix | udisks2 works OOTB |
@@ -441,4 +441,4 @@ Steps to enable:
 - **Fully migrated** `[x]`: ~140 items across 36 groups
 - **Partially migrated** `[~]`: 1 item (hyprland permissions.conf/plugins.conf)
 - **Not migrated** `[ ]`: 1 item (rescrobbled service)
-- **Not applicable** `[n/a]`: 6 items (firejail, greetd, plymouth, nix overlays, USB automount, policies.json)
+- **Not applicable** `[n/a]`: 5 items (firejail, plymouth, nix overlays, USB automount, policies.json)
