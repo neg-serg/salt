@@ -704,6 +704,7 @@ floorp_usercontent:
     - makedirs: True
 
 # --- Floorp extensions (download .xpi into profile) ---
+# Temporarily disabled: firefox-color (FirefoxColor@mozilla.com)
 {% set floorp_profile = '/var/home/neg/.var/app/one.ablaze.floorp/.floorp/ltjcyqj7.default-default' %}
 {% set floorp_extensions = [
     {'id': '{a8332c60-5b6d-41ee-bfc8-e9bb331d34ad}',         'slug': 'surfingkeys_ff'},
@@ -730,7 +731,6 @@ floorp_usercontent:
     {'id': 'firefox@ghostery.com',                            'slug': 'ghostery'},
     {'id': '{74145f27-f039-47ce-a470-a662b129930a}',         'slug': 'clearurls'},
     {'id': 'jid1-93WyvpgvxzGATw@jetpack',                    'slug': 'to-google-translate'},
-    {# {'id': 'FirefoxColor@mozilla.com',                        'slug': 'firefox-color'}, #}
     {'id': '{a1f01957-5419-4d40-9937-bdf7bba038b4}',         'slug': 'chameleon-dynamic-theme-fixed'},
     {'id': 'BeautifulPurpleSky@Godie',                         'slug': 'beautiful-purple-sky'},
 ] %}
