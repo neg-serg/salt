@@ -276,6 +276,8 @@ Steps to enable:
 | grim | session/screenshot.nix | rpm-ostree layered | [x] |
 | slurp | session/screenshot.nix | rpm-ostree layered | [x] |
 | grimblast | session/screenshot.nix | system_description.sls (install_grimblast) | [x] |
+| hyprprop | session/hyprland.nix | system_description.sls (install_hyprprop) | [x] |
+| hyprevents | session/hyprland.nix | system_description.sls (install_hyprevents) | [x] |
 | swappy | session/screenshot.nix | system_description.sls (Wayland category) | [x] |
 | wf-recorder | session/screenshot.nix | system_description.sls (Wayland category) | [x] |
 
