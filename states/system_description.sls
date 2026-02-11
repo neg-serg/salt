@@ -390,8 +390,8 @@ sudo_timeout:
     'brutefir',
     'patchmatrix',
     'supercollider-sc3-plugins',
-    {# '86Box', -- needs Qt 6.10, base image pins 6.9.2 #}
 ] %}
+{# '86Box' removed — needs Qt 6.10, base image pins 6.9.2 #}
 
 include:
   - amnezia
