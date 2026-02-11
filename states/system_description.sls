@@ -300,6 +300,8 @@ sudo_timeout:
     'Wayland': [
         {'name': 'cliphist',            'desc': 'Clipboard history for Wayland'},
         {'name': 'dunst',               'desc': 'Lightweight notification daemon'},
+        {'name': 'greetd',              'desc': 'Minimal login manager daemon'},
+        {'name': 'greetd-selinux',      'desc': 'SELinux policy for greetd'},
         {'name': 'pyprland',            'desc': 'Hyprland plugin system and scratchpads'},
         {'name': 'rofi',                'desc': 'Window switcher, application launcher and dmenu replacement'},
         {'name': 'screenkey',           'desc': 'Show keystrokes on screen'},
@@ -519,6 +521,68 @@ disable_tuned:
   service.dead:
     - name: tuned
     - enable: False
+
+# --- greetd: replace sddm with quickshell greeter ---
+disable_sddm:
+  service.dead:
+    - name: sddm
+    - enable: False
+
+greetd_config_dir:
+  file.directory:
+    - name: /etc/greetd
+    - user: root
+    - group: root
+    - mode: '0755'
+    - makedirs: True
+
+greetd_config:
+  file.managed:
+    - name: /etc/greetd/config.toml
+    - contents: |
+        [terminal]
+        vt = 1
+
+        [default_session]
+        command = "Hyprland -c /etc/greetd/hyprland-greeter.conf"
+        user = "neg"
+    - user: root
+    - group: root
+    - mode: '0644'
+    - require:
+      - file: greetd_config_dir
+
+greetd_hyprland_config:
+  file.managed:
+    - name: /etc/greetd/hyprland-greeter.conf
+    - contents: |
+        exec-once = qs -p ~/.config/quickshell/greeter/greeter.qml
+    - user: root
+    - group: root
+    - mode: '0644'
+    - require:
+      - file: greetd_config_dir
+
+greetd_session_wrapper:
+  file.managed:
+    - name: /etc/greetd/session-wrapper
+    - contents: |
+        #!/bin/sh
+        [ -f /etc/profile ] && . /etc/profile
+        [ -f "$HOME/.profile" ] && . "$HOME/.profile"
+        exec /usr/bin/starthyprland
+    - user: root
+    - group: root
+    - mode: '0755'
+    - require:
+      - file: greetd_config_dir
+
+greetd_enabled:
+  service.enabled:
+    - name: greetd
+    - require:
+      - file: greetd_config
+      - cmd: install_all_packages
 
 /mnt/zero:
   file.directory:
