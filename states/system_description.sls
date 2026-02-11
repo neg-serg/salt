@@ -322,6 +322,7 @@ sudo_timeout:
         {'name': 'fheroes2',            'desc': 'Free Heroes of Might and Magic II engine'},
         {'name': 'flare',               'desc': 'Free Libre Action Roleplaying Engine'},
         {'name': 'gamescope',           'desc': 'SteamOS session compositing window manager'},
+        {'name': 'steam',              'desc': 'Valve Steam gaming platform'},
         {'name': 'gnuchess',            'desc': 'GNU Chess engine'},
         {'name': 'mangohud',            'desc': 'Vulkan/OpenGL overlay for FPS and system monitoring'},
         {'name': 'nethack',             'desc': 'Classic roguelike adventure game'},
@@ -451,6 +452,7 @@ install_all_packages:
       - cmd: copr_spotifyd
       - cmd: copr_sbctl
       - cmd: copr_audinux
+      - cmd: rpmfusion_nonfree
       {# - cmd: copr_86box -- disabled, 86Box needs Qt 6.10 #}
 
 zsh_config_dir:
@@ -620,9 +622,8 @@ btrfs_compress_var:
     - name: btrfs property set /var compression zstd:-1
     - unless: btrfs property get /var compression 2>/dev/null | grep -q 'zstd:-1'
 
-# Flatpak applications (32-bit deps conflict with rpm-ostree base image)
+# Flatpak applications
 {% set flatpak_apps = [
-    'com.valvesoftware.Steam',
     'net.pcsx2.PCSX2',
     'net.davidotek.pupgui2',
     'io.github.dimtpap.coppwr',
@@ -665,18 +666,14 @@ install_flatpak_apps:
         grep -qxF '{{ app }}' <<< "$installed" || exit 1
         {% endfor %}
 
-# Flatpak overrides: Steam filesystems + Wayland cursor/GTK dark theme
+# Flatpak overrides: Wayland cursor + GTK dark theme
 flatpak_overrides:
   cmd.run:
-    - name: |
-        flatpak override --user --filesystem=/mnt/zero --filesystem=/mnt/one com.valvesoftware.Steam
-        flatpak override --user --env=XCURSOR_PATH=/run/host/user-share/icons:/run/host/share/icons --env=GTK_THEME=Adwaita:dark
+    - name: flatpak override --user --env=XCURSOR_PATH=/run/host/user-share/icons:/run/host/share/icons --env=GTK_THEME=Adwaita:dark
     - runas: neg
     - require:
       - cmd: install_flatpak_apps
-    - unless: |
-        flatpak override --user --show com.valvesoftware.Steam 2>/dev/null | grep -q '/mnt/zero' &&
-        flatpak override --user --show 2>/dev/null | grep -q XCURSOR_PATH
+    - unless: flatpak override --user --show 2>/dev/null | grep -q XCURSOR_PATH
 
 # --- Floorp browser: user.js + userChrome.css + userContent.css ---
 floorp_user_js:
@@ -912,6 +909,12 @@ copr_audinux:
   cmd.run:
     - name: dnf copr enable -y ycollet/audinux
     - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:ycollet:audinux.repo
+
+# --- RPM Fusion (nonfree — for Steam; pulls in free as dependency) ---
+rpmfusion_nonfree:
+  cmd.run:
+    - name: dnf install -y https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
+    - unless: test -f /etc/yum.repos.d/rpmfusion-nonfree.repo
 
 {# copr_86box: disabled, 86Box needs Qt 6.10 but base image pins 6.9.2
 copr_86box:
