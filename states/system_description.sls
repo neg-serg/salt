@@ -796,27 +796,6 @@ install_hyprprop:
     - runas: neg
     - creates: /var/home/neg/.local/bin/hyprprop
 
-install_mvi:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        tmpdir=$(mktemp -d)
-        git clone --depth 1 https://github.com/occivink/mpv-image-viewer "$tmpdir"
-        mkdir -p ~/.config/mvi/scripts ~/.config/mvi/script-opts
-        cp "$tmpdir"/scripts/*.lua ~/.config/mvi/scripts/
-        cp "$tmpdir"/script-opts/*.conf ~/.config/mvi/script-opts/
-        cp "$tmpdir"/mpv.conf ~/.config/mvi/mpv.conf
-        cp "$tmpdir"/input.conf ~/.config/mvi/input.conf
-        rm -rf "$tmpdir"
-        cat > ~/.local/bin/mvi << 'WRAPPER'
-        #!/bin/sh
-        exec mpv --config-dir="$HOME/.config/mvi" "$@"
-        WRAPPER
-        chmod +x ~/.local/bin/mvi
-    - runas: neg
-    - shell: /bin/bash
-    - creates: /var/home/neg/.local/bin/mvi
-
 install_sops:
   cmd.run:
     - name: |
