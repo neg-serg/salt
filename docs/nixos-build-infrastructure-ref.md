@@ -25,7 +25,6 @@ merges everything into `pkgs.neg.*` namespace.
 
 ### Custom packages defined in overlays
 
-- `ncpamixer-wrapped` — ncpamixer with custom config file via `--add-flags "-c $config"`
 - `python3-lto` — Python 3 with LTO + optimizations enabled
 - `rsmetrx` — from flake input
 - `fsread-nvim` — vim plugin from flake input
