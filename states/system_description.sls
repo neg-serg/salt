@@ -1079,6 +1079,20 @@ install_overskride:
     - shell: /bin/bash
     - unless: flatpak info io.github.kaii_lb.Overskride &>/dev/null
 
+# --- Nyxt browser (Electron AppImage) ---
+install_nyxt:
+  cmd.run:
+    - name: |
+        set -eo pipefail
+        curl -fsSL https://github.com/atlas-engineer/nyxt/releases/download/4.0.0/Linux-Nyxt-x86_64.tar.gz -o /tmp/nyxt.tar.gz
+        tar -xzf /tmp/nyxt.tar.gz -C /tmp
+        mv /tmp/Nyxt-x86_64.AppImage ~/.local/bin/nyxt
+        chmod +x ~/.local/bin/nyxt
+        rm -f /tmp/nyxt.tar.gz
+    - runas: neg
+    - shell: /bin/bash
+    - creates: /var/home/neg/.local/bin/nyxt
+
 # --- Open Sound Meter (FFT acoustic analysis, AppImage) ---
 install_opensoundmeter:
   cmd.run:
