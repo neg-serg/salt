@@ -704,7 +704,6 @@ floorp_usercontent:
     - makedirs: True
 
 # --- Floorp extensions (download .xpi into profile) ---
-# Temporarily disabled: firefox-color (FirefoxColor@mozilla.com)
 {% set floorp_profile = '/var/home/neg/.var/app/one.ablaze.floorp/.floorp/ltjcyqj7.default-default' %}
 {% set floorp_extensions = [
     {'id': '{a8332c60-5b6d-41ee-bfc8-e9bb331d34ad}',         'slug': 'surfingkeys_ff'},
@@ -745,10 +744,18 @@ floorp_ext_{{ ext.slug | replace('-', '_') }}:
       - cmd: install_flatpak_apps
 {% endfor %}
 
-# Cleanup: remove replaced extensions
+# Cleanup: remove replaced/disabled extensions
 floorp_remove_chameleon_dynamic_theme:
   file.absent:
     - name: {{ floorp_profile }}/extensions/{a1f01957-5419-4d40-9937-bdf7bba038b4}.xpi
+
+floorp_remove_dark_background_light_text:
+  file.absent:
+    - name: {{ floorp_profile }}/extensions/jid1-QoFqdK4qzUfGWQ@jetpack.xpi
+
+floorp_remove_floorp_color:
+  file.absent:
+    - name: {{ floorp_profile }}/extensions/FirefoxColor@mozilla.com.xpi
 
 # Remove extensions.json so Floorp rebuilds it on next launch,
 # picking up extensions.autoDisableScopes=0 from user.js
