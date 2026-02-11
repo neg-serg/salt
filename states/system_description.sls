@@ -472,6 +472,14 @@ running_services:
       - libvirtd
     - enable: True
 
+# Disable tuned: its throughput-performance profile conflicts with custom
+# I/O tuning (sets read_ahead_kb=8192 on NVMe, may override sysctl values).
+# All tuning is managed manually via sysctl.sls, kernel_params.sls, hardware.sls.
+disable_tuned:
+  service.dead:
+    - name: tuned
+    - enable: False
+
 /mnt/zero:
   file.directory:
     - makedirs: True
@@ -482,7 +490,7 @@ mount_zero:
     - device: /dev/mapper/argon-zero
     - fstype: xfs
     - mkmnt: True
-    - opts: defaults
+    - opts: noatime
     - persist: True
 
 /mnt/one:
@@ -495,8 +503,20 @@ mount_one:
     - device: /dev/mapper/xenon-one
     - fstype: xfs
     - mkmnt: True
-    - opts: defaults
+    - opts: noatime
     - persist: True
+
+# btrfs compression: set as filesystem property since Fedora Atomic's ostree
+# mount mechanism ignores compress= fstab option (not shown in /proc/mounts).
+btrfs_compress_home:
+  cmd.run:
+    - name: btrfs property set /var/home compression zstd:1
+    - unless: btrfs property get /var/home compression 2>/dev/null | grep -q 'zstd:1'
+
+btrfs_compress_var:
+  cmd.run:
+    - name: btrfs property set /var compression zstd:1
+    - unless: btrfs property get /var compression 2>/dev/null | grep -q 'zstd:1'
 
 # Flatpak applications (32-bit deps conflict with rpm-ostree base image)
 {% set flatpak_apps = [
