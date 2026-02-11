@@ -49,7 +49,7 @@ cmake -GNinja -B build \
   -DCRASH_REPORTER=OFF \
   -DINSTALL_QML_PREFIX=%{_lib}/qt6/qml
 
-cmake --build build
+cmake --build build --parallel %{_smp_build_ncpus}
 
 %install
 DESTDIR=%{buildroot} cmake --install build
