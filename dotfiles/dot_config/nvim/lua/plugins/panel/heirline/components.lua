@@ -805,7 +805,7 @@ return function(ctx)
       on_click = {
         callback = vim.schedule_wrap(function()
           dbg_push('click: size -> buffer fuzzy find')
-          if has_mod('telescope.builtin') then require('telescope.builtin').current_buffer_fuzzy_find() end
+          if has_mod('fzf-lua') then require('fzf-lua').blines() end
         end),
         name = 'heirline_size_click',
       },

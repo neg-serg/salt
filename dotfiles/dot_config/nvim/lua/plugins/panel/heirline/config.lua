@@ -334,26 +334,13 @@ return function()
     local function open_file_browser_cwd()
       local cwd = window_cwd(statusline_win())
       if has_mod('oil') then vim.cmd('Oil ' .. fn.fnameescape(cwd)); return end
-      if has_mod('telescope') then
-        local ok_ext = pcall(function()
-          require('telescope').extensions.file_browser.file_browser({ cwd = cwd, respect_gitignore = true })
-        end)
-        if ok_ext then return end
-        local ok_builtin = pcall(function()
-          require('telescope.builtin').find_files({ cwd = cwd, hidden = true })
-        end)
-        if ok_builtin then return end
-      end
+      if has_mod('fzf-lua') then require('fzf-lua').files({ cwd = cwd }); return end
       vim.cmd('Ex ' .. fn.fnameescape(cwd))
     end
     local function open_git_ui()
-      if has_mod('telescope') then
-        local ok = pcall(function() require('telescope.builtin').git_branches() end)
-        if ok then return end
-      end
       if has_mod('neogit') then return require('neogit').open() end
       if fn.exists(':Git') == 2 then return vim.cmd('Git') end
-      notify('No git UI found (telescope/neogit/fugitive not available)', vim.log.levels.WARN)
+      notify('No git UI found (neogit/fugitive not available)', vim.log.levels.WARN)
       dbg_push('git click: no UI')
     end
     local function open_diagnostics_list()
