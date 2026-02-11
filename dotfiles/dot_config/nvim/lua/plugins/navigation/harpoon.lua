@@ -8,7 +8,7 @@ return {
   main = "harpoon",
   opts = {},
   keys = {
-    { "<leader>a", function() require("harpoon"):list():add() end, desc = "Harpoon add" },
+    { "<leader>A", function() require("harpoon"):list():add() end, desc = "Harpoon add" },
     { "<C-e>", function() require("harpoon").ui:toggle_quick_menu(require("harpoon"):list()) end, desc = "Harpoon menu" },
     { "<C-h>", function() require("harpoon"):list():select(1) end, desc = "Harpoon 1" },
     { "<C-j>", function() require("harpoon"):list():select(2) end, desc = "Harpoon 2" },
