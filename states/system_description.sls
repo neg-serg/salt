@@ -379,6 +379,19 @@ sudo_timeout:
 ]) %}
 {% endif %}
 
+{% set copr_packages = [
+    'noise-suppression-for-voice',
+    'dualsensectl',
+    'espanso-wayland',
+    'himalaya',
+    'spotifyd',
+    'sbctl',
+    'brutefir',
+    'patchmatrix',
+    'supercollider-sc3-plugins',
+    '86Box',
+] %}
+
 include:
   - amnezia
   - build_rpms
@@ -390,12 +403,31 @@ include:
   - mpd
   - sysctl
 
-# Install all packages in a single transaction.
-install_system_packages:
+# Remove packages no longer in desired state.
+# rpm-ostree only adds, never removes — this handles cleanup explicitly.
+{% set unwanted_packages = ['nnn', 'ranger', 'stow', 'axel', 'speedtest-cli', 'pcem'] %}
+remove_unwanted_packages:
   cmd.run:
     - name: |
         {% raw %}
-        wanted=({% endraw %}{% for cat, pkgs in categories | dictsort %}{% for pkg in pkgs %}{{ pkg.name }} {% endfor %}{% endfor %}{% raw %})
+        to_remove=()
+        {% endraw %}{% for pkg in unwanted_packages %}
+        rpm -q {{ pkg }} > /dev/null 2>&1 && to_remove+=('{{ pkg }}')
+        {% endfor %}{% raw %}
+        if [ ${#to_remove[@]} -gt 0 ]; then
+          echo "Removing: ${to_remove[*]}"
+          rpm-ostree uninstall "${to_remove[@]}" || true
+        fi
+        {% endraw %}
+    - onlyif: rpm -q {% for pkg in unwanted_packages %}{{ pkg }} {% endfor %}2>/dev/null | grep -v 'not installed'
+
+# Install all packages (system + COPR) in a single rpm-ostree transaction.
+# One transaction = one deployment, much faster than two separate ones.
+install_all_packages:
+  cmd.run:
+    - name: |
+        {% raw %}
+        wanted=({% endraw %}{% for cat, pkgs in categories | dictsort %}{% for pkg in pkgs %}{{ pkg.name }} {% endfor %}{% endfor %}{% for pkg in copr_packages %}{{ pkg }} {% endfor %}{% raw %})
         installed=$(rpm -qa --queryformat '%{NAME}\n' | sort -u)
         layered=$(rpm-ostree status --json | jq -r '.deployments[]."requested-packages"[]?' | sort -u)
         have=$(sort -u <(echo "$installed") <(echo "$layered"))
@@ -404,9 +436,17 @@ install_system_packages:
           rpm-ostree install -y --allow-inactive $missing
         fi
         {% endraw %}
-    - unless: rpm -q {% for cat, pkgs in categories | dictsort %}{% for pkg in pkgs %}{{ pkg.name }} {% endfor %}{% endfor %}> /dev/null 2>&1
+    - unless: rpm -q {% for cat, pkgs in categories | dictsort %}{% for pkg in pkgs %}{{ pkg.name }} {% endfor %}{% endfor %}{% for pkg in copr_packages %}{{ pkg }} {% endfor %}> /dev/null 2>&1
     - require:
       - file: fix_containers_policy
+      - cmd: copr_noise_suppression
+      - cmd: copr_dualsensectl
+      - cmd: copr_espanso
+      - cmd: copr_himalaya
+      - cmd: copr_spotifyd
+      - cmd: copr_sbctl
+      - cmd: copr_audinux
+      - cmd: copr_86box
 
 zsh_config_dir:
   file.directory:
@@ -453,7 +493,7 @@ etckeeper_init:
     - name: etckeeper init && etckeeper commit "Initial commit"
     - unless: test -d /etc/.git
     - require:
-      - cmd: install_system_packages
+      - cmd: install_all_packages
 
 running_services:
   service.running:
@@ -795,44 +835,6 @@ copr_86box:
     - name: dnf copr enable -y rob72/86Box
     - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:rob72:86Box.repo
 
-# --- COPR package installs (batched: one rpm-ostree status check) ---
-{% set copr_packages = [
-    'noise-suppression-for-voice',
-    'dualsensectl',
-    'espanso-wayland',
-    'himalaya',
-    'spotifyd',
-    'sbctl',
-    'brutefir',
-    'patchmatrix',
-    'supercollider-sc3-plugins',
-    '86Box',
-] %}
-
-install_copr_packages:
-  cmd.run:
-    - name: |
-        installed=$(rpm -qa --queryformat '%{NAME}\n' | sort -u)
-        requested=$(rpm-ostree status --json | jq -r '.deployments[]."requested-packages"[]?' | sort -u)
-        have=$(sort -u <(echo "$installed") <(echo "$requested"))
-        missing=()
-        {% for pkg in copr_packages %}
-        grep -qxF '{{ pkg }}' <<< "$have" || missing+=('{{ pkg }}')
-        {% endfor %}
-        if [ -n "${missing[*]}" ]; then
-          rpm-ostree install -y --allow-inactive "${missing[@]}"
-        fi
-    - unless: rpm -q {% for pkg in copr_packages %}{{ pkg }} {% endfor %}> /dev/null 2>&1
-    - require:
-      - cmd: copr_noise_suppression
-      - cmd: copr_dualsensectl
-      - cmd: copr_espanso
-      - cmd: copr_himalaya
-      - cmd: copr_spotifyd
-      - cmd: copr_sbctl
-      - cmd: copr_audinux
-      - cmd: copr_86box
-
 # --- CachyOS kernel (special: override remove + install, stays separate) ---
 install_cachyos_kernel:
   cmd.run:
@@ -1029,7 +1031,7 @@ install_tailray:
     - creates: /var/home/neg/.local/share/cargo/bin/tailray
     - onlyif: pkg-config --exists dbus-1
     - require:
-      - cmd: install_system_packages
+      - cmd: install_all_packages
 
 install_pzip:
   cmd.run:
@@ -1298,7 +1300,7 @@ ollama_enable:
     - onchanges:
       - file: ollama_service_unit
     - require:
-      - cmd: install_system_packages
+      - cmd: install_all_packages
       - cmd: ollama_selinux_context
 
 ollama_start:
