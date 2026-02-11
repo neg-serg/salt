@@ -731,6 +731,7 @@ floorp_usercontent:
     {'id': 'firefox@ghostery.com',                            'slug': 'ghostery'},
     {'id': '{74145f27-f039-47ce-a470-a662b129930a}',         'slug': 'clearurls'},
     {'id': 'jid1-93WyvpgvxzGATw@jetpack',                    'slug': 'to-google-translate'},
+    {'id': 'ATBC@EasonWong',                                  'slug': 'adaptive-tab-bar-colour'},
     {'id': 'BeautifulPurpleSky@Godie',                         'slug': 'beautiful-purple-sky'},
 ] %}
 
@@ -743,6 +744,11 @@ floorp_ext_{{ ext.slug | replace('-', '_') }}:
     - require:
       - cmd: install_flatpak_apps
 {% endfor %}
+
+# Cleanup: remove replaced extensions
+floorp_remove_chameleon_dynamic_theme:
+  file.absent:
+    - name: {{ floorp_profile }}/extensions/{a1f01957-5419-4d40-9937-bdf7bba038b4}.xpi
 
 # Remove extensions.json so Floorp rebuilds it on next launch,
 # picking up extensions.autoDisableScopes=0 from user.js
