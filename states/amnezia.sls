@@ -17,6 +17,7 @@
 build_amnezia_all:
   cmd.run:
     - name: |
+        {% raw %}
         #!/bin/bash
         set -uo pipefail
         BUILD=/var/home/neg/src/amnezia_build
@@ -88,6 +89,7 @@ build_amnezia_all:
         done
         echo "=== Amnezia: ${#PIDS[@]} built, $FAILURES failed ==="
         [ "$FAILURES" -eq 0 ]
+        {% endraw %}
     - timeout: 3600
     - output_loglevel: info
     - unless: >-
