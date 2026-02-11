@@ -732,6 +732,8 @@ floorp_usercontent:
     {'id': 'extension@tabliss.io',                            'slug': 'tabliss'},
     {'id': 'firefox@ghostery.com',                            'slug': 'ghostery'},
     {'id': '{74145f27-f039-47ce-a470-a662b129930a}',         'slug': 'clearurls'},
+    {'id': 'jid1-QoFqdK4qzUfGWQ@jetpack',                    'slug': 'dark-background-light-text'},
+    {'id': 'jid1-93WyvpgvxzGATw@jetpack',                    'slug': 'to-google-translate'},
 ] %}
 
 {% for ext in floorp_extensions %}
