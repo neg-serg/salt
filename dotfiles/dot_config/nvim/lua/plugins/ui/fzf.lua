@@ -56,7 +56,7 @@ return {
         preview = {
           default = 'builtin',
           layout = 'vertical',
-          vertical = 'down:50%',
+          vertical = 'up:60%',
           title = true,
           title_pos = 'center',
           winopts = { winblend = 8 },
@@ -103,6 +103,7 @@ return {
         },
       },
       grep = {
+        winopts = { height = 0.75 },
         rg_opts = '--column --line-number --no-heading --color=always --smart-case --hidden --glob !.git --glob !.obsidian --max-filesize 1M --no-binary --trim',
       },
       oldfiles = {
