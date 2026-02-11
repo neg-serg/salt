@@ -1,4 +1,4 @@
 -- ┌───────────────────────────────────────────────────────────────────────────────────┐
 -- │ █▓▒░ lambdalisue/suda.vim                                                         │
 -- └───────────────────────────────────────────────────────────────────────────────────┘
-return {'lambdalisue/suda.vim'} -- sudo write commands
+return {'lambdalisue/suda.vim', cmd = {'SudaRead', 'SudaWrite'}} -- sudo write commands

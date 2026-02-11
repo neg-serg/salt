@@ -5,6 +5,7 @@
 -- vim-easy-align and reuse the familiar `ga` mappings.
 return {
   'echasnovski/mini.nvim',
+  event = 'VeryLazy',
   config = function()
     local ok_align, align = pcall(require, 'mini.align')
     if ok_align then
