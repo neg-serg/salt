@@ -733,6 +733,7 @@ floorp_usercontent:
     {'id': 'jid1-93WyvpgvxzGATw@jetpack',                    'slug': 'to-google-translate'},
     {'id': 'FirefoxColor@mozilla.com',                        'slug': 'firefox-color'},
     {'id': '{a1f01957-5419-4d40-9937-bdf7bba038b4}',         'slug': 'chameleon-dynamic-theme-fixed'},
+    {'id': 'BeautifulPurpleSky@Godie',                         'slug': 'beautiful-purple-sky'},
 ] %}
 
 {% for ext in floorp_extensions %}
