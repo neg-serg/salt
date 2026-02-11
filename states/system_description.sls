@@ -281,6 +281,7 @@ sudo_timeout:
         {'name': 'no-more-secrets',     'desc': 'Recreate the data decryption effect from Sneakers'},
         {'name': 'par',                 'desc': 'Paragraph reformatter, vaguely like fmt, but more elaborate'},
         {'name': 'parallel',            'desc': 'Shell tool for executing jobs in parallel'},
+        {'name': 'pass-otp',            'desc': 'pass extension for one-time-password (OTP) tokens'},
         {'name': 'pastel',              'desc': 'CLI tool to generate, analyze, convert and manipulate colors'},
         {'name': 'pwgen',               'desc': 'Automatic password generation'},
         {'name': 'recoll',              'desc': 'Desktop full-text search tool'},
