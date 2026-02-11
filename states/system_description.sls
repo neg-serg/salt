@@ -1222,12 +1222,25 @@ ollama_selinux_context:
     - require:
       - file: ollama_models_dir
 
-# ollama RPM ships a confined SELinux module (ollama_t) that blocks outbound HTTPS
-ollama_selinux_permissive:
+# ollama runs as init_t (no custom SELinux type) and needs outbound HTTPS for model pulls
+ollama_selinux_network:
   cmd.run:
-    - name: semanage permissive -a ollama_t
-    - onlyif: semodule -l 2>/dev/null | grep -q '^ollama'
-    - unless: semanage permissive -l 2>/dev/null | grep -q ollama_t
+    - name: |
+        TMP=$(mktemp -d)
+        cat > "$TMP/ollama-network.te" << 'POLICY'
+        module ollama-network 1.0;
+        require {
+            type init_t;
+            type http_port_t;
+            class tcp_socket name_connect;
+        }
+        allow init_t http_port_t:tcp_socket name_connect;
+        POLICY
+        checkmodule -M -m -o "$TMP/ollama-network.mod" "$TMP/ollama-network.te"
+        semodule_package -o "$TMP/ollama-network.pp" -m "$TMP/ollama-network.mod"
+        semodule -i "$TMP/ollama-network.pp"
+        rm -rf "$TMP"
+    - unless: semodule -l | grep -q '^ollama-network'
 
 ollama_enable:
   cmd.run:
@@ -1237,7 +1250,6 @@ ollama_enable:
     - require:
       - cmd: install_system_packages
       - cmd: ollama_selinux_context
-      - cmd: ollama_selinux_permissive
 
 ollama_start:
   cmd.run:
@@ -1253,7 +1265,6 @@ ollama_start:
     - unless: curl -sf http://127.0.0.1:11434/api/tags >/dev/null 2>&1
     - require:
       - cmd: ollama_enable
-      - cmd: ollama_selinux_permissive
 
 {% for model in ['deepseek-r1:8b', 'llama3.2:3b', 'qwen2.5-coder:7b'] %}
 pull_{{ model | replace('.', '_') | replace(':', '_') | replace('-', '_') }}:
@@ -1263,6 +1274,7 @@ pull_{{ model | replace('.', '_') | replace(':', '_') | replace('-', '_') }}:
     - unless: ollama list | grep -q '{{ model }}'
     - require:
       - cmd: ollama_start
+      - cmd: ollama_selinux_network
 {% endfor %}
 
 # --- openclaw (local AI assistant agent) ---
