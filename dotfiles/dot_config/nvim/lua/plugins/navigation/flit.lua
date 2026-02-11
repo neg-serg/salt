@@ -3,7 +3,7 @@
 -- └───────────────────────────────────────────────────────────────────────────────────┘
 return {
   'ggandor/flit.nvim',
-  dependencies = { 'ggandor/leap.nvim' },
+  dependencies = { {url = 'https://codeberg.org/andyg/leap.nvim'} },
   keys = {
     { 'f', mode = { 'n', 'x', 'o' }, desc = 'Flit f' },
     { 'F', mode = { 'n', 'x', 'o' }, desc = 'Flit F' },
