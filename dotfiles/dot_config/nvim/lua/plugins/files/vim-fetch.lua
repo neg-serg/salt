@@ -1,4 +1,4 @@
 -- ┌───────────────────────────────────────────────────────────────────────────────────┐
 -- │ █▓▒░ wsdjeg/vim-fetch                                                             │
 -- └───────────────────────────────────────────────────────────────────────────────────┘
-return {'wsdjeg/vim-fetch', event = 'BufReadCmd'} -- vim path/to/file.ext:12:4
+return {'wsdjeg/vim-fetch', lazy = false} -- must load before BufRead to intercept file:line paths

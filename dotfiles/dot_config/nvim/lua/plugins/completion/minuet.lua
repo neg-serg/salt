@@ -1,5 +1,6 @@
 return {
   'milanglacier/minuet-ai.nvim',
+  event = 'InsertEnter',
   opts = {
     provider = 'gemini',
     provider_options = {

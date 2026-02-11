@@ -2,7 +2,8 @@
 -- │ █▓▒░ Wansmer/langmapper.nvim                                                      │
 -- └───────────────────────────────────────────────────────────────────────────────────┘
 return {'Wansmer/langmapper.nvim',
-  event = 'VeryLazy',
+  lazy = false,
+  priority = 1,
   config = function()
     require('langmapper').setup({
         disable_hack_modes = {},
