@@ -1,6 +1,10 @@
 pki_dir: /var/home/neg/src/salt/salt_config/pki/minion
 log_file: /var/home/neg/src/salt/salt_config/var/log/salt/minion
 cachedir: /var/home/neg/src/salt/salt_config/var/cache/salt
+minion_pillar_cache: True
+pillar_cache: True
+pillar_cache_backend: disk
+pillar_cache_ttl: 3600
 file_roots:
   base:
     - /var/home/neg/src/salt/states/
