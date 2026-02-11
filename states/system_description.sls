@@ -137,13 +137,10 @@ sudo_timeout:
         {'name': 'fd-find',             'desc': 'Fd is a simple, fast and user-friendly alternative to find'},
         {'name': 'jdupes',              'desc': 'Duplicate file finder and remover'},
         {'name': 'ncdu',                'desc': 'Text-based disk usage viewer'},
-        {'name': 'nnn',                 'desc': 'Terminal file browser'},
         {'name': 'plocate',             'desc': 'Fast file locate'},
         {'name': 'ripgrep',             'desc': 'Fast regex search tool'},
-        {'name': 'ranger',              'desc': 'Terminal file manager with vi keybindings'},
         {'name': 'rclone',              'desc': 'Cloud storage sync tool'},
         {'name': 'rmlint',              'desc': 'Find space waste and other broken things on your filesystem'},
-        {'name': 'stow',                'desc': 'Manage the installation of software packages from source'},
         {'name': 'testdisk',            'desc': 'Data recovery and partition repair tool'}
     ],
     'Fonts': [
@@ -223,7 +220,6 @@ sudo_timeout:
     ],
     'Network': [
         {'name': 'aria2',               'desc': 'High speed download utility with resuming and segmented downloading'},
-        {'name': 'axel',                'desc': 'Multi-threaded download accelerator'},
         {'name': 'fping',               'desc': 'Fast ping utility'},
         {'name': 'freerdp',             'desc': 'Remote Desktop Protocol client'},
         {'name': 'fuse-sshfs',          'desc': 'Mount remote directories over SSH'},
@@ -236,7 +232,6 @@ sudo_timeout:
         {'name': 'nmap-ncat',           'desc': 'Netcat from nmap project'},
         {'name': 'ollama',              'desc': 'Local LLM runner'},
         {'name': 'prettyping',          'desc': 'Wrapper around ping to make output prettier'},
-        {'name': 'speedtest-cli',       'desc': 'Command-line bandwidth test'},
         {'name': 'sshpass',             'desc': 'Non-interactive SSH password auth'},
         {'name': 'streamlink',          'desc': 'CLI for extracting streams from websites'},
         {'name': 'telegram-desktop',    'desc': 'Telegram Desktop messaging app'},
@@ -332,7 +327,6 @@ sudo_timeout:
         {'name': 'mangohud',            'desc': 'Vulkan/OpenGL overlay for FPS and system monitoring'},
         {'name': 'nethack',             'desc': 'Classic roguelike adventure game'},
         {'name': 'openmw',              'desc': 'Open-source Morrowind engine reimplementation'},
-        {'name': 'pcem',                'desc': 'IBM PC emulator'},
         {'name': 'protontricks',        'desc': 'Proton/Wine tricks helper'},
         {'name': 'python3-vkbasalt-cli', 'desc': 'CLI for vkBasalt Vulkan post-processing config'},
         {'name': 'retroarch',           'desc': 'Multi-platform emulator frontend'},
@@ -796,6 +790,11 @@ copr_audinux:
     - name: dnf copr enable -y ycollet/audinux
     - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:ycollet:audinux.repo
 
+copr_86box:
+  cmd.run:
+    - name: dnf copr enable -y rob72/86Box
+    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:rob72:86Box.repo
+
 # --- COPR package installs (batched: one rpm-ostree status check) ---
 {% set copr_packages = [
     'noise-suppression-for-voice',
@@ -807,6 +806,7 @@ copr_audinux:
     'brutefir',
     'patchmatrix',
     'supercollider-sc3-plugins',
+    '86Box',
 ] %}
 
 install_copr_packages:
@@ -831,6 +831,7 @@ install_copr_packages:
       - cmd: copr_spotifyd
       - cmd: copr_sbctl
       - cmd: copr_audinux
+      - cmd: copr_86box
 
 # --- CachyOS kernel (special: override remove + install, stays separate) ---
 install_cachyos_kernel:

@@ -58,6 +58,7 @@
     {'name': 'systemd-language-server', 'version': '0.3.5'},
     {'name': 'croc',                  'version': '10.3.1'},
     {'name': 'faker',                 'version': '40.4.0',  'arch': 'noarch'},
+    {'name': 'speedtest-go',            'version': '1.7.10'},
 ] %}
 
 {% set iosevka = {
