@@ -1,4 +1,5 @@
 # Salt state for Amnezia build and deploy (Local User version)
+# All 3 components build in parallel for faster deployment
 
 /var/home/neg/src/amnezia_build:
   file.directory:
@@ -12,20 +13,87 @@
     - group: neg
     - makedirs: True
 
-# Build AmneziaWG-go
-build_amneziawg_go:
+# Build all Amnezia components in parallel
+build_amnezia_all:
   cmd.run:
     - name: |
-        podman run --rm -v /var/home/neg/src/amnezia_build:/build:Z registry.fedoraproject.org/fedora-toolbox:43 bash -c "
-        dnf install -y git golang make && \
-        rm -rf /build/amneziawg-go-src && \
-        git clone https://github.com/amnezia-vpn/amneziawg-go.git /build/amneziawg-go-src && \
-        cd /build/amneziawg-go-src && \
-        make && \
-        cp amneziawg-go /build/amneziawg-go-bin
-        "
-    - creates: /var/home/neg/src/amnezia_build/amneziawg-go-bin
+        #!/bin/bash
+        set -uo pipefail
+        BUILD=/var/home/neg/src/amnezia_build
+        IMG=registry.fedoraproject.org/fedora-toolbox:43
+        PIDS=()
+        NAMES=()
+        FAILURES=0
+
+        # AmneziaWG-go
+        if [ ! -f "$BUILD/amneziawg-go-bin" ]; then
+            (
+                echo "[BUILD] amneziawg-go"
+                podman run --rm -v "$BUILD:/build:Z" "$IMG" bash -c "
+                dnf install -y git golang make && \
+                rm -rf /build/amneziawg-go-src && \
+                git clone https://github.com/amnezia-vpn/amneziawg-go.git /build/amneziawg-go-src && \
+                cd /build/amneziawg-go-src && \
+                make && \
+                cp amneziawg-go /build/amneziawg-go-bin
+                " && echo "[  OK ] amneziawg-go" || { echo "[ FAIL] amneziawg-go" >&2; exit 1; }
+            ) &
+            PIDS+=($!); NAMES+=("amneziawg-go")
+        fi
+
+        # AmneziaWG-tools
+        if [ ! -f "$BUILD/awg-bin" ]; then
+            (
+                echo "[BUILD] amneziawg-tools"
+                podman run --rm -v "$BUILD:/build:Z" "$IMG" bash -c "
+                dnf install -y git make gcc libmnl-devel && \
+                rm -rf /build/amneziawg-tools-src && \
+                git clone https://github.com/amnezia-vpn/amneziawg-tools.git /build/amneziawg-tools-src && \
+                cd /build/amneziawg-tools-src/src && \
+                make && \
+                cp wg /build/awg-bin
+                " && echo "[  OK ] amneziawg-tools" || { echo "[ FAIL] amneziawg-tools" >&2; exit 1; }
+            ) &
+            PIDS+=($!); NAMES+=("amneziawg-tools")
+        fi
+
+        # Amnezia-VPN Client (GUI) — longest build (~1h)
+        if [ ! -f "$BUILD/AmneziaVPN-bin" ]; then
+            (
+                echo "[BUILD] amnezia-vpn"
+                podman run --rm -v "$BUILD:/build:Z" "$IMG" bash -c "
+                dnf install -y --disablerepo=fedora-cisco-openh264 --setopt=install_weak_deps=False \
+                    git cmake make gcc-c++ qt6-qtbase-devel qt6-qtsvg-devel \
+                    qt6-qtdeclarative-devel qt6-qttools-devel libmnl-devel libmount-devel \
+                    qt6-qt5compat-devel qt6-qtshadertools-devel qt6-qtmultimedia-devel \
+                    qt6-qtbase-static qt6-qtdeclarative-static qt6-qtremoteobjects-devel \
+                    libsecret-devel libstdc++-static && \
+                rm -rf /build/amnezia-client-src && \
+                git clone --recursive https://github.com/amnezia-vpn/amnezia-client.git /build/amnezia-client-src && \
+                mkdir -p /build/amnezia-client-src/build && cd /build/amnezia-client-src/build && \
+                cmake .. -DCMAKE_BUILD_TYPE=Release -DVERSION=2.1.2 && \
+                make -j\$(nproc) && \
+                cp client/AmneziaVPN /build/AmneziaVPN-bin
+                " && echo "[  OK ] amnezia-vpn" || { echo "[ FAIL] amnezia-vpn" >&2; exit 1; }
+            ) &
+            PIDS+=($!); NAMES+=("amnezia-vpn")
+        fi
+
+        # Wait for all builds
+        for i in "${!PIDS[@]}"; do
+            if ! wait "${PIDS[$i]}"; then
+                echo "FAILED: ${NAMES[$i]}" >&2
+                FAILURES=$((FAILURES + 1))
+            fi
+        done
+        echo "=== Amnezia: ${#PIDS[@]} built, $FAILURES failed ==="
+        [ "$FAILURES" -eq 0 ]
+    - timeout: 3600
     - output_loglevel: info
+    - unless: >-
+        test -f /var/home/neg/src/amnezia_build/amneziawg-go-bin &&
+        test -f /var/home/neg/src/amnezia_build/awg-bin &&
+        test -f /var/home/neg/src/amnezia_build/AmneziaVPN-bin
     - require:
       - file: /var/home/neg/src/amnezia_build
 
@@ -37,24 +105,7 @@ install_amneziawg_go:
     - user: neg
     - group: neg
     - require:
-      - cmd: build_amneziawg_go
-
-# Build AmneziaWG-tools
-build_amneziawg_tools:
-  cmd.run:
-    - name: |
-        podman run --rm -v /var/home/neg/src/amnezia_build:/build:Z registry.fedoraproject.org/fedora-toolbox:43 bash -c "
-        dnf install -y git make gcc libmnl-devel && \
-        rm -rf /build/amneziawg-tools-src && \
-        git clone https://github.com/amnezia-vpn/amneziawg-tools.git /build/amneziawg-tools-src && \
-        cd /build/amneziawg-tools-src/src && \
-        make && \
-        cp wg /build/awg-bin
-        "
-    - creates: /var/home/neg/src/amnezia_build/awg-bin
-    - output_loglevel: info
-    - require:
-      - file: /var/home/neg/src/amnezia_build
+      - cmd: build_amnezia_all
 
 install_amneziawg_tools:
   file.managed:
@@ -64,7 +115,7 @@ install_amneziawg_tools:
     - user: neg
     - group: neg
     - require:
-      - cmd: build_amneziawg_tools
+      - cmd: build_amnezia_all
 
 # Symlinks for sudo access
 /usr/local/bin/amneziawg-go:
@@ -81,30 +132,6 @@ install_amneziawg_tools:
     - require:
       - file: install_amneziawg_tools
 
-# Build Amnezia-VPN Client (GUI)
-build_amnezia_vpn:
-  cmd.run:
-    - name: |
-        podman run --rm -v /var/home/neg/src/amnezia_build:/build:Z registry.fedoraproject.org/fedora-toolbox:43 bash -c "
-        dnf install -y --disablerepo=fedora-cisco-openh264 --setopt=install_weak_deps=False \
-            git cmake make gcc-c++ qt6-qtbase-devel qt6-qtsvg-devel \
-            qt6-qtdeclarative-devel qt6-qttools-devel libmnl-devel libmount-devel \
-            qt6-qt5compat-devel qt6-qtshadertools-devel qt6-qtmultimedia-devel \
-            qt6-qtbase-static qt6-qtdeclarative-static qt6-qtremoteobjects-devel \
-            libsecret-devel libstdc++-static && \
-        rm -rf /build/amnezia-client-src && \
-        git clone --recursive https://github.com/amnezia-vpn/amnezia-client.git /build/amnezia-client-src && \
-        mkdir -p /build/amnezia-client-src/build && cd /build/amnezia-client-src/build && \
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DVERSION=2.1.2 && \
-        make -j\$(nproc) && \
-        cp client/AmneziaVPN /build/AmneziaVPN-bin
-        "
-    - creates: /var/home/neg/src/amnezia_build/AmneziaVPN-bin
-    - timeout: 3600
-    - output_loglevel: info
-    - require:
-      - file: /var/home/neg/src/amnezia_build
-
 install_amnezia_vpn:
   file.managed:
     - name: /var/home/neg/.local/bin/AmneziaVPN
@@ -113,7 +140,7 @@ install_amnezia_vpn:
     - user: neg
     - group: neg
     - require:
-      - cmd: build_amnezia_vpn
+      - cmd: build_amnezia_all
 
 # Verification
 verify_amneziawg_go:

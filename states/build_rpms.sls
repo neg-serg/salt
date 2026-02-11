@@ -101,6 +101,27 @@ build_rpms_parallel:
         LAUNCHED=0
         SKIPPED=0
 
+        # Iosevka: start in background outside semaphore (2h build, independent)
+        IOSEVKA_RPM="{{ rpms_dir }}/{{ iosevka.rpm_name }}-{{ iosevka.version }}-{{ iosevka.release }}.fc43.{{ iosevka.arch }}.rpm"
+        if [ ! -f "$IOSEVKA_RPM" ]; then
+            (
+                echo "[BUILD] iosevka (background, no semaphore slot)"
+                RC=0
+                podman run --rm \
+                    -v "${BUILD_DIR}:/build/salt:z" \
+                    -v "${RPMS_DIR}:/build/rpms:z" \
+                    {{ iosevka.extra_volumes }} \
+                    "$IMG" bash /build/salt/build-rpm.sh {{ iosevka.name }} || RC=$?
+                [ $RC -eq 0 ] && echo "[  OK ] iosevka" || echo "[ FAIL] iosevka" >&2
+                exit $RC
+            ) &
+            PIDS+=($!)
+            NAMES+=("iosevka")
+            LAUNCHED=$((LAUNCHED + 1))
+        else
+            SKIPPED=$((SKIPPED + 1))
+        fi
+
         {%- for pkg in rpms %}
         {%- set arch = pkg.get('arch', 'x86_64') %}
         {%- set release = pkg.get('release', '1') %}
@@ -144,6 +165,7 @@ build_rpms_parallel:
     - timeout: 7200
     - unless: |
         for f in \
+          "{{ rpms_dir }}/{{ iosevka.rpm_name }}-{{ iosevka.version }}-{{ iosevka.release }}.fc43.{{ iosevka.arch }}.rpm" \
         {%- for pkg in rpms %}
         {%- set arch = pkg.get('arch', 'x86_64') %}
         {%- set release = pkg.get('release', '1') %}
@@ -151,16 +173,5 @@ build_rpms_parallel:
           "{{ rpms_dir }}/{{ rpm_file }}" \
         {%- endfor %}
         ; do [ -f "$f" ] || exit 1; done
-    - require:
-      - file: {{ rpms_dir }}
-
-# Iosevka font build (separate — 2h build time, extra volume for config)
-build_iosevka_rpm:
-  cmd.run:
-    - name: podman run --rm -v {{ build_dir }}:/build/salt:z -v {{ rpms_dir }}:/build/rpms:z {{ iosevka.extra_volumes }} {{ base_image }} bash /build/salt/build-rpm.sh {{ iosevka.name }}
-    - runas: neg
-    - creates: {{ rpms_dir }}/{{ iosevka.rpm_name }}-{{ iosevka.version }}-{{ iosevka.release }}.fc43.{{ iosevka.arch }}.rpm
-    - timeout: {{ iosevka.timeout }}
-    - output_loglevel: info
     - require:
       - file: {{ rpms_dir }}
