@@ -559,7 +559,7 @@ flatpak_overrides:
 floorp_user_js:
   file.managed:
     - name: /var/home/neg/.var/app/one.ablaze.floorp/.floorp/ltjcyqj7.default-default/user.js
-    - source: salt://dotfiles/dot_config/tridactyl/user.js
+    - source: salt://dotfiles/dot_config/floorp/user.js
     - user: neg
     - group: neg
     - makedirs: True
@@ -567,7 +567,7 @@ floorp_user_js:
 floorp_userchrome:
   file.managed:
     - name: /var/home/neg/.var/app/one.ablaze.floorp/.floorp/ltjcyqj7.default-default/chrome/userChrome.css
-    - source: salt://dotfiles/dot_config/tridactyl/mozilla/userChrome.css
+    - source: salt://dotfiles/dot_config/floorp/userChrome.css
     - user: neg
     - group: neg
     - makedirs: True
@@ -575,7 +575,7 @@ floorp_userchrome:
 floorp_usercontent:
   file.managed:
     - name: /var/home/neg/.var/app/one.ablaze.floorp/.floorp/ltjcyqj7.default-default/chrome/userContent.css
-    - source: salt://dotfiles/dot_config/tridactyl/mozilla/userContent.css
+    - source: salt://dotfiles/dot_config/floorp/userContent.css
     - user: neg
     - group: neg
     - makedirs: True
@@ -583,7 +583,7 @@ floorp_usercontent:
 # --- Floorp extensions (download .xpi into profile) ---
 {% set floorp_profile = '/var/home/neg/.var/app/one.ablaze.floorp/.floorp/ltjcyqj7.default-default' %}
 {% set floorp_extensions = [
-    {'id': 'tridactyl.vim@cmcaine.co.uk',                    'slug': 'tridactyl-vim'},
+    {'id': '{a8332c60-5b6d-41ee-bfc8-e9bb331d34ad}',         'slug': 'surfingkeys_ff'},
     {'id': 'uBlock0@raymondhill.net',                         'slug': 'ublock-origin'},
     {'id': 'addon@darkreader.org',                            'slug': 'darkreader'},
     {'id': 'sponsorBlocker@ajay.app',                         'slug': 'sponsorblock'},
