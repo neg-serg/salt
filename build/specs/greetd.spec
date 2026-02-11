@@ -106,14 +106,6 @@ install -m 0644 selinux/greetd.pp.bz2 %{buildroot}%{_datadir}/selinux/packages/g
 
 %post
 %systemd_post greetd.service
-%tmpfiles_create %{_tmpfilesdir}/greetd.conf
-# Create XDG config dir for greeter user (disable xdg-desktop-portal in greeter session)
-XDG_CONFIG_DIR=%{_sharedstatedir}/greetd/.config
-if [ ! -d $XDG_CONFIG_DIR/systemd ]; then
-    mkdir -p $XDG_CONFIG_DIR/systemd/user
-    ln -sf /dev/null $XDG_CONFIG_DIR/systemd/user/xdg-desktop-portal.service
-    chown -R %{username}:%{username} $XDG_CONFIG_DIR
-fi
 
 %preun
 %systemd_preun greetd.service

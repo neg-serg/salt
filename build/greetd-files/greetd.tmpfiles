@@ -1,1 +1,3 @@
+d  /var/lib/greetd/.config/systemd/user 0755 greetd greetd - -
+L  /var/lib/greetd/.config/systemd/user/xdg-desktop-portal.service - - - - /dev/null
 Z  /var/lib/greetd -    greetd greetd -   -
