@@ -11,7 +11,7 @@ return {
     { "<leader>a", function() require("harpoon"):list():add() end, desc = "Harpoon add" },
     { "<C-e>", function() require("harpoon").ui:toggle_quick_menu(require("harpoon"):list()) end, desc = "Harpoon menu" },
     { "<C-h>", function() require("harpoon"):list():select(1) end, desc = "Harpoon 1" },
-    { "<C-t>", function() require("harpoon"):list():select(2) end, desc = "Harpoon 2" },
+    { "<C-j>", function() require("harpoon"):list():select(2) end, desc = "Harpoon 2" },
     { "<C-n>", function() require("harpoon"):list():select(3) end, desc = "Harpoon 3" },
     { "<C-s>", function() require("harpoon"):list():select(4) end, desc = "Harpoon 4" },
     { "<C-S-P>", function() require("harpoon"):list():prev() end, desc = "Harpoon prev" },
