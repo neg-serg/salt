@@ -654,6 +654,7 @@ floorp_usercontent:
     {'id': 'hide-scrollbars@qashto',                          'slug': 'hide-scrollbars'},
     {'id': 'kellyc-show-youtube-dislikes@nradiowave',         'slug': 'return-youtube-dislikes'},
     {'id': '{4a311e5c-1ccc-49b7-9c23-3e2b47b6c6d5}',         'slug': 'скачать-музыку-с-вк-vkd'},
+    {'id': 'BetterDark@neopolitan.uk',                       'slug': 'betterdark'},
 ] %}
 
 {% for ext in floorp_extensions %}
