@@ -53,8 +53,8 @@ return function()
     api.nvim_create_user_command('HeirlineDebugDump', function()
       local b = api.nvim_create_buf(false, true)
       api.nvim_buf_set_lines(b, 0, -1, false, dbg_log)
-      api.nvim_buf_set_option(b, 'bufhidden', 'wipe')
-      api.nvim_buf_set_option(b, 'filetype', 'log')
+      vim.bo[b].bufhidden = 'wipe'
+      vim.bo[b].filetype = 'log'
       api.nvim_set_current_buf(b)
     end, {})
     pcall(api.nvim_del_user_command, 'HeirlineDebugClear')
@@ -120,16 +120,8 @@ return function()
     local _hl_cache = {}
     local function hl_get(name)
       if _hl_cache[name] then return _hl_cache[name] end
-      local ok, h
-      if vim.api.nvim_get_hl then
-        ok, h = pcall(vim.api.nvim_get_hl, 0, { name = name, link = false })
-        if ok and h then _hl_cache[name] = h; return h end
-      end
-      ok, h = pcall(vim.api.nvim_get_hl_by_name, name, true)
-      if ok and h then
-        local r = { fg = h.foreground, bg = h.background }
-        _hl_cache[name] = r; return r
-      end
+      local ok, h = pcall(vim.api.nvim_get_hl, 0, { name = name, link = false })
+      if ok and h then _hl_cache[name] = h; return h end
       return {}
     end
     local function tohex(n) if not n then return nil end; return string.format('#%06x', n) end

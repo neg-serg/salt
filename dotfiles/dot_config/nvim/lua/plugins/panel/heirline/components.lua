@@ -18,6 +18,26 @@ return function(ctx)
   local safe_buffer_matches = ctx.safe_buffer_matches
   local notify = ctx.notify
 
+  -- ── Module-check cache ───────────────────────────────────────────────────
+  local _has = {}
+  local function has_mod(name)
+    local v = _has[name]; if v ~= nil then return v end
+    local ok = pcall(require, name); _has[name] = ok; return ok
+  end
+
+  -- ── Window width helper ─────────────────────────────────────────────────
+  local function win_w()
+    local win = get_status_win()
+    if win and api.nvim_win_is_valid(win) then
+      local ok, width = pcall(api.nvim_win_get_width, win)
+      if ok and type(width) == 'number' and width > 0 then return width end
+    end
+    local ok_cur, width_cur = pcall(api.nvim_win_get_width, 0)
+    if ok_cur and type(width_cur) == 'number' and width_cur > 0 then return width_cur end
+    local columns = tonumber(vim.o.columns) or 0
+    return (columns > 0) and columns or 120
+  end
+
   -- ── Window/buffer helpers ─────────────────────────────────────────────────
   local function target_win()
     local win = get_status_win()
@@ -36,15 +56,15 @@ return function(ctx)
   end
   local function buf_option(bufnr, name, fallback)
     if bufnr and api.nvim_buf_is_valid(bufnr) then
-      local ok, val = pcall(api.nvim_buf_get_option, bufnr, name)
-      if ok then return val end
+      local ok, val = pcall(function() return vim.bo[bufnr][name] end)
+      if ok and val ~= nil then return val end
     end
     return fallback
   end
   local function win_option(win, name, fallback)
     if win and api.nvim_win_is_valid(win) then
-      local ok, val = pcall(api.nvim_win_get_option, win, name)
-      if ok then return val end
+      local ok, val = pcall(function() return vim.wo[win][name] end)
+      if ok and val ~= nil then return val end
     end
     return fallback
   end
@@ -624,14 +644,7 @@ return function(ctx)
       condition = function()
         local buf = target_buf()
         if not buf then return false end
-        local clients = {}
-        if vim.lsp and vim.lsp.get_clients then
-          clients = vim.lsp.get_clients({ bufnr = buf })
-        elseif vim.lsp and vim.lsp.buf_get_clients then
-          local map = vim.lsp.buf_get_clients(buf)
-          for _, client in pairs(map or {}) do table.insert(clients, client) end
-        end
-        return #clients > 0
+        return #vim.lsp.get_clients({ bufnr = buf }) > 0
       end,
       provider = function() return S.gear .. ' ' end,
       hl = function() return { fg = colors.cyan, bg = colors.base_bg } end,
@@ -643,49 +656,28 @@ return function(ctx)
       condition = function()
         local buf = target_buf()
         if not buf then return false end
-        if vim.lsp and vim.lsp.get_clients then
-          return #vim.lsp.get_clients({ bufnr = buf }) > 0
-        end
-        if vim.lsp and vim.lsp.buf_get_clients then
-          local map = vim.lsp.buf_get_clients(buf)
-          return map and (vim.tbl_count(map) > 0)
-        end
-        return false
+        return #vim.lsp.get_clients({ bufnr = buf }) > 0
       end,
       init = function(self)
         self.frames = { '⠋','⠙','⠹','⠸','⠼','⠴','⠦','⠧','⠇','⠏' }
         self.idx = (self.idx or 0) + 1
         if self.idx > #self.frames then self.idx = 1 end
-        local msgs = {}
-        if vim.lsp and vim.lsp.util and vim.lsp.util.get_progress_messages then
-          for _, m in ipairs(vim.lsp.util.get_progress_messages()) do
-            local title = m.title or m.message or ''
-            local pct = m.percentage and (m.percentage .. '%%') or ''
-            if title ~= '' then table.insert(msgs, (pct ~= '' and (title .. ' ' .. pct) or title)) end
-          end
-        end
-        self.text = table.concat(msgs, ' | ')
+        local status = vim.lsp.status()
+        self.text = (status and status ~= '') and status or ''
       end,
       provider = function(self)
         if self.text == nil or self.text == '' then return '' end
         return string.format('%s %s ', self.frames[self.idx], self.text)
       end,
       hl = function() return { fg = colors.blue_light, bg = colors.base_bg } end,
-      update = { 'LspAttach', 'LspDetach', 'CursorHold', 'CursorHoldI', 'BufEnter', 'WinEnter' },
+      update = { 'LspProgress', 'LspAttach', 'LspDetach', 'BufEnter', 'WinEnter' },
     },
 
     code_actions = {
       condition = function(self)
         local buf = target_buf(); if not buf then return false end
-        if not vim.lsp then return false end
-        local clients = {}
-        if vim.lsp.get_clients then
-          clients = vim.lsp.get_clients({ bufnr = buf })
-        elseif vim.lsp.buf_get_clients then
-          local map = vim.lsp.buf_get_clients(buf)
-          for _, client in pairs(map or {}) do table.insert(clients, client) end
-        end
-        if not clients or (type(clients) == 'table' and next(clients) == nil) then return false end
+        local clients = vim.lsp.get_clients({ bufnr = buf })
+        if #clients == 0 then return false end
         self._buf = buf
         return true
       end,
@@ -936,11 +928,12 @@ return function(ctx)
     env = {
       condition = function()
         if not SHOW_ENV then return false end
-        local lbl = env_label()
-        return lbl ~= nil and lbl ~= ''
+        local venv = vim.env.VIRTUAL_ENV or vim.env.CONDA_DEFAULT_ENV
+        return venv ~= nil and venv ~= ''
       end,
       init = function(self)
-        self._env_label = env_label() or ''
+        local venv = vim.env.VIRTUAL_ENV or vim.env.CONDA_DEFAULT_ENV or ''
+        self._env_label = vim.fn.fnamemodify(venv, ':t')
       end,
       update = { 'VimResized' },
       panel_divider(),
