@@ -1195,7 +1195,6 @@ ollama_service_unit:
         Environment="HOME=/var/home/neg"
         Environment="OLLAMA_HOST=127.0.0.1:11434"
         Environment="OLLAMA_MODELS=/var/mnt/one/ollama/models"
-        ReadWritePaths=/var/home/neg/.ollama /var/mnt/one/ollama
 
         [Install]
         WantedBy=default.target
@@ -1212,6 +1211,16 @@ ollama_models_dir:
     - require:
       - mount: mount_one
 
+ollama_selinux_context:
+  cmd.run:
+    - name: |
+        semanage fcontext -a -t var_lib_t "/var/mnt/one/ollama(/.*)?" 2>/dev/null || \
+        semanage fcontext -m -t var_lib_t "/var/mnt/one/ollama(/.*)?"
+        restorecon -Rv /var/mnt/one/ollama
+    - unless: matchpathcon -V /var/mnt/one/ollama/models 2>&1 | grep -q verified
+    - require:
+      - file: ollama_models_dir
+
 ollama_enable:
   cmd.run:
     - name: systemctl daemon-reload && systemctl enable ollama
@@ -1219,7 +1228,7 @@ ollama_enable:
       - file: ollama_service_unit
     - require:
       - cmd: install_system_packages
-      - file: ollama_models_dir
+      - cmd: ollama_selinux_context
 
 ollama_start:
   cmd.run:
