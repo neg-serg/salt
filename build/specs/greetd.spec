@@ -16,7 +16,7 @@ Source5:        greetd.fc
 
 BuildRequires:  rust, cargo, git, scdoc, pam-devel
 BuildRequires:  selinux-policy-devel
-BuildRequires:  systemd-rpm-macros
+BuildRequires:  systemd-devel, systemd-rpm-macros
 
 %description
 greetd is a minimal and flexible login manager daemon that makes no assumptions

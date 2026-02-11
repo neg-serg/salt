@@ -1278,7 +1278,7 @@ greetd)
     if [ -f "/build/rpms/${GREETD_RPM_NAME}" ]; then
         echo "greetd RPM (${GREETD_RPM_NAME}) already exists, skipping."
     else
-        dnf install -y --skip-broken git rpm-build tar rust cargo scdoc pam-devel selinux-policy-devel systemd-rpm-macros
+        dnf install -y --skip-broken git rpm-build tar rust cargo scdoc pam-devel selinux-policy-devel systemd-devel systemd-rpm-macros
         GREETD_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/greetd-${GREETD_VERSION}"
         if [ ! -d "${GREETD_SOURCE_DIR}" ]; then
             mkdir -p "${RPM_BUILD_ROOT}/BUILD"
