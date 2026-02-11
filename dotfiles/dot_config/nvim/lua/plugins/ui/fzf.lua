@@ -52,15 +52,25 @@ return {
       winopts = {
         height = 0.4, width = 1, row = 1,
         border = 'none',
+        winblend = 8,
         preview = {
           default = 'builtin',
           layout = 'vertical',
           vertical = 'down:50%',
+          title = true,
+          title_pos = 'center',
+          winopts = { winblend = 8 },
         },
       },
       fzf_opts = {
         ['--layout'] = 'reverse-list',
+        ['--prompt'] = '❯> ',
+        ['--pointer'] = '•',
+        ['--marker'] = '•',
+        ['--separator'] = '─',
+        ['--info'] = 'inline-right',
       },
+      fzf_colors = true,
       keymap = {
         builtin = {
           ['<C-S-p>'] = 'toggle-preview',
