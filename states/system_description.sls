@@ -204,7 +204,6 @@ sudo_timeout:
         {'name': 'lnav',                'desc': 'Curses-based tool for viewing and analyzing log files'},
         {'name': 'lshw',                'desc': 'Hardware lister'},
         {'name': 'memtester',           'desc': 'User-space memory stress test'},
-        {'name': 'nethogs',             'desc': 'Per-process network bandwidth monitor'},
         {'name': 'nvtop',               'desc': 'GPU process monitor'},
         {'name': 'parted',              'desc': 'GNU Partition Editor'},
         {'name': 'procdump',            'desc': 'Linux process core dump generator'},
@@ -407,10 +406,11 @@ include:
    - pass: replaced by gopass
    - *-debug{info,source}: debug packages from custom RPM builds
    - alacritty/foot/g++: replaced terminals / unused compiler
+   - nethogs: replaced by bandwhich (custom RPM)
    - steam etc.: moved to Distrobox CachyOS container
 #}
 {% set unwanted_packages = [
-    'nnn', 'ranger', 'stow', 'axel', 'speedtest-cli', 'pcem',
+    'nnn', 'ranger', 'stow', 'axel', 'speedtest-cli', 'pcem', 'nethogs',
     'python3-devel', 'ncurses-devel', 'pulseaudio-libs-devel', 'taglib-devel',
     'pass',
     'albumdetails-debuginfo', 'albumdetails-debugsource',
