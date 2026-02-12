@@ -1308,18 +1308,23 @@ libva-i686)
     if [ -f "/build/rpms/${LIBVA_RPM_NAME}" ]; then
         echo "libva i686 RPM (${LIBVA_RPM_NAME}) already exists, skipping."
     else
+        # No mesa-libGL/EGL-devel.i686 — Wayblue base has epoch'd mesa that
+        # conflicts with stock Fedora i686 mesa.  GLX backend not needed for
+        # VA-API on Wayland (DRM + Wayland backends suffice).
         dnf install -y --skip-broken rpm-build gcc meson doxygen \
             glibc-devel.i686 libdrm-devel.i686 \
             libX11-devel.i686 libXext-devel.i686 libXfixes-devel.i686 \
             libxcb-devel.i686 \
-            mesa-libGL-devel.i686 mesa-libEGL-devel.i686 \
-            wayland-devel.i686 wayland-protocols-devel \
-            libglvnd-devel.i686
+            wayland-devel.i686 wayland-protocols-devel
 
         curl -sfL -o /tmp/libva.src.rpm "${LIBVA_SRPM_URL}"
         rpm --define "_topdir ${RPM_BUILD_ROOT}" -ivh /tmp/libva.src.rpm 2>&1
 
-        echo "--- Building libva i686 RPM ---"
+        # Patch spec: remove GL/EGL build deps and disable GLX
+        sed -i '/mesa-libGL-devel\|mesa-libEGL-devel\|libglvnd-devel/d' "${SPECS_DIR}/libva.spec"
+        sed -i 's/%meson/%meson -Dwith_glx=no -Dwith_egl=no/' "${SPECS_DIR}/libva.spec"
+
+        echo "--- Building libva i686 RPM (no GLX/EGL) ---"
         CFLAGS="-O2 -flto=auto -m32" \
         LDFLAGS="-m32" \
         PKG_CONFIG_PATH=/usr/lib/pkgconfig \
