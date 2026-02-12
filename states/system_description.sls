@@ -388,6 +388,7 @@ sudo_timeout:
 {# '86Box' removed — needs Qt 6.10, base image pins 6.9.2 #}
 
 include:
+  - pkg_cache
   - amnezia
   - build_rpms
   - fira-code-nerd
