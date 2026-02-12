@@ -61,7 +61,6 @@
     {'name': 'speedtest-go',            'version': '1.7.10'},
     {'name': 'greetd',                   'version': '0.10.3',
      'extra_volumes': '-v /var/home/neg/src/salt/build/greetd-files:/build/salt/greetd-files:z'},
-    {'name': 'libva-i686', 'rpm_name': 'libva', 'version': '2.23.0', 'arch': 'i686'},
 ] %}
 
 {% set iosevka = {

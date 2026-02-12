@@ -312,6 +312,8 @@ sudo_timeout:
         {'name': 'wtype',               'desc': 'xdotool type for Wayland'},
         {'name': 'ydotool',             'desc': 'Generic command-line automation tool for Wayland'}
     ],
+    {# Steam + gaming tools (gamescope, mangohud, protontricks, vkBasalt) moved to
+       Distrobox CachyOS container — see states/distrobox.sls #}
     'Gaming & Emulation': [
         {'name': '0ad',                 'desc': 'Ancient warfare real-time strategy game'},
         {'name': 'abuse',               'desc': 'Action platformer game'},
@@ -321,17 +323,11 @@ sudo_timeout:
         {'name': 'endless-sky',         'desc': 'Space exploration and trading game'},
         {'name': 'fheroes2',            'desc': 'Free Heroes of Might and Magic II engine'},
         {'name': 'flare',               'desc': 'Free Libre Action Roleplaying Engine'},
-        {'name': 'gamescope',           'desc': 'SteamOS session compositing window manager'},
-        {'name': 'steam',              'desc': 'Valve Steam gaming platform'},
         {'name': 'gnuchess',            'desc': 'GNU Chess engine'},
-        {'name': 'mangohud',            'desc': 'Vulkan/OpenGL overlay for FPS and system monitoring'},
         {'name': 'nethack',             'desc': 'Classic roguelike adventure game'},
         {'name': 'openmw',              'desc': 'Open-source Morrowind engine reimplementation'},
-        {'name': 'protontricks',        'desc': 'Proton/Wine tricks helper'},
-        {'name': 'python3-vkbasalt-cli', 'desc': 'CLI for vkBasalt Vulkan post-processing config'},
         {'name': 'retroarch',           'desc': 'Multi-platform emulator frontend'},
         {'name': 'supertux',            'desc': '2D platformer inspired by Super Mario'},
-        {'name': 'vkBasalt',            'desc': 'Vulkan post-processing layer (ReShade-like)'},
         {'name': 'wesnoth',             'desc': 'Turn-based strategy game'},
         {'name': 'xaos',                'desc': 'Interactive fractal zoomer'},
         {'name': 'xonotic',             'desc': 'Fast-paced FPS game'}
@@ -412,6 +408,7 @@ include:
     'albumdetails-debuginfo', 'albumdetails-debugsource',
     'amneziawg-tools-debuginfo', 'amneziawg-tools-debugsource',
     'alacritty', 'foot', 'g++',
+    'steam', 'gamescope', 'mangohud', 'protontricks', 'python3-vkbasalt-cli', 'vkBasalt',
 ] %}
 remove_unwanted_packages:
   cmd.run:
@@ -454,7 +451,6 @@ install_all_packages:
       - cmd: copr_sbctl
       - cmd: copr_audinux
       - cmd: rpmfusion_nonfree
-      - cmd: install_custom_rpms
       {# - cmd: copr_86box -- disabled, 86Box needs Qt 6.10 #}
 
 zsh_config_dir:
