@@ -79,9 +79,11 @@ unbound_daemon_reload:
       - cmd: install_unbound
 
 unbound_enabled:
-  service.enabled:
-    - name: unbound
+  cmd.run:
+    - name: systemctl enable unbound
+    - unless: systemctl is-enabled unbound
     - require:
+      - cmd: install_unbound
       - file: unbound_config
       - cmd: unbound_daemon_reload
 {% endif %}
