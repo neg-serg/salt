@@ -55,4 +55,3 @@ _exists broot && autoload -Uz br
 autoload zc
 
 # vim: ft=zsh:nowrap
-export PATH="$HOME/.npm-global/bin:$PATH"

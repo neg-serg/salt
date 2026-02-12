@@ -1,3 +1,6 @@
+# Deduplicate PATH entries (prevents accumulation in nested shells)
+typeset -U path
+
 # --- XDG Base Directory Specification ---
 export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_CACHE_HOME="$HOME/.cache"
@@ -142,4 +145,4 @@ if [[ ! -L ${HOME}/tmp ]]; then
 fi
 
 # Set path to local binaries
-export PATH="$HOME/.local/bin:$CARGO_HOME/bin:$PATH"
+export PATH="$HOME/.local/bin:$CARGO_HOME/bin:$HOME/.npm-global/bin:$PATH"
