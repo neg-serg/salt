@@ -65,8 +65,6 @@ def glyph(cls: str) -> str:
         "floorp": "\uf269",
         "kitty": "\uf120",
         "term": "\uf120",
-        "alacritty": "\uf120",
-        "foot": "\uf120",
         "mpv": "\uf144",
         "zathura": "\uf02d",
         "org.pwmt.zathura": "\uf02d",

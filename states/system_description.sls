@@ -411,6 +411,7 @@ include:
     'pass',
     'albumdetails-debuginfo', 'albumdetails-debugsource',
     'amneziawg-tools-debuginfo', 'amneziawg-tools-debugsource',
+    'alacritty', 'foot', 'g++',
 ] %}
 remove_unwanted_packages:
   cmd.run:
