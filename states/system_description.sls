@@ -56,11 +56,18 @@ user_neg:
     - uid: 1000
     - gid: 1000
 
+plugdev_group:
+  group.present:
+    - name: plugdev
+    - system: True
+
 # user.present groups broken on Python 3.14 (crypt module removed)
 neg_groups:
   cmd.run:
-    - name: usermod -aG wheel,libvirt neg
-    - unless: id -nG neg | tr ' ' '\n' | grep -qx libvirt
+    - name: usermod -aG wheel,libvirt,plugdev neg
+    - unless: id -nG neg | tr ' ' '\n' | grep -qx plugdev
+    - require:
+      - group: plugdev_group
 
 sudo_timeout:
   file.managed:
