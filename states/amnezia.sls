@@ -28,7 +28,13 @@ build_amnezia_all:
 
         # Clean stale source dirs (may be root-owned from previous container builds)
         for d in amneziawg-go-src amneziawg-tools-src amnezia-client-src; do
-            [ -d "$BUILD/$d" ] && podman unshare rm -rf "$BUILD/$d"
+            if [ -d "$BUILD/$d" ]; then
+                if [ "$(id -u)" -eq 0 ]; then
+                    rm -rf "$BUILD/$d"
+                else
+                    podman unshare rm -rf "$BUILD/$d"
+                fi
+            fi
         done
 
         # AmneziaWG-go
