@@ -395,14 +395,20 @@ sudo_timeout:
 include:
   - pkg_cache
   - amnezia
+  - bind_mounts
   - build_rpms
   - distrobox
+  - dns
   - fira-code-nerd
+  - hardware
   - hy3
   - install_rpms
   - kernel_modules
   - kernel_params
+  - monitoring
   - mpd
+  - network
+  - services
   - sysctl
 
 # Remove packages no longer in desired state.
