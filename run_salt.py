@@ -1,8 +1,19 @@
 import sys
 import warnings
 
-# Suppress DeprecationWarnings from Salt internals (codecs.open, datetime.utcnow)
-warnings.filterwarnings("ignore", category=DeprecationWarning, module=r"salt\.")
+# Suppress DeprecationWarnings from Salt internals (codecs.open, datetime.utcnow).
+# Override showwarning instead of filterwarnings — Salt's init calls resetwarnings()
+# which clears programmatic filters, but showwarning survives.
+_orig_showwarning = warnings.showwarning
+
+
+def _showwarning(msg, cat, filename, lineno, file=None, line=None):
+    if cat is DeprecationWarning and "/salt/" in filename:
+        return
+    _orig_showwarning(msg, cat, filename, lineno, file, line)
+
+
+warnings.showwarning = _showwarning
 
 
 # 1. Emulate removed 'crypt' module (Python 3.13+)
