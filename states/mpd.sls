@@ -105,19 +105,6 @@ mpd_service:
     - onlyif: rpm -q mpd
     - unless: systemctl --user is-active mpd.service
 
-# --- Enable mpdris2 (MPRIS2 bridge, RPM-shipped unit) ---
-mpdris2_service:
-  cmd.run:
-    - name: systemctl --user enable --now mpDris2.service
-    - runas: {{ user }}
-    - env:
-      - XDG_RUNTIME_DIR: /run/user/1000
-      - DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
-    - require:
-      - cmd: mpd_service
-    - onlyif: rpm -q mpdris2
-    - unless: systemctl --user is-enabled mpDris2.service
-
 # --- Deploy mpdas config via gopass ---
 mpdas_config:
   cmd.run:
@@ -145,16 +132,23 @@ mpdas_service_file:
     - mode: '0644'
     - makedirs: True
 
-mpdas_service:
+# --- Enable mpd companion services (mpdris2 + mpdas) in a single systemctl call ---
+mpd_companion_services:
   cmd.run:
-    - name: systemctl --user enable --now mpdas.service
+    - name: |
+        services=()
+        rpm -q mpdris2 >/dev/null 2>&1 && ! systemctl --user is-enabled mpDris2.service 2>/dev/null && services+=(mpDris2.service)
+        rpm -q mpdas >/dev/null 2>&1 && ! systemctl --user is-enabled mpdas.service 2>/dev/null && services+=(mpdas.service)
+        [ ${#services[@]} -gt 0 ] && systemctl --user enable --now "${services[@]}" || true
     - runas: {{ user }}
     - env:
       - XDG_RUNTIME_DIR: /run/user/1000
       - DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
+    - shell: /bin/bash
     - require:
+      - cmd: mpd_service
       - cmd: mpdas_config
       - file: mpdas_service_file
-      - cmd: mpd_service
-    - onlyif: rpm -q mpdas
-    - unless: systemctl --user is-enabled mpdas.service
+    - unless: |
+        (! rpm -q mpdris2 >/dev/null 2>&1 || systemctl --user is-enabled mpDris2.service 2>/dev/null) &&
+        (! rpm -q mpdas >/dev/null 2>&1 || systemctl --user is-enabled mpdas.service 2>/dev/null)
