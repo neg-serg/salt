@@ -65,10 +65,11 @@ set_kernel_params:
   cmd.run:
     - name: |
         current=$(rpm-ostree kargs)
+        wanted=({% for karg in kargs %}'{{ karg }}' {% endfor %})
         missing=()
-        {% for karg in kargs %}
-        [[ "$current" == *'{{ karg }}'* ]] || missing+=('{{ karg }}')
-        {% endfor %}
+        for k in "${wanted[@]}"; do
+          [[ "$current" == *"$k"* ]] || missing+=("$k")
+        done
         if [ -n "${missing[*]}" ]; then
           args=()
           for k in "${missing[@]}"; do args+=("--append=$k"); done
@@ -76,6 +77,7 @@ set_kernel_params:
         fi
     - unless: |
         current=$(rpm-ostree kargs)
-        {% for karg in kargs %}
-        [[ "$current" == *'{{ karg }}'* ]] || exit 1
-        {% endfor %}
+        wanted=({% for karg in kargs %}'{{ karg }}' {% endfor %})
+        for k in "${wanted[@]}"; do
+          [[ "$current" == *"$k"* ]] || exit 1
+        done
