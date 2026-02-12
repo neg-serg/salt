@@ -1,0 +1,26 @@
+# Essential session-wide environment (sourced by greetd session-wrapper)
+# Zsh-specific config is in ~/.config/zsh/.zshenv
+# systemd user services get these from ~/.config/environment.d/10-user.conf
+
+# XDG Base Directories
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_CACHE_HOME="$HOME/.cache"
+export XDG_DATA_HOME="$HOME/.local/share"
+export XDG_STATE_HOME="$HOME/.local/state"
+
+# Core
+export EDITOR="nvim"
+export TERMINAL="kitty"
+
+# Tool paths (XDG compliance)
+export CARGO_HOME="$XDG_DATA_HOME/cargo"
+export RUSTUP_HOME="$XDG_DATA_HOME/rustup"
+export GOMODCACHE="$XDG_CACHE_HOME/gomod"
+export GNUPGHOME="$XDG_DATA_HOME/gnupg"
+export RIPGREP_CONFIG_PATH="$XDG_CONFIG_HOME/ripgrep/ripgreprc"
+
+# Secrets / GPG
+export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.ssh"
+
+# PATH
+export PATH="$HOME/.local/bin:$CARGO_HOME/bin:$HOME/.npm-global/bin:$PATH"
