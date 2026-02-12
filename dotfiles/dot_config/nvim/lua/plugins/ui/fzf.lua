@@ -69,6 +69,10 @@ return {
         ['--marker'] = '•',
         ['--separator'] = '─',
         ['--info'] = 'inline-right',
+        ['--exact'] = '',
+        ['--cycle'] = '',
+        ['--no-scrollbar'] = '',
+        ['--no-mouse'] = '',
       },
       fzf_colors = true,
       keymap = {
@@ -77,6 +81,9 @@ return {
         },
         fzf = {
           ['ctrl-q'] = 'select-all+accept',
+          ['alt-p'] = 'toggle-preview',
+          ['alt-a'] = 'select-all',
+          ['ctrl-space'] = 'select-all',
         },
       },
       actions = {
