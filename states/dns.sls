@@ -81,6 +81,7 @@ unbound_daemon_reload:
 unbound_enabled:
   cmd.run:
     - name: systemctl enable unbound
+    - onlyif: systemctl list-unit-files unbound.service | grep -q unbound
     - unless: systemctl is-enabled unbound
     - require:
       - cmd: install_unbound
