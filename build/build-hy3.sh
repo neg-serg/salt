@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euxo pipefail
+set -euo pipefail
 
 HY3_TAG="hl0.51.0"
 OUTPUT_DIR="/build/output"

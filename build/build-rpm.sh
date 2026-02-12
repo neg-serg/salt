@@ -92,7 +92,6 @@ fi
 case "$1" in
 duf)
     DUF_RPM_NAME="duf-${DUF_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Duf ---"
     if [ -f "/build/rpms/${DUF_RPM_NAME}" ]; then
         echo "Duf RPM (${DUF_RPM_NAME}) already exists, skipping."
     else
@@ -106,16 +105,13 @@ duf)
         tar -czf "${SOURCES_DIR}/duf-${DUF_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "duf-${DUF_VERSION}"
         cp /build/salt/specs/duf.spec "${SPECS_DIR}/duf.spec"
 
-        echo "--- Building Duf RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/duf.spec"
 
-        echo "--- Copying Duf RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "duf-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "duf-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 massren)
     MASSREN_RPM_NAME="massren-${MASSREN_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Massren ---"
     if [ -f "/build/rpms/${MASSREN_RPM_NAME}" ]; then
         echo "Massren RPM (${MASSREN_RPM_NAME}) already exists, skipping."
     else
@@ -129,16 +125,13 @@ massren)
         tar -czf "${SOURCES_DIR}/massren-${MASSREN_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "massren-${MASSREN_VERSION}"
         cp /build/salt/specs/massren.spec "${SPECS_DIR}/massren.spec"
 
-        echo "--- Building Massren RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/massren.spec"
 
-        echo "--- Copying Massren RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "massren-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "massren-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 raise)
     RAISE_RPM_NAME="raise-${RAISE_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Raise ---"
     if [ -f "/build/rpms/${RAISE_RPM_NAME}" ]; then
         echo "Raise RPM (${RAISE_RPM_NAME}) already exists, skipping."
     else
@@ -152,16 +145,13 @@ raise)
         tar -czf "${SOURCES_DIR}/raise-${RAISE_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "raise-${RAISE_VERSION}"
         cp /build/salt/specs/raise.spec "${SPECS_DIR}/raise.spec"
 
-        echo "--- Building Raise RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/raise.spec"
 
-        echo "--- Copying Raise RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "raise-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "raise-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 pipemixer)
     PIPEMIXER_RPM_NAME="pipemixer-${PIPEMIXER_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Pipemixer ---"
     if [ -f "/build/rpms/${PIPEMIXER_RPM_NAME}" ]; then
         echo "Pipemixer RPM (${PIPEMIXER_RPM_NAME}) already exists, skipping."
     else
@@ -175,16 +165,13 @@ pipemixer)
         tar -czf "${SOURCES_DIR}/pipemixer-${PIPEMIXER_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "pipemixer-${PIPEMIXER_VERSION}"
         cp /build/salt/specs/pipemixer.spec "${SPECS_DIR}/pipemixer.spec"
 
-        echo "--- Building Pipemixer RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/pipemixer.spec"
 
-        echo "--- Copying Pipemixer RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "pipemixer-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "pipemixer-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 richcolors)
     RICHCOLORS_RPM_NAME="richcolors-${RICHCOLORS_VERSION}-1.fc43.noarch.rpm"
-    echo "--- Preparing Richcolors ---"
     if [ -f "/build/rpms/${RICHCOLORS_RPM_NAME}" ]; then
         echo "Richcolors RPM (${RICHCOLORS_RPM_NAME}) already exists, skipping."
     else
@@ -198,16 +185,13 @@ richcolors)
         tar -czf "${SOURCES_DIR}/richcolors-${RICHCOLORS_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "richcolors-${RICHCOLORS_VERSION}"
         cp /build/salt/specs/richcolors.spec "${SPECS_DIR}/richcolors.spec"
 
-        echo "--- Building Richcolors RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/richcolors.spec"
 
-        echo "--- Copying Richcolors RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "richcolors-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "richcolors-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 neg-pretty-printer)
     NEG_PRETTY_PRINTER_RPM_NAME="neg-pretty-printer-${NEG_PRETTY_PRINTER_VERSION}-1.fc43.noarch.rpm"
-    echo "--- Preparing neg-pretty-printer ---"
     if [ -f "/build/rpms/${NEG_PRETTY_PRINTER_RPM_NAME}" ]; then
         echo "neg-pretty-printer RPM (${NEG_PRETTY_PRINTER_RPM_NAME}) already exists, skipping."
     else
@@ -221,16 +205,13 @@ neg-pretty-printer)
         tar -czf "${SOURCES_DIR}/neg-pretty-printer-${NEG_PRETTY_PRINTER_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "neg-pretty-printer-${NEG_PRETTY_PRINTER_VERSION}"
         cp /build/salt/specs/neg-pretty-printer.spec "${SPECS_DIR}/neg-pretty-printer.spec"
 
-        echo "--- Building neg-pretty-printer RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/neg-pretty-printer.spec"
 
-        echo "--- Copying neg-pretty-printer RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "neg-pretty-printer-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "neg-pretty-printer-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 choose)
     CHOOSE_RPM_NAME="choose-${CHOOSE_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Choose ---"
     if [ -f "/build/rpms/${CHOOSE_RPM_NAME}" ]; then
         echo "Choose RPM (${CHOOSE_RPM_NAME}) already exists, skipping."
     else
@@ -244,16 +225,13 @@ choose)
         tar -czf "${SOURCES_DIR}/choose-${CHOOSE_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "choose-${CHOOSE_VERSION}"
         cp /build/salt/specs/choose.spec "${SPECS_DIR}/choose.spec"
 
-        echo "--- Building Choose RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/choose.spec"
 
-        echo "--- Copying Choose RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "choose-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "choose-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 ouch)
     OUCH_RPM_NAME="ouch-${OUCH_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Ouch ---"
     if [ -f "/build/rpms/${OUCH_RPM_NAME}" ]; then
         echo "Ouch RPM (${OUCH_RPM_NAME}) already exists, skipping."
     else
@@ -267,16 +245,13 @@ ouch)
         tar -czf "${SOURCES_DIR}/ouch-${OUCH_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "ouch-${OUCH_VERSION}"
         cp /build/salt/specs/ouch.spec "${SPECS_DIR}/ouch.spec"
 
-        echo "--- Building Ouch RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/ouch.spec"
 
-        echo "--- Copying Ouch RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "ouch-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "ouch-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 htmlq)
     HTMLQ_RPM_NAME="htmlq-${HTMLQ_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Htmlq ---"
     if [ -f "/build/rpms/${HTMLQ_RPM_NAME}" ]; then
         echo "Htmlq RPM (${HTMLQ_RPM_NAME}) already exists, skipping."
     else
@@ -290,16 +265,13 @@ htmlq)
         tar -czf "${SOURCES_DIR}/htmlq-${HTMLQ_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "htmlq-${HTMLQ_VERSION}"
         cp /build/salt/specs/htmlq.spec "${SPECS_DIR}/htmlq.spec"
 
-        echo "--- Building Htmlq RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/htmlq.spec"
 
-        echo "--- Copying Htmlq RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "htmlq-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "htmlq-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 erdtree)
     ERDTREE_RPM_NAME="erdtree-${ERDTREE_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Erdtree ---"
     if [ -f "/build/rpms/${ERDTREE_RPM_NAME}" ]; then
         echo "Erdtree RPM (${ERDTREE_RPM_NAME}) already exists, skipping."
     else
@@ -313,16 +285,13 @@ erdtree)
         tar -czf "${SOURCES_DIR}/erdtree-${ERDTREE_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "erdtree-${ERDTREE_VERSION}"
         cp /build/salt/specs/erdtree.spec "${SPECS_DIR}/erdtree.spec"
 
-        echo "--- Building Erdtree RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/erdtree.spec"
 
-        echo "--- Copying Erdtree RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "erdtree-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "erdtree-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 viu)
     VIU_RPM_NAME="viu-${VIU_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Viu ---"
     if [ -f "/build/rpms/${VIU_RPM_NAME}" ]; then
         echo "Viu RPM (${VIU_RPM_NAME}) already exists, skipping."
     else
@@ -336,16 +305,13 @@ viu)
         tar -czf "${SOURCES_DIR}/viu-${VIU_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "viu-${VIU_VERSION}"
         cp /build/salt/specs/viu.spec "${SPECS_DIR}/viu.spec"
 
-        echo "--- Building Viu RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/viu.spec"
 
-        echo "--- Copying Viu RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "viu-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "viu-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 fclones)
     FCLONES_RPM_NAME="fclones-${FCLONES_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Fclones ---"
     if [ -f "/build/rpms/${FCLONES_RPM_NAME}" ]; then
         echo "Fclones RPM (${FCLONES_RPM_NAME}) already exists, skipping."
     else
@@ -359,16 +325,13 @@ fclones)
         tar -czf "${SOURCES_DIR}/fclones-${FCLONES_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "fclones-${FCLONES_VERSION}"
         cp /build/salt/specs/fclones.spec "${SPECS_DIR}/fclones.spec"
 
-        echo "--- Building Fclones RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/fclones.spec"
 
-        echo "--- Copying Fclones RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "fclones-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "fclones-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 grex)
     GREX_RPM_NAME="grex-${GREX_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Grex ---"
     if [ -f "/build/rpms/${GREX_RPM_NAME}" ]; then
         echo "Grex RPM (${GREX_RPM_NAME}) already exists, skipping."
     else
@@ -382,16 +345,13 @@ grex)
         tar -czf "${SOURCES_DIR}/grex-${GREX_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "grex-${GREX_VERSION}"
         cp /build/salt/specs/grex.spec "${SPECS_DIR}/grex.spec"
 
-        echo "--- Building Grex RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/grex.spec"
 
-        echo "--- Copying Grex RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "grex-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "grex-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 kmon)
     KMON_RPM_NAME="kmon-${KMON_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Kmon ---"
     if [ -f "/build/rpms/${KMON_RPM_NAME}" ]; then
         echo "Kmon RPM (${KMON_RPM_NAME}) already exists, skipping."
     else
@@ -405,16 +365,13 @@ kmon)
         tar -czf "${SOURCES_DIR}/kmon-${KMON_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "kmon-${KMON_VERSION}"
         cp /build/salt/specs/kmon.spec "${SPECS_DIR}/kmon.spec"
 
-        echo "--- Building Kmon RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/kmon.spec"
 
-        echo "--- Copying Kmon RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "kmon-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "kmon-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 jujutsu)
     JUJUTSU_RPM_NAME="jujutsu-${JUJUTSU_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Jujutsu ---"
     if [ -f "/build/rpms/${JUJUTSU_RPM_NAME}" ]; then
         echo "Jujutsu RPM (${JUJUTSU_RPM_NAME}) already exists, skipping."
     else
@@ -428,16 +385,13 @@ jujutsu)
         tar -czf "${SOURCES_DIR}/jujutsu-${JUJUTSU_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "jujutsu-${JUJUTSU_VERSION}"
         cp /build/salt/specs/jujutsu.spec "${SPECS_DIR}/jujutsu.spec"
 
-        echo "--- Building Jujutsu RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/jujutsu.spec"
 
-        echo "--- Copying Jujutsu RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "jujutsu-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "jujutsu-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 zfxtop)
     ZFXTOP_RPM_NAME="zfxtop-${ZFXTOP_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Zfxtop ---"
     if [ -f "/build/rpms/${ZFXTOP_RPM_NAME}" ]; then
         echo "Zfxtop RPM (${ZFXTOP_RPM_NAME}) already exists, skipping."
     else
@@ -451,16 +405,13 @@ zfxtop)
         tar -czf "${SOURCES_DIR}/zfxtop-${ZFXTOP_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "zfxtop-${ZFXTOP_VERSION}"
         cp /build/salt/specs/zfxtop.spec "${SPECS_DIR}/zfxtop.spec"
 
-        echo "--- Building Zfxtop RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/zfxtop.spec"
 
-        echo "--- Copying Zfxtop RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "zfxtop-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "zfxtop-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 pup)
     PUP_RPM_NAME="pup-${PUP_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Pup ---"
     if [ -f "/build/rpms/${PUP_RPM_NAME}" ]; then
         echo "Pup RPM (${PUP_RPM_NAME}) already exists, skipping."
     else
@@ -474,16 +425,13 @@ pup)
         tar -czf "${SOURCES_DIR}/pup-${PUP_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "pup-${PUP_VERSION}"
         cp /build/salt/specs/pup.spec "${SPECS_DIR}/pup.spec"
 
-        echo "--- Building Pup RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/pup.spec"
 
-        echo "--- Copying Pup RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "pup-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "pup-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 scc)
     SCC_RPM_NAME="scc-${SCC_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Scc ---"
     if [ -f "/build/rpms/${SCC_RPM_NAME}" ]; then
         echo "Scc RPM (${SCC_RPM_NAME}) already exists, skipping."
     else
@@ -497,16 +445,13 @@ scc)
         tar -czf "${SOURCES_DIR}/scc-${SCC_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "scc-${SCC_VERSION}"
         cp /build/salt/specs/scc.spec "${SPECS_DIR}/scc.spec"
 
-        echo "--- Building Scc RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/scc.spec"
 
-        echo "--- Copying Scc RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "scc-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "scc-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 ctop)
     CTOP_RPM_NAME="ctop-${CTOP_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Ctop ---"
     if [ -f "/build/rpms/${CTOP_RPM_NAME}" ]; then
         echo "Ctop RPM (${CTOP_RPM_NAME}) already exists, skipping."
     else
@@ -520,16 +465,13 @@ ctop)
         tar -czf "${SOURCES_DIR}/ctop-${CTOP_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "ctop-${CTOP_VERSION}"
         cp /build/salt/specs/ctop.spec "${SPECS_DIR}/ctop.spec"
 
-        echo "--- Building Ctop RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/ctop.spec"
 
-        echo "--- Copying Ctop RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "ctop-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "ctop-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 dive)
     DIVE_RPM_NAME="dive-${DIVE_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Dive ---"
     if [ -f "/build/rpms/${DIVE_RPM_NAME}" ]; then
         echo "Dive RPM (${DIVE_RPM_NAME}) already exists, skipping."
     else
@@ -543,16 +485,13 @@ dive)
         tar -czf "${SOURCES_DIR}/dive-${DIVE_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "dive-${DIVE_VERSION}"
         cp /build/salt/specs/dive.spec "${SPECS_DIR}/dive.spec"
 
-        echo "--- Building Dive RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/dive.spec"
 
-        echo "--- Copying Dive RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "dive-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "dive-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 zk)
     ZK_RPM_NAME="zk-${ZK_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Zk ---"
     if [ -f "/build/rpms/${ZK_RPM_NAME}" ]; then
         echo "Zk RPM (${ZK_RPM_NAME}) already exists, skipping."
     else
@@ -566,16 +505,13 @@ zk)
         tar -czf "${SOURCES_DIR}/zk-${ZK_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "zk-${ZK_VERSION}"
         cp /build/salt/specs/zk.spec "${SPECS_DIR}/zk.spec"
 
-        echo "--- Building Zk RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/zk.spec"
 
-        echo "--- Copying Zk RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "zk-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "zk-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 git-filter-repo)
     GIT_FILTER_REPO_RPM_NAME="git-filter-repo-${GIT_FILTER_REPO_VERSION}-1.fc43.noarch.rpm"
-    echo "--- Preparing git-filter-repo ---"
     if [ -f "/build/rpms/${GIT_FILTER_REPO_RPM_NAME}" ]; then
         echo "git-filter-repo RPM (${GIT_FILTER_REPO_RPM_NAME}) already exists, skipping."
     else
@@ -589,16 +525,13 @@ git-filter-repo)
         tar -czf "${SOURCES_DIR}/git-filter-repo-${GIT_FILTER_REPO_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "git-filter-repo-${GIT_FILTER_REPO_VERSION}"
         cp /build/salt/specs/git-filter-repo.spec "${SPECS_DIR}/git-filter-repo.spec"
 
-        echo "--- Building git-filter-repo RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/git-filter-repo.spec"
 
-        echo "--- Copying git-filter-repo RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "git-filter-repo-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "git-filter-repo-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 epr)
     EPR_RPM_NAME="epr-${EPR_VERSION}-1.fc43.noarch.rpm"
-    echo "--- Preparing Epr ---"
     if [ -f "/build/rpms/${EPR_RPM_NAME}" ]; then
         echo "Epr RPM (${EPR_RPM_NAME}) already exists, skipping."
     else
@@ -612,16 +545,13 @@ epr)
         tar -czf "${SOURCES_DIR}/epr-${EPR_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "epr-${EPR_VERSION}"
         cp /build/salt/specs/epr.spec "${SPECS_DIR}/epr.spec"
 
-        echo "--- Building Epr RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/epr.spec"
 
-        echo "--- Copying Epr RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "epr-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "epr-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 lutgen)
     LUTGEN_RPM_NAME="lutgen-${LUTGEN_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Lutgen ---"
     if [ -f "/build/rpms/${LUTGEN_RPM_NAME}" ]; then
         echo "Lutgen RPM (${LUTGEN_RPM_NAME}) already exists, skipping."
     else
@@ -635,16 +565,13 @@ lutgen)
         tar -czf "${SOURCES_DIR}/lutgen-${LUTGEN_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "lutgen-${LUTGEN_VERSION}"
         cp /build/salt/specs/lutgen.spec "${SPECS_DIR}/lutgen.spec"
 
-        echo "--- Building Lutgen RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/lutgen.spec"
 
-        echo "--- Copying Lutgen RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "lutgen-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "lutgen-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 taplo)
     TAPLO_RPM_NAME="taplo-${TAPLO_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Taplo ---"
     if [ -f "/build/rpms/${TAPLO_RPM_NAME}" ]; then
         echo "Taplo RPM (${TAPLO_RPM_NAME}) already exists, skipping."
     else
@@ -658,16 +585,13 @@ taplo)
         tar -czf "${SOURCES_DIR}/taplo-${TAPLO_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "taplo-${TAPLO_VERSION}"
         cp /build/salt/specs/taplo.spec "${SPECS_DIR}/taplo.spec"
 
-        echo "--- Building Taplo RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/taplo.spec"
 
-        echo "--- Copying Taplo RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "taplo-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "taplo-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 gist)
     GIST_RPM_NAME="gist-${GIST_VERSION}-1.fc43.noarch.rpm"
-    echo "--- Preparing Gist ---"
     if [ -f "/build/rpms/${GIST_RPM_NAME}" ]; then
         echo "Gist RPM (${GIST_RPM_NAME}) already exists, skipping."
     else
@@ -681,16 +605,13 @@ gist)
         tar -czf "${SOURCES_DIR}/gist-${GIST_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "gist-${GIST_VERSION}"
         cp /build/salt/specs/gist.spec "${SPECS_DIR}/gist.spec"
 
-        echo "--- Building Gist RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/gist.spec"
 
-        echo "--- Copying Gist RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "gist-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "gist-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 xxh)
     XXH_RPM_NAME="xxh-${XXH_VERSION}-1.fc43.noarch.rpm"
-    echo "--- Preparing Xxh ---"
     if [ -f "/build/rpms/${XXH_RPM_NAME}" ]; then
         echo "Xxh RPM (${XXH_RPM_NAME}) already exists, skipping."
     else
@@ -704,16 +625,13 @@ xxh)
         tar -czf "${SOURCES_DIR}/xxh-${XXH_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "xxh-${XXH_VERSION}"
         cp /build/salt/specs/xxh.spec "${SPECS_DIR}/xxh.spec"
 
-        echo "--- Building Xxh RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/xxh.spec"
 
-        echo "--- Copying Xxh RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "xxh-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "xxh-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 nerdctl)
     NERDCTL_RPM_NAME="nerdctl-${NERDCTL_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Nerdctl ---"
     if [ -f "/build/rpms/${NERDCTL_RPM_NAME}" ]; then
         echo "Nerdctl RPM (${NERDCTL_RPM_NAME}) already exists, skipping."
     else
@@ -727,16 +645,13 @@ nerdctl)
         tar -czf "${SOURCES_DIR}/nerdctl-${NERDCTL_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "nerdctl-${NERDCTL_VERSION}"
         cp /build/salt/specs/nerdctl.spec "${SPECS_DIR}/nerdctl.spec"
 
-        echo "--- Building Nerdctl RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/nerdctl.spec"
 
-        echo "--- Copying Nerdctl RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "nerdctl-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "nerdctl-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 rapidgzip)
     RAPIDGZIP_RPM_NAME="rapidgzip-${RAPIDGZIP_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Rapidgzip ---"
     if [ -f "/build/rpms/${RAPIDGZIP_RPM_NAME}" ]; then
         echo "Rapidgzip RPM (${RAPIDGZIP_RPM_NAME}) already exists, skipping."
     else
@@ -750,16 +665,13 @@ rapidgzip)
         tar -czf "${SOURCES_DIR}/rapidgzip-${RAPIDGZIP_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "rapidgzip-${RAPIDGZIP_VERSION}"
         cp /build/salt/specs/rapidgzip.spec "${SPECS_DIR}/rapidgzip.spec"
 
-        echo "--- Building Rapidgzip RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/rapidgzip.spec"
 
-        echo "--- Copying Rapidgzip RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "rapidgzip-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "rapidgzip-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 scour)
     SCOUR_RPM_NAME="scour-${SCOUR_VERSION}-1.fc43.noarch.rpm"
-    echo "--- Preparing Scour ---"
     if [ -f "/build/rpms/${SCOUR_RPM_NAME}" ]; then
         echo "Scour RPM (${SCOUR_RPM_NAME}) already exists, skipping."
     else
@@ -773,16 +685,13 @@ scour)
         tar -czf "${SOURCES_DIR}/scour-${SCOUR_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "scour-${SCOUR_VERSION}"
         cp /build/salt/specs/scour.spec "${SPECS_DIR}/scour.spec"
 
-        echo "--- Building Scour RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/scour.spec"
 
-        echo "--- Copying Scour RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "scour-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "scour-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 iosevka)
     IOSEVKA_RPM_NAME="iosevka-neg-fonts-${IOSEVKA_VERSION}-2.fc43.noarch.rpm"
-    echo "--- Preparing Iosevka ---"
     if [ -f "/build/rpms/${IOSEVKA_RPM_NAME}" ]; then
         echo "Iosevka RPM (${IOSEVKA_RPM_NAME}) already exists, skipping."
     else
@@ -802,16 +711,13 @@ iosevka)
         cp "/build/iosevka-neg.toml" "${SOURCES_DIR}/iosevka-neg.toml"
         cp /build/salt/specs/iosevka.spec "${SPECS_DIR}/iosevka-neg-fonts.spec"
 
-        echo "--- Building Iosevka RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/iosevka-neg-fonts.spec"
 
-        echo "--- Copying Iosevka RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "iosevka-neg-fonts-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "iosevka-neg-fonts-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 bandwhich)
     BANDWHICH_RPM_NAME="bandwhich-${BANDWHICH_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Bandwhich ---"
     if [ -f "/build/rpms/${BANDWHICH_RPM_NAME}" ]; then
         echo "Bandwhich RPM (${BANDWHICH_RPM_NAME}) already exists, skipping."
     else
@@ -823,15 +729,12 @@ bandwhich)
         fi
         tar -czf "${SOURCES_DIR}/bandwhich-${BANDWHICH_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "bandwhich-${BANDWHICH_VERSION}"
         cp /build/salt/specs/bandwhich.spec "${SPECS_DIR}/bandwhich.spec"
-        echo "--- Building Bandwhich RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/bandwhich.spec"
-        echo "--- Copying Bandwhich RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "bandwhich-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "bandwhich-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 xh)
     XH_RPM_NAME="xh-${XH_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Xh ---"
     if [ -f "/build/rpms/${XH_RPM_NAME}" ]; then
         echo "Xh RPM (${XH_RPM_NAME}) already exists, skipping."
     else
@@ -843,15 +746,12 @@ xh)
         fi
         tar -czf "${SOURCES_DIR}/xh-${XH_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "xh-${XH_VERSION}"
         cp /build/salt/specs/xh.spec "${SPECS_DIR}/xh.spec"
-        echo "--- Building Xh RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/xh.spec"
-        echo "--- Copying Xh RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "xh-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "xh-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 curlie)
     CURLIE_RPM_NAME="curlie-${CURLIE_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Curlie ---"
     if [ -f "/build/rpms/${CURLIE_RPM_NAME}" ]; then
         echo "Curlie RPM (${CURLIE_RPM_NAME}) already exists, skipping."
     else
@@ -863,15 +763,12 @@ curlie)
         fi
         tar -czf "${SOURCES_DIR}/curlie-${CURLIE_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "curlie-${CURLIE_VERSION}"
         cp /build/salt/specs/curlie.spec "${SPECS_DIR}/curlie.spec"
-        echo "--- Building Curlie RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/curlie.spec"
-        echo "--- Copying Curlie RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "curlie-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "curlie-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 doggo)
     DOGGO_RPM_NAME="doggo-${DOGGO_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Doggo ---"
     if [ -f "/build/rpms/${DOGGO_RPM_NAME}" ]; then
         echo "Doggo RPM (${DOGGO_RPM_NAME}) already exists, skipping."
     else
@@ -883,15 +780,12 @@ doggo)
         fi
         tar -czf "${SOURCES_DIR}/doggo-${DOGGO_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "doggo-${DOGGO_VERSION}"
         cp /build/salt/specs/doggo.spec "${SPECS_DIR}/doggo.spec"
-        echo "--- Building Doggo RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/doggo.spec"
-        echo "--- Copying Doggo RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "doggo-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "doggo-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 carapace)
     CARAPACE_RPM_NAME="carapace-${CARAPACE_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Carapace ---"
     if [ -f "/build/rpms/${CARAPACE_RPM_NAME}" ]; then
         echo "Carapace RPM (${CARAPACE_RPM_NAME}) already exists, skipping."
     else
@@ -903,15 +797,12 @@ carapace)
         fi
         tar -czf "${SOURCES_DIR}/carapace-${CARAPACE_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "carapace-${CARAPACE_VERSION}"
         cp /build/salt/specs/carapace.spec "${SPECS_DIR}/carapace.spec"
-        echo "--- Building Carapace RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/carapace.spec"
-        echo "--- Copying Carapace RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "carapace-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "carapace-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 wallust)
     WALLUST_RPM_NAME="wallust-${WALLUST_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Wallust ---"
     if [ -f "/build/rpms/${WALLUST_RPM_NAME}" ]; then
         echo "Wallust RPM (${WALLUST_RPM_NAME}) already exists, skipping."
     else
@@ -923,15 +814,12 @@ wallust)
         fi
         tar -czf "${SOURCES_DIR}/wallust-${WALLUST_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "wallust-${WALLUST_VERSION}"
         cp /build/salt/specs/wallust.spec "${SPECS_DIR}/wallust.spec"
-        echo "--- Building Wallust RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/wallust.spec"
-        echo "--- Copying Wallust RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "wallust-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "wallust-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 wl-clip-persist)
     WL_CLIP_PERSIST_RPM_NAME="wl-clip-persist-${WL_CLIP_PERSIST_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing wl-clip-persist ---"
     if [ -f "/build/rpms/${WL_CLIP_PERSIST_RPM_NAME}" ]; then
         echo "wl-clip-persist RPM (${WL_CLIP_PERSIST_RPM_NAME}) already exists, skipping."
     else
@@ -943,15 +831,12 @@ wl-clip-persist)
         fi
         tar -czf "${SOURCES_DIR}/wl-clip-persist-${WL_CLIP_PERSIST_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "wl-clip-persist-${WL_CLIP_PERSIST_VERSION}"
         cp /build/salt/specs/wl-clip-persist.spec "${SPECS_DIR}/wl-clip-persist.spec"
-        echo "--- Building wl-clip-persist RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/wl-clip-persist.spec"
-        echo "--- Copying wl-clip-persist RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "wl-clip-persist-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "wl-clip-persist-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 quickshell)
     QUICKSHELL_RPM_NAME="quickshell-${QUICKSHELL_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Quickshell ---"
     if [ -f "/build/rpms/${QUICKSHELL_RPM_NAME}" ]; then
         echo "Quickshell RPM (${QUICKSHELL_RPM_NAME}) already exists, skipping."
     else
@@ -973,15 +858,12 @@ quickshell)
         fi
         tar -czf "${SOURCES_DIR}/quickshell-${QUICKSHELL_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "quickshell-${QUICKSHELL_VERSION}"
         cp /build/salt/specs/quickshell.spec "${SPECS_DIR}/quickshell.spec"
-        echo "--- Building Quickshell RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/quickshell.spec"
-        echo "--- Copying Quickshell RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "quickshell-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "quickshell-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 swayosd)
     SWAYOSD_RPM_NAME="swayosd-${SWAYOSD_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing SwayOSD ---"
     if [ -f "/build/rpms/${SWAYOSD_RPM_NAME}" ]; then
         echo "SwayOSD RPM (${SWAYOSD_RPM_NAME}) already exists, skipping."
     else
@@ -993,15 +875,12 @@ swayosd)
         fi
         tar -czf "${SOURCES_DIR}/swayosd-${SWAYOSD_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "swayosd-${SWAYOSD_VERSION}"
         cp /build/salt/specs/swayosd.spec "${SPECS_DIR}/swayosd.spec"
-        echo "--- Building SwayOSD RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/swayosd.spec"
-        echo "--- Copying SwayOSD RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "swayosd-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "swayosd-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 xdg-desktop-portal-termfilechooser)
     XDG_TERMFILECHOOSER_RPM_NAME="xdg-desktop-portal-termfilechooser-${XDG_TERMFILECHOOSER_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing xdg-desktop-portal-termfilechooser ---"
     if [ -f "/build/rpms/${XDG_TERMFILECHOOSER_RPM_NAME}" ]; then
         echo "xdg-desktop-portal-termfilechooser RPM (${XDG_TERMFILECHOOSER_RPM_NAME}) already exists, skipping."
     else
@@ -1013,15 +892,12 @@ xdg-desktop-portal-termfilechooser)
         fi
         tar -czf "${SOURCES_DIR}/xdg-desktop-portal-termfilechooser-${XDG_TERMFILECHOOSER_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "xdg-desktop-portal-termfilechooser-${XDG_TERMFILECHOOSER_VERSION}"
         cp /build/salt/specs/xdg-desktop-portal-termfilechooser.spec "${SPECS_DIR}/xdg-desktop-portal-termfilechooser.spec"
-        echo "--- Building xdg-desktop-portal-termfilechooser RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/xdg-desktop-portal-termfilechooser.spec"
-        echo "--- Copying xdg-desktop-portal-termfilechooser RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "xdg-desktop-portal-termfilechooser-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "xdg-desktop-portal-termfilechooser-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 bucklespring)
     BUCKLESPRING_RPM_NAME="bucklespring-${BUCKLESPRING_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Bucklespring ---"
     if [ -f "/build/rpms/${BUCKLESPRING_RPM_NAME}" ]; then
         echo "Bucklespring RPM (${BUCKLESPRING_RPM_NAME}) already exists, skipping."
     else
@@ -1035,16 +911,13 @@ bucklespring)
         tar -czf "${SOURCES_DIR}/bucklespring-${BUCKLESPRING_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "bucklespring-${BUCKLESPRING_VERSION}"
         cp /build/salt/specs/bucklespring.spec "${SPECS_DIR}/bucklespring.spec"
 
-        echo "--- Building Bucklespring RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/bucklespring.spec"
 
-        echo "--- Copying Bucklespring RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "bucklespring-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "bucklespring-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 taoup)
     TAOUP_RPM_NAME="taoup-${TAOUP_VERSION}-1.fc43.noarch.rpm"
-    echo "--- Preparing Taoup ---"
     if [ -f "/build/rpms/${TAOUP_RPM_NAME}" ]; then
         echo "Taoup RPM (${TAOUP_RPM_NAME}) already exists, skipping."
     else
@@ -1058,16 +931,13 @@ taoup)
         tar -czf "${SOURCES_DIR}/taoup-${TAOUP_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "taoup-${TAOUP_VERSION}"
         cp /build/salt/specs/taoup.spec "${SPECS_DIR}/taoup.spec"
 
-        echo "--- Building Taoup RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/taoup.spec"
 
-        echo "--- Copying Taoup RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "taoup-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "taoup-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 newsraft)
     NEWSRAFT_RPM_NAME="newsraft-${NEWSRAFT_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Newsraft ---"
     if [ -f "/build/rpms/${NEWSRAFT_RPM_NAME}" ]; then
         echo "Newsraft RPM (${NEWSRAFT_RPM_NAME}) already exists, skipping."
     else
@@ -1081,16 +951,13 @@ newsraft)
         tar -czf "${SOURCES_DIR}/newsraft-${NEWSRAFT_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "newsraft-${NEWSRAFT_VERSION}"
         cp /build/salt/specs/newsraft.spec "${SPECS_DIR}/newsraft.spec"
 
-        echo "--- Building Newsraft RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/newsraft.spec"
 
-        echo "--- Copying Newsraft RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "newsraft-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "newsraft-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 unflac)
     UNFLAC_RPM_NAME="unflac-${UNFLAC_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Unflac ---"
     if [ -f "/build/rpms/${UNFLAC_RPM_NAME}" ]; then
         echo "Unflac RPM (${UNFLAC_RPM_NAME}) already exists, skipping."
     else
@@ -1104,16 +971,13 @@ unflac)
         tar -czf "${SOURCES_DIR}/unflac-${UNFLAC_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "unflac-${UNFLAC_VERSION}"
         cp /build/salt/specs/unflac.spec "${SPECS_DIR}/unflac.spec"
 
-        echo "--- Building Unflac RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/unflac.spec"
 
-        echo "--- Copying Unflac RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "unflac-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "unflac-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 albumdetails)
     ALBUMDETAILS_RPM_NAME="albumdetails-${ALBUMDETAILS_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Albumdetails ---"
     if [ -f "/build/rpms/${ALBUMDETAILS_RPM_NAME}" ]; then
         echo "Albumdetails RPM (${ALBUMDETAILS_RPM_NAME}) already exists, skipping."
     else
@@ -1127,16 +991,13 @@ albumdetails)
         tar -czf "${SOURCES_DIR}/albumdetails-master.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "albumdetails-master"
         cp /build/salt/specs/albumdetails.spec "${SPECS_DIR}/albumdetails.spec"
 
-        echo "--- Building Albumdetails RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/albumdetails.spec"
 
-        echo "--- Copying Albumdetails RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "albumdetails-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "albumdetails-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 cmake-language-server)
     CMAKE_LS_RPM_NAME="cmake-language-server-${CMAKE_LS_VERSION}-1.fc43.noarch.rpm"
-    echo "--- Preparing cmake-language-server ---"
     if [ -f "/build/rpms/${CMAKE_LS_RPM_NAME}" ]; then
         echo "cmake-language-server RPM (${CMAKE_LS_RPM_NAME}) already exists, skipping."
     else
@@ -1150,16 +1011,13 @@ cmake-language-server)
         tar -czf "${SOURCES_DIR}/cmake-language-server-${CMAKE_LS_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "cmake-language-server-${CMAKE_LS_VERSION}"
         cp /build/salt/specs/cmake-language-server.spec "${SPECS_DIR}/cmake-language-server.spec"
 
-        echo "--- Building cmake-language-server RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/cmake-language-server.spec"
 
-        echo "--- Copying cmake-language-server RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "cmake-language-server-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "cmake-language-server-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 nginx-language-server)
     NGINX_LS_RPM_NAME="nginx-language-server-${NGINX_LS_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing nginx-language-server ---"
     if [ -f "/build/rpms/${NGINX_LS_RPM_NAME}" ]; then
         echo "nginx-language-server RPM (${NGINX_LS_RPM_NAME}) already exists, skipping."
     else
@@ -1173,16 +1031,13 @@ nginx-language-server)
         tar -czf "${SOURCES_DIR}/nginx-language-server-${NGINX_LS_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "nginx-language-server-${NGINX_LS_VERSION}"
         cp /build/salt/specs/nginx-language-server.spec "${SPECS_DIR}/nginx-language-server.spec"
 
-        echo "--- Building nginx-language-server RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/nginx-language-server.spec"
 
-        echo "--- Copying nginx-language-server RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "nginx-language-server-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "nginx-language-server-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 systemd-language-server)
     SYSTEMD_LS_RPM_NAME="systemd-language-server-${SYSTEMD_LS_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing systemd-language-server ---"
     if [ -f "/build/rpms/${SYSTEMD_LS_RPM_NAME}" ]; then
         echo "systemd-language-server RPM (${SYSTEMD_LS_RPM_NAME}) already exists, skipping."
     else
@@ -1196,16 +1051,13 @@ systemd-language-server)
         tar -czf "${SOURCES_DIR}/systemd-language-server-${SYSTEMD_LS_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "systemd-language-server-${SYSTEMD_LS_VERSION}"
         cp /build/salt/specs/systemd-language-server.spec "${SPECS_DIR}/systemd-language-server.spec"
 
-        echo "--- Building systemd-language-server RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/systemd-language-server.spec"
 
-        echo "--- Copying systemd-language-server RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "systemd-language-server-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "systemd-language-server-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 croc)
     CROC_RPM_NAME="croc-${CROC_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing Croc ---"
     if [ -f "/build/rpms/${CROC_RPM_NAME}" ]; then
         echo "Croc RPM (${CROC_RPM_NAME}) already exists, skipping."
     else
@@ -1219,16 +1071,13 @@ croc)
         tar -czf "${SOURCES_DIR}/croc-${CROC_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "croc-${CROC_VERSION}"
         cp /build/salt/specs/croc.spec "${SPECS_DIR}/croc.spec"
 
-        echo "--- Building Croc RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/croc.spec"
 
-        echo "--- Copying Croc RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "croc-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "croc-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 faker)
     FAKER_RPM_NAME="faker-${FAKER_VERSION}-1.fc43.noarch.rpm"
-    echo "--- Preparing Faker ---"
     if [ -f "/build/rpms/${FAKER_RPM_NAME}" ]; then
         echo "Faker RPM (${FAKER_RPM_NAME}) already exists, skipping."
     else
@@ -1242,16 +1091,13 @@ faker)
         tar -czf "${SOURCES_DIR}/faker-${FAKER_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "faker-${FAKER_VERSION}"
         cp /build/salt/specs/faker.spec "${SPECS_DIR}/faker.spec"
 
-        echo "--- Building Faker RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/faker.spec"
 
-        echo "--- Copying Faker RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "faker-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "faker-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 speedtest-go)
     SPEEDTEST_GO_RPM_NAME="speedtest-go-${SPEEDTEST_GO_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing speedtest-go ---"
     if [ -f "/build/rpms/${SPEEDTEST_GO_RPM_NAME}" ]; then
         echo "speedtest-go RPM (${SPEEDTEST_GO_RPM_NAME}) already exists, skipping."
     else
@@ -1265,16 +1111,13 @@ speedtest-go)
         tar -czf "${SOURCES_DIR}/speedtest-go-${SPEEDTEST_GO_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "speedtest-go-${SPEEDTEST_GO_VERSION}"
         cp /build/salt/specs/speedtest-go.spec "${SPECS_DIR}/speedtest-go.spec"
 
-        echo "--- Building speedtest-go RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/speedtest-go.spec"
 
-        echo "--- Copying speedtest-go RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "speedtest-go-*.rpm" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "speedtest-go-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 greetd)
     GREETD_RPM_NAME="greetd-${GREETD_VERSION}-1.fc43.x86_64.rpm"
-    echo "--- Preparing greetd ---"
     if [ -f "/build/rpms/${GREETD_RPM_NAME}" ]; then
         echo "greetd RPM (${GREETD_RPM_NAME}) already exists, skipping."
     else
@@ -1292,10 +1135,8 @@ greetd)
         cp /build/salt/greetd-files/greetd.tmpfiles "${SOURCES_DIR}/"
         cp /build/salt/greetd-files/greetd.fc "${SOURCES_DIR}/"
         cp /build/salt/specs/greetd.spec "${SPECS_DIR}/greetd.spec"
-        echo "--- Building greetd RPM ---"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/greetd.spec"
-        echo "--- Copying greetd RPMs to /build/rpms/ ---"
-        find "${RPMS_DIR}" -name "greetd*.rpm" ! -name "*debug*" -exec cp -v {} /build/rpms/ \;
+        find "${RPMS_DIR}" -name "greetd*.rpm" ! -name "*debug*" -exec cp {} /build/rpms/ \;
     fi
     ;;
 *)

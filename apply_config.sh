@@ -42,7 +42,7 @@ run_salt() {
   echo "$SUDO_PASS" | sudo -S -E "$VENV_DIR/bin/python3" "${SCRIPT_DIR}/run_salt.py" \
     --config-dir="${CONFIG_DIR}" \
     --local \
-    --log-level=info \
+    --log-level=warning \
     --log-file="${LOG_FILE}" \
     --log-file-level=debug \
     ${ACTION} ${STATE} ${extra_args} 2>&1 | tee -a "${LOG_FILE}"
