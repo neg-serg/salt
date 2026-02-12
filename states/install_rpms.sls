@@ -50,7 +50,7 @@ install_custom_rpms:
         done
         [ ${#rpm_files[@]} -eq 0 ] && exit 0
         mapfile -t ids < <(rpm -qp --queryformat '%{NAME}.%{ARCH}\n' "${rpm_files[@]}" 2>/dev/null)
-        for id in "${ids[@]}"; do rpm -q --queryformat '' "$id" 2>/dev/null || exit 1; done
+        rpm -q --queryformat '' "${ids[@]}" 2>/dev/null
         {% endraw %}
     - shell: /bin/bash
     - runas: root
