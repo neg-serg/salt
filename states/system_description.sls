@@ -583,6 +583,16 @@ greetd_session_wrapper:
     - require:
       - file: greetd_config_dir
 
+greetd_wallpaper:
+  cmd.run:
+    - name: |
+        wallpaper=$(awk '{print $NF}' /var/home/neg/.cache/swww/DP-2 2>/dev/null)
+        if [ -n "$wallpaper" ] && [ -f "$wallpaper" ]; then
+          ln -sf "$wallpaper" /var/lib/greetd/wallpaper.jpg
+        fi
+    - require:
+      - file: greetd_config_dir
+
 greetd_enabled:
   service.enabled:
     - name: greetd
