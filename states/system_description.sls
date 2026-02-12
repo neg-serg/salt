@@ -499,8 +499,7 @@ etckeeper_init:
   cmd.run:
     - name: etckeeper init && etckeeper commit "Initial commit"
     - unless: test -d /etc/.git
-    - require:
-      - cmd: install_all_packages
+    - onlyif: command -v etckeeper
 
 running_services:
   service.running:
@@ -1117,9 +1116,9 @@ install_tailray:
     - name: cargo install --git https://github.com/NotAShelf/tailray
     - runas: neg
     - creates: /var/home/neg/.local/share/cargo/bin/tailray
-    - onlyif: pkg-config --exists dbus-1
-    - require:
-      - cmd: install_all_packages
+    - onlyif:
+      - pkg-config --exists dbus-1
+      - command -v cargo
 
 install_pzip:
   cmd.run:
@@ -1387,8 +1386,8 @@ ollama_enable:
     - name: systemctl daemon-reload && systemctl enable ollama
     - onchanges:
       - file: ollama_service_unit
+    - onlyif: command -v ollama
     - require:
-      - cmd: install_all_packages
       - cmd: ollama_selinux_context
 
 ollama_start:
