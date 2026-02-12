@@ -389,15 +389,16 @@ Steps to enable:
 
 | Package | NixOS source | Salt location | Status |
 |---|---|---|---|
-| gamescope | games/performance.nix | system_description.sls (Gaming) | [x] |
-| mangohud | games/performance.nix | system_description.sls (Gaming) | [x] |
+| Steam | — | distrobox.sls (CachyOS container) | [x] |
+| gamescope | games/performance.nix | distrobox.sls (CachyOS container) | [x] |
+| mangohud | games/performance.nix | distrobox.sls (CachyOS container) | [x] |
+| protontricks | — | distrobox.sls (CachyOS container) | [x] |
+| vkBasalt | games/performance.nix | distrobox.sls (CachyOS container) | [x] |
 | dosbox-staging | emulators/pkgs.nix | system_description.sls (Gaming) | [x] |
 | retroarch | emulators/pkgs.nix | system_description.sls (Gaming) | [x] |
 | corectrl | hardware/gpu-corectrl.nix | system_description.sls (Desktop) | [x] |
-| Steam (Flatpak) | — | system_description.sls (Flatpak) | [x] |
 | PCSX2 (Flatpak) | — | system_description.sls (Flatpak) | [x] |
 | `~/.config/dosbox/*.conf` | files/config/dosbox/ | dot_config/dosbox/ | [x] |
-| vkBasalt | games/performance.nix | system_description.sls (Gaming) | [x] |
 | dualsensectl | games/controllers.nix | system_description.sls (COPR) | [x] |
 | ProtonUp-Qt (Flatpak) | fun/launchers-packages.nix | system_description.sls (Flatpak) | [x] |
 
