@@ -465,7 +465,6 @@ install_all_packages:
     - unless: rpm -q {% for cat, pkgs in categories | dictsort %}{% for pkg in pkgs %}{{ pkg.name }} {% endfor %}{% endfor %}{% for pkg in copr_packages %}{{ pkg.name }} {% endfor %}> /dev/null 2>&1
     - require:
       - file: fix_containers_policy
-      - cmd: copr_noise_suppression
       - cmd: copr_dualsensectl
       - cmd: copr_espanso
       - cmd: copr_himalaya

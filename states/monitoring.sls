@@ -11,7 +11,7 @@ sysstat_enabled:
 {% if mon.vnstat %}
 vnstat_enabled:
   service.enabled:
-    - name: vnstatd
+    - name: vnstat
 {% endif %}
 
 # --- Netdata: systemd override for conservative resource limits ---
