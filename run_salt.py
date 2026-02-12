@@ -81,6 +81,10 @@ _orig_call_chunk = salt.state.State.call_chunk
 
 
 def _streaming_call_chunk(self, low, running, chunks):
+    sid = low.get("__id__", low.get("name", "?"))
+    state = low.get("state", "?")
+    fun = low.get("fun", "?")
+    print(f">> {sid} ({state}.{fun})", flush=True)
     before = set(running.keys())
     running = _orig_call_chunk(self, low, running, chunks)
     for tag in sorted(
