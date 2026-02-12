@@ -61,6 +61,7 @@
     {'name': 'speedtest-go',            'version': '1.7.10'},
     {'name': 'greetd',                   'version': '0.10.3',
      'extra_volumes': '-v /var/home/neg/src/salt/build/greetd-files:/build/salt/greetd-files:z'},
+    {'name': 'libva-i686', 'rpm_name': 'libva', 'version': '2.23.0', 'arch': 'i686'},
 ] %}
 
 {% set iosevka = {
@@ -128,7 +129,8 @@ build_rpms_parallel:
         {%- set arch = pkg.get('arch', 'x86_64') %}
         {%- set release = pkg.get('release', '1') %}
         {%- set extra_vol = pkg.get('extra_volumes', '') %}
-        {%- set rpm_file = pkg.name ~ '-' ~ pkg.version ~ '-' ~ release ~ '.fc43.' ~ arch ~ '.rpm' %}
+        {%- set rpm_name = pkg.get('rpm_name', pkg.name) %}
+        {%- set rpm_file = rpm_name ~ '-' ~ pkg.version ~ '-' ~ release ~ '.fc43.' ~ arch ~ '.rpm' %}
         if [ ! -f "${RPMS_DIR}/{{ rpm_file }}" ]; then
             read -u 3
             (
@@ -172,7 +174,8 @@ build_rpms_parallel:
         {%- for pkg in rpms %}
         {%- set arch = pkg.get('arch', 'x86_64') %}
         {%- set release = pkg.get('release', '1') %}
-        {%- set rpm_file = pkg.name ~ '-' ~ pkg.version ~ '-' ~ release ~ '.fc43.' ~ arch ~ '.rpm' %}
+        {%- set rpm_name = pkg.get('rpm_name', pkg.name) %}
+        {%- set rpm_file = rpm_name ~ '-' ~ pkg.version ~ '-' ~ release ~ '.fc43.' ~ arch ~ '.rpm' %}
           "{{ rpms_dir }}/{{ rpm_file }}" \
         {%- endfor %}
         ; do [ -f "$f" ] || exit 1; done
