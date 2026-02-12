@@ -6,12 +6,27 @@ Scope {
 	id: root
 	signal launch();
 
- property LockState state: LockState {
-    onTryPasswordUnlock: {
-      isUnlocking = true;
-      Greetd.createSession("neg");
-    }
-  }
+	property bool testMode: false
+
+	property LockState state: LockState {
+		onTryPasswordUnlock: {
+			isUnlocking = true;
+			if (root.testMode) {
+				testAuthTimer.start();
+			} else {
+				Greetd.createSession("neg");
+			}
+		}
+	}
+
+	Timer {
+		id: testAuthTimer
+		interval: 300
+		onTriggered: {
+			root.state.isUnlocking = false;
+			root.launch();
+		}
+	}
 
 	Connections {
 		target: Greetd
