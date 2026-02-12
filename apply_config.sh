@@ -42,7 +42,20 @@ run_salt() {
 
   # Show state progress from the debug log in real-time
   touch "${LOG_FILE}"
-  tail -f "${LOG_FILE}" | sed -un 's/.*Running state \[\([^]]*\)\].*/→ \1/p' &
+  tail -f "${LOG_FILE}" | awk -v maxlen=100 '
+    match($0, /Executing state ([^ ]+) for \[([^]]+)\]/, m) {
+      line = "▶ " m[1] " " m[2]
+      print (length(line) > maxlen) ? substr(line, 1, maxlen) "…" : line
+      fflush()
+    }
+    match($0, /Completed state \[([^]]+)\].*duration_in_ms=([^)]+)\)/, m) {
+      suffix = " (" m[2] "ms)"
+      name = "✓ " m[1]
+      cut = maxlen - length(suffix)
+      if (length(name) > cut) name = substr(name, 1, cut) "…"
+      print name suffix
+      fflush()
+    }' &
   local tail_pid=$!
 
   echo "$SUDO_PASS" | sudo -S -E "$VENV_DIR/bin/python3" "${SCRIPT_DIR}/run_salt.py" \
