@@ -401,19 +401,21 @@ include:
 
 # Remove packages no longer in desired state.
 # rpm-ostree only adds, never removes — this handles cleanup explicitly.
+{# unwanted_packages rationale:
+   - nnn/ranger/stow/axel/speedtest-cli/pcem: replaced by better alternatives
+   - python3-devel etc.: orphan build deps no longer needed at runtime
+   - pass: replaced by gopass
+   - *-debug{info,source}: debug packages from custom RPM builds
+   - alacritty/foot/g++: replaced terminals / unused compiler
+   - steam etc.: moved to Distrobox CachyOS container
+#}
 {% set unwanted_packages = [
-    {# Replaced by better alternatives (nnn→lf, ranger→yazi, stow→chezmoi, axel→aria2, etc.) #}
     'nnn', 'ranger', 'stow', 'axel', 'speedtest-cli', 'pcem',
-    {# Orphan build deps — no longer needed at runtime #}
     'python3-devel', 'ncurses-devel', 'pulseaudio-libs-devel', 'taglib-devel',
-    {# Replaced by gopass #}
     'pass',
-    {# Debug packages from custom RPM builds — not needed #}
     'albumdetails-debuginfo', 'albumdetails-debugsource',
     'amneziawg-tools-debuginfo', 'amneziawg-tools-debugsource',
-    {# Replaced terminals / unused compiler #}
     'alacritty', 'foot', 'g++',
-    {# Moved to Distrobox CachyOS container #}
     'steam', 'gamescope', 'mangohud', 'protontricks', 'python3-vkbasalt-cli', 'vkBasalt',
 ] %}
 remove_unwanted_packages:
