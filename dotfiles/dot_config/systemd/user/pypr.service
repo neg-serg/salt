@@ -1,9 +1,10 @@
 [Unit]
 Description=Pyprland daemon
+After=graphical-session.target
 
 [Service]
 Type=simple
 ExecStartPre=/bin/sh -c 'rm -f "$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.pyprland.sock"'
 ExecStart=/bin/pypr
-Restart=on-failure
-RestartSec=2
+Restart=always
+RestartSec=3
