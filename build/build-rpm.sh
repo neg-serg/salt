@@ -55,6 +55,7 @@ CROC_VERSION="10.3.1"
 FAKER_VERSION="40.4.0"
 SPEEDTEST_GO_VERSION="1.7.10"
 GREETD_VERSION="0.10.3"
+RUSTNET_VERSION="1.0.0"
 
 # RPM build root directory inside the container
 RPM_BUILD_ROOT="/rpmbuild"
@@ -76,7 +77,7 @@ ALL_PACKAGES=(
     xdg-desktop-portal-termfilechooser bucklespring taoup
     newsraft unflac albumdetails cmake-language-server
     nginx-language-server systemd-language-server croc faker
-    speedtest-go greetd
+    speedtest-go greetd rustnet
 )
 
 # Build all packages when called with no arguments
@@ -1137,6 +1138,23 @@ greetd)
         cp /build/salt/specs/greetd.spec "${SPECS_DIR}/greetd.spec"
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/greetd.spec"
         find "${RPMS_DIR}" -name "greetd*.rpm" ! -name "*debug*" -exec cp {} /build/rpms/ \;
+    fi
+    ;;
+rustnet)
+    RUSTNET_RPM_NAME="rustnet-${RUSTNET_VERSION}-1.fc43.x86_64.rpm"
+    if [ -f "/build/rpms/${RUSTNET_RPM_NAME}" ]; then
+        echo "Rustnet RPM (${RUSTNET_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken git rpm-build tar rust cargo libpcap-devel
+        RUSTNET_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/rustnet-${RUSTNET_VERSION}"
+        if [ ! -d "${RUSTNET_SOURCE_DIR}" ]; then
+            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+            git clone --depth 1 --branch "v${RUSTNET_VERSION}" https://github.com/domcyrus/rustnet.git "${RUSTNET_SOURCE_DIR}"
+        fi
+        tar -czf "${SOURCES_DIR}/rustnet-${RUSTNET_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "rustnet-${RUSTNET_VERSION}"
+        cp /build/salt/specs/rustnet.spec "${SPECS_DIR}/rustnet.spec"
+        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/rustnet.spec"
+        find "${RPMS_DIR}" -name "rustnet-*.rpm" -exec cp {} /build/rpms/ \;
     fi
     ;;
 *)
