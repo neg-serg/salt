@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
-import greeter.lock as Lock
+import qs.lock as Lock
 
 Item {
 	id: root
