@@ -136,10 +136,12 @@ mpdas_service_file:
 mpd_companion_services:
   cmd.run:
     - name: |
+        {% raw %}
         services=()
         rpm -q mpdris2 >/dev/null 2>&1 && ! systemctl --user is-enabled mpDris2.service 2>/dev/null && services+=(mpDris2.service)
         rpm -q mpdas >/dev/null 2>&1 && ! systemctl --user is-enabled mpdas.service 2>/dev/null && services+=(mpdas.service)
         [ ${#services[@]} -gt 0 ] && systemctl --user enable --now "${services[@]}" || true
+        {% endraw %}
     - runas: {{ user }}
     - env:
       - XDG_RUNTIME_DIR: /run/user/1000
