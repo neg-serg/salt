@@ -2,7 +2,9 @@
 -- │ █▓▒░ kawre/leetcode.nvim                                                         │
 -- └───────────────────────────────────────────────────────────────────────────────────┘
 return {'kawre/leetcode.nvim',
-        build=':TSUpdate html',
+        build=function()
+            pcall(function() require('nvim-treesitter.install').update({with_sync=true})('html') end)
+        end,
         cmd='Leet',
         dependencies={
             'nvim-lua/plenary.nvim',
