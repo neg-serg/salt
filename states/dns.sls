@@ -72,11 +72,18 @@ unbound_config:
             forward-addr: 9.9.9.9@853#dns.quad9.net
             forward-addr: 149.112.112.112@853#dns.quad9.net
 
+unbound_daemon_reload:
+  cmd.run:
+    - name: systemctl daemon-reload
+    - onchanges:
+      - cmd: install_unbound
+
 unbound_enabled:
   service.enabled:
     - name: unbound
     - require:
       - file: unbound_config
+      - cmd: unbound_daemon_reload
 {% endif %}
 
 # --- AdGuardHome: DNS filtering + ad blocking ---

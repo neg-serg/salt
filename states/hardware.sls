@@ -62,6 +62,7 @@ fancontrol_setup_script:
 fancontrol_reapply_script:
   file.managed:
     - name: /etc/systemd/system-sleep/99-fancontrol-reapply
+    - makedirs: True
     - mode: '0755'
     - contents: |
         #!/usr/bin/env bash
