@@ -55,6 +55,7 @@ CROC_VERSION="10.3.1"
 FAKER_VERSION="40.4.0"
 SPEEDTEST_GO_VERSION="1.7.10"
 GREETD_VERSION="0.10.3"
+LIBVA_VERSION="2.23.0"
 
 # RPM build root directory inside the container
 RPM_BUILD_ROOT="/rpmbuild"
@@ -76,7 +77,7 @@ ALL_PACKAGES=(
     xdg-desktop-portal-termfilechooser bucklespring taoup
     newsraft unflac albumdetails cmake-language-server
     nginx-language-server systemd-language-server croc faker
-    speedtest-go greetd
+    speedtest-go greetd libva-i686
 )
 
 # Build all packages when called with no arguments
@@ -1296,6 +1297,39 @@ greetd)
         rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/greetd.spec"
         echo "--- Copying greetd RPMs to /build/rpms/ ---"
         find "${RPMS_DIR}" -name "greetd*.rpm" ! -name "*debug*" -exec cp -v {} /build/rpms/ \;
+    fi
+    ;;
+libva-i686)
+    # Rebuild negativo17's libva SRPM for i686 — needed for Steam's libva(x86-32) dep.
+    # The WayBlue base image ships libva 1:2.23.0 x86_64 from negativo17 but no i686 build.
+    LIBVA_RPM_NAME="libva-${LIBVA_VERSION}-1.fc43.i686.rpm"
+    LIBVA_SRPM_URL="https://negativo17.org/repos/multimedia/fedora-43/SRPMS/libva-${LIBVA_VERSION}-1.fc43.src.rpm"
+    echo "--- Preparing libva i686 ---"
+    if [ -f "/build/rpms/${LIBVA_RPM_NAME}" ]; then
+        echo "libva i686 RPM (${LIBVA_RPM_NAME}) already exists, skipping."
+    else
+        dnf install -y --skip-broken rpm-build gcc meson doxygen \
+            glibc-devel.i686 libdrm-devel.i686 \
+            libX11-devel.i686 libXext-devel.i686 libXfixes-devel.i686 \
+            libxcb-devel.i686 \
+            mesa-libGL-devel.i686 mesa-libEGL-devel.i686 \
+            wayland-devel.i686 wayland-protocols-devel \
+            libglvnd-devel.i686
+
+        curl -sfL -o /tmp/libva.src.rpm "${LIBVA_SRPM_URL}"
+        rpm --define "_topdir ${RPM_BUILD_ROOT}" -ivh /tmp/libva.src.rpm 2>&1
+
+        echo "--- Building libva i686 RPM ---"
+        CFLAGS="-O2 -flto=auto -m32" \
+        LDFLAGS="-m32" \
+        PKG_CONFIG_PATH=/usr/lib/pkgconfig \
+        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" \
+            --define 'debug_package %{nil}' \
+            --target=i686 \
+            -bb "${SPECS_DIR}/libva.spec"
+
+        echo "--- Copying libva i686 RPMs to /build/rpms/ ---"
+        find "${RPMS_DIR}" -name "libva-${LIBVA_VERSION}*.i686.rpm" ! -name "*devel*" -exec cp -v {} /build/rpms/ \;
     fi
     ;;
 *)
