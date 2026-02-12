@@ -7,6 +7,7 @@ return {'obsidian-nvim/obsidian.nvim', version='*', ft='markdown',
             local obsidian = require('obsidian')
 
             obsidian.setup({
+                legacy_commands=false,
                 workspaces={
                     {name='notes', path='~/notes'},
                 },
@@ -52,13 +53,13 @@ return {'obsidian-nvim/obsidian.nvim', version='*', ft='markdown',
 
             local function set_obsidian_keys(buf)
                 local opts={silent=true, noremap=true, buffer=buf}
-                vim.keymap.set('i', '<leader>[', '<Cmd>ObsidianLink<CR>', opts)
-                vim.keymap.set('n', '<C-S-i>', '<Cmd>ObsidianPasteImg<CR>', opts)
-                vim.keymap.set('n', '<C-a>', '<Cmd>ObsidianTags<CR>', opts)
+                vim.keymap.set('i', '<leader>[', '<Cmd>Obsidian link<CR>', opts)
+                vim.keymap.set('n', '<C-S-i>', '<Cmd>Obsidian paste_img<CR>', opts)
+                vim.keymap.set('n', '<C-a>', '<Cmd>Obsidian tags<CR>', opts)
                 vim.keymap.set('n', '<S-m>', browse_media, opts)
-                vim.keymap.set('n', '<C-t>', '<Cmd>ObsidianToggleCheckbox<CR>', opts)
+                vim.keymap.set('n', '<C-t>', '<Cmd>Obsidian toggle_checkbox<CR>', opts)
                 vim.keymap.set('n', '<C-y>', yank_notelink, opts)
-                vim.keymap.set('n', '<leader>b', '<Cmd>ObsidianBacklinks<CR>', opts)
+                vim.keymap.set('n', '<leader>b', '<Cmd>Obsidian backlinks<CR>', opts)
             end
 
             vim.api.nvim_create_autocmd({'BufNewFile','BufRead'}, {
