@@ -81,6 +81,8 @@ sudo_timeout:
 #   tree-sitter-cli, unzip, waybar, xz, yt-dlp, zip
 # Hyprland-specific (shipped by image): hyprland, hyprland-qtutils, hyprlock,
 #   hypridle, hyprpaper, xdg-desktop-portal-hyprland
+# Steam + gaming tools (gamescope, mangohud, protontricks, vkBasalt) moved to
+# Distrobox CachyOS container — see states/distrobox.sls
 {% set categories = {
     'Archives & Compression': [
         {'name': 'lbzip2',              'desc': 'Parallel bzip2 compression utility'},
@@ -312,8 +314,6 @@ sudo_timeout:
         {'name': 'wtype',               'desc': 'xdotool type for Wayland'},
         {'name': 'ydotool',             'desc': 'Generic command-line automation tool for Wayland'}
     ],
-    {# Steam + gaming tools (gamescope, mangohud, protontricks, vkBasalt) moved to
-       Distrobox CachyOS container — see states/distrobox.sls #}
     'Gaming & Emulation': [
         {'name': '0ad',                 'desc': 'Ancient warfare real-time strategy game'},
         {'name': 'abuse',               'desc': 'Action platformer game'},
