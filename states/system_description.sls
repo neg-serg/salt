@@ -453,6 +453,7 @@ install_all_packages:
       - cmd: copr_sbctl
       - cmd: copr_audinux
       - cmd: rpmfusion_nonfree
+      - cmd: install_custom_rpms
       {# - cmd: copr_86box -- disabled, 86Box needs Qt 6.10 #}
 
 zsh_config_dir:
