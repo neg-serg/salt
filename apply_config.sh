@@ -45,7 +45,7 @@ run_salt() {
     --log-level=warning \
     --log-file="${LOG_FILE}" \
     --log-file-level=debug \
-    --state-output=changes \
+    --state-output=mixed_id \
     ${ACTION} ${STATE} ${extra_args} 2>&1 | tee -a "${LOG_FILE}"
   return "${PIPESTATUS[0]}"
 }
