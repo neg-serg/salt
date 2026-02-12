@@ -893,10 +893,15 @@ copr_dualsensectl:
     - name: dnf copr enable -y kapsh/dualsensectl
     - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:kapsh:dualsensectl.repo
 
+{# Kernel variant from host_config: 'lto' → kernel-cachyos-lto, 'gcc' → kernel-cachyos #}
+{% set _kvar = host.features.kernel.variant %}
+{% set _kcopr = 'kernel-cachyos-lto' if _kvar == 'lto' else 'kernel-cachyos' %}
+{% set _kpkg  = 'kernel-cachyos-lto' if _kvar == 'lto' else 'kernel-cachyos' %}
+
 copr_cachyos_kernel:
   cmd.run:
-    - name: dnf copr enable -y bieszczaders/kernel-cachyos-lto
-    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:bieszczaders:kernel-cachyos-lto.repo
+    - name: dnf copr enable -y bieszczaders/{{ _kcopr }}
+    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:bieszczaders:{{ _kcopr }}.repo
 
 copr_espanso:
   cmd.run:
@@ -944,10 +949,10 @@ copr_86box:
 # --- CachyOS kernel (special: override remove + install, stays separate) ---
 install_cachyos_kernel:
   cmd.run:
-    - name: rpm-ostree override remove kernel kernel-core kernel-modules kernel-modules-core kernel-modules-extra --install kernel-cachyos-lto --install kernel-cachyos-lto-devel-matched
+    - name: rpm-ostree override remove kernel kernel-core kernel-modules kernel-modules-core kernel-modules-extra --install {{ _kpkg }} --install {{ _kpkg }}-devel-matched
     - require:
       - cmd: copr_cachyos_kernel
-    - unless: rpm -q kernel-cachyos-lto || rpm-ostree status --json | grep -q kernel-cachyos-lto
+    - unless: rpm -q {{ _kpkg }} || rpm-ostree status --json | grep -q {{ _kpkg }}
 
 install_yazi:
   cmd.run:
