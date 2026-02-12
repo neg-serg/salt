@@ -181,7 +181,6 @@ sudo_timeout:
         {'name': 'qpwgraph',            'desc': 'Qt PipeWire patchbay'},
         {'name': 'rawtherapee',         'desc': 'Raw image processing application'},
         {'name': 'raysession',          'desc': 'Session manager for audio production'},
-        {'name': 'rnnoise',             'desc': 'Real-time noise suppression library'},
         {'name': 'sonic-visualiser',    'desc': 'Audio analysis and visualization'},
         {'name': 'wiremix',             'desc': 'PipeWire terminal volume mixer'},
         {'name': 'supercollider',       'desc': 'Audio synthesis engine and programming IDE'},
@@ -382,7 +381,6 @@ sudo_timeout:
 {% endif %}
 
 {% set copr_packages = [
-    {'name': 'noise-suppression-for-voice', 'desc': 'RNNoise-based noise suppression PipeWire plugin'},
     {'name': 'dualsensectl',                'desc': 'DualSense controller LED/haptics control'},
     {'name': 'espanso-wayland',             'desc': 'Cross-platform text expander (Wayland build)'},
     {'name': 'himalaya',                    'desc': 'CLI email client using JMAP/IMAP'},
@@ -888,12 +886,6 @@ install_ssh_to_age:
     - runas: neg
     - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/ssh-to-age
-
-# --- COPR: noise-suppression-for-voice (RNNoise LADSPA plugin) ---
-copr_noise_suppression:
-  cmd.run:
-    - name: dnf copr enable -y lkiesow/noise-suppression-for-voice
-    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:lkiesow:noise-suppression-for-voice.repo
 
 # --- COPR repo enables (fast test -f guards) ---
 copr_dualsensectl:
