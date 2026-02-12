@@ -1,4 +1,8 @@
 import sys
+import warnings
+
+# Suppress DeprecationWarnings from Salt internals (codecs.open, datetime.utcnow)
+warnings.filterwarnings("ignore", category=DeprecationWarning, module=r"salt\.")
 
 
 # 1. Emulate removed 'crypt' module (Python 3.13+)
