@@ -376,15 +376,15 @@ sudo_timeout:
 {% endif %}
 
 {% set copr_packages = [
-    'noise-suppression-for-voice',
-    'dualsensectl',
-    'espanso-wayland',
-    'himalaya',
-    'spotifyd',
-    'sbctl',
-    'brutefir',
-    'patchmatrix',
-    'supercollider-sc3-plugins',
+    {'name': 'noise-suppression-for-voice', 'desc': 'RNNoise-based noise suppression PipeWire plugin'},
+    {'name': 'dualsensectl',                'desc': 'DualSense controller LED/haptics control'},
+    {'name': 'espanso-wayland',             'desc': 'Cross-platform text expander (Wayland build)'},
+    {'name': 'himalaya',                    'desc': 'CLI email client using JMAP/IMAP'},
+    {'name': 'spotifyd',                    'desc': 'Lightweight Spotify Connect daemon'},
+    {'name': 'sbctl',                       'desc': 'Secure Boot key manager'},
+    {'name': 'brutefir',                    'desc': 'Software convolution audio engine'},
+    {'name': 'patchmatrix',                 'desc': 'JACK patchbay in flow matrix form'},
+    {'name': 'supercollider-sc3-plugins',   'desc': 'Community UGen plugins for SuperCollider'},
 ] %}
 {# '86Box' removed — needs Qt 6.10, base image pins 6.9.2 #}
 
@@ -402,12 +402,18 @@ include:
 # Remove packages no longer in desired state.
 # rpm-ostree only adds, never removes — this handles cleanup explicitly.
 {% set unwanted_packages = [
+    {# Replaced by better alternatives (nnn→lf, ranger→yazi, stow→chezmoi, axel→aria2, etc.) #}
     'nnn', 'ranger', 'stow', 'axel', 'speedtest-cli', 'pcem',
+    {# Orphan build deps — no longer needed at runtime #}
     'python3-devel', 'ncurses-devel', 'pulseaudio-libs-devel', 'taglib-devel',
+    {# Replaced by gopass #}
     'pass',
+    {# Debug packages from custom RPM builds — not needed #}
     'albumdetails-debuginfo', 'albumdetails-debugsource',
     'amneziawg-tools-debuginfo', 'amneziawg-tools-debugsource',
+    {# Replaced terminals / unused compiler #}
     'alacritty', 'foot', 'g++',
+    {# Moved to Distrobox CachyOS container #}
     'steam', 'gamescope', 'mangohud', 'protontricks', 'python3-vkbasalt-cli', 'vkBasalt',
 ] %}
 remove_unwanted_packages:
@@ -432,7 +438,7 @@ install_all_packages:
   cmd.run:
     - name: |
         {% raw %}
-        wanted=({% endraw %}{% for cat, pkgs in categories | dictsort %}{% for pkg in pkgs %}{{ pkg.name }} {% endfor %}{% endfor %}{% for pkg in copr_packages %}{{ pkg }} {% endfor %}{% raw %})
+        wanted=({% endraw %}{% for cat, pkgs in categories | dictsort %}{% for pkg in pkgs %}{{ pkg.name }} {% endfor %}{% endfor %}{% for pkg in copr_packages %}{{ pkg.name }} {% endfor %}{% raw %})
         installed=$(rpm -qa --queryformat '%{NAME}\n' | sort -u)
         layered=$(rpm-ostree status --json | jq -r '.deployments[]."requested-packages"[]?' | sort -u)
         have=$(sort -u <(echo "$installed") <(echo "$layered"))
@@ -441,7 +447,7 @@ install_all_packages:
           rpm-ostree install -y --allow-inactive $missing
         fi
         {% endraw %}
-    - unless: rpm -q {% for cat, pkgs in categories | dictsort %}{% for pkg in pkgs %}{{ pkg.name }} {% endfor %}{% endfor %}{% for pkg in copr_packages %}{{ pkg }} {% endfor %}> /dev/null 2>&1
+    - unless: rpm -q {% for cat, pkgs in categories | dictsort %}{% for pkg in pkgs %}{{ pkg.name }} {% endfor %}{% endfor %}{% for pkg in copr_packages %}{{ pkg.name }} {% endfor %}> /dev/null 2>&1
     - require:
       - file: fix_containers_policy
       - cmd: copr_noise_suppression
@@ -622,35 +628,35 @@ btrfs_compress_var:
 
 # Flatpak applications
 {% set flatpak_apps = [
-    'net.pcsx2.PCSX2',
-    'net.davidotek.pupgui2',
-    'io.github.dimtpap.coppwr',
-    'com.github.tmewett.BrogueCE',
-    'org.zdoom.GZDoom',
-    'tk.deat.Jazz2Resurrection',
-    'net.veloren.airshipper',
-    'com.shatteredpixel.shatteredpixeldungeon',
-    'one.ablaze.floorp',
-    'me.timschneeberger.jdsp4linux',
-    'com.vysp3r.ProtonPlus',
-    'com.obsproject.Studio',
-    'net.sapples.LiveCaptions',
-    'md.obsidian.Obsidian',
-    'org.chromium.Chromium',
-    'org.gimp.GIMP',
-    'com.google.Chrome',
-    'org.libreoffice.LibreOffice',
-    'net.lutris.Lutris',
-    'com.github.qarmin.czkawka',
-    'com.google.AndroidStudio',
-    'io.github.woelper.Oculante',
+    {'id': 'net.pcsx2.PCSX2',                          'desc': 'PlayStation 2 emulator'},
+    {'id': 'net.davidotek.pupgui2',                     'desc': 'ProtonUp-Qt — Proton/Wine-GE version manager'},
+    {'id': 'io.github.dimtpap.coppwr',                  'desc': 'PipeWire graph inspector'},
+    {'id': 'com.github.tmewett.BrogueCE',               'desc': 'Community edition of Brogue roguelike'},
+    {'id': 'org.zdoom.GZDoom',                           'desc': 'Advanced Doom source port'},
+    {'id': 'tk.deat.Jazz2Resurrection',                  'desc': 'Jazz Jackrabbit 2 reimplementation'},
+    {'id': 'net.veloren.airshipper',                     'desc': 'Veloren voxel RPG launcher'},
+    {'id': 'com.shatteredpixel.shatteredpixeldungeon',   'desc': 'Roguelike dungeon crawler'},
+    {'id': 'one.ablaze.floorp',                          'desc': 'Privacy-focused Firefox fork'},
+    {'id': 'me.timschneeberger.jdsp4linux',              'desc': 'JamesDSP audio effects for Linux'},
+    {'id': 'com.vysp3r.ProtonPlus',                      'desc': 'Proton/Wine compatibility tool manager'},
+    {'id': 'com.obsproject.Studio',                      'desc': 'OBS Studio — streaming and recording'},
+    {'id': 'net.sapples.LiveCaptions',                   'desc': 'Real-time speech-to-text captions'},
+    {'id': 'md.obsidian.Obsidian',                       'desc': 'Markdown knowledge base'},
+    {'id': 'org.chromium.Chromium',                      'desc': 'Open-source Chromium browser'},
+    {'id': 'org.gimp.GIMP',                              'desc': 'GNU Image Manipulation Program'},
+    {'id': 'com.google.Chrome',                          'desc': 'Google Chrome browser'},
+    {'id': 'org.libreoffice.LibreOffice',                'desc': 'Office suite'},
+    {'id': 'net.lutris.Lutris',                          'desc': 'Gaming platform for Linux'},
+    {'id': 'com.github.qarmin.czkawka',                  'desc': 'Duplicate file and image finder'},
+    {'id': 'com.google.AndroidStudio',                   'desc': 'Android IDE'},
+    {'id': 'io.github.woelper.Oculante',                 'desc': 'Fast image viewer with editing'},
 ] %}
 
 install_flatpak_apps:
   cmd.run:
     - name: |
         installed=$(flatpak list --user --app --columns=application)
-        apps=({% for app in flatpak_apps %}'{{ app }}' {% endfor %})
+        apps=({% for app in flatpak_apps %}'{{ app.id }}' {% endfor %})
         missing=()
         for app in "${apps[@]}"; do
           grep -qxF "$app" <<< "$installed" || missing+=("$app")
@@ -661,7 +667,7 @@ install_flatpak_apps:
     - runas: neg
     - unless: |
         installed=$(flatpak list --user --app --columns=application)
-        apps=({% for app in flatpak_apps %}'{{ app }}' {% endfor %})
+        apps=({% for app in flatpak_apps %}'{{ app.id }}' {% endfor %})
         for app in "${apps[@]}"; do
           grep -qxF "$app" <<< "$installed" || exit 1
         done
