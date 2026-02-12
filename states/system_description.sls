@@ -574,6 +574,29 @@ greetd_hyprland_config:
   file.managed:
     - name: /etc/greetd/hyprland-greeter.conf
     - contents: |
+        # Monitor: match main session resolution
+        {% if host.display %}
+        monitorv2 {
+            output = DP-2
+            mode = {{ host.display }}
+            position = 0x0
+            scale = 2
+        }
+        monitorv2 {
+            output = DP-1
+            disabled = true
+        }
+        {% endif %}
+
+        # Cursor: match main session theme
+        env = XCURSOR_THEME,Alkano-aio
+        env = XCURSOR_SIZE,23
+        env = HYPRCURSOR_THEME,Alkano-aio
+        env = HYPRCURSOR_SIZE,23
+        cursor {
+            sync_gsettings_theme = true
+        }
+
         exec-once = qs -p ~/.config/quickshell/greeter/greeter.qml
     - user: root
     - group: root
