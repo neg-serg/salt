@@ -415,9 +415,10 @@ remove_unwanted_packages:
     - name: |
         {% raw %}
         to_remove=()
-        {% endraw %}{% for pkg in unwanted_packages %}
-        rpm -q {{ pkg }} > /dev/null 2>&1 && to_remove+=('{{ pkg }}')
-        {% endfor %}{% raw %}
+        pkgs=({% endraw %}{% for pkg in unwanted_packages %}'{{ pkg }}' {% endfor %}{% raw %})
+        for pkg in "${pkgs[@]}"; do
+          rpm -q "$pkg" > /dev/null 2>&1 && to_remove+=("$pkg")
+        done
         if [ ${#to_remove[@]} -gt 0 ]; then
           echo "Removing: ${to_remove[*]}"
           rpm-ostree uninstall "${to_remove[@]}" || true
@@ -649,19 +650,21 @@ install_flatpak_apps:
   cmd.run:
     - name: |
         installed=$(flatpak list --user --app --columns=application)
+        apps=({% for app in flatpak_apps %}'{{ app }}' {% endfor %})
         missing=()
-        {% for app in flatpak_apps %}
-        grep -qxF '{{ app }}' <<< "$installed" || missing+=('{{ app }}')
-        {% endfor %}
+        for app in "${apps[@]}"; do
+          grep -qxF "$app" <<< "$installed" || missing+=("$app")
+        done
         if [ -n "${missing[*]}" ]; then
           flatpak install --user -y flathub "${missing[@]}"
         fi
     - runas: neg
     - unless: |
         installed=$(flatpak list --user --app --columns=application)
-        {% for app in flatpak_apps %}
-        grep -qxF '{{ app }}' <<< "$installed" || exit 1
-        {% endfor %}
+        apps=({% for app in flatpak_apps %}'{{ app }}' {% endfor %})
+        for app in "${apps[@]}"; do
+          grep -qxF "$app" <<< "$installed" || exit 1
+        done
 
 # Flatpak overrides: Wayland cursor + GTK dark theme
 flatpak_overrides:
