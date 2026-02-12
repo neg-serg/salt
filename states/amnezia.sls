@@ -1,12 +1,6 @@
 # Salt state for Amnezia build and deploy (Local User version)
 # All 3 components build in parallel for faster deployment
 
-/var/home/neg/src/amnezia_build:
-  file.directory:
-    - user: neg
-    - group: neg
-    - makedirs: True
-
 /var/home/neg/.local/bin:
   file.directory:
     - user: neg
@@ -20,7 +14,7 @@ build_amnezia_all:
         {% raw %}
         #!/bin/bash
         set -uo pipefail
-        BUILD=/var/home/neg/src/amnezia_build
+        BUILD=/var/mnt/one/pkg/cache/amnezia
         IMG=registry.fedoraproject.org/fedora-toolbox:43
         PIDS=()
         NAMES=()
@@ -102,16 +96,16 @@ build_amnezia_all:
     - timeout: 3600
     - output_loglevel: info
     - unless: >-
-        test -f /var/home/neg/src/amnezia_build/amneziawg-go-bin &&
-        test -f /var/home/neg/src/amnezia_build/awg-bin &&
-        test -f /var/home/neg/src/amnezia_build/AmneziaVPN-bin
+        test -f /var/mnt/one/pkg/cache/amnezia/amneziawg-go-bin &&
+        test -f /var/mnt/one/pkg/cache/amnezia/awg-bin &&
+        test -f /var/mnt/one/pkg/cache/amnezia/AmneziaVPN-bin
     - require:
-      - file: /var/home/neg/src/amnezia_build
+      - file: /var/mnt/one/pkg/cache/amnezia
 
 install_amneziawg_go:
   file.managed:
     - name: /var/home/neg/.local/bin/amneziawg-go
-    - source: /var/home/neg/src/amnezia_build/amneziawg-go-bin
+    - source: /var/mnt/one/pkg/cache/amnezia/amneziawg-go-bin
     - mode: '0755'
     - user: neg
     - group: neg
@@ -121,7 +115,7 @@ install_amneziawg_go:
 install_amneziawg_tools:
   file.managed:
     - name: /var/home/neg/.local/bin/awg
-    - source: /var/home/neg/src/amnezia_build/awg-bin
+    - source: /var/mnt/one/pkg/cache/amnezia/awg-bin
     - mode: '0755'
     - user: neg
     - group: neg
@@ -146,7 +140,7 @@ install_amneziawg_tools:
 install_amnezia_vpn:
   file.managed:
     - name: /var/home/neg/.local/bin/AmneziaVPN
-    - source: /var/home/neg/src/amnezia_build/AmneziaVPN-bin
+    - source: /var/mnt/one/pkg/cache/amnezia/AmneziaVPN-bin
     - mode: '0755'
     - user: neg
     - group: neg
