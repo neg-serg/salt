@@ -15,22 +15,24 @@ install_custom_rpms:
           rpm_files+=("$f")
         done
         [ ${#rpm_files[@]} -eq 0 ] && exit 0
-        # Batch: get package names from all RPM files (one rpm call)
-        mapfile -t pkg_names < <(rpm -qp --queryformat '%{NAME}\n' "${rpm_files[@]}" 2>/dev/null)
-        # Batch: all installed packages (one rpm call)
-        installed=$(rpm -qa --queryformat '%{NAME}\n' | sort -u)
+        # Batch: get package name.arch from all RPM files (one rpm call)
+        mapfile -t pkg_ids < <(rpm -qp --queryformat '%{NAME}.%{ARCH}\n' "${rpm_files[@]}" 2>/dev/null)
+        # Batch: all installed packages by name.arch (one rpm call)
+        installed=$(rpm -qa --queryformat '%{NAME}.%{ARCH}\n' | sort -u)
         # Batch: all layered local packages (one rpm-ostree call)
         layered=$(rpm-ostree status --json | jq -r '.deployments[]."requested-local-packages"[]?')
-        # Build lookup set
+        # Build lookup set keyed by name.arch
         declare -A have
-        while IFS= read -r name; do [[ -n "$name" ]] && have["$name"]=1; done <<< "$installed"
+        while IFS= read -r id; do [[ -n "$id" ]] && have["$id"]=1; done <<< "$installed"
         while IFS= read -r entry; do
+          [[ -z "$entry" ]] && continue
+          arch="${entry##*.}"
           name="${entry%%-[0-9]*}"
-          [[ -n "$name" ]] && have["$name"]=1
+          [[ -n "$name" && -n "$arch" ]] && have["${name}.${arch}"]=1
         done <<< "$layered"
         to_install=()
-        for i in "${!pkg_names[@]}"; do
-          [[ -z "${have[${pkg_names[$i]}]+x}" ]] && to_install+=("${rpm_files[$i]}")
+        for i in "${!pkg_ids[@]}"; do
+          [[ -z "${have[${pkg_ids[$i]}]+x}" ]] && to_install+=("${rpm_files[$i]}")
         done
         if [ ${#to_install[@]} -gt 0 ]; then
           rpm-ostree install "${to_install[@]}"
@@ -47,7 +49,8 @@ install_custom_rpms:
           rpm_files+=("$f")
         done
         [ ${#rpm_files[@]} -eq 0 ] && exit 0
-        rpm -q $(rpm -qp --queryformat '%{NAME} ' "${rpm_files[@]}" 2>/dev/null) > /dev/null 2>&1
+        mapfile -t ids < <(rpm -qp --queryformat '%{NAME}.%{ARCH}\n' "${rpm_files[@]}" 2>/dev/null)
+        for id in "${ids[@]}"; do rpm -q --queryformat '' "$id" 2>/dev/null || exit 1; done
         {% endraw %}
     - shell: /bin/bash
     - runas: root
