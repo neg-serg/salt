@@ -3,7 +3,7 @@
 # Concurrency is limited to max_parallel using a FIFO-based semaphore
 
 {% set max_parallel = 4 %}
-{% set rpms_dir = '/var/home/neg/src/salt/rpms' %}
+{% set rpms_dir = '/var/mnt/one/pkg/cache/rpms' %}
 {% set build_dir = '/var/home/neg/src/salt/build' %}
 {% set base_image = 'registry.fedoraproject.org/fedora-toolbox:43' %}
 
@@ -73,12 +73,6 @@
     'timeout': 7200,
     'extra_volumes': '-v /var/home/neg/src/salt/build/iosevka-neg.toml:/build/iosevka-neg.toml:z'
 } %}
-
-{{ rpms_dir }}:
-  file.directory:
-    - user: neg
-    - group: neg
-    - makedirs: True
 
 # Render the parallel build script (Jinja expands package list at render time)
 # This avoids Salt dumping the entire rendered script in the Name: field
@@ -170,7 +164,7 @@ build_rpms_script:
         echo "=== Parallel build: ${LAUNCHED} built, ${SKIPPED} skipped, ${FAILURES} failed ==="
         [ "$FAILURES" -eq 0 ]
     - require:
-      - file: {{ rpms_dir }}
+      - cmd: pkg_cache_selinux
 
 # Execute the rendered build script
 build_rpms_parallel:
@@ -192,4 +186,4 @@ build_rpms_parallel:
         ; do [ -f "$f" ] || exit 1; done
     - require:
       - file: build_rpms_script
-      - file: {{ rpms_dir }}
+      - cmd: pkg_cache_selinux

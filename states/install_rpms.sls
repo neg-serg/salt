@@ -5,7 +5,7 @@ install_custom_rpms:
   cmd.run:
     - name: |
         {% raw %}
-        RPM_DIR=/var/home/neg/src/salt/rpms
+        RPM_DIR=/var/mnt/one/pkg/cache/rpms
         shopt -s nullglob
         all_rpms=("$RPM_DIR"/*.rpm)
         # Filter out debuginfo/debugsource packages
@@ -40,7 +40,7 @@ install_custom_rpms:
         {% endraw %}
     - unless: |
         {% raw %}
-        RPM_DIR=/var/home/neg/src/salt/rpms
+        RPM_DIR=/var/mnt/one/pkg/cache/rpms
         shopt -s nullglob
         all_rpms=("$RPM_DIR"/*.rpm)
         rpm_files=()
