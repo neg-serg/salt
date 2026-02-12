@@ -79,10 +79,15 @@
     - group: neg
     - makedirs: True
 
-# Build all standard packages in parallel (up to max_parallel concurrent containers)
-build_rpms_parallel:
-  cmd.run:
-    - name: |
+# Render the parallel build script (Jinja expands package list at render time)
+# This avoids Salt dumping the entire rendered script in the Name: field
+build_rpms_script:
+  file.managed:
+    - name: /tmp/salt-build-rpms-parallel.sh
+    - user: neg
+    - group: neg
+    - mode: '0755'
+    - contents: |
         #!/bin/bash
         set -uo pipefail
 
@@ -123,7 +128,6 @@ build_rpms_parallel:
         else
             SKIPPED=$((SKIPPED + 1))
         fi
-
         {%- for pkg in rpms %}
         {%- set arch = pkg.get('arch', 'x86_64') %}
         {%- set release = pkg.get('release', '1') %}
@@ -164,6 +168,13 @@ build_rpms_parallel:
         exec 3>&-
         echo "=== Parallel build: ${LAUNCHED} built, ${SKIPPED} skipped, ${FAILURES} failed ==="
         [ "$FAILURES" -eq 0 ]
+    - require:
+      - file: {{ rpms_dir }}
+
+# Execute the rendered build script
+build_rpms_parallel:
+  cmd.run:
+    - name: /tmp/salt-build-rpms-parallel.sh
     - shell: /bin/bash
     - runas: neg
     - timeout: 7200
@@ -179,4 +190,5 @@ build_rpms_parallel:
         {%- endfor %}
         ; do [ -f "$f" ] || exit 1; done
     - require:
+      - file: build_rpms_script
       - file: {{ rpms_dir }}
