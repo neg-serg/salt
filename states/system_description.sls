@@ -1669,16 +1669,6 @@ imapnotify_gmail_service:
         [Install]
         WantedBy=default.target
 
-enable_imapnotify:
-  cmd.run:
-    - name: systemctl --user daemon-reload && systemctl --user enable imapnotify-gmail.service
-    - runas: neg
-    - env:
-      - XDG_RUNTIME_DIR: /run/user/1000
-    - unless: systemctl --user is-enabled imapnotify-gmail.service
-    - require:
-      - file: imapnotify_gmail_service
-
 # --- Systemd user services for calendar ---
 vdirsyncer_service:
   file.managed:
@@ -1712,17 +1702,6 @@ vdirsyncer_timer:
         [Install]
         WantedBy=timers.target
 
-enable_mail_timers:
-  cmd.run:
-    - name: systemctl --user daemon-reload && systemctl --user enable --now mbsync-gmail.timer vdirsyncer.timer
-    - runas: neg
-    - env:
-      - XDG_RUNTIME_DIR: /run/user/1000
-    - unless: systemctl --user is-enabled mbsync-gmail.timer && systemctl --user is-enabled vdirsyncer.timer
-    - require:
-      - file: mbsync_gmail_timer
-      - file: vdirsyncer_timer
-
 # --- Surfingkeys HTTP server (browser extension helper) ---
 surfingkeys_server_service:
   file.managed:
@@ -1743,24 +1722,28 @@ surfingkeys_server_service:
         [Install]
         WantedBy=graphical-session.target
 
-surfingkeys_server_enable:
+# --- Enable user services: single daemon-reload + batch enable ---
+enable_user_services:
   cmd.run:
-    - name: systemctl --user daemon-reload && systemctl --user enable --now surfingkeys-server.service
+    - name: |
+        systemctl --user daemon-reload
+        systemctl --user enable imapnotify-gmail.service surfingkeys-server.service gpg-agent.socket gpg-agent-ssh.socket
+        systemctl --user enable --now mbsync-gmail.timer vdirsyncer.timer
     - runas: neg
     - env:
       - XDG_RUNTIME_DIR: /run/user/1000
-    - unless: systemctl --user is-enabled surfingkeys-server.service
+      - DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
+    - unless: |
+        systemctl --user is-enabled imapnotify-gmail.service 2>/dev/null &&
+        systemctl --user is-enabled mbsync-gmail.timer 2>/dev/null &&
+        systemctl --user is-enabled vdirsyncer.timer 2>/dev/null &&
+        systemctl --user is-enabled surfingkeys-server.service 2>/dev/null &&
+        systemctl --user is-enabled gpg-agent-ssh.socket 2>/dev/null
     - require:
+      - file: imapnotify_gmail_service
+      - file: mbsync_gmail_timer
+      - file: vdirsyncer_timer
       - file: surfingkeys_server_service
-
-# --- GPG agent with SSH support ---
-gpg_agent_socket:
-  cmd.run:
-    - name: systemctl --user enable gpg-agent.socket gpg-agent-ssh.socket
-    - runas: neg
-    - env:
-      - XDG_RUNTIME_DIR: /run/user/1000
-    - unless: systemctl --user is-enabled gpg-agent-ssh.socket
 
 # --- SSH directory setup ---
 ssh_dir:
@@ -1769,56 +1752,6 @@ ssh_dir:
     - user: neg
     - group: neg
     - mode: '0700'
-
-# --- GPG keyring migration (old ~/.gnupg → XDG ~/.local/share/gnupg) ---
-# Parent dir (~/.local/share/gnupg) created by chezmoi with 0700 (private_ prefix)
-gnupg_xdg_private_keys_dir:
-  file.directory:
-    - name: /var/home/neg/.local/share/gnupg/private-keys-v1.d
-    - user: neg
-    - group: neg
-    - mode: '0700'
-
-gnupg_migrate_pubkey:
-  cmd.run:
-    - name: GNUPGHOME=/var/home/neg/.gnupg gpg --export 9629B754BC0D843F7304BCF0F2CF6AB037FFADB1 | gpg --homedir /var/home/neg/.local/share/gnupg --import
-    - runas: neg
-    - onlyif: test -f /var/home/neg/.gnupg/pubring.kbx
-    - unless: gpg --homedir /var/home/neg/.local/share/gnupg --list-keys 9629B754BC0D843F7304BCF0F2CF6AB037FFADB1 2>/dev/null
-
-gnupg_migrate_trust:
-  cmd.run:
-    - name: echo "9629B754BC0D843F7304BCF0F2CF6AB037FFADB1:6:" | gpg --homedir /var/home/neg/.local/share/gnupg --import-ownertrust
-    - runas: neg
-    - unless: gpg --homedir /var/home/neg/.local/share/gnupg --export-ownertrust 2>/dev/null | grep -q 9629B754BC0D843F7304BCF0F2CF6AB037FFADB1
-    - require:
-      - cmd: gnupg_migrate_pubkey
-
-gnupg_migrate_key_stubs:
-  cmd.run:
-    - name: cp -n /var/home/neg/.gnupg/private-keys-v1.d/*.key /var/home/neg/.local/share/gnupg/private-keys-v1.d/
-    - runas: neg
-    - onlyif: test -d /var/home/neg/.gnupg/private-keys-v1.d
-    - unless: test "$(ls /var/home/neg/.local/share/gnupg/private-keys-v1.d/*.key 2>/dev/null | wc -l)" -gt 0
-    - require:
-      - file: gnupg_xdg_private_keys_dir
-
-# --- Gopass store migration (old ~/.password-store → XDG ~/.local/share/pass) ---
-gopass_store_dir:
-  file.directory:
-    - name: /var/home/neg/.local/share/pass
-    - user: neg
-    - group: neg
-    - mode: '0700'
-
-gopass_store_migrate:
-  cmd.run:
-    - name: cp -a /var/home/neg/.password-store/. /var/home/neg/.local/share/pass/
-    - runas: neg
-    - onlyif: test -f /var/home/neg/.password-store/.gpg-id
-    - unless: test -f /var/home/neg/.local/share/pass/.gpg-id
-    - require:
-      - file: gopass_store_dir
 
 # --- Wallust cache defaults (prevents hyprland source errors on first boot) ---
 wallust_cache_dir:
