@@ -26,13 +26,17 @@ build_amnezia_all:
         NAMES=()
         FAILURES=0
 
+        # Clean stale source dirs (may be root-owned from previous container builds)
+        for d in amneziawg-go-src amneziawg-tools-src amnezia-client-src; do
+            [ -d "$BUILD/$d" ] && podman unshare rm -rf "$BUILD/$d"
+        done
+
         # AmneziaWG-go
         if [ ! -f "$BUILD/amneziawg-go-bin" ]; then
             (
                 echo "[BUILD] amneziawg-go"
                 podman run --rm -v "$BUILD:/build:Z" "$IMG" bash -c "
                 dnf install -y git golang make && \
-                rm -rf /build/amneziawg-go-src && \
                 git clone https://github.com/amnezia-vpn/amneziawg-go.git /build/amneziawg-go-src && \
                 cd /build/amneziawg-go-src && \
                 make && \
@@ -48,7 +52,6 @@ build_amnezia_all:
                 echo "[BUILD] amneziawg-tools"
                 podman run --rm -v "$BUILD:/build:Z" "$IMG" bash -c "
                 dnf install -y git make gcc libmnl-devel && \
-                rm -rf /build/amneziawg-tools-src && \
                 git clone https://github.com/amnezia-vpn/amneziawg-tools.git /build/amneziawg-tools-src && \
                 cd /build/amneziawg-tools-src/src && \
                 make && \
@@ -69,7 +72,6 @@ build_amnezia_all:
                     qt6-qt5compat-devel qt6-qtshadertools-devel qt6-qtmultimedia-devel \
                     qt6-qtbase-static qt6-qtdeclarative-static qt6-qtremoteobjects-devel \
                     libsecret-devel libstdc++-static && \
-                rm -rf /build/amnezia-client-src && \
                 git clone --recursive https://github.com/amnezia-vpn/amnezia-client.git /build/amnezia-client-src && \
                 mkdir -p /build/amnezia-client-src/build && cd /build/amnezia-client-src/build && \
                 cmake .. -DCMAKE_BUILD_TYPE=Release -DVERSION=2.1.2 && \
@@ -90,6 +92,7 @@ build_amnezia_all:
         echo "=== Amnezia: ${#PIDS[@]} built, $FAILURES failed ==="
         [ "$FAILURES" -eq 0 ]
         {% endraw %}
+    - shell: /bin/bash
     - timeout: 3600
     - output_loglevel: info
     - unless: >-
