@@ -39,6 +39,12 @@ run_salt() {
   local extra_args="${1:-}"
   echo "=== Applying ${STATE} ($(date)) ==="
   echo "Log: ${LOG_FILE}"
+
+  # Show state progress from the debug log in real-time
+  touch "${LOG_FILE}"
+  tail -f "${LOG_FILE}" | sed -un 's/.*Running state \[\([^]]*\)\].*/→ \1/p' &
+  local tail_pid=$!
+
   echo "$SUDO_PASS" | sudo -S -E "$VENV_DIR/bin/python3" "${SCRIPT_DIR}/run_salt.py" \
     --config-dir="${CONFIG_DIR}" \
     --local \
@@ -47,7 +53,11 @@ run_salt() {
     --log-file-level=debug \
     --state-output=mixed_id \
     ${ACTION} ${STATE} ${extra_args} 2>&1 | tee -a "${LOG_FILE}"
-  return "${PIPESTATUS[0]}"
+  local rc="${PIPESTATUS[0]}"
+
+  kill "$tail_pid" 2>/dev/null
+  wait "$tail_pid" 2>/dev/null
+  return "$rc"
 }
 
 # Ensure Salt is ready
