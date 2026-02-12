@@ -396,6 +396,7 @@ include:
   - pkg_cache
   - amnezia
   - build_rpms
+  - distrobox
   - fira-code-nerd
   - hy3
   - install_rpms
