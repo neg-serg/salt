@@ -22,7 +22,7 @@ return {
     { '<leader>sb', function()
       require('fzf-lua').files({
         cwd = vim.fn.expand('%:p:h'),
-        winopts = { height = 0.4, width = 1, row = 1 },
+        winopts = { height = 0.5, width = 1, row = 1 },
       })
     end, desc = 'File browser (cwd)' },
     { '<leader>sr', function() require('fzf-lua').resume() end, desc = 'Resume last picker' },
@@ -48,9 +48,9 @@ return {
     local fzf = require('fzf-lua')
     local actions = require('fzf-lua.actions')
 
-    fzf.setup('ivy', {
+    fzf.setup({
       winopts = {
-        height = 0.4, width = 1, row = 1,
+        height = 0.5, width = 1, row = 1,
         border = 'none',
         winblend = 8,
         preview = {
