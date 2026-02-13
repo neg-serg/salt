@@ -1,0 +1,14 @@
+{# Reusable Salt state macros for common patterns #}
+
+{# Trigger systemd daemon-reload when listed states change.
+   Usage: {{ daemon_reload('unbound', ['cmd: install_unbound', 'file: unbound_override']) }}
+#}
+{%- macro daemon_reload(name, onchanges) -%}
+{{ name }}_daemon_reload:
+  cmd.run:
+    - name: systemctl daemon-reload
+    - onchanges:
+{%- for item in onchanges %}
+      - {{ item }}
+{%- endfor %}
+{%- endmacro -%}

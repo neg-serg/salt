@@ -1,4 +1,5 @@
 {% from 'host_config.jinja' import host %}
+{% from '_macros.jinja' import daemon_reload %}
 {% set dns = host.features.dns %}
 
 # --- Unbound: recursive DNS resolver with DNSSEC + DoT ---
@@ -13,67 +14,7 @@ unbound_config:
     - name: /etc/unbound/unbound.conf
     - makedirs: True
     - mode: '0644'
-    - contents: |
-        server:
-            interface: 127.0.0.1
-            port: 5353
-            do-tcp: yes
-            do-udp: yes
-            so-reuseport: yes
-            edns-buffer-size: 1232
-
-            # Disable chroot (Fedora default chroot=/etc/unbound breaks absolute paths)
-            chroot: ""
-
-            # DNSSEC
-            auto-trust-anchor-file: /var/lib/unbound/root.key
-            val-permissive-mode: no
-            harden-dnssec-stripped: yes
-            harden-glue: yes
-            harden-below-nxdomain: yes
-
-            # Privacy + performance
-            qname-minimisation: yes
-            minimal-responses: yes
-            prefetch: yes
-            prefetch-key: yes
-            aggressive-nsec: yes
-
-            # Serve stale data while refreshing
-            serve-expired: yes
-            serve-expired-ttl: 3600
-            serve-expired-reply-ttl: 30
-
-            # TLS cert bundle for DoT
-            tls-cert-bundle: /etc/pki/tls/certs/ca-bundle.crt
-
-            # Statistics for exporters
-            extended-statistics: yes
-            statistics-interval: 0
-            statistics-cumulative: yes
-
-            # Logging
-            verbosity: 1
-            log-queries: no
-            log-replies: no
-            log-local-actions: no
-            log-servfail: no
-
-        # Allow unbound-control without TLS certs
-        remote-control:
-            control-enable: yes
-            control-interface: 127.0.0.1
-            control-port: 8953
-            control-use-cert: no
-
-        # Forward all queries via DNS-over-TLS
-        forward-zone:
-            name: "."
-            forward-tls-upstream: yes
-            forward-addr: 1.1.1.1@853#cloudflare-dns.com
-            forward-addr: 1.0.0.1@853#cloudflare-dns.com
-            forward-addr: 9.9.9.9@853#dns.quad9.net
-            forward-addr: 149.112.112.112@853#dns.quad9.net
+    - source: salt://configs/unbound.conf
 
 unbound_selinux_port:
   cmd.run:
@@ -103,12 +44,7 @@ unbound_restart_override:
     - require:
       - cmd: install_unbound
 
-unbound_daemon_reload:
-  cmd.run:
-    - name: systemctl daemon-reload
-    - onchanges:
-      - cmd: install_unbound
-      - file: unbound_restart_override
+{{ daemon_reload('unbound', ['cmd: install_unbound', 'file: unbound_restart_override']) }}
 
 unbound_enabled:
   cmd.run:
@@ -177,46 +113,7 @@ adguardhome_config:
     - mode: '0640'
     - makedirs: True
     - replace: False
-    - contents: |
-        http:
-          pprof:
-            port: 6060
-            enabled: false
-          address: 127.0.0.1:3000
-          session_ttl: 720h
-        dns:
-          bind_hosts:
-            - 127.0.0.1
-          port: 53
-          upstream_dns:
-            - 127.0.0.1:5353
-          bootstrap_dns:
-            - 1.1.1.1
-            - 8.8.8.8
-          enable_dnssec: false
-          cache_size: 4194304
-          cache_ttl_min: 0
-          cache_ttl_max: 0
-          cache_optimistic: true
-          upstream_mode: parallel
-        filtering:
-          protection_enabled: true
-          filtering_enabled: true
-          parental_enabled: false
-          safebrowsing_enabled: false
-          safe_search:
-            enabled: false
-        filters:
-          - enabled: true
-            url: https://adguardteam.github.io/HostlistsRegistry/assets/filter_1.txt
-            name: AdGuard DNS filter
-            id: 1
-          - enabled: true
-            url: https://adguardteam.github.io/HostlistsRegistry/assets/filter_2.txt
-            name: AdAway Default Blocklist
-            id: 2
-        user_rules: []
-        schema_version: 29
+    - source: salt://configs/adguardhome-initial.yaml
     - require:
       - file: adguardhome_data_dir
 
@@ -248,11 +145,7 @@ adguardhome_service:
         [Install]
         WantedBy=multi-user.target
 
-adguardhome_daemon_reload:
-  cmd.run:
-    - name: systemctl daemon-reload
-    - onchanges:
-      - file: adguardhome_service
+{{ daemon_reload('adguardhome', ['file: adguardhome_service']) }}
 
 adguardhome_enabled:
   service.enabled:
