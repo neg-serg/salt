@@ -50,20 +50,6 @@ Most items have been resolved. See `states/system_description.sls` for the actua
 | matugen-themes | Git clone templates | `install_matugen_themes` |
 | droidcam | akmod-v4l2loopback + binary | `install_v4l2loopback` + `install_droidcam` |
 
-## Skipped — Not Needed
-
-| Package | Reason |
-|---------|--------|
-| spotify-tui | Abandoned (2021), broken Spotify API |
-| wireless-tools | Deprecated; `iw` is the modern replacement |
-| update-resolv-conf | Fedora uses systemd-resolved |
-| read-edid | Use `edid-decode`; `ddcutil` already installed |
-| cider | Paid app; Apple Music only |
-| beautifulsoup4 | Python library, not a standalone tool |
-| pynvim | Already present via pip |
-| fontforge | Not needed |
-| fonttools | Not needed |
-
 ## Still Pending
 
 | Package | Issue | Notes |
