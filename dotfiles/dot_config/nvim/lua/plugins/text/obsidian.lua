@@ -23,18 +23,11 @@ return {'obsidian-nvim/obsidian.nvim', version='*', ft='markdown',
 
                 wiki_link_func='prepend_note_path',
 
-                follow_url_func=function(url)
-                    vim.fn.jobstart({'xdg-open', url}, {detach=true})
-                end,
-
-                mappings={}, -- ftplugin/markdown.lua handles gf/gF/gx
-
-                attachments={img_folder=''},
+                attachments={folder=''},
                 ui={enable=false}, -- render-markdown.nvim handles rendering
                 daily_notes={folder=''},
                 templates={folder=''},
-                sort_by='path',
-                sort_reversed=false,
+                search={sort_by='path', sort_reversed=false},
             })
 
             local function yank_notelink()
