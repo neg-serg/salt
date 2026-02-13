@@ -1,5 +1,5 @@
 # CLI tool installers: binaries, pip, cargo, scripts, themes
-{% from '_macros.jinja' import curl_bin, github_tar, pip_pkg, cargo_pkg %}
+{% from '_macros.jinja' import curl_bin, github_tar, github_release, pip_pkg, cargo_pkg %}
 
 # --- Neovim Python dependencies (nvr + pynvim) ---
 {{ pip_pkg('neovim_python_deps', pkg='pynvim neovim-remote', bin='nvr') }}
@@ -38,31 +38,11 @@ install_hyprevents:
 
 {{ curl_bin('hyprprop', 'https://raw.githubusercontent.com/vilari-mickopf/hyprprop/master/hyprprop') }}
 
-install_sops:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}' https://github.com/getsops/sops/releases/latest | sed 's|.*/tag/||')
-        curl -fsSL "https://github.com/getsops/sops/releases/download/${TAG}/sops-${TAG}.linux.amd64" -o ~/.local/bin/sops
-        chmod +x ~/.local/bin/sops
-    - runas: neg
-    - shell: /bin/bash
-    - creates: /var/home/neg/.local/bin/sops
+{{ github_release('sops', 'getsops/sops', 'sops-${TAG}.linux.amd64') }}
 
 {{ curl_bin('xdg-ninja', 'https://github.com/b3nj5m1n/xdg-ninja/releases/latest/download/xdgnj') }}
 
-install_rmpc:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}' https://github.com/mierak/rmpc/releases/latest | sed 's|.*/tag/||')
-        curl -fsSL "https://github.com/mierak/rmpc/releases/download/${TAG}/rmpc-${TAG}-x86_64-unknown-linux-gnu.tar.gz" -o /tmp/rmpc.tar.gz
-        tar -xzf /tmp/rmpc.tar.gz -C /tmp rmpc
-        mv /tmp/rmpc ~/.local/bin/
-        rm -f /tmp/rmpc.tar.gz
-    - runas: neg
-    - shell: /bin/bash
-    - creates: /var/home/neg/.local/bin/rmpc
+{{ github_release('rmpc', 'mierak/rmpc', 'rmpc-${TAG}-x86_64-unknown-linux-gnu.tar.gz', format='tar.gz') }}
 
 install_rustmission:
   cmd.run:
@@ -110,18 +90,7 @@ install_nushell:
 
 {{ github_tar('eza', 'https://github.com/eza-community/eza/releases/latest/download/eza_x86_64-unknown-linux-musl.tar.gz') }}
 
-install_television:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        TAG=$(curl -fsSL https://api.github.com/repos/alexpasmantier/television/releases/latest | jq -r .tag_name)
-        curl -fsSL "https://github.com/alexpasmantier/television/releases/download/${TAG}/tv-${TAG}-x86_64-unknown-linux-musl.tar.gz" -o /tmp/tv.tar.gz
-        tar -xzf /tmp/tv.tar.gz -C /tmp
-        mv /tmp/tv-${TAG}-x86_64-unknown-linux-musl/tv ~/.local/bin/
-        rm -rf /tmp/tv.tar.gz /tmp/tv-${TAG}-x86_64-unknown-linux-musl
-    - runas: neg
-    - shell: /bin/bash
-    - creates: /var/home/neg/.local/bin/tv
+{{ github_release('television', 'alexpasmantier/television', 'tv-${TAG}-x86_64-unknown-linux-musl.tar.gz', bin='tv', format='tar.gz') }}
 
 # --- GitHub binary downloads (remaining migration packages) ---
 install_xray:
@@ -137,19 +106,7 @@ install_xray:
     - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/xray
 
-install_sing_box:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        TAG=$(curl -fsSL https://api.github.com/repos/SagerNet/sing-box/releases/latest | jq -r .tag_name)
-        VER=${TAG#v}
-        curl -fsSL "https://github.com/SagerNet/sing-box/releases/download/${TAG}/sing-box-${VER}-linux-amd64.tar.gz" -o /tmp/sing-box.tar.gz
-        tar -xzf /tmp/sing-box.tar.gz -C /tmp
-        mv /tmp/sing-box-${VER}-linux-amd64/sing-box ~/.local/bin/
-        rm -rf /tmp/sing-box.tar.gz /tmp/sing-box-${VER}-linux-amd64
-    - runas: neg
-    - shell: /bin/bash
-    - creates: /var/home/neg/.local/bin/sing-box
+{{ github_release('sing-box', 'SagerNet/sing-box', 'sing-box-${VER}-linux-amd64.tar.gz', format='tar.gz', strip_v=True) }}
 
 {{ github_tar('tdl', 'https://github.com/iyear/tdl/releases/latest/download/tdl_Linux_64bit.tar.gz') }}
 
@@ -346,16 +303,7 @@ install_blesh:
     - creates: /var/home/neg/.local/share/ble.sh
 
 # --- hishtory (synced shell history search) ---
-install_hishtory:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        TAG=$(curl -fsSL https://api.github.com/repos/ddworken/hishtory/releases/latest | jq -r .tag_name)
-        curl -fsSL "https://github.com/ddworken/hishtory/releases/download/${TAG}/hishtory-linux-amd64" -o ~/.local/bin/hishtory
-        chmod +x ~/.local/bin/hishtory
-    - runas: neg
-    - shell: /bin/bash
-    - creates: /var/home/neg/.local/bin/hishtory
+{{ github_release('hishtory', 'ddworken/hishtory', 'hishtory-linux-amd64') }}
 
 # --- iwmenu (interactive Wi-Fi menu for iwd/Wayland) ---
 {{ cargo_pkg('iwmenu', git='https://github.com/e-tho/iwmenu') }}
