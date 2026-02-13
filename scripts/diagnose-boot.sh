@@ -3,6 +3,8 @@
 # Run: sudo bash scripts/diagnose-boot.sh > /tmp/boot-diag.txt 2>&1
 
 set -euo pipefail
+# Output path documented in usage comment above
+# shellcheck disable=SC2034
 OUTPUT="/tmp/boot-diag.txt"
 
 section() { echo -e "\n===== $1 ====="; }

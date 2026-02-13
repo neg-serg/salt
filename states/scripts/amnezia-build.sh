@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2015  # A && B || C pattern is intentional (B=echo never fails)
 set -uo pipefail
 BUILD=/var/mnt/one/pkg/cache/amnezia
 IMG=registry.fedoraproject.org/fedora-toolbox:43
@@ -10,9 +11,9 @@ FAILURES=0
 for d in amneziawg-go-src amneziawg-tools-src amnezia-client-src; do
     if [ -d "$BUILD/$d" ]; then
         if [ "$(id -u)" -eq 0 ]; then
-            rm -rf "$BUILD/$d"
+            rm -rf "${BUILD:?}/$d"
         else
-            podman unshare rm -rf "$BUILD/$d"
+            podman unshare rm -rf "${BUILD:?}/$d"
         fi
     fi
 done
