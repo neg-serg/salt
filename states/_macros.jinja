@@ -215,15 +215,16 @@ install_{{ name | replace('-', '_') }}:
         trap 'echo "[EXIT] Cleanup on exit (code: $?)" >&2' EXIT
         {{ caller() | indent(8) }}
     - shell: {{ shell }}
-{%- if creates %}
+{% if creates %}
     - creates: {{ creates }}
-{%- endif %}
-{%- if requires %}
+{% endif %}
+{% if requires %}
     - require:
-{%- for req in requires %}
+{% for req in requires %}
       - {{ req }}
-{%- endfor %}
-{%- endif %}
+{% endfor %}
+{% endif %}
+
 {%- endmacro -%}
 
 {# Download and extract tar.gz/tar.xz archive, move binary(ies) to ~/.local/bin/.
@@ -237,17 +238,24 @@ install_{{ name | replace('-', '_') }}:
 #}
 {%- macro curl_extract_tar(name, url, binary_pattern, archive_ext='tar.gz', fetch_tag=False, binaries=None, chmod=False) -%}
 {%- set ext_flag = 'J' if archive_ext == 'tar.xz' else 'z' -%}
+{%- if fetch_tag %}
+{%- if '/api.github.com/repos/' in url %}
+{%- set repo_path = url.split('/repos/')[1].split('/')[0:2] | join('/') %}
+{%- else %}
+{%- set repo_path = url.split('github.com/')[1].split('/')[0:2] | join('/') %}
+{%- endif %}
+{%- endif %}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: |
         set -eo pipefail
 {%- if fetch_tag %}
-        TAG=$(curl -fsSL https://api.github.com/repos/{{ url.split('/repos/')[1].split('/releases')[0] }}/releases/latest | jq -r .tag_name)
+        TAG=$(curl -fsSL https://api.github.com/repos/{{ repo_path }}/releases/latest | jq -r .tag_name)
 {%- endif %}
         curl -fsSL "{{ url }}" -o /tmp/{{ name }}.{{ archive_ext }}
         tar -x{{ ext_flag }}f /tmp/{{ name }}.{{ archive_ext }} -C /tmp
 {%- if binaries %}
-{%- for bin in binaries %}
+{% for bin in binaries %}
         mv /tmp/{{ binary_pattern.replace('*', bin) if '*' in binary_pattern else binary_pattern }}/{{ bin }} ~/.local/bin/ 2>/dev/null || mv /tmp/{{ binary_pattern.rsplit('/', 1)[0] }}/{{ bin }} ~/.local/bin/
 {%- endfor %}
 {%- else %}
@@ -260,6 +268,7 @@ install_{{ name | replace('-', '_') }}:
     - runas: neg
     - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/{{ binaries[0] if binaries else binary_pattern.rsplit('/', 1)[-1] }}
+
 {%- endmacro -%}
 
 {# Download and extract ZIP archive, move binary(ies) to ~/.local/bin/.
@@ -291,6 +300,8 @@ install_{{ name | replace('-', '_') }}:
     - runas: neg
     - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/{{ binaries[0] if binaries else binary_path.rsplit('/', 1)[-1] }}
+
+
 {%- endmacro -%}
 
 {# Deploy systemd unit file + enable service (file + daemon-reload + service.enabled + optional service.running).
