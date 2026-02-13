@@ -448,6 +448,9 @@ remove_unwanted_packages:
     - onlyif: rpm -q {% for pkg in unwanted_packages %}{{ pkg }} {% endfor %}2>/dev/null | grep -v 'not installed'
 
 # Remove base-image packages we don't want (rpm-ostree override remove).
+# unlike uninstall, override remove fails if an override already exists,
+# so we check requested-base-removals, not rpm -q (which still shows the
+# package until reboot).
 {% set unwanted_base_packages = [
     'firefox', 'firefox-langpacks',
 ] %}
@@ -456,16 +459,24 @@ remove_unwanted_base_packages:
     - name: |
         {% raw %}
         to_remove=()
+        overrides=$(rpm-ostree status --json | jq -r '.deployments[0]."requested-base-removals"[]?')
         pkgs=({% endraw %}{% for pkg in unwanted_base_packages %}'{{ pkg }}' {% endfor %}{% raw %})
         for pkg in "${pkgs[@]}"; do
-          rpm -q "$pkg" > /dev/null 2>&1 && to_remove+=("$pkg")
+          echo "$overrides" | grep -qx "$pkg" || to_remove+=("$pkg")
         done
         if [ ${#to_remove[@]} -gt 0 ]; then
           echo "Overriding base packages: ${to_remove[*]}"
           rpm-ostree override remove "${to_remove[@]}"
         fi
         {% endraw %}
-    - onlyif: rpm -q {% for pkg in unwanted_base_packages %}{{ pkg }} {% endfor %}2>/dev/null | grep -v 'not installed'
+    - unless: |
+        {% raw %}
+        overrides=$(rpm-ostree status --json | jq -r '.deployments[0]."requested-base-removals"[]?')
+        pkgs=({% endraw %}{% for pkg in unwanted_base_packages %}'{{ pkg }}' {% endfor %}{% raw %})
+        for pkg in "${pkgs[@]}"; do
+          echo "$overrides" | grep -qx "$pkg" || exit 1
+        done
+        {% endraw %}
 
 # Install all packages (system + COPR) in a single rpm-ostree transaction.
 # One transaction = one deployment, much faster than two separate ones.
