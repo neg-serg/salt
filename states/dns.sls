@@ -1,13 +1,10 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import daemon_reload %}
+{% from '_macros.jinja' import daemon_reload, ostree_install %}
 {% set dns = host.features.dns %}
 
 # --- Unbound: recursive DNS resolver with DNSSEC + DoT ---
 {% if dns.unbound %}
-install_unbound:
-  cmd.run:
-    - name: rpm-ostree install --idempotent --apply-live unbound
-    - unless: rpm -q unbound
+{{ ostree_install('unbound', 'unbound') }}
 
 unbound_config:
   file.managed:
@@ -200,10 +197,7 @@ resolved_restart:
 
 # --- Avahi: mDNS/Bonjour local service discovery ---
 {% if dns.avahi %}
-install_avahi:
-  cmd.run:
-    - name: rpm-ostree install --idempotent --apply-live avahi avahi-tools nss-mdns
-    - unless: rpm -q avahi
+{{ ostree_install('avahi', 'avahi avahi-tools nss-mdns') }}
 
 avahi_config:
   file.managed:

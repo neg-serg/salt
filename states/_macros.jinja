@@ -90,3 +90,21 @@ install_{{ name | replace('-', '_') }}:
         rm -rf "$TMP"
     - unless: semodule -l | grep -q '^{{ module }}'
 {%- endmacro -%}
+
+{# rpm-ostree install with --apply-live (for conditional/feature-gated packages).
+   check defaults to first package. requires is an optional list of requisites.
+   Usage: {{ ostree_install('unbound', 'unbound') }}
+          {{ ostree_install('jellyfin', 'jellyfin-server jellyfin-web', requires=['file: jellyfin_repo']) }}
+#}
+{%- macro ostree_install(name, pkgs, check=None, requires=None) -%}
+install_{{ name | replace('-', '_') }}:
+  cmd.run:
+    - name: rpm-ostree install --idempotent --apply-live {{ pkgs }}
+    - unless: rpm -q {{ check or pkgs.split()[0] }}
+{%- if requires %}
+    - require:
+{%- for req in requires %}
+      - {{ req }}
+{%- endfor %}
+{%- endif %}
+{%- endmacro -%}
