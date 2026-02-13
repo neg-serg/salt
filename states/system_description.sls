@@ -1,4 +1,5 @@
 {% from 'host_config.jinja' import host %}
+{% from '_macros.jinja' import curl_bin, github_tar, pip_pkg, cargo_pkg %}
 {% from 'packages.jinja' import categories, copr_packages,
     unwanted_packages, unwanted_base_packages,
     flatpak_apps, floorp_extensions, unwanted_extensions %}
@@ -459,11 +460,7 @@ floorp_reset_extensions_json:
 {% endfor %}
 
 # --- Neovim Python dependencies (nvr + pynvim) ---
-install_neovim_python_deps:
-  cmd.run:
-    - name: pip install --user pynvim neovim-remote
-    - runas: neg
-    - creates: /var/home/neg/.local/bin/nvr
+{{ pip_pkg('neovim_python_deps', pkg='pynvim neovim-remote', bin='nvr') }}
 
 install_zi:
   cmd.run:
@@ -480,17 +477,9 @@ install_oh_my_posh:
     - runas: neg
     - creates: /var/home/neg/.local/bin/oh-my-posh
 
-install_aliae:
-  cmd.run:
-    - name: curl -fsSL https://github.com/JanDeDobbeleer/aliae/releases/latest/download/aliae-linux-amd64 -o ~/.local/bin/aliae && chmod +x ~/.local/bin/aliae
-    - runas: neg
-    - creates: /var/home/neg/.local/bin/aliae
+{{ curl_bin('aliae', 'https://github.com/JanDeDobbeleer/aliae/releases/latest/download/aliae-linux-amd64') }}
 
-install_grimblast:
-  cmd.run:
-    - name: curl -fsSL https://raw.githubusercontent.com/hyprwm/contrib/main/grimblast/grimblast -o ~/.local/bin/grimblast && chmod +x ~/.local/bin/grimblast
-    - runas: neg
-    - creates: /var/home/neg/.local/bin/grimblast
+{{ curl_bin('grimblast', 'https://raw.githubusercontent.com/hyprwm/contrib/main/grimblast/grimblast') }}
 
 install_hyprevents:
   cmd.run:
@@ -505,11 +494,7 @@ install_hyprevents:
     - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/hyprevents
 
-install_hyprprop:
-  cmd.run:
-    - name: curl -fsSL https://raw.githubusercontent.com/vilari-mickopf/hyprprop/master/hyprprop -o ~/.local/bin/hyprprop && chmod +x ~/.local/bin/hyprprop
-    - runas: neg
-    - creates: /var/home/neg/.local/bin/hyprprop
+{{ curl_bin('hyprprop', 'https://raw.githubusercontent.com/vilari-mickopf/hyprprop/master/hyprprop') }}
 
 install_sops:
   cmd.run:
@@ -522,11 +507,7 @@ install_sops:
     - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/sops
 
-install_xdg_ninja:
-  cmd.run:
-    - name: curl -fsSL https://github.com/b3nj5m1n/xdg-ninja/releases/latest/download/xdgnj -o ~/.local/bin/xdg-ninja && chmod +x ~/.local/bin/xdg-ninja
-    - runas: neg
-    - creates: /var/home/neg/.local/bin/xdg-ninja
+{{ curl_bin('xdg-ninja', 'https://github.com/b3nj5m1n/xdg-ninja/releases/latest/download/xdgnj') }}
 
 install_rmpc:
   cmd.run:
@@ -553,21 +534,9 @@ install_rustmission:
     - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/rustmission
 
-install_httpstat:
-  cmd.run:
-    - name: pip install --user httpstat
-    - runas: neg
-    - creates: /var/home/neg/.local/bin/httpstat
+{{ pip_pkg('httpstat') }}
 
-install_ssh_to_age:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        curl -fsSL https://github.com/Mic92/ssh-to-age/releases/latest/download/ssh-to-age.linux-amd64 -o ~/.local/bin/ssh-to-age
-        chmod +x ~/.local/bin/ssh-to-age
-    - runas: neg
-    - shell: /bin/bash
-    - creates: /var/home/neg/.local/bin/ssh-to-age
+{{ curl_bin('ssh-to-age', 'https://github.com/Mic92/ssh-to-age/releases/latest/download/ssh-to-age.linux-amd64') }}
 
 # --- COPR repo enables (fast test -f guards) ---
 {% set copr_repos = [
@@ -630,11 +599,7 @@ install_yazi:
     - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/yazi
 
-install_broot:
-  cmd.run:
-    - name: curl -fsSL https://dystroy.org/broot/download/x86_64-linux/broot -o ~/.local/bin/broot && chmod +x ~/.local/bin/broot
-    - runas: neg
-    - creates: /var/home/neg/.local/bin/broot
+{{ curl_bin('broot', 'https://dystroy.org/broot/download/x86_64-linux/broot') }}
 
 install_nushell:
   cmd.run:
@@ -649,17 +614,7 @@ install_nushell:
     - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/nu
 
-install_eza:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        curl -fsSL https://github.com/eza-community/eza/releases/latest/download/eza_x86_64-unknown-linux-musl.tar.gz -o /tmp/eza.tar.gz
-        tar -xzf /tmp/eza.tar.gz -C /tmp
-        mv /tmp/eza ~/.local/bin/
-        rm /tmp/eza.tar.gz
-    - runas: neg
-    - shell: /bin/bash
-    - creates: /var/home/neg/.local/bin/eza
+{{ github_tar('eza', 'https://github.com/eza-community/eza/releases/latest/download/eza_x86_64-unknown-linux-musl.tar.gz') }}
 
 install_television:
   cmd.run:
@@ -702,47 +657,13 @@ install_sing_box:
     - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/sing-box
 
-install_tdl:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        curl -fsSL https://github.com/iyear/tdl/releases/latest/download/tdl_Linux_64bit.tar.gz -o /tmp/tdl.tar.gz
-        tar -xzf /tmp/tdl.tar.gz -C /tmp tdl
-        mv /tmp/tdl ~/.local/bin/
-        rm -f /tmp/tdl.tar.gz
-    - runas: neg
-    - shell: /bin/bash
-    - creates: /var/home/neg/.local/bin/tdl
+{{ github_tar('tdl', 'https://github.com/iyear/tdl/releases/latest/download/tdl_Linux_64bit.tar.gz') }}
 
-install_camilladsp:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        curl -fsSL https://github.com/HEnquist/camilladsp/releases/latest/download/camilladsp-linux-amd64.tar.gz -o /tmp/camilladsp.tar.gz
-        tar -xzf /tmp/camilladsp.tar.gz -C /tmp
-        mv /tmp/camilladsp ~/.local/bin/
-        rm -f /tmp/camilladsp.tar.gz
-    - runas: neg
-    - shell: /bin/bash
-    - creates: /var/home/neg/.local/bin/camilladsp
+{{ github_tar('camilladsp', 'https://github.com/HEnquist/camilladsp/releases/latest/download/camilladsp-linux-amd64.tar.gz') }}
 
-install_opencode:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        curl -fsSL https://github.com/opencode-ai/opencode/releases/latest/download/opencode-linux-x86_64.tar.gz -o /tmp/opencode.tar.gz
-        tar -xzf /tmp/opencode.tar.gz -C /tmp opencode
-        mv /tmp/opencode ~/.local/bin/
-        rm -f /tmp/opencode.tar.gz
-    - runas: neg
-    - shell: /bin/bash
-    - creates: /var/home/neg/.local/bin/opencode
+{{ github_tar('opencode', 'https://github.com/opencode-ai/opencode/releases/latest/download/opencode-linux-x86_64.tar.gz') }}
 
-install_adguardian:
-  cmd.run:
-    - name: curl -fsSL https://github.com/Lissy93/AdGuardian-Term/releases/latest/download/adguardian-linux -o ~/.local/bin/adguardian && chmod +x ~/.local/bin/adguardian
-    - runas: neg
-    - creates: /var/home/neg/.local/bin/adguardian
+{{ curl_bin('adguardian', 'https://github.com/Lissy93/AdGuardian-Term/releases/latest/download/adguardian-linux') }}
 
 install_realesrgan:
   cmd.run:
@@ -771,36 +692,13 @@ install_essentia_extractor:
     - creates: /var/home/neg/.local/bin/essentia_streaming_extractor_music
 
 # --- pip installs ---
-install_scdl:
-  cmd.run:
-    - name: pip install --user scdl
-    - runas: neg
-    - creates: /var/home/neg/.local/bin/scdl
-
-install_dr14_tmeter:
-  cmd.run:
-    - name: pip install --user git+https://github.com/simon-r/dr14_t.meter.git
-    - runas: neg
-    - creates: /var/home/neg/.local/bin/dr14_tmeter
-
-install_euporie:
-  cmd.run:
-    - name: pip install --user euporie
-    - runas: neg
-    - creates: /var/home/neg/.local/bin/euporie
+{{ pip_pkg('scdl') }}
+{{ pip_pkg('dr14_tmeter', pkg='git+https://github.com/simon-r/dr14_t.meter.git') }}
+{{ pip_pkg('euporie') }}
 
 # --- cargo installs ---
-install_handlr:
-  cmd.run:
-    - name: cargo install handlr-regex
-    - runas: neg
-    - creates: /var/home/neg/.local/share/cargo/bin/handlr
-
-install_agg:
-  cmd.run:
-    - name: cargo install --git https://github.com/asciinema/agg
-    - runas: neg
-    - creates: /var/home/neg/.local/share/cargo/bin/agg
+{{ cargo_pkg('handlr', pkg='handlr-regex') }}
+{{ cargo_pkg('agg', git='https://github.com/asciinema/agg') }}
 
 # NOTE: tailray needs dbus-devel (libdbus-sys). May fail on first run
 # if dbus-devel was just layered and not yet active (requires reboot).
@@ -813,24 +711,11 @@ install_tailray:
       - pkg-config --exists dbus-1
       - command -v cargo
 
-install_pzip:
-  cmd.run:
-    - name: cargo install pzip
-    - runas: neg
-    - creates: /var/home/neg/.local/share/cargo/bin/pz
+{{ cargo_pkg('pzip', bin='pz') }}
 
 # --- Script and file installs ---
-install_mpvc:
-  cmd.run:
-    - name: curl -fsSL https://raw.githubusercontent.com/lwilletts/mpvc/master/mpvc -o ~/.local/bin/mpvc && chmod +x ~/.local/bin/mpvc
-    - runas: neg
-    - creates: /var/home/neg/.local/bin/mpvc
-
-install_rofi_systemd:
-  cmd.run:
-    - name: curl -fsSL https://raw.githubusercontent.com/IvanMalison/rofi-systemd/master/rofi-systemd -o ~/.local/bin/rofi-systemd && chmod +x ~/.local/bin/rofi-systemd
-    - runas: neg
-    - creates: /var/home/neg/.local/bin/rofi-systemd
+{{ curl_bin('mpvc', 'https://raw.githubusercontent.com/lwilletts/mpvc/master/mpvc') }}
+{{ curl_bin('rofi-systemd', 'https://raw.githubusercontent.com/IvanMalison/rofi-systemd/master/rofi-systemd') }}
 
 install_dool:
   cmd.run:
@@ -917,24 +802,10 @@ install_nyxt:
     - creates: /var/home/neg/.local/bin/nyxt
 
 # --- Open Sound Meter (FFT acoustic analysis, AppImage) ---
-install_opensoundmeter:
-  cmd.run:
-    - name: curl -fsSL https://github.com/psmokotnin/osm/releases/download/v1.5.2/Open_Sound_Meter-v1.5.2-x86_64.AppImage -o ~/.local/bin/opensoundmeter && chmod +x ~/.local/bin/opensoundmeter
-    - runas: neg
-    - creates: /var/home/neg/.local/bin/opensoundmeter
+{{ curl_bin('opensoundmeter', 'https://github.com/psmokotnin/osm/releases/download/v1.5.2/Open_Sound_Meter-v1.5.2-x86_64.AppImage') }}
 
 # --- matugen (Material You color generation) ---
-install_matugen:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        curl -fsSL https://github.com/InioX/matugen/releases/download/v3.1.0/matugen-3.1.0-x86_64.tar.gz -o /tmp/matugen.tar.gz
-        tar -xzf /tmp/matugen.tar.gz -C /tmp
-        mv /tmp/matugen ~/.local/bin/
-        rm -f /tmp/matugen.tar.gz
-    - runas: neg
-    - shell: /bin/bash
-    - creates: /var/home/neg/.local/bin/matugen
+{{ github_tar('matugen', 'https://github.com/InioX/matugen/releases/download/v3.1.0/matugen-3.1.0-x86_64.tar.gz') }}
 
 install_matugen_themes:
   cmd.run:
@@ -993,11 +864,7 @@ install_hishtory:
     - creates: /var/home/neg/.local/bin/hishtory
 
 # --- iwmenu (interactive Wi-Fi menu for iwd/Wayland) ---
-install_iwmenu:
-  cmd.run:
-    - name: cargo install --git https://github.com/e-tho/iwmenu
-    - runas: neg
-    - creates: /var/home/neg/.local/share/cargo/bin/iwmenu
+{{ cargo_pkg('iwmenu', git='https://github.com/e-tho/iwmenu') }}
 
 # --- ollama: systemd service + models ---
 ollama_service_unit:
@@ -1123,15 +990,7 @@ install_openclaw:
     - creates: /var/home/neg/.npm-global/bin/openclaw
 
 # --- rofi-pass (password-store rofi frontend) ---
-install_rofi_pass:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        curl -fsSL https://raw.githubusercontent.com/carnager/rofi-pass/master/rofi-pass -o ~/.local/bin/rofi-pass
-        chmod +x ~/.local/bin/rofi-pass
-    - runas: neg
-    - shell: /bin/bash
-    - creates: /var/home/neg/.local/bin/rofi-pass
+{{ curl_bin('rofi-pass', 'https://raw.githubusercontent.com/carnager/rofi-pass/master/rofi-pass') }}
 
 # --- Theme packages not in Fedora repos ---
 install_kora_icons:
