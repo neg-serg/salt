@@ -581,12 +581,18 @@ greetd_hyprland_config:
             mode = {{ host.display }}
             position = 0x0
             scale = 2
+            vrr = 3
         }
         monitorv2 {
             output = DP-1
             disabled = true
         }
         {% endif %}
+
+        misc {
+            force_default_wallpaper = 0
+            disable_hyprland_logo = true
+        }
 
         # Cursor: match main session theme
         env = XCURSOR_THEME,Alkano-aio
@@ -610,7 +616,9 @@ greetd_session_wrapper:
     - contents: |
         #!/bin/sh
         [ -f /etc/profile ] && . /etc/profile
-        [ -f "$HOME/.profile" ] && . "$HOME/.profile"
+        set -a
+        [ -f "$HOME/.config/environment.d/10-user.conf" ] && . "$HOME/.config/environment.d/10-user.conf"
+        set +a
         exec /usr/bin/starthyprland
     - user: root
     - group: root
@@ -621,10 +629,11 @@ greetd_session_wrapper:
 greetd_wallpaper:
   cmd.run:
     - name: |
-        wallpaper=$(awk '{print $NF}' /var/home/neg/.cache/swww/DP-2 2>/dev/null)
+        wallpaper=$(tr '\0' '\n' < /var/home/neg/.cache/swww/DP-2 2>/dev/null | grep '^/')
         if [ -n "$wallpaper" ] && [ -f "$wallpaper" ]; then
-          ln -sf "$wallpaper" /var/lib/greetd/wallpaper.jpg
+          cp -f "$wallpaper" /var/home/neg/.cache/greeter-wallpaper
         fi
+    - runas: neg
     - require:
       - file: greetd_config_dir
 

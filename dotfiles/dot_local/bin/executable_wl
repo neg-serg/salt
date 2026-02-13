@@ -24,3 +24,6 @@ let pick = ($pics | shuffle | first)
 
 # Apply wallpaper with a smooth transition
 ^swww img --transition-fps 240 $pick
+
+# Keep greeter wallpaper in sync (read by quickshell greeter on boot)
+cp -f $pick $"($env.HOME)/.cache/greeter-wallpaper"
