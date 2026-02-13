@@ -73,7 +73,26 @@ build_rpms_script:
         BUILD_DIR="{{ build_dir }}"
         IMG="{{ base_image }}"
 
-        # FIFO semaphore: limits concurrent podman containers to MAX_JOBS
+        # FIFO semaphore: limits concurrent podman containers to MAX_JOBS.
+        # Alternative to GNU parallel/xargs for Bash-only implementation.
+        #
+        # Problem: Building 50+ packages in parallel OOMs the system (50 containers × ~2GB each).
+        # Solution: Create a FIFO queue with MAX_JOBS "tokens". Each background job acquires
+        #           a token before starting (read from FIFO), releases after completion (write back).
+        #
+        # How it works:
+        # 1. mkfifo "$SEM" creates a named pipe (FIFO)
+        # 2. exec 3<>"$SEM" opens it for both read/write on fd 3
+        # 3. rm -f "$SEM" deletes the file (no cleanup needed, fd 3 keeps it alive)
+        # 4. Loop fills the FIFO with MAX_JOBS dummy tokens (newlines)
+        # 5. Each parallel job reads one token with: read -u 3 <token>  (blocks if empty)
+        # 6. After completion, each job writes back: echo >&3         (unblocks waiting jobs)
+        #
+        # Result: Only MAX_JOBS containers run concurrently. Others wait for tokens.
+        # This avoids OOM while keeping all cores busy.
+        #
+        # Exception: iosevka (2h build, special-cased below) starts outside the semaphore
+        # on its own (third) container slot, separate from the main job pool.
         SEM=$(mktemp -u)
         mkfifo "$SEM"
         exec 3<>"$SEM"
@@ -85,11 +104,15 @@ build_rpms_script:
         LAUNCHED=0
         SKIPPED=0
 
-        # Iosevka: start in background outside semaphore (2h build, independent)
+        # Iosevka: special-case 2h font build running on its own dedicated slot.
+        # Reason: Takes ~2h, blocks a semaphore token the entire time, preventing other
+        #         jobs from running. Instead, launch it immediately without acquiring a token.
+        #         This uses a 3rd concurrent container (MAX_JOBS=2 for RPMs, +1 for iosevka).
+        # Benefit: Iosevka and 2 RPM builds run in parallel, finishing in ~2h instead of ~4h.
         IOSEVKA_RPM="{{ rpms_dir }}/{{ rpm_filename(iosevka) }}"
         if [ ! -f "$IOSEVKA_RPM" ]; then
             (
-                echo "[BUILD] iosevka (background, no semaphore slot)"
+                echo "[BUILD] iosevka (dedicated slot, parallel with other builds)"
                 RC=0
                 podman run --rm \
                     -v "${BUILD_DIR}:/build/salt:z" \
@@ -108,7 +131,7 @@ build_rpms_script:
         {%- for pkg in rpms %}
         {%- set extra_vol = pkg.get('extra_volumes', '') %}
         if [ ! -f "${RPMS_DIR}/{{ rpm_filename(pkg) }}" ]; then
-            read -u 3
+            read -u 3  # Acquire token from semaphore (blocks if all MAX_JOBS tokens in use)
             (
                 echo "[BUILD] {{ pkg.name }}"
                 RC=0
@@ -117,7 +140,7 @@ build_rpms_script:
                     -v "${RPMS_DIR}:/build/rpms:z" \
                     {{ extra_vol }} \
                     "$IMG" bash /build/salt/build-rpm.sh "{{ pkg.name }}" || RC=$?
-                echo >&3
+                echo >&3  # Release token back to semaphore (unblocks waiting jobs)
                 [ $RC -eq 0 ] && echo "[  OK ] {{ pkg.name }}" || echo "[ FAIL] {{ pkg.name }}" >&2
                 exit $RC
             ) &
