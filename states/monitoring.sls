@@ -1,5 +1,5 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import daemon_reload, ostree_install %}
+{% from '_macros.jinja' import daemon_reload, ostree_install, service_with_unit %}
 {% set mon = host.features.monitoring %}
 
 # --- Simple service enables (packages already in system_description.sls) ---
@@ -80,22 +80,7 @@ loki_config:
     - mode: '0644'
     - source: salt://configs/loki.yaml
 
-loki_service:
-  file.managed:
-    - name: /etc/systemd/system/loki.service
-    - mode: '0644'
-    - source: salt://units/loki.service
-
-{{ daemon_reload('loki', ['file: loki_service']) }}
-
-loki_enabled:
-  service.enabled:
-    - name: loki
-    - require:
-      - file: loki_service
-      - cmd: install_loki
-      - file: loki_config
-      - file: loki_data_dirs
+{{ service_with_unit('loki', 'salt://units/loki.service', requires=['cmd: install_loki', 'file: loki_config', 'file: loki_data_dirs']) }}
 {% endif %}
 
 # --- Promtail: log shipper to Loki ---
@@ -125,21 +110,7 @@ promtail_config:
     - source: salt://configs/promtail.yaml.j2
     - template: jinja
 
-promtail_service:
-  file.managed:
-    - name: /etc/systemd/system/promtail.service
-    - mode: '0644'
-    - source: salt://units/promtail.service
-
-{{ daemon_reload('promtail', ['file: promtail_service']) }}
-
-promtail_enabled:
-  service.enabled:
-    - name: promtail
-    - require:
-      - file: promtail_service
-      - cmd: install_promtail
-      - file: promtail_config
+{{ service_with_unit('promtail', 'salt://units/promtail.service', requires=['cmd: install_promtail', 'file: promtail_config']) }}
 {% endif %}
 
 # --- Grafana: dashboard with Loki datasource ---

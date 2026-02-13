@@ -1,5 +1,5 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import daemon_reload %}
+{% from '_macros.jinja' import daemon_reload, service_with_unit %}
 
 # --- Custom udev rules: I/O schedulers, audio devices, SATA ALPM ---
 custom_udev_rules:
@@ -64,21 +64,7 @@ fancontrol_setup_service:
         gpu_enable: {{ 'true' if host.get('cpu_vendor', '') == 'amd' else 'false' }}
     - mode: '0644'
 
-fancontrol_service:
-  file.managed:
-    - name: /etc/systemd/system/fancontrol.service
-    - source: salt://units/fancontrol.service
-    - mode: '0644'
-
-{{ daemon_reload('fancontrol', ['file: fancontrol_setup_service', 'file: fancontrol_service']) }}
-
-fancontrol_enable:
-  service.enabled:
-    - name: fancontrol
-    - require:
-      - file: fancontrol_service
-      - file: fancontrol_setup_service
-      - file: fancontrol_setup_script
+{{ service_with_unit('fancontrol', 'salt://units/fancontrol.service', requires=['file: fancontrol_setup_service', 'file: fancontrol_setup_script']) }}
 
 # Load nct6775 kernel module for motherboard PWM fan control
 nct6775_module:
