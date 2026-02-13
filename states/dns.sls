@@ -22,6 +22,9 @@ unbound_config:
             so-reuseport: yes
             edns-buffer-size: 1232
 
+            # Disable chroot (Fedora default chroot=/etc/unbound breaks absolute paths)
+            chroot: ""
+
             # DNSSEC
             auto-trust-anchor-file: /var/lib/unbound/root.key
             val-permissive-mode: no
@@ -72,6 +75,13 @@ unbound_config:
             forward-addr: 9.9.9.9@853#dns.quad9.net
             forward-addr: 149.112.112.112@853#dns.quad9.net
 
+unbound_root_key:
+  cmd.run:
+    - name: unbound-anchor -a /var/lib/unbound/root.key || true
+    - creates: /var/lib/unbound/root.key
+    - require:
+      - cmd: install_unbound
+
 unbound_daemon_reload:
   cmd.run:
     - name: systemctl daemon-reload
@@ -86,12 +96,23 @@ unbound_enabled:
       - cmd: install_unbound
       - file: unbound_config
       - cmd: unbound_daemon_reload
+      - cmd: unbound_root_key
+
+unbound_reset_failed:
+  cmd.run:
+    - name: systemctl reset-failed unbound 2>/dev/null; true
+    - onlyif: systemctl is-failed unbound
+    - require:
+      - cmd: unbound_enabled
 
 unbound_running:
   service.running:
     - name: unbound
+    - watch:
+      - file: unbound_config
     - require:
       - cmd: unbound_enabled
+      - cmd: unbound_reset_failed
 {% endif %}
 
 # --- AdGuardHome: DNS filtering + ad blocking ---
@@ -131,6 +152,7 @@ adguardhome_config:
     - group: adguardhome
     - mode: '0640'
     - makedirs: True
+    - replace: False
     - contents: |
         http:
           pprof:
@@ -217,11 +239,21 @@ adguardhome_enabled:
       - file: adguardhome_config
       - cmd: adguardhome_daemon_reload
 
+adguardhome_reset_failed:
+  cmd.run:
+    - name: systemctl reset-failed adguardhome 2>/dev/null; true
+    - onlyif: systemctl is-failed adguardhome
+    - require:
+      - service: adguardhome_enabled
+
 adguardhome_running:
   service.running:
     - name: adguardhome
+    - watch:
+      - file: adguardhome_service
     - require:
       - service: adguardhome_enabled
+      - cmd: adguardhome_reset_failed
 
 # Configure systemd-resolved to forward to AdGuardHome
 resolved_adguardhome:
