@@ -163,6 +163,37 @@ install_{{ name | replace('-', '_') }}:
 {%- endif %}
 {%- endmacro -%}
 
+{# Create system daemon user + data directory.
+   Consolidates: user.present (system user, nologin shell) + file.directory (homedir/datadir with ownership).
+   shell defaults to /usr/sbin/nologin. createhome defaults to False (createhome by file.directory instead).
+   Usage: {{ system_daemon_user('loki', '/var/lib/loki') }}
+          {{ system_daemon_user('adguardhome', '/var/lib/adguardhome') }}
+          {{ system_daemon_user('bitcoind', '/var/lib/bitcoind', requires=['cmd: install_bitcoind']) }}
+#}
+{%- macro system_daemon_user(name, home_dir, shell='/usr/sbin/nologin', requires=None) -%}
+{{ name }}_user:
+  user.present:
+    - name: {{ name }}
+    - system: True
+    - shell: {{ shell }}
+    - home: {{ home_dir }}
+    - createhome: False
+
+{{ name }}_data_dir:
+  file.directory:
+    - name: {{ home_dir }}
+    - user: {{ name }}
+    - group: {{ name }}
+    - makedirs: True
+    - require:
+      - user: {{ name }}_user
+{%- if requires %}
+{%- for req in requires %}
+      - {{ req }}
+{%- endfor %}
+{%- endif %}
+{%- endmacro -%}
+
 {# Deploy systemd unit file + enable service (file + daemon-reload + service.enabled + optional service.running).
    unit_type: 'service' (default) | 'timer' | 'socket' | etc.
    running: True (default False) to add service.running after enabled for auto-start behavior.
