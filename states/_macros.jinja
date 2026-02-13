@@ -12,3 +12,57 @@
       - {{ item }}
 {%- endfor %}
 {%- endmacro -%}
+
+{# Download binary directly to ~/.local/bin/ and chmod +x.
+   Usage: {{ curl_bin('aliae', 'https://github.com/.../aliae-linux-amd64') }}
+          {{ curl_bin('xdg-ninja', 'https://github.com/.../xdgnj') }}
+#}
+{%- macro curl_bin(name, url) -%}
+install_{{ name | replace('-', '_') }}:
+  cmd.run:
+    - name: curl -fsSL {{ url }} -o ~/.local/bin/{{ name }} && chmod +x ~/.local/bin/{{ name }}
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/{{ name }}
+{%- endmacro -%}
+
+{# Download tar.gz, extract single binary to ~/.local/bin/.
+   Usage: {{ github_tar('eza', 'https://github.com/.../eza_x86_64.tar.gz') }}
+#}
+{%- macro github_tar(name, url) -%}
+install_{{ name | replace('-', '_') }}:
+  cmd.run:
+    - name: |
+        set -eo pipefail
+        curl -fsSL {{ url }} -o /tmp/{{ name }}.tar.gz
+        tar -xzf /tmp/{{ name }}.tar.gz -C /tmp {{ name }}
+        install -m755 /tmp/{{ name }} ~/.local/bin/{{ name }}
+        rm -f /tmp/{{ name }}.tar.gz /tmp/{{ name }}
+    - runas: neg
+    - shell: /bin/bash
+    - creates: /var/home/neg/.local/bin/{{ name }}
+{%- endmacro -%}
+
+{# pip install --user.
+   Usage: {{ pip_pkg('httpstat') }}
+          {{ pip_pkg('neovim_deps', pkg='pynvim neovim-remote', bin='nvr') }}
+#}
+{%- macro pip_pkg(name, pkg=None, bin=None) -%}
+install_{{ name | replace('-', '_') }}:
+  cmd.run:
+    - name: pip install --user {{ pkg or name }}
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/{{ bin or name }}
+{%- endmacro -%}
+
+{# cargo install (crates.io or git).
+   Usage: {{ cargo_pkg('handlr', pkg='handlr-regex') }}
+          {{ cargo_pkg('agg', git='https://github.com/asciinema/agg') }}
+          {{ cargo_pkg('pzip', bin='pz') }}
+#}
+{%- macro cargo_pkg(name, pkg=None, bin=None, git=None) -%}
+install_{{ name | replace('-', '_') }}:
+  cmd.run:
+    - name: cargo install {{ '--git ' ~ git if git else pkg or name }}
+    - runas: neg
+    - creates: /var/home/neg/.local/share/cargo/bin/{{ bin or name }}
+{%- endmacro -%}
