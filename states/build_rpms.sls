@@ -8,63 +8,38 @@
 {% set build_dir = '/var/home/neg/src/salt/build' %}
 {% set base_image = 'registry.fedoraproject.org/fedora-toolbox:43' %}
 
-{% set rpms = [
-    {'name': 'choose',            'version': versions['choose']},
-    {'name': 'ctop',              'version': versions['ctop']},
-    {'name': 'dive',              'version': versions['dive']},
-    {'name': 'duf',               'version': versions['duf']},
-    {'name': 'epr',               'version': versions['epr'],              'arch': 'noarch'},
-    {'name': 'erdtree',           'version': versions['erdtree']},
-    {'name': 'fclones',           'version': versions['fclones']},
-    {'name': 'git-filter-repo',   'version': versions['git-filter-repo'],  'arch': 'noarch'},
-    {'name': 'gist',              'version': versions['gist'],             'arch': 'noarch'},
-    {'name': 'grex',              'version': versions['grex']},
-    {'name': 'htmlq',             'version': versions['htmlq']},
-    {'name': 'jujutsu',           'version': versions['jujutsu']},
-    {'name': 'kmon',              'version': versions['kmon']},
-    {'name': 'lutgen',            'version': versions['lutgen']},
-    {'name': 'massren',           'version': versions['massren']},
-    {'name': 'neg-pretty-printer','version': versions['neg-pretty-printer'], 'arch': 'noarch',
-     'extra_volumes': '-v /var/home/neg/src/salt/build/pretty-printer:/build/pretty-printer:z'},
-    {'name': 'nerdctl',           'version': versions['nerdctl']},
-    {'name': 'ouch',              'version': versions['ouch']},
-    {'name': 'pipemixer',         'version': versions['pipemixer']},
-    {'name': 'pup',               'version': versions['pup']},
-    {'name': 'raise',             'version': versions['raise']},
-    {'name': 'rapidgzip',         'version': versions['rapidgzip']},
-    {'name': 'richcolors',        'version': versions['richcolors'],       'arch': 'noarch'},
-    {'name': 'scc',               'version': versions['scc']},
-    {'name': 'scour',             'version': versions['scour'],            'arch': 'noarch'},
-    {'name': 'taplo',             'version': versions['taplo']},
-    {'name': 'viu',               'version': versions['viu']},
-    {'name': 'xxh',               'version': versions['xxh'],              'arch': 'noarch'},
-    {'name': 'zfxtop',            'version': versions['zfxtop']},
-    {'name': 'zk',                'version': versions['zk']},
-    {'name': 'bandwhich',         'version': versions['bandwhich']},
-    {'name': 'bucklespring',      'version': versions['bucklespring']},
-    {'name': 'taoup',             'version': versions['taoup'],            'arch': 'noarch'},
-    {'name': 'xh',                'version': versions['xh']},
-    {'name': 'curlie',            'version': versions['curlie']},
-    {'name': 'doggo',             'version': versions['doggo']},
-    {'name': 'wallust',           'version': versions['wallust']},
-    {'name': 'wl-clip-persist',   'version': versions['wl-clip-persist']},
-    {'name': 'quickshell',        'version': versions['quickshell']},
-    {'name': 'swayosd',           'version': versions['swayosd']},
-    {'name': 'xdg-desktop-portal-termfilechooser', 'version': versions['xdg-desktop-portal-termfilechooser']},
-    {'name': 'newsraft',          'version': versions['newsraft']},
-    {'name': 'unflac',            'version': versions['unflac']},
-    {'name': 'albumdetails',      'version': versions['albumdetails']},
-    {'name': 'cmake-language-server', 'version': versions['cmake-language-server'], 'arch': 'noarch'},
-    {'name': 'nginx-language-server', 'version': versions['nginx-language-server']},
-    {'name': 'systemd-language-server', 'version': versions['systemd-language-server']},
-    {'name': 'croc',              'version': versions['croc']},
-    {'name': 'faker',             'version': versions['faker'],            'arch': 'noarch'},
-    {'name': 'speedtest-go',      'version': versions['speedtest-go']},
-    {'name': 'greetd',            'version': versions['greetd'],
-     'extra_volumes': '-v /var/home/neg/src/salt/build/greetd-files:/build/salt/greetd-files:z'},
-    {'name': 'rustnet',           'version': versions['rustnet']},
-    {'name': 'carapace',          'version': versions['carapace']},
+{# Package names — version auto-derived from versions.yaml via versions[name] #}
+{% set rpm_names = [
+    'albumdetails', 'bandwhich', 'bucklespring', 'carapace', 'choose',
+    'cmake-language-server', 'croc', 'ctop', 'curlie', 'dive', 'doggo',
+    'duf', 'epr', 'erdtree', 'faker', 'fclones', 'gist',
+    'git-filter-repo', 'greetd', 'grex', 'htmlq', 'jujutsu', 'kmon',
+    'lutgen', 'massren', 'neg-pretty-printer', 'nerdctl', 'newsraft',
+    'nginx-language-server', 'ouch', 'pipemixer', 'pup', 'quickshell',
+    'raise', 'rapidgzip', 'richcolors', 'rustnet', 'scc', 'scour',
+    'speedtest-go', 'swayosd', 'systemd-language-server', 'taplo',
+    'taoup', 'unflac', 'viu', 'wallust', 'wl-clip-persist',
+    'xdg-desktop-portal-termfilechooser', 'xh', 'xxh', 'zfxtop', 'zk',
 ] %}
+
+{% set noarch = (
+    'cmake-language-server', 'epr', 'faker', 'gist', 'git-filter-repo',
+    'neg-pretty-printer', 'richcolors', 'scour', 'taoup', 'xxh',
+) %}
+
+{% set extra_vol = {
+    'neg-pretty-printer': '-v /var/home/neg/src/salt/build/pretty-printer:/build/pretty-printer:z',
+    'greetd': '-v /var/home/neg/src/salt/build/greetd-files:/build/salt/greetd-files:z',
+} %}
+
+{# Build package dicts from names + overrides #}
+{% set rpms = [] %}
+{% for name in rpm_names %}
+{%   set pkg = {'name': name, 'version': versions[name]} %}
+{%   if name in noarch %}{% do pkg.update({'arch': 'noarch'}) %}{% endif %}
+{%   if name in extra_vol %}{% do pkg.update({'extra_volumes': extra_vol[name]}) %}{% endif %}
+{%   do rpms.append(pkg) %}
+{% endfor %}
 
 {% set iosevka = {
     'name': 'iosevka',
