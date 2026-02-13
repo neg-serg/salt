@@ -45,7 +45,8 @@ run_salt() {
   tail -f "${LOG_FILE}" | awk -v maxlen=100 '
     match($0, /Executing state ([^ ]+) for \[([^]]+)\]/, m) {
       line = "▶ " m[1] " " m[2]
-      print (length(line) > maxlen) ? substr(line, 1, maxlen) "…" : line
+      if (length(line) > maxlen) line = substr(line, 1, maxlen) "…"
+      printf "\r\033[K%s", line
       fflush()
     }
     match($0, /Completed state \[([^]]+)\].*duration_in_ms=([^)]+)\)/, m) {
@@ -53,7 +54,7 @@ run_salt() {
       name = "✓ " m[1]
       cut = maxlen - length(suffix)
       if (length(name) > cut) name = substr(name, 1, cut) "…"
-      print name suffix
+      printf "\r\033[K%s\n", name suffix
       fflush()
     }' &
   local tail_pid=$!
