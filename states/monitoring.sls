@@ -171,16 +171,7 @@ grafana_loki_datasource:
     - name: /etc/grafana/provisioning/datasources/loki.yaml
     - makedirs: True
     - mode: '0644'
-    - contents: |
-        apiVersion: 1
-        datasources:
-          - uid: loki
-            name: Loki
-            type: loki
-            access: proxy
-            url: http://127.0.0.1:3100
-            isDefault: true
-            jsonData: {}
+    - source: salt://configs/grafana-loki-datasource.yaml
     - require:
       - file: grafana_provisioning_dir
 
@@ -188,21 +179,10 @@ grafana_config:
   file.managed:
     - name: /etc/grafana/grafana.ini
     - mode: '0640'
-    - contents: |
-        [server]
-        http_port = 3030
-        http_addr = 0.0.0.0
-        domain = {{ grains['host'] }}
-
-        [security]
-        admin_user = admin
-
-        [paths]
-        provisioning = /etc/grafana/provisioning
-
-        [analytics]
-        reporting_enabled = false
-        check_for_updates = false
+    - source: salt://configs/grafana.ini.j2
+    - template: jinja
+    - context:
+        hostname: {{ grains['host'] }}
 
 grafana_enabled:
   service.enabled:

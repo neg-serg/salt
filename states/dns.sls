@@ -185,23 +185,7 @@ avahi_config:
     - name: /etc/avahi/avahi-daemon.conf
     - makedirs: True
     - mode: '0644'
-    - contents: |
-        [server]
-        use-ipv4=yes
-        use-ipv6=yes
-        allow-interfaces=
-        deny-interfaces=
-        ratelimit-interval-usec=1000000
-        ratelimit-burst=1000
-
-        [wide-area]
-        enable-wide-area=yes
-
-        [publish]
-        publish-hinfo=no
-        publish-workstation=yes
-        publish-domain=yes
-        publish-addresses=yes
+    - source: salt://configs/avahi-daemon.conf
 
 avahi_enabled:
   service.enabled:
