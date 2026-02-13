@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Check Jinja2 syntax in Salt state files."""
+
 import glob
 import sys
 

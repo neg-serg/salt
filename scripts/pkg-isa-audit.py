@@ -28,7 +28,9 @@ ISA_RE = re.compile(r"x86-64-v(\d)")
 
 # Instructions that indicate SIMD tier usage (for --deep mode)
 SIMD_MARKERS = {
-    "avx512": re.compile(r"\bv(?:padd|psub|pmul|pmadd|movdq|broadcast|perm)[a-z]*\s.*%[xyz]mm", re.I),
+    "avx512": re.compile(
+        r"\bv(?:padd|psub|pmul|pmadd|movdq|broadcast|perm)[a-z]*\s.*%[xyz]mm", re.I
+    ),
     "avx2": re.compile(r"\bv(?:padd|psub|pmul|pmadd|movdq|broadcast|perm)[a-z]*\s.*%ymm", re.I),
     "avx": re.compile(r"\bv(?:add|sub|mul|div|mov|broadcast)[a-z]*\s.*%[xy]mm", re.I),
     "sse4": re.compile(r"\b(?:pblendvb|blendvp|roundp|rounds|pmuldq|pcmpeqq)\b", re.I),
@@ -61,7 +63,9 @@ def get_isa_level(filepath):
     try:
         r = subprocess.run(
             ["readelf", "-n", filepath],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         levels = ISA_RE.findall(r.stdout)
         if levels:
@@ -76,7 +80,9 @@ def get_file_type(filepath):
     try:
         r = subprocess.run(
             ["file", "-b", filepath],
-            capture_output=True, text=True, timeout=5,
+            capture_output=True,
+            text=True,
+            timeout=5,
         )
         out = r.stdout
         if "shared object" in out or ".so" in filepath:
@@ -94,7 +100,9 @@ def scan_simd_usage(filepath):
     try:
         r = subprocess.run(
             ["objdump", "-d", "--no-show-raw-insn", filepath],
-            capture_output=True, text=True, timeout=60,
+            capture_output=True,
+            text=True,
+            timeout=60,
         )
         text = r.stdout
         for tier, pattern in SIMD_MARKERS.items():
@@ -115,7 +123,9 @@ def batch_rpm_query(filepaths):
             r = subprocess.run(
                 ["rpm", "-qf", "--queryformat", "%{NAME}\\t%{VERSION}-%{RELEASE}\\t%{ARCH}\\n"]
                 + batch,
-                capture_output=True, text=True, timeout=30,
+                capture_output=True,
+                text=True,
+                timeout=30,
             )
             lines = r.stdout.strip().split("\n")
             idx = 0
@@ -138,7 +148,6 @@ def batch_rpm_query(filepaths):
 def classify_package(name, files):
     """Heuristic: guess the language/toolchain from binary characteristics."""
     for f in files:
-        base = os.path.basename(f)
         if f.endswith(".so") or ".so." in f:
             continue
         # Check for Go signature (large static binaries)
@@ -147,14 +156,18 @@ def classify_package(name, files):
             if size > 5_000_000:  # Go binaries are typically large
                 r = subprocess.run(
                     ["readelf", "-p", ".comment", f],
-                    capture_output=True, text=True, timeout=5,
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
                 )
                 if "Go " in r.stdout or "go." in r.stdout:
                     return "go"
                 # Also check for Go sections
                 r2 = subprocess.run(
                     ["readelf", "-S", f],
-                    capture_output=True, text=True, timeout=5,
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
                 )
                 if ".gopclntab" in r2.stdout or ".go.buildinfo" in r2.stdout:
                     return "go"
@@ -165,7 +178,9 @@ def classify_package(name, files):
         try:
             r = subprocess.run(
                 ["readelf", "-p", ".comment", f],
-                capture_output=True, text=True, timeout=5,
+                capture_output=True,
+                text=True,
+                timeout=5,
             )
             comment = r.stdout.lower()
             if "rustc" in comment:
@@ -201,12 +216,14 @@ def main():
     file_to_pkg = batch_rpm_query(elf_files)
 
     # Aggregate per package
-    packages = defaultdict(lambda: {
-        "files": [],
-        "isa_levels": [],
-        "evr": "",
-        "arch": "",
-    })
+    packages = defaultdict(
+        lambda: {
+            "files": [],
+            "isa_levels": [],
+            "evr": "",
+            "arch": "",
+        }
+    )
 
     for f in elf_files:
         pkg_info = file_to_pkg.get(f)
@@ -256,17 +273,14 @@ def main():
         "total_packages": len(output),
         "total_elf_files": len(elf_files),
         "by_isa": {
-            f"v{v}": sum(1 for p in output if p["current_isa"] == f"v{v}")
-            for v in [1, 2, 3, 4]
+            f"v{v}": sum(1 for p in output if p["current_isa"] == f"v{v}") for v in [1, 2, 3, 4]
         },
         "by_toolchain": {},
         "upgradeable_to_v4": sum(1 for p in output if p["potential_gain"]),
     }
     toolchains = set(p["toolchain"] for p in output)
     for tc in sorted(toolchains):
-        summary["by_toolchain"][tc] = sum(
-            1 for p in output if p["toolchain"] == tc
-        )
+        summary["by_toolchain"][tc] = sum(1 for p in output if p["toolchain"] == tc)
 
     result = {
         "meta": {
@@ -287,8 +301,11 @@ def main():
     json.dump(result, sys.stdout, indent=2)
     print(file=sys.stdout)  # trailing newline
 
-    print(f"\nDone. {summary['total_packages']} packages, "
-          f"{summary['total_elf_files']} ELF files scanned.", file=sys.stderr)
+    print(
+        f"\nDone. {summary['total_packages']} packages, "
+        f"{summary['total_elf_files']} ELF files scanned.",
+        file=sys.stderr,
+    )
     print(f"ISA distribution: {summary['by_isa']}", file=sys.stderr)
     print(f"Upgradeable to v4: {summary['upgradeable_to_v4']}", file=sys.stderr)
 
