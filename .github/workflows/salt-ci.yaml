@@ -34,4 +34,4 @@ jobs:
           ruff format --check .
 
       - name: Lint shell scripts
-        run: shellcheck scripts/*.sh states/scripts/*.sh
+        run: shellcheck scripts/*.sh states/scripts/*.sh build/*.sh apply_config.sh

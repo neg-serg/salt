@@ -65,6 +65,7 @@ greetd_wallpaper:
           cp -f "$wallpaper" /var/home/neg/.cache/greeter-wallpaper
         fi
     - runas: neg
+    - unless: test -f /var/home/neg/.cache/greeter-wallpaper
     - require:
       - file: greetd_config_dir
 
