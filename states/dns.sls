@@ -75,6 +75,15 @@ unbound_config:
             forward-addr: 9.9.9.9@853#dns.quad9.net
             forward-addr: 149.112.112.112@853#dns.quad9.net
 
+unbound_selinux_port:
+  cmd.run:
+    - name: |
+        semanage port -a -t dns_port_t -p tcp 5353 2>/dev/null || semanage port -m -t dns_port_t -p tcp 5353
+        semanage port -a -t dns_port_t -p udp 5353 2>/dev/null || semanage port -m -t dns_port_t -p udp 5353
+    - unless: semanage port -l | grep dns_port_t | grep -q 5353
+    - require:
+      - cmd: install_unbound
+
 unbound_root_key:
   cmd.run:
     - name: unbound-anchor -a /var/lib/unbound/root.key || true
@@ -127,6 +136,7 @@ unbound_running:
     - require:
       - cmd: unbound_enabled
       - cmd: unbound_reset_failed
+      - cmd: unbound_selinux_port
 {% endif %}
 
 # --- AdGuardHome: DNS filtering + ad blocking ---
