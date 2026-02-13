@@ -1,5 +1,5 @@
 # CLI tool installers: binaries, pip, cargo, scripts, themes
-{% from '_macros.jinja' import curl_bin, github_tar, github_release, pip_pkg, cargo_pkg %}
+{% from '_macros.jinja' import curl_bin, github_tar, github_release, pip_pkg, cargo_pkg, curl_extract_tar, curl_extract_zip %}
 
 # --- Neovim Python dependencies (nvr + pynvim) ---
 {{ pip_pkg('neovim_python_deps', pkg='pynvim neovim-remote', bin='nvr') }}
@@ -60,51 +60,18 @@ install_rustmission:
 
 {{ curl_bin('ssh-to-age', 'https://github.com/Mic92/ssh-to-age/releases/latest/download/ssh-to-age.linux-amd64') }}
 
-install_yazi:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        curl -fsSL https://github.com/sxyazi/yazi/releases/latest/download/yazi-x86_64-unknown-linux-musl.zip -o /tmp/yazi.zip
-        unzip -o /tmp/yazi.zip -d /tmp/yazi_extracted
-        mv /tmp/yazi_extracted/yazi-x86_64-unknown-linux-musl/yazi ~/.local/bin/
-        mv /tmp/yazi_extracted/yazi-x86_64-unknown-linux-musl/ya ~/.local/bin/
-        rm -rf /tmp/yazi.zip /tmp/yazi_extracted
-    - runas: neg
-    - shell: /bin/bash
-    - creates: /var/home/neg/.local/bin/yazi
+{{ curl_extract_zip('yazi', 'https://github.com/sxyazi/yazi/releases/latest/download/yazi-x86_64-unknown-linux-musl.zip', 'yazi-x86_64-unknown-linux-musl', binaries=['yazi', 'ya']) }}
 
 {{ curl_bin('broot', 'https://dystroy.org/broot/download/x86_64-linux/broot') }}
 
-install_nushell:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        TAG=$(curl -fsSL https://api.github.com/repos/nushell/nushell/releases/latest | jq -r .tag_name)
-        curl -fsSL "https://github.com/nushell/nushell/releases/latest/download/nu-${TAG}-x86_64-unknown-linux-musl.tar.gz" -o /tmp/nu.tar.gz
-        tar -xzf /tmp/nu.tar.gz -C /tmp
-        mv /tmp/nu-*-x86_64-unknown-linux-musl/nu* ~/.local/bin/
-        rm -rf /tmp/nu.tar.gz /tmp/nu-*-x86_64-unknown-linux-musl
-    - runas: neg
-    - shell: /bin/bash
-    - creates: /var/home/neg/.local/bin/nu
+{{ curl_extract_tar('nushell', 'https://github.com/nushell/nushell/releases/latest/download/nu-${TAG}-x86_64-unknown-linux-musl.tar.gz', 'nu-*-x86_64-unknown-linux-musl/nu*', fetch_tag=True, binaries=['nu', 'nu_plugin_*']) }}
 
 {{ github_tar('eza', 'https://github.com/eza-community/eza/releases/latest/download/eza_x86_64-unknown-linux-musl.tar.gz') }}
 
 {{ github_release('television', 'alexpasmantier/television', 'tv-${TAG}-x86_64-unknown-linux-musl.tar.gz', bin='tv', format='tar.gz') }}
 
 # --- GitHub binary downloads (remaining migration packages) ---
-install_xray:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        curl -fsSL https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip -o /tmp/xray.zip
-        unzip -o /tmp/xray.zip -d /tmp/xray
-        mv /tmp/xray/xray ~/.local/bin/
-        chmod +x ~/.local/bin/xray
-        rm -rf /tmp/xray.zip /tmp/xray
-    - runas: neg
-    - shell: /bin/bash
-    - creates: /var/home/neg/.local/bin/xray
+{{ curl_extract_zip('xray', 'https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip', 'xray', chmod=True) }}
 
 {{ github_release('sing-box', 'SagerNet/sing-box', 'sing-box-${VER}-linux-amd64.tar.gz', format='tar.gz', strip_v=True) }}
 
@@ -116,18 +83,7 @@ install_xray:
 
 {{ curl_bin('adguardian', 'https://github.com/Lissy93/AdGuardian-Term/releases/latest/download/adguardian-linux') }}
 
-install_realesrgan:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        curl -fsSL "https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan/releases/download/v0.2.0/realesrgan-ncnn-vulkan-v0.2.0-ubuntu.zip" -o /tmp/realesrgan.zip
-        unzip -o /tmp/realesrgan.zip -d /tmp/realesrgan
-        mv /tmp/realesrgan/realesrgan-ncnn-vulkan-v0.2.0-ubuntu/realesrgan-ncnn-vulkan ~/.local/bin/
-        chmod +x ~/.local/bin/realesrgan-ncnn-vulkan
-        rm -rf /tmp/realesrgan.zip /tmp/realesrgan
-    - runas: neg
-    - shell: /bin/bash
-    - creates: /var/home/neg/.local/bin/realesrgan-ncnn-vulkan
+{{ curl_extract_zip('realesrgan', 'https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan/releases/download/v0.2.0/realesrgan-ncnn-vulkan-v0.2.0-ubuntu.zip', 'realesrgan-ncnn-vulkan-v0.2.0-ubuntu', binaries=['realesrgan-ncnn-vulkan'], chmod=True) }}
 
 install_essentia_extractor:
   cmd.run:
@@ -137,7 +93,7 @@ install_essentia_extractor:
         tar -xzf /tmp/essentia.tar.gz -C /tmp
         mv /tmp/streaming_extractor_music ~/.local/bin/essentia_streaming_extractor_music
         chmod +x ~/.local/bin/essentia_streaming_extractor_music
-        rm -rf /tmp/essentia.tar.gz
+        rm -f /tmp/essentia.tar.gz
     - runas: neg
     - shell: /bin/bash
     - creates: /var/home/neg/.local/bin/essentia_streaming_extractor_music
