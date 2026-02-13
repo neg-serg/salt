@@ -826,8 +826,9 @@ floorp_ext_{{ ext.slug | replace('-', '_') }}:
 {% endfor %}
 
 # Remove extensions no longer wanted.
+{# unwanted: sidebery #}
 {% set unwanted_extensions = [
-    '{3c078156-979c-498b-8990-85f7987dd929}',  {# sidebery #}
+    '{3c078156-979c-498b-8990-85f7987dd929}',
 ] %}
 
 {% for ext_id in unwanted_extensions %}
