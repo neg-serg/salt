@@ -194,6 +194,73 @@ install_{{ name | replace('-', '_') }}:
 {%- endif %}
 {%- endmacro -%}
 
+{# Download and extract tar.gz/tar.xz archive, move binary(ies) to ~/.local/bin/.
+   Supports: TAG fetching, nested directories, multiple binaries, optional chmod.
+   archive_ext: tar.gz (default) | tar.xz. fetch_tag: True (default False) to fetch latest ${TAG} from GitHub API.
+   binary_pattern: path pattern for finding binaries after extraction (e.g., "nu-*/nu" or "streaming_extractor_music").
+   binaries: optional list of binary names to move. If None, uses basename of binary_pattern.
+   chmod: True (default False) to chmod +x extracted binaries.
+   Usage: {{ curl_extract_tar('nushell', 'https://github.com/nushell/nushell/releases/latest/download/nu-${TAG}-x86_64-unknown-linux-musl.tar.gz', 'nu-*/nu', fetch_tag=True) }}
+          {{ curl_extract_tar('hyprevents', 'https://github.com/vilari-mickopf/hyprevents/archive/refs/heads/master.tar.gz', 'hyprevents/hyprevents', binaries=['hyprevents', 'event_handler', 'event_loader']) }}
+#}
+{%- macro curl_extract_tar(name, url, binary_pattern, archive_ext='tar.gz', fetch_tag=False, binaries=None, chmod=False) -%}
+{%- set ext_flag = 'J' if archive_ext == 'tar.xz' else 'z' -%}
+install_{{ name | replace('-', '_') }}:
+  cmd.run:
+    - name: |
+        set -eo pipefail
+{%- if fetch_tag %}
+        TAG=$(curl -fsSL https://api.github.com/repos/{{ url.split('/repos/')[1].split('/releases')[0] }}/releases/latest | jq -r .tag_name)
+{%- endif %}
+        curl -fsSL "{{ url }}" -o /tmp/{{ name }}.{{ archive_ext }}
+        tar -x{{ ext_flag }}f /tmp/{{ name }}.{{ archive_ext }} -C /tmp
+{%- if binaries %}
+{%- for bin in binaries %}
+        mv /tmp/{{ binary_pattern.replace('*', bin) if '*' in binary_pattern else binary_pattern }}/{{ bin }} ~/.local/bin/ 2>/dev/null || mv /tmp/{{ binary_pattern.rsplit('/', 1)[0] }}/{{ bin }} ~/.local/bin/
+{%- endfor %}
+{%- else %}
+        find /tmp -maxdepth 3 -path "*{{ binary_pattern }}*" -type f ! -name "*.tar*" -exec install -m755 {} ~/.local/bin/{{ binary_pattern.rsplit('/', 1)[-1] }} \;
+{%- endif %}
+{%- if chmod %}
+        chmod +x ~/.local/bin/{{ binaries[0] if binaries else binary_pattern.rsplit('/', 1)[-1] }}
+{%- endif %}
+        rm -rf /tmp/{{ name }}.{{ archive_ext }} /tmp/{{ name }}-* /tmp/{{ name }}
+    - runas: neg
+    - shell: /bin/bash
+    - creates: /var/home/neg/.local/bin/{{ binaries[0] if binaries else binary_pattern.rsplit('/', 1)[-1] }}
+{%- endmacro -%}
+
+{# Download and extract ZIP archive, move binary(ies) to ~/.local/bin/.
+   Supports: nested directories, multiple binaries, optional chmod.
+   binary_path: path pattern relative to extraction dir (e.g., "yazi-x86_64-unknown-linux-musl/yazi").
+   binaries: optional list of binaries to move. If None, uses last part of binary_path.
+   chmod: True (default False) to chmod +x extracted binaries.
+   Usage: {{ curl_extract_zip('xray', 'https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip', 'xray/xray', chmod=True) }}
+          {{ curl_extract_zip('yazi', 'https://github.com/sxyazi/yazi/releases/latest/download/yazi-x86_64-unknown-linux-musl.zip', 'yazi-x86_64-unknown-linux-musl', binaries=['yazi', 'ya']) }}
+#}
+{%- macro curl_extract_zip(name, url, binary_path, binaries=None, chmod=False) -%}
+install_{{ name | replace('-', '_') }}:
+  cmd.run:
+    - name: |
+        set -eo pipefail
+        curl -fsSL "{{ url }}" -o /tmp/{{ name }}.zip
+        unzip -o /tmp/{{ name }}.zip -d /tmp/{{ name }}_extracted
+{%- if binaries %}
+{%- for bin in binaries %}
+        mv /tmp/{{ name }}_extracted/{{ binary_path }}/{{ bin }} ~/.local/bin/
+{%- endfor %}
+{%- else %}
+        mv /tmp/{{ name }}_extracted/{{ binary_path }} ~/.local/bin/{{ binary_path.rsplit('/', 1)[-1] }}
+{%- endif %}
+{%- if chmod %}
+        chmod +x ~/.local/bin/{{ binaries[0] if binaries else binary_path.rsplit('/', 1)[-1] }}
+{%- endif %}
+        rm -rf /tmp/{{ name }}.zip /tmp/{{ name }}_extracted
+    - runas: neg
+    - shell: /bin/bash
+    - creates: /var/home/neg/.local/bin/{{ binaries[0] if binaries else binary_path.rsplit('/', 1)[-1] }}
+{%- endmacro -%}
+
 {# Deploy systemd unit file + enable service (file + daemon-reload + service.enabled + optional service.running).
    unit_type: 'service' (default) | 'timer' | 'socket' | etc.
    running: True (default False) to add service.running after enabled for auto-start behavior.
