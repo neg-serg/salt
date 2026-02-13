@@ -803,7 +803,7 @@ floorp_usercontent:
     {'id': '{036a55b4-5e72-4d05-a06c-cba2dfcc134a}',         'slug': 'traduzir-paginas-web'},
     {'id': 'firefox-extension@steamdb.info',                  'slug': 'steam-database'},
     {'id': '{a8cf72f7-09b7-4cd4-9aaa-7a023bf09916}',         'slug': 'besttimetracker'},
-    {'id': '{3c078156-979c-498b-8990-85f7987dd929}',         'slug': 'sidebery'},
+
     {'id': '{52bda3fd-dc48-4b3d-a7b9-58af57879f1e}',         'slug': 'stylebot-web'},
     {'id': '{1be309c5-3e4f-4b99-927d-bb500eb4fa88}',         'slug': 'augmented-steam'},
     {'id': '{d07ccf11-c0cd-4938-a265-2a4d6ad01189}',         'slug': 'view-page-archive'},
