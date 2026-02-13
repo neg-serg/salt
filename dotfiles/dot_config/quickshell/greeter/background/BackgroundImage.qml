@@ -16,6 +16,12 @@ Item {
 
 	readonly property real remainingSize: image.height - root.height
 
+	Component.onCompleted: {
+		console.warn("[greeter-bg] wallpaperPath:", root.wallpaperPath);
+		console.warn("[greeter-bg] fallbackSource:", root.fallbackSource);
+		console.warn("[greeter-bg] screen:", root.screen?.name ?? "null");
+	}
+
 	Image {
 		id: image
 		width: root.width
@@ -24,9 +30,18 @@ Item {
 		y: -(root.slideAmount * root.remainingSize)
 
 		onStatusChanged: {
+			console.warn("[greeter-bg] status:", image.status,
+				"(0=Null 1=Ready 2=Loading 3=Error)",
+				"source:", image.source,
+				"sourceSize:", image.sourceSize.width + "x" + image.sourceSize.height);
 			if (image.status === Image.Error && !root.triedFallback) {
+				console.warn("[greeter-bg] primary failed, trying fallback:", root.fallbackSource);
 				root.triedFallback = true;
 				image.source = root.fallbackSource;
+			}
+			if (image.status === Image.Ready) {
+				console.warn("[greeter-bg] loaded OK:", image.source,
+					image.sourceSize.width + "x" + image.sourceSize.height);
 			}
 		}
 	}
