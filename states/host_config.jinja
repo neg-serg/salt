@@ -11,6 +11,26 @@
     Any key not specified inherits from `defaults`.
 #}
 
+{# Recursive deep merge: overlay values override base, nested dicts merge recursively #}
+{%- macro _deep_merge(target, base, overlay) -%}
+    {%- for key in base -%}
+        {%- if key in overlay -%}
+            {%- if base[key] is mapping and overlay[key] is mapping -%}
+                {%- set _sub = {} -%}
+                {%- do target.update({key: _sub}) -%}
+                {{- _deep_merge(_sub, base[key], overlay[key]) -}}
+            {%- else -%}
+                {%- do target.update({key: overlay[key]}) -%}
+            {%- endif -%}
+        {%- else -%}
+            {%- do target.update({key: base[key]}) -%}
+        {%- endif -%}
+    {%- endfor -%}
+    {%- for key in overlay if key not in base -%}
+        {%- do target.update({key: overlay[key]}) -%}
+    {%- endfor -%}
+{%- endmacro -%}
+
 {% set defaults = {
     'is_laptop':      False,
     'cpu_vendor':     'amd',
@@ -83,50 +103,8 @@
     'fedora': 'telfir',
 } %}
 
-{# Merge: overlay host-specific values on top of defaults.
-   For nested dicts (features), merge sub-keys individually. #}
+{# Build merged host config: host-specific values override defaults #}
 {% set current_host = aliases.get(grains['host'], grains['host']) %}
 {% set _host = {} %}
-{% set _src = hosts.get(current_host, {}) %}
-
-{% for key, val in defaults.items() %}
-    {% if key in _src %}
-        {% if val is mapping and _src[key] is mapping %}
-            {# Two-level merge for nested dicts like features #}
-            {% set _merged = {} %}
-            {% for sk, sv in val.items() %}
-                {% if sk in _src[key] %}
-                    {% if sv is mapping and _src[key][sk] is mapping %}
-                        {# Third level: merge monitoring sub-dict etc. #}
-                        {% set _sub = {} %}
-                        {% for ssk, ssv in sv.items() %}
-                            {% do _sub.update({ssk: _src[key][sk].get(ssk, ssv)}) %}
-                        {% endfor %}
-                        {% for ssk, ssv in _src[key][sk].items() %}
-                            {% if ssk not in sv %}
-                                {% do _sub.update({ssk: ssv}) %}
-                            {% endif %}
-                        {% endfor %}
-                        {% do _merged.update({sk: _sub}) %}
-                    {% else %}
-                        {% do _merged.update({sk: _src[key][sk]}) %}
-                    {% endif %}
-                {% else %}
-                    {% do _merged.update({sk: sv}) %}
-                {% endif %}
-            {% endfor %}
-            {% for sk, sv in _src[key].items() %}
-                {% if sk not in val %}
-                    {% do _merged.update({sk: sv}) %}
-                {% endif %}
-            {% endfor %}
-            {% do _host.update({key: _merged}) %}
-        {% else %}
-            {% do _host.update({key: _src[key]}) %}
-        {% endif %}
-    {% else %}
-        {% do _host.update({key: val}) %}
-    {% endif %}
-{% endfor %}
-
+{{- _deep_merge(_host, defaults, hosts.get(current_host, {})) -}}
 {% set host = _host %}
