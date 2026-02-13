@@ -76,9 +76,6 @@ return {
       },
       fzf_colors = true,
       keymap = {
-        builtin = {
-          ['<C-S-p>'] = 'toggle-preview',
-        },
         fzf = {
           ['ctrl-q'] = 'select-all+accept',
           ['alt-p'] = 'toggle-preview',
