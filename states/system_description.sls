@@ -825,6 +825,17 @@ floorp_ext_{{ ext.slug | replace('-', '_') }}:
       - cmd: install_flatpak_apps
 {% endfor %}
 
+# Remove extensions no longer wanted.
+{% set unwanted_extensions = [
+    '{3c078156-979c-498b-8990-85f7987dd929}',  {# sidebery #}
+] %}
+
+{% for ext_id in unwanted_extensions %}
+floorp_remove_ext_{{ loop.index }}:
+  file.absent:
+    - name: {{ floorp_profile }}/extensions/{{ ext_id }}.xpi
+{% endfor %}
+
 # Remove extensions.json so Floorp rebuilds it on next launch,
 # picking up extensions.autoDisableScopes=0 from user.js
 floorp_reset_extensions_json:
