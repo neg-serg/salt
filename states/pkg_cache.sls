@@ -28,12 +28,5 @@
 
 # SELinux: rpm_var_cache_t for rpms/ so rpm-ostree (rpm_t) can read without AVC denials
 # Uses /mnt equivalency (not /var/mnt) per Fedora Atomic semanage convention
-pkg_cache_selinux:
-  cmd.run:
-    - name: |
-        semanage fcontext -a -t rpm_var_cache_t "/mnt/one/pkg/cache/rpms(/.*)?" 2>/dev/null || \
-        semanage fcontext -m -t rpm_var_cache_t "/mnt/one/pkg/cache/rpms(/.*)?"
-        restorecon -Rv /var/mnt/one/pkg/cache
-    - unless: ls -Zd /var/mnt/one/pkg/cache/rpms 2>/dev/null | grep -q rpm_var_cache_t
-    - require:
-      - file: {{ cache_dir }}/rpms
+{% from '_macros.jinja' import selinux_fcontext %}
+{{ selinux_fcontext('pkg_cache_selinux', '/mnt/one/pkg/cache/rpms', '/var/mnt/one/pkg/cache', 'rpm_var_cache_t', check_path='/var/mnt/one/pkg/cache/rpms', requires=['file: ' ~ cache_dir ~ '/rpms']) }}

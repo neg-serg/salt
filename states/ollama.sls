@@ -1,5 +1,5 @@
 # Ollama LLM server: systemd service, SELinux policies, model pulls
-{% from '_macros.jinja' import selinux_policy %}
+{% from '_macros.jinja' import selinux_policy, selinux_fcontext %}
 
 ollama_service_unit:
   file.managed:
@@ -18,25 +18,11 @@ ollama_models_dir:
     - require:
       - mount: mount_one
 
-ollama_selinux_context:
-  cmd.run:
-    - name: |
-        semanage fcontext -a -t var_lib_t "/mnt/one/ollama(/.*)?" 2>/dev/null || \
-        semanage fcontext -m -t var_lib_t "/mnt/one/ollama(/.*)?"
-        restorecon -Rv /var/mnt/one/ollama
-    - unless: matchpathcon -V /var/mnt/one/ollama/models 2>&1 | grep -q verified
-    - require:
-      - file: ollama_models_dir
+{{ selinux_fcontext('ollama_selinux_context', '/mnt/one/ollama', '/var/mnt/one/ollama', 'var_lib_t', requires=['file: ollama_models_dir']) }}
 
 # ollama server (init_t) needs to read its key from ~/.ollama/ (user_home_t → var_lib_t)
 # uses /var/home path per equivalency rule '/home /var/home'
-ollama_selinux_homedir:
-  cmd.run:
-    - name: |
-        semanage fcontext -a -t var_lib_t "/var/home/neg/\.ollama(/.*)?" 2>/dev/null || \
-        semanage fcontext -m -t var_lib_t "/var/home/neg/\.ollama(/.*)?"
-        restorecon -Rv /var/home/neg/.ollama
-    - unless: ls -Z /var/home/neg/.ollama/id_ed25519 | grep -q var_lib_t
+{{ selinux_fcontext('ollama_selinux_homedir', '/var/home/neg/\\.ollama', '/var/home/neg/.ollama', 'var_lib_t', check_path='/var/home/neg/.ollama/id_ed25519') }}
 
 # ollama runs as init_t (no custom SELinux type) and needs outbound HTTPS for model pulls
 {% call selinux_policy('ollama_selinux_network', 'ollama-network') %}
