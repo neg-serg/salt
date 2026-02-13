@@ -82,11 +82,16 @@ unbound_enabled:
   cmd.run:
     - name: systemctl enable unbound
     - onlyif: systemctl list-unit-files unbound.service | grep -q unbound
-    - unless: systemctl is-enabled unbound
     - require:
       - cmd: install_unbound
       - file: unbound_config
       - cmd: unbound_daemon_reload
+
+unbound_running:
+  service.running:
+    - name: unbound
+    - require:
+      - cmd: unbound_enabled
 {% endif %}
 
 # --- AdGuardHome: DNS filtering + ad blocking ---
@@ -179,6 +184,9 @@ adguardhome_service:
         After=network-online.target{% if dns.unbound %} unbound.service{% endif %}
 
         Wants=network-online.target
+{% if dns.unbound %}
+        Requires=unbound.service
+{% endif %}
 
         [Service]
         Type=simple
@@ -207,6 +215,13 @@ adguardhome_enabled:
       - file: adguardhome_service
       - cmd: install_adguardhome
       - file: adguardhome_config
+      - cmd: adguardhome_daemon_reload
+
+adguardhome_running:
+  service.running:
+    - name: adguardhome
+    - require:
+      - service: adguardhome_enabled
 
 # Configure systemd-resolved to forward to AdGuardHome
 resolved_adguardhome:
@@ -220,6 +235,11 @@ resolved_adguardhome:
         Domains=~.
         LLMNR=no
         MulticastDNS=no
+    - require:
+      - service: adguardhome_running
+{% if dns.unbound %}
+      - service: unbound_running
+{% endif %}
 
 resolved_restart:
   cmd.run:
