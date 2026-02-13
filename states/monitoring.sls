@@ -147,16 +147,7 @@ promtail_enabled:
 grafana_repo:
   file.managed:
     - name: /etc/yum.repos.d/grafana.repo
-    - contents: |
-        [grafana]
-        name=Grafana OSS
-        baseurl=https://rpm.grafana.com
-        repo_gpgcheck=1
-        enabled=1
-        gpgcheck=1
-        gpgkey=https://rpm.grafana.com/gpg.key
-        sslverify=1
-        sslcacert=/etc/pki/tls/certs/ca-bundle.crt
+    - source: salt://configs/grafana.repo
     - mode: '0644'
 
 {{ ostree_install('grafana', 'grafana', requires=['file: grafana_repo']) }}

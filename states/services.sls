@@ -35,13 +35,7 @@ samba_not_enabled:
 jellyfin_repo:
   file.managed:
     - name: /etc/yum.repos.d/jellyfin.repo
-    - contents: |
-        [jellyfin]
-        name=Jellyfin
-        baseurl=https://repo.jellyfin.org/releases/server/fedora/stable/$basearch
-        gpgcheck=1
-        gpgkey=https://repo.jellyfin.org/releases/server/fedora/stable/RPM-GPG-KEY-jellyfin-server
-        enabled=1
+    - source: salt://configs/jellyfin.repo
     - mode: '0644'
 
 {{ ostree_install('jellyfin', 'jellyfin-server jellyfin-web', requires=['file: jellyfin_repo']) }}
@@ -93,17 +87,7 @@ bitcoind_logrotate:
   file.managed:
     - name: /etc/logrotate.d/bitcoind
     - mode: '0644'
-    - contents: |
-        /var/lib/bitcoind/debug.log {
-            weekly
-            rotate 8
-            missingok
-            compress
-            delaycompress
-            copytruncate
-            size 50M
-            su bitcoind bitcoind
-        }
+    - source: salt://configs/bitcoind-logrotate
 
 {{ daemon_reload('bitcoind', ['file: bitcoind_service']) }}
 
@@ -121,43 +105,19 @@ duckdns_script:
   file.managed:
     - name: /usr/local/bin/duckdns-update
     - mode: '0755'
-    - contents: |
-        #!/usr/bin/env bash
-        # Requires DUCKDNS_TOKEN and DUCKDNS_DOMAIN in environment
-        set -eu
-        : "${DUCKDNS_TOKEN:?DUCKDNS_TOKEN not set}"
-        : "${DUCKDNS_DOMAIN:?DUCKDNS_DOMAIN not set}"
-        curl -s "https://www.duckdns.org/update?domains=${DUCKDNS_DOMAIN}&token=${DUCKDNS_TOKEN}&ip="
+    - source: salt://scripts/duckdns-update.sh
 
 duckdns_service:
   file.managed:
     - name: /etc/systemd/system/duckdns-update.service
     - mode: '0644'
-    - contents: |
-        [Unit]
-        Description=DuckDNS IP update
-        After=network-online.target
-        Wants=network-online.target
-
-        [Service]
-        Type=oneshot
-        EnvironmentFile=/etc/duckdns.env
-        ExecStart=/usr/local/bin/duckdns-update
+    - source: salt://units/duckdns-update.service
 
 duckdns_timer:
   file.managed:
     - name: /etc/systemd/system/duckdns-update.timer
     - mode: '0644'
-    - contents: |
-        [Unit]
-        Description=DuckDNS periodic IP update
-
-        [Timer]
-        OnCalendar=*:0/5
-        Persistent=true
-
-        [Install]
-        WantedBy=timers.target
+    - source: salt://units/duckdns-update.timer
 
 {{ daemon_reload('duckdns', ['file: duckdns_service', 'file: duckdns_timer']) }}
 

@@ -8,21 +8,7 @@
 fix_containers_policy:
   file.managed:
     - name: /etc/containers/policy.json
-    - contents: |
-        {
-            "default": [
-                {
-                    "type": "insecureAcceptAnything"
-                }
-            ],
-            "transports":
-                {
-                    "docker-daemon":
-                        {
-                            "": [{"type":"insecureAcceptAnything"}]
-                        }
-                }
-        }
+    - source: salt://configs/containers-policy.json
     - user: root
     - group: root
     - mode: '0644'
