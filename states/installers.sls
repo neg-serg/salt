@@ -1,5 +1,5 @@
 # CLI tool installers: binaries, pip, cargo, scripts, themes
-{% from '_macros.jinja' import curl_bin, github_tar, github_release, pip_pkg, cargo_pkg, curl_extract_tar, curl_extract_zip %}
+{% from '_macros.jinja' import curl_bin, github_tar, github_release, pip_pkg, cargo_pkg, curl_extract_tar, curl_extract_zip, run_with_error_context %}
 
 # --- Neovim Python dependencies (nvr + pynvim) ---
 {{ pip_pkg('neovim_python_deps', pkg='pynvim neovim-remote', bin='nvr') }}
@@ -85,18 +85,22 @@ install_rustmission:
 
 {{ curl_extract_zip('realesrgan', 'https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan/releases/download/v0.2.0/realesrgan-ncnn-vulkan-v0.2.0-ubuntu.zip', 'realesrgan-ncnn-vulkan-v0.2.0-ubuntu', binaries=['realesrgan-ncnn-vulkan'], chmod=True) }}
 
-install_essentia_extractor:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        curl -fsSL https://data.metabrainz.org/pub/musicbrainz/acousticbrainz/extractors/essentia-extractor-v2.1_beta2-linux-x86_64.tar.gz -o /tmp/essentia.tar.gz
-        tar -xzf /tmp/essentia.tar.gz -C /tmp
-        mv /tmp/streaming_extractor_music ~/.local/bin/essentia_streaming_extractor_music
-        chmod +x ~/.local/bin/essentia_streaming_extractor_music
-        rm -f /tmp/essentia.tar.gz
-    - runas: neg
-    - shell: /bin/bash
-    - creates: /var/home/neg/.local/bin/essentia_streaming_extractor_music
+{%- call run_with_error_context('install_essentia_extractor', creates='/var/home/neg/.local/bin/essentia_streaming_extractor_music') %}
+step "Downloading Essentia streaming extractor"
+curl -fsSL https://data.metabrainz.org/pub/musicbrainz/acousticbrainz/extractors/essentia-extractor-v2.1_beta2-linux-x86_64.tar.gz -o /tmp/essentia.tar.gz
+
+step "Extracting archive"
+tar -xzf /tmp/essentia.tar.gz -C /tmp
+
+step "Installing to ~/.local/bin/"
+mv /tmp/streaming_extractor_music ~/.local/bin/essentia_streaming_extractor_music
+chmod +x ~/.local/bin/essentia_streaming_extractor_music
+
+step "Cleaning up"
+rm -f /tmp/essentia.tar.gz
+
+success "Essentia streaming extractor installed"
+{%- endcall %}
 
 # --- pip installs ---
 {{ pip_pkg('scdl') }}

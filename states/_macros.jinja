@@ -194,6 +194,38 @@ install_{{ name | replace('-', '_') }}:
 {%- endif %}
 {%- endmacro -%}
 
+{# Wrap cmd.run with standardized error handling. Provides shell helper functions for
+   consistent error messages, timestamped status output, and clean failure reporting.
+   Useful for complex multi-step operations (installs, builds, configuration).
+   Usage:
+   {% call run_with_error_context('install_foo', requires=['cmd: install_bar']) %}
+   source /build/salt/error-helpers.sh
+   step "Downloading foo"
+   curl -fsSL https://example.com/foo -o /tmp/foo
+   run_step "Installing foo" install -m755 /tmp/foo ~/.local/bin/
+   success "Foo installed"
+   {% endcall %}
+#}
+{%- macro run_with_error_context(state_id, requires=None, creates=None, shell='/bin/bash') -%}
+{{ state_id }}:
+  cmd.run:
+    - name: |
+        set -uo pipefail
+        source /build/salt/error-helpers.sh
+        trap 'echo "[EXIT] Cleanup on exit (code: $?)" >&2' EXIT
+        {{ caller() | indent(8) }}
+    - shell: {{ shell }}
+{%- if creates %}
+    - creates: {{ creates }}
+{%- endif %}
+{%- if requires %}
+    - require:
+{%- for req in requires %}
+      - {{ req }}
+{%- endfor %}
+{%- endif %}
+{%- endmacro -%}
+
 {# Download and extract tar.gz/tar.xz archive, move binary(ies) to ~/.local/bin/.
    Supports: TAG fetching, nested directories, multiple binaries, optional chmod.
    archive_ext: tar.gz (default) | tar.xz. fetch_tag: True (default False) to fetch latest ${TAG} from GitHub API.
