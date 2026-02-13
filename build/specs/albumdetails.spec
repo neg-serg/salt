@@ -26,3 +26,7 @@ make install DESTDIR=%{buildroot} PREFIX=/usr
 %files
 %license LICENSE
 %{_bindir}/albumdetails
+
+%changelog
+* Thu Feb 13 2025 Negative Serg <negative@serg.ru> - 0.1-1
+- Initial package build

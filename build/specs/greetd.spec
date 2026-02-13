@@ -141,3 +141,7 @@ fi
 
 %files selinux
 %{_datadir}/selinux/packages/greetd.pp.bz2
+
+%changelog
+* Thu Feb 13 2025 Negative Serg <negative@serg.ru> - 0.10.3-1
+- Initial package build
