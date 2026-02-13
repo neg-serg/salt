@@ -20,11 +20,13 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install salt-lint ruff
+          pip install salt-lint ruff jinja2
+
+      - name: Check Jinja2 syntax
+        run: python3 scripts/lint-jinja.py
 
       - name: Lint Salt states
-        run: |
-          salt-lint *.sls || echo "Salt-lint finished"
+        run: salt-lint states/*.sls < /dev/null
 
       - name: Lint Python scripts with Ruff
         run: |
