@@ -122,6 +122,29 @@ install_{{ name | replace('-', '_') }}:
     - unless: semodule -l | grep -q '^{{ module }}'
 {%- endmacro -%}
 
+{# Set SELinux file context on a path (semanage fcontext + restorecon).
+   selinux_path uses equivalency rules (e.g. /mnt not /var/mnt).
+   real_path is the actual filesystem path for restorecon.
+   check_path overrides what ls -Zd checks (defaults to real_path).
+   Usage: {{ selinux_fcontext('steam_selinux', '/mnt/zero/games', '/var/mnt/zero/games', 'user_home_t') }}
+          {{ selinux_fcontext('ollama_ctx', '/mnt/one/ollama', '/var/mnt/one/ollama', 'var_lib_t', requires=['file: ollama_models_dir']) }}
+#}
+{%- macro selinux_fcontext(name, selinux_path, real_path, selinux_type, check_path=None, requires=None) -%}
+{{ name }}:
+  cmd.run:
+    - name: |
+        semanage fcontext -a -t {{ selinux_type }} "{{ selinux_path }}(/.*)?" 2>/dev/null || \
+        semanage fcontext -m -t {{ selinux_type }} "{{ selinux_path }}(/.*)?"
+        restorecon -Rv {{ real_path }}
+    - unless: ls -Zd {{ check_path or real_path }} 2>/dev/null | grep -q {{ selinux_type }}
+{%- if requires %}
+    - require:
+{%- for req in requires %}
+      - {{ req }}
+{%- endfor %}
+{%- endif %}
+{%- endmacro -%}
+
 {# rpm-ostree install with --apply-live (for conditional/feature-gated packages).
    check defaults to first package. requires is an optional list of requisites.
    Usage: {{ ostree_install('unbound', 'unbound') }}
