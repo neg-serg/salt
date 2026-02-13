@@ -74,6 +74,11 @@
     'extra_volumes': '-v /var/home/neg/src/salt/build/iosevka-neg.toml:/build/iosevka-neg.toml:z'
 } %}
 
+{# Compute RPM filename from package dict (avoids repeating the formula) #}
+{%- macro rpm_filename(pkg) -%}
+{{ pkg.get('rpm_name', pkg.name) }}-{{ pkg.version }}-{{ pkg.get('release', '1') }}.fc43.{{ pkg.get('arch', 'x86_64') }}.rpm
+{%- endmacro -%}
+
 # Render the parallel build script (Jinja expands package list at render time)
 # This avoids Salt dumping the entire rendered script in the Name: field
 build_rpms_script:
@@ -104,7 +109,7 @@ build_rpms_script:
         SKIPPED=0
 
         # Iosevka: start in background outside semaphore (2h build, independent)
-        IOSEVKA_RPM="{{ rpms_dir }}/{{ iosevka.rpm_name }}-{{ iosevka.version }}-{{ iosevka.release }}.fc43.{{ iosevka.arch }}.rpm"
+        IOSEVKA_RPM="{{ rpms_dir }}/{{ rpm_filename(iosevka) }}"
         if [ ! -f "$IOSEVKA_RPM" ]; then
             (
                 echo "[BUILD] iosevka (background, no semaphore slot)"
@@ -124,12 +129,8 @@ build_rpms_script:
             SKIPPED=$((SKIPPED + 1))
         fi
         {%- for pkg in rpms %}
-        {%- set arch = pkg.get('arch', 'x86_64') %}
-        {%- set release = pkg.get('release', '1') %}
         {%- set extra_vol = pkg.get('extra_volumes', '') %}
-        {%- set rpm_name = pkg.get('rpm_name', pkg.name) %}
-        {%- set rpm_file = rpm_name ~ '-' ~ pkg.version ~ '-' ~ release ~ '.fc43.' ~ arch ~ '.rpm' %}
-        if [ ! -f "${RPMS_DIR}/{{ rpm_file }}" ]; then
+        if [ ! -f "${RPMS_DIR}/{{ rpm_filename(pkg) }}" ]; then
             read -u 3
             (
                 echo "[BUILD] {{ pkg.name }}"
@@ -175,13 +176,9 @@ build_rpms_parallel:
     - timeout: 7200
     - unless: |
         for f in \
-          "{{ rpms_dir }}/{{ iosevka.rpm_name }}-{{ iosevka.version }}-{{ iosevka.release }}.fc43.{{ iosevka.arch }}.rpm" \
+          "{{ rpms_dir }}/{{ rpm_filename(iosevka) }}" \
         {%- for pkg in rpms %}
-        {%- set arch = pkg.get('arch', 'x86_64') %}
-        {%- set release = pkg.get('release', '1') %}
-        {%- set rpm_name = pkg.get('rpm_name', pkg.name) %}
-        {%- set rpm_file = rpm_name ~ '-' ~ pkg.version ~ '-' ~ release ~ '.fc43.' ~ arch ~ '.rpm' %}
-          "{{ rpms_dir }}/{{ rpm_file }}" \
+          "{{ rpms_dir }}/{{ rpm_filename(pkg) }}" \
         {%- endfor %}
         ; do [ -f "$f" ] || exit 1; done
     - require:
