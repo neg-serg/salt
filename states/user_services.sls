@@ -170,12 +170,33 @@ surfingkeys_server_service:
         [Install]
         WantedBy=graphical-session.target
 
+# --- Pic dirs indexer (inotifywait + zoxide) ---
+pic_dirs_list_service:
+  file.managed:
+    - name: /var/home/neg/.config/systemd/user/pic-dirs-list.service
+    - user: neg
+    - group: neg
+    - mode: '0644'
+    - makedirs: True
+    - contents: |
+        [Unit]
+        Description=Index picture directories into zoxide on changes
+        After=graphical-session.target
+        PartOf=graphical-session.target
+        [Service]
+        ExecStart=%h/.local/bin/pic-dirs-list
+        Restart=on-failure
+        RestartSec=5
+        Environment=XDG_PICTURES_DIR=%h/pic
+        [Install]
+        WantedBy=graphical-session.target
+
 # --- Enable user services: single daemon-reload + batch enable ---
 enable_user_services:
   cmd.run:
     - name: |
         systemctl --user daemon-reload
-        systemctl --user enable imapnotify-gmail.service surfingkeys-server.service gpg-agent.socket gpg-agent-ssh.socket
+        systemctl --user enable imapnotify-gmail.service surfingkeys-server.service pic-dirs-list.service gpg-agent.socket gpg-agent-ssh.socket
         systemctl --user enable --now mbsync-gmail.timer vdirsyncer.timer
     - runas: neg
     - env:
@@ -186,9 +207,11 @@ enable_user_services:
         systemctl --user is-enabled mbsync-gmail.timer 2>/dev/null &&
         systemctl --user is-enabled vdirsyncer.timer 2>/dev/null &&
         systemctl --user is-enabled surfingkeys-server.service 2>/dev/null &&
+        systemctl --user is-enabled pic-dirs-list.service 2>/dev/null &&
         systemctl --user is-enabled gpg-agent-ssh.socket 2>/dev/null
     - require:
       - file: imapnotify_gmail_service
       - file: mbsync_gmail_timer
       - file: vdirsyncer_timer
       - file: surfingkeys_server_service
+      - file: pic_dirs_list_service
