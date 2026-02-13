@@ -1,4 +1,5 @@
 # greetd display manager: replace sddm with quickshell greeter
+{% from '_macros.jinja' import selinux_policy %}
 
 disable_sddm:
   service.dead:
@@ -68,26 +69,17 @@ greetd_wallpaper:
       - file: greetd_config_dir
 
 # SELinux: allow greeter (xdm_t) to mmap fontconfig cache and read wallpaper from user cache
-greetd_selinux_cache:
-  cmd.run:
-    - name: |
-        TMP=$(mktemp -d)
-        cat > "$TMP/greetd-cache.te" << 'POLICY'
-        module greetd-cache 1.0;
-        require {
-            type xdm_t;
-            type cache_home_t;
-            type user_fonts_cache_t;
-            class file { read open getattr map };
-        }
-        allow xdm_t user_fonts_cache_t:file map;
-        allow xdm_t cache_home_t:file { read open getattr map };
-        POLICY
-        checkmodule -M -m -o "$TMP/greetd-cache.mod" "$TMP/greetd-cache.te"
-        semodule_package -o "$TMP/greetd-cache.pp" -m "$TMP/greetd-cache.mod"
-        semodule -i "$TMP/greetd-cache.pp"
-        rm -rf "$TMP"
-    - unless: semodule -l | grep -q '^greetd-cache'
+{% call selinux_policy('greetd_selinux_cache', 'greetd-cache') %}
+module greetd-cache 1.0;
+require {
+    type xdm_t;
+    type cache_home_t;
+    type user_fonts_cache_t;
+    class file { read open getattr map };
+}
+allow xdm_t user_fonts_cache_t:file map;
+allow xdm_t cache_home_t:file { read open getattr map };
+{% endcall %}
 
 greetd_enabled:
   service.enabled:
