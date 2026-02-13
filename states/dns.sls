@@ -1,5 +1,5 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import daemon_reload, ostree_install %}
+{% from '_macros.jinja' import daemon_reload, ostree_install, system_daemon_user %}
 {% set dns = host.features.dns %}
 
 # --- Unbound: recursive DNS resolver with DNSSEC + DoT ---
@@ -85,22 +85,7 @@ install_adguardhome:
         rm -rf /tmp/adguardhome.tar.gz /tmp/AdGuardHome
     - creates: /usr/local/bin/adguardhome
 
-adguardhome_user:
-  user.present:
-    - name: adguardhome
-    - system: True
-    - shell: /usr/sbin/nologin
-    - home: /var/lib/adguardhome
-    - createhome: False
-
-adguardhome_data_dir:
-  file.directory:
-    - name: /var/lib/adguardhome
-    - user: adguardhome
-    - group: adguardhome
-    - makedirs: True
-    - require:
-      - user: adguardhome_user
+{{ system_daemon_user('adguardhome', '/var/lib/adguardhome') }}
 
 adguardhome_config:
   file.managed:

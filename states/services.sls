@@ -1,5 +1,5 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import daemon_reload, ostree_install %}
+{% from '_macros.jinja' import daemon_reload, ostree_install, system_daemon_user %}
 {% set svc = host.features.services %}
 
 # --- Samba: SMB file sharing (manual start) ---
@@ -60,22 +60,7 @@ install_bitcoind:
         rm -rf /tmp/bitcoin.tar.gz /tmp/bitcoin-${VER}
     - creates: /usr/local/bin/bitcoind
 
-bitcoind_user:
-  user.present:
-    - name: bitcoind
-    - system: True
-    - shell: /usr/sbin/nologin
-    - home: /var/lib/bitcoind
-    - createhome: False
-
-bitcoind_data_dir:
-  file.directory:
-    - name: /var/lib/bitcoind
-    - user: bitcoind
-    - group: bitcoind
-    - makedirs: True
-    - require:
-      - user: bitcoind_user
+{{ system_daemon_user('bitcoind', '/var/lib/bitcoind') }}
 
 bitcoind_service:
   file.managed:

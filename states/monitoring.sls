@@ -1,5 +1,5 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import daemon_reload, ostree_install, service_with_unit %}
+{% from '_macros.jinja' import daemon_reload, ostree_install, service_with_unit, system_daemon_user %}
 {% set mon = host.features.monitoring %}
 
 # --- Simple service enables (packages already in system_description.sls) ---
@@ -52,18 +52,11 @@ install_loki:
         rm -f /tmp/loki.zip /tmp/loki-linux-amd64
     - creates: /usr/local/bin/loki
 
-loki_user:
-  user.present:
-    - name: loki
-    - system: True
-    - shell: /usr/sbin/nologin
-    - home: /var/lib/loki
-    - createhome: False
+{{ system_daemon_user('loki', '/var/lib/loki') }}
 
-loki_data_dirs:
+loki_subdirs:
   file.directory:
     - names:
-      - /var/lib/loki
       - /var/lib/loki/chunks
       - /var/lib/loki/rules
       - /var/lib/loki/rules-temp
@@ -71,7 +64,7 @@ loki_data_dirs:
     - group: loki
     - makedirs: True
     - require:
-      - user: loki_user
+      - file: loki_data_dir
 
 loki_config:
   file.managed:
@@ -80,7 +73,7 @@ loki_config:
     - mode: '0644'
     - source: salt://configs/loki.yaml
 
-{{ service_with_unit('loki', 'salt://units/loki.service', requires=['cmd: install_loki', 'file: loki_config', 'file: loki_data_dirs']) }}
+{{ service_with_unit('loki', 'salt://units/loki.service', requires=['cmd: install_loki', 'file: loki_config', 'file: loki_subdirs']) }}
 {% endif %}
 
 # --- Promtail: log shipper to Loki ---
