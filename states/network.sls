@@ -19,25 +19,7 @@ vm_bridge_network:
     - name: /etc/systemd/network/10-br0.network
     - makedirs: True
     - mode: '0644'
-    - contents: |
-        [Match]
-        Name=br0
-
-        [Link]
-        RequiredForOnline=no
-
-        [Network]
-        Address=192.168.122.1/24
-        DHCPServer=yes
-
-        [DHCPServer]
-        PoolOffset=50
-        PoolSize=101
-        EmitDNS=yes
-        DNS=192.168.122.1
-        EmitRouter=yes
-        DefaultLeaseTimeSec=43200
-        MaxLeaseTimeSec=86400
+    - source: salt://configs/br0.network
 
 vm_bridge_firewall:
   cmd.run:

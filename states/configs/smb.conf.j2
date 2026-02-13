@@ -1,0 +1,12 @@
+[global]
+workgroup = WORKGROUP
+server string = {{ hostname }} Samba Server
+netbios name = {{ hostname }}
+map to guest = Bad User
+security = user
+
+[shared]
+path = /mnt/zero/sync/smb
+browseable = yes
+read only = no
+guest ok = yes

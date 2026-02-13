@@ -17,19 +17,10 @@ samba_config:
     - name: /etc/samba/smb.conf
     - makedirs: True
     - mode: '0644'
-    - contents: |
-        [global]
-        workgroup = WORKGROUP
-        server string = {{ host.hostname }} Samba Server
-        netbios name = {{ host.hostname }}
-        map to guest = Bad User
-        security = user
-
-        [shared]
-        path = /mnt/zero/sync/smb
-        browseable = yes
-        read only = no
-        guest ok = yes
+    - source: salt://configs/smb.conf.j2
+    - template: jinja
+    - context:
+        hostname: {{ host.hostname }}
 
 # Don't enable at boot — manual start only: systemctl start smb
 samba_not_enabled:
