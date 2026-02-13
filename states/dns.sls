@@ -82,11 +82,24 @@ unbound_root_key:
     - require:
       - cmd: install_unbound
 
+unbound_restart_override:
+  file.managed:
+    - name: /etc/systemd/system/unbound.service.d/restart.conf
+    - makedirs: True
+    - mode: '0644'
+    - contents: |
+        [Service]
+        Restart=on-failure
+        RestartSec=5
+    - require:
+      - cmd: install_unbound
+
 unbound_daemon_reload:
   cmd.run:
     - name: systemctl daemon-reload
     - onchanges:
       - cmd: install_unbound
+      - file: unbound_restart_override
 
 unbound_enabled:
   cmd.run:
@@ -110,6 +123,7 @@ unbound_running:
     - name: unbound
     - watch:
       - file: unbound_config
+      - file: unbound_restart_override
     - require:
       - cmd: unbound_enabled
       - cmd: unbound_reset_failed
@@ -264,6 +278,7 @@ resolved_adguardhome:
     - contents: |
         [Resolve]
         DNS=127.0.0.1
+        FallbackDNS=1.1.1.1 9.9.9.9 8.8.8.8
         Domains=~.
         LLMNR=no
         MulticastDNS=no
