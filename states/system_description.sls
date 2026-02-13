@@ -582,10 +582,14 @@ greetd_hyprland_config:
             position = 0x0
             scale = 2
             vrr = 3
+            bitdepth = 10
         }
         monitorv2 {
             output = DP-1
             disabled = true
+        }
+        experimental {
+            xx_color_management_v4 = true
         }
         {% endif %}
 
