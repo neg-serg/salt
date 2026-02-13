@@ -607,6 +607,7 @@ greetd_hyprland_config:
             sync_gsettings_theme = true
         }
 
+        exec-once = sh -c 'echo "=== greeter-debug $(date) ===" >> /tmp/greeter-debug.log; ls -laZ ~/.cache/greeter-wallpaper >> /tmp/greeter-debug.log 2>&1; file ~/.cache/greeter-wallpaper >> /tmp/greeter-debug.log 2>&1; id >> /tmp/greeter-debug.log 2>&1'
         exec-once = qs -p ~/.config/quickshell/greeter/greeter.qml
     - user: root
     - group: root
@@ -1195,6 +1196,12 @@ install_dr14_tmeter:
     - name: pip install --user git+https://github.com/simon-r/dr14_t.meter.git
     - runas: neg
     - creates: /var/home/neg/.local/bin/dr14_tmeter
+
+install_euporie:
+  cmd.run:
+    - name: pip install --user euporie
+    - runas: neg
+    - creates: /var/home/neg/.local/bin/euporie
 
 # --- cargo installs ---
 install_handlr:
