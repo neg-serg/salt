@@ -119,35 +119,34 @@ rotate() { # modifies file in-place
 }
 
 choose_dest() {
-  # Fuzzy-pick a destination dir using zoxide history, limited to XDG_PICTURES_DIR
+  # Fuzzy-pick a destination dir; non-leaf dirs under $XDG_PICTURES_DIR, sorted by mtime
   local prompt="$1"
   local entries
 
   entries="$(
     {
-      command -v zoxide > /dev/null 2>&1 && zoxide query -l 2> /dev/null || true
+      printf '%s\n' "$pics_dir"
+      if command -v fd > /dev/null 2>&1; then
+        fd -td -d 2 . "$pics_dir" 2> /dev/null
+      else
+        find "$pics_dir" -maxdepth 2 -mindepth 1 -type d 2> /dev/null
+      fi
+      # Merge zoxide-remembered dirs within pics_dir (may include deeper paths)
+      if command -v zoxide > /dev/null 2>&1; then
+        zoxide query -l 2> /dev/null \
+          | awk -v pic="$pics_dir" 'index($0, pic) == 1'
+      fi
     } \
-      | awk -v pic="$pics_dir" 'index($0, pic) == 1' \
+      | awk '!seen[$0]++' \
+      | while IFS= read -r d; do
+          [ -d "$d" ] || continue
+          printf '%s\t%s\n' "$(stat -c '%Y' "$d" 2>/dev/null || echo 0)" "$d"
+        done \
+      | sort -rn \
+      | cut -f2- \
       | sed "s:^$HOME:~:" \
-      | awk 'NF' \
-      | sort -u
+      | awk 'NF'
   )"
-
-  if [ -z "$entries" ]; then
-    entries="$(
-      {
-        printf '%s\n' "$pics_dir"
-        if command -v fd > /dev/null 2>&1; then
-          fd -td -d 3 . "$pics_dir" 2> /dev/null
-        else
-          find "$pics_dir" -maxdepth 3 -type d -print 2> /dev/null
-        fi
-      } \
-        | sed "s:^$HOME:~:" \
-        | awk 'NF' \
-        | sort -u
-    )"
-  fi
 
   printf '%s\n' "$entries" \
     | sh -c "$rofi_cmd -p \"⟬$prompt⟭ ❯>\"" \
