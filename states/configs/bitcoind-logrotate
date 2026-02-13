@@ -1,0 +1,10 @@
+/var/lib/bitcoind/debug.log {
+    weekly
+    rotate 8
+    missingok
+    compress
+    delaycompress
+    copytruncate
+    size 50M
+    su bitcoind bitcoind
+}
