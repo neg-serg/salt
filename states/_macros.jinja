@@ -162,3 +162,45 @@ install_{{ name | replace('-', '_') }}:
 {%- endfor %}
 {%- endif %}
 {%- endmacro -%}
+
+{# Deploy systemd unit file + enable service (file + daemon-reload + service.enabled + optional service.running).
+   unit_type: 'service' (default) | 'timer' | 'socket' | etc.
+   running: True (default False) to add service.running after enabled for auto-start behavior.
+   requires: optional list of state requisites (includes daemon-reload as base requirement).
+   Usage: {{ service_with_unit('loki', 'salt://units/loki.service', requires=['cmd: install_loki', 'file: loki_config']) }}
+          {{ service_with_unit('fancontrol', 'salt://units/fancontrol.service', running=True, requires=['file: fancontrol_service', 'cmd: install_fancontrol']) }}
+#}
+{%- macro service_with_unit(name, source, unit_type='service', running=False, requires=None) -%}
+{{ name }}_service:
+  file.managed:
+    - name: /etc/systemd/system/{{ name }}.{{ unit_type }}
+    - mode: '0644'
+    - source: {{ source }}
+
+{{ name }}_daemon_reload:
+  cmd.run:
+    - name: systemctl daemon-reload
+    - onchanges:
+      - file: {{ name }}_service
+
+{{ name }}_enabled:
+  service.enabled:
+    - name: {{ name }}
+    - require:
+      - cmd: {{ name }}_daemon_reload
+{%- if requires %}
+{%- for req in requires %}
+      - {{ req }}
+{%- endfor %}
+{%- endif %}
+
+{%- if running %}
+{{ name }}_running:
+  service.running:
+    - name: {{ name }}
+    - watch:
+      - file: {{ name }}_service
+    - require:
+      - service: {{ name }}_enabled
+{%- endif %}
+{%- endmacro -%}
