@@ -42,6 +42,37 @@ install_{{ name | replace('-', '_') }}:
     - creates: /var/home/neg/.local/bin/{{ name }}
 {%- endmacro -%}
 
+{# Download latest GitHub release asset to ~/.local/bin/.
+   Fetches TAG via GitHub API, supports direct binary or tar.gz.
+   Usage: {{ github_release('sops', 'getsops/sops', 'sops-${TAG}.linux.amd64') }}
+          {{ github_release('rmpc', 'mierak/rmpc', 'rmpc-${TAG}-x86_64.tar.gz', format='tar.gz') }}
+          {{ github_release('sing-box', 'SagerNet/sing-box', 'sing-box-${VER}.tar.gz', format='tar.gz', strip_v=True) }}
+#}
+{%- macro github_release(name, repo, asset, bin=None, format='bin', strip_v=False) -%}
+{%- set target = bin or name -%}
+install_{{ name | replace('-', '_') }}:
+  cmd.run:
+    - name: |
+        set -eo pipefail
+        TAG=$(curl -fsSL https://api.github.com/repos/{{ repo }}/releases/latest | jq -r .tag_name)
+{%- if strip_v %}
+        VER=${TAG#v}
+{%- endif %}
+{%- if format == 'bin' %}
+        curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o ~/.local/bin/{{ target }}
+        chmod +x ~/.local/bin/{{ target }}
+{%- elif format == 'tar.gz' %}
+        TMPDIR=$(mktemp -d)
+        curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o "$TMPDIR/archive.tar.gz"
+        tar -xzf "$TMPDIR/archive.tar.gz" -C "$TMPDIR"
+        find "$TMPDIR" -name '{{ target }}' -type f -exec install -m755 {} ~/.local/bin/{{ target }} \;
+        rm -rf "$TMPDIR"
+{%- endif %}
+    - runas: neg
+    - shell: /bin/bash
+    - creates: /var/home/neg/.local/bin/{{ target }}
+{%- endmacro -%}
+
 {# pip install --user.
    Usage: {{ pip_pkg('httpstat') }}
           {{ pip_pkg('neovim_deps', pkg='pynvim neovim-remote', bin='nvr') }}
