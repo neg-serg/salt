@@ -58,52 +58,16 @@ fancontrol_reapply_script:
 fancontrol_setup_service:
   file.managed:
     - name: /etc/systemd/system/fancontrol-setup.service
-    - contents: |
-        [Unit]
-        Description=Generate /etc/fancontrol from detected hwmon devices
-        Before=fancontrol.service
-
-        [Service]
-        Type=oneshot
-        ExecStart=/usr/local/bin/fancontrol-setup
-        Environment=MIN_TEMP=35
-        Environment=MAX_TEMP=75
-        Environment=MIN_PWM=70
-        Environment=MAX_PWM=255
-        Environment=HYST=3
-        Environment=INTERVAL=2
-        Environment=ALLOW_STOP=false
-        Environment=GPU_PWM_CHANNELS=
-        Environment=GPU_ENABLE={{ 'true' if host.get('cpu_vendor', '') == 'amd' else 'false' }}
-        Environment=GPU_MIN_TEMP=50
-        Environment=GPU_MAX_TEMP=85
-        Environment=GPU_MIN_PWM=70
-        Environment=GPU_MAX_PWM=255
-        Environment=GPU_HYST=3
-        RemainAfterExit=true
-
-        [Install]
-        WantedBy=fancontrol.service
+    - source: salt://units/fancontrol-setup.service.j2
+    - template: jinja
+    - context:
+        gpu_enable: {{ 'true' if host.get('cpu_vendor', '') == 'amd' else 'false' }}
     - mode: '0644'
 
 fancontrol_service:
   file.managed:
     - name: /etc/systemd/system/fancontrol.service
-    - contents: |
-        [Unit]
-        Description=Software fan speed control (fancontrol)
-        Requires=fancontrol-setup.service
-        After=fancontrol-setup.service
-        ConditionPathExists=/etc/fancontrol
-
-        [Service]
-        Type=simple
-        ExecStart=/usr/sbin/fancontrol
-        Restart=on-failure
-        RestartSec=5
-
-        [Install]
-        WantedBy=multi-user.target
+    - source: salt://units/fancontrol.service
     - mode: '0644'
 
 {{ daemon_reload('fancontrol', ['file: fancontrol_setup_service', 'file: fancontrol_service']) }}

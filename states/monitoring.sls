@@ -84,22 +84,7 @@ loki_service:
   file.managed:
     - name: /etc/systemd/system/loki.service
     - mode: '0644'
-    - contents: |
-        [Unit]
-        Description=Grafana Loki log aggregation
-        After=network-online.target
-        Wants=network-online.target
-
-        [Service]
-        Type=simple
-        User=loki
-        Group=loki
-        ExecStart=/usr/local/bin/loki -config.file=/etc/loki/config.yaml
-        Restart=on-failure
-        RestartSec=5
-
-        [Install]
-        WantedBy=multi-user.target
+    - source: salt://units/loki.service
 
 {{ daemon_reload('loki', ['file: loki_service']) }}
 
@@ -144,20 +129,7 @@ promtail_service:
   file.managed:
     - name: /etc/systemd/system/promtail.service
     - mode: '0644'
-    - contents: |
-        [Unit]
-        Description=Promtail log shipper for Loki
-        After=network-online.target loki.service
-        Wants=network-online.target
-
-        [Service]
-        Type=simple
-        ExecStart=/usr/local/bin/promtail -config.file=/etc/promtail/config.yaml
-        Restart=on-failure
-        RestartSec=5
-
-        [Install]
-        WantedBy=multi-user.target
+    - source: salt://units/promtail.service
 
 {{ daemon_reload('promtail', ['file: promtail_service']) }}
 

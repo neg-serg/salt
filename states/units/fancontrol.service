@@ -1,0 +1,14 @@
+[Unit]
+Description=Software fan speed control (fancontrol)
+Requires=fancontrol-setup.service
+After=fancontrol-setup.service
+ConditionPathExists=/etc/fancontrol
+
+[Service]
+Type=simple
+ExecStart=/usr/sbin/fancontrol
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

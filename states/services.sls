@@ -96,22 +96,7 @@ bitcoind_service:
   file.managed:
     - name: /etc/systemd/system/bitcoind.service
     - mode: '0644'
-    - contents: |
-        [Unit]
-        Description=Bitcoin Core daemon
-        After=network-online.target
-        Wants=network-online.target
-
-        [Service]
-        Type=simple
-        User=bitcoind
-        Group=bitcoind
-        ExecStart=/usr/local/bin/bitcoind -datadir=/var/lib/bitcoind -printtoconsole=1 -shrinkdebugfile=1
-        Restart=on-failure
-        RestartSec=30
-
-        [Install]
-        WantedBy=multi-user.target
+    - source: salt://units/bitcoind.service
 
 bitcoind_logrotate:
   file.managed:

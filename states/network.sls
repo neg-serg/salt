@@ -63,21 +63,7 @@ xray_service:
   file.managed:
     - name: /etc/systemd/system/xray.service
     - mode: '0644'
-    - contents: |
-        [Unit]
-        Description=Xray VLESS/Reality proxy
-        After=network-online.target
-        Wants=network-online.target
-
-        [Service]
-        Type=simple
-        ExecStart=/var/home/neg/.local/bin/xray run -config /etc/xray/config.json
-        Restart=on-failure
-        RestartSec=5
-        LimitNOFILE=65535
-
-        [Install]
-        WantedBy=multi-user.target
+    - source: salt://units/xray.service
 
 {{ daemon_reload('xray', ['file: xray_service']) }}
 
@@ -96,31 +82,7 @@ singbox_service:
   file.managed:
     - name: /etc/systemd/system/sing-box-tun.service
     - mode: '0644'
-    - contents: |
-        [Unit]
-        Description=Sing-box VLESS Reality (TUN, manual start)
-        After=network-online.target
-        Wants=network-online.target
-
-        [Service]
-        Type=simple
-        RuntimeDirectory=sing-box-tun
-        ExecStartPre=/usr/bin/sh -c 'ip rule del pref 100 2>/dev/null; ip rule del pref 200 2>/dev/null; ip route show table 200 default > /run/sing-box-tun/prev-default-route 2>/dev/null; ip route del default table 200 2>/dev/null; true'
-        ExecStart=/var/home/neg/.local/bin/sing-box run -c /run/user/1000/secrets/vless-reality-singbox-tun.json
-        ExecStartPost=/usr/bin/sh -c 'ip rule add pref 100 to 204.152.223.171 lookup main'
-        ExecStartPost=/usr/bin/sh -c 'ip route replace default dev sb0 table 200'
-        ExecStartPost=/usr/bin/sh -c 'ip rule add pref 200 lookup 200'
-        ExecStartPost=/usr/bin/ip route flush cache
-        ExecStartPost=/usr/bin/resolvectl dns sb0 1.1.1.1 1.0.0.1
-        ExecStartPost=/usr/bin/resolvectl domain sb0 "~."
-        ExecStopPost=/usr/bin/sh -c 'ip rule del pref 200 2>/dev/null; ip route del default dev sb0 table 200 2>/dev/null; if test -s /run/sing-box-tun/prev-default-route; then ip route replace table 200 $(cat /run/sing-box-tun/prev-default-route); fi; ip rule del pref 100 2>/dev/null; ip route flush cache; true'
-        ExecStopPost=/usr/bin/resolvectl revert sb0
-        Restart=on-failure
-        CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_RAW CAP_NET_BIND_SERVICE
-        AmbientCapabilities=CAP_NET_ADMIN CAP_NET_RAW CAP_NET_BIND_SERVICE
-        NoNewPrivileges=false
-
-        # No [Install] — manual start only: systemctl start sing-box-tun
+    - source: salt://units/sing-box-tun.service
 
 {{ daemon_reload('singbox', ['file: singbox_service']) }}
 {% endif %}

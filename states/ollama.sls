@@ -4,24 +4,7 @@
 ollama_service_unit:
   file.managed:
     - name: /etc/systemd/system/ollama.service
-    - contents: |
-        [Unit]
-        Description=Ollama LLM Server
-        After=network-online.target
-
-        [Service]
-        ExecStart=/usr/bin/ollama serve
-        User=neg
-        Group=neg
-        Restart=always
-        RestartSec=3
-        WorkingDirectory=/var/home/neg
-        Environment="HOME=/var/home/neg"
-        Environment="OLLAMA_HOST=127.0.0.1:11434"
-        Environment="OLLAMA_MODELS=/var/mnt/one/ollama/models"
-
-        [Install]
-        WantedBy=default.target
+    - source: salt://units/ollama.service
     - user: root
     - group: root
     - mode: '0644'
