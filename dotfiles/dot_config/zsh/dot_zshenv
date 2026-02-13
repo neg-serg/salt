@@ -1,11 +1,11 @@
 # Deduplicate PATH entries (prevents accumulation in nested shells)
 typeset -U path
 
-# --- XDG Base Directory Specification ---
-export XDG_CONFIG_HOME="$HOME/.config"
-export XDG_CACHE_HOME="$HOME/.cache"
-export XDG_DATA_HOME="$HOME/.local/share"
-export XDG_STATE_HOME="$HOME/.local/state"
+# Source core environment (single source of truth for session-wide vars)
+# Same file is read by systemd (environment.d) and greetd session-wrapper
+set -a
+source "${HOME}/.config/environment.d/10-user.conf"
+set +a
 
 # --- XDG User Directories ---
 export XDG_DESKTOP_DIR="$HOME/.local/desktop"
@@ -27,8 +27,6 @@ export HISTSIZE=100000
 export SAVEHIST=100000
 
 # --- Tools & Paths ---
-export TERMINAL="kitty"
-export EDITOR="nvim"
 export MANWIDTH="80"
 
 # --- MPD ---
@@ -36,8 +34,6 @@ export MPD_HOST="127.0.0.1"
 export MPD_PORT="6600"
 export PASSWORD_STORE_DIR="$XDG_DATA_HOME/pass"
 export PASSWORD_STORE_ENABLE_EXTENSIONS_DEFAULT="true"
-export GNUPGHOME="$XDG_DATA_HOME/gnupg"
-export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.ssh"
 export ANDROID_USER_HOME="$XDG_DATA_HOME/android"
 export PYTHON_HISTORY="$XDG_DATA_HOME/python/history"
 export WINEPREFIX="$XDG_DATA_HOME/wineprefixes/default"
@@ -50,7 +46,6 @@ export GREP_COLORS="ms=0;32:mc=1;33:sl=:cx=:fn=1;32:ln=1;36:bn=36:se=1;30"
 export GTK2_RC_FILES="$XDG_CONFIG_HOME/gtk-2.0/gtkrc"
 
 # --- Search Tools ---
-export RIPGREP_CONFIG_PATH="$XDG_CONFIG_HOME/ripgrep/ripgreprc"
 export FZF_DEFAULT_COMMAND="fd --type=f --hidden --exclude=.git"
 export FZF_DEFAULT_OPTS="\
 --bind='alt-p:toggle-preview,alt-a:select-all,alt-s:toggle-sort' \
@@ -109,14 +104,11 @@ export FZF_CTRL_R_OPTS="--sort --exact --border=sharp --margin=0 --padding=0 --n
 export FZF_CTRL_T_OPTS="--border=sharp --margin=0 --padding=0 --no-scrollbar --preview 'if [ -d \"{}\" ]; then (eza --tree --icons=auto -L 2 --color=always \"{}\" 2>/dev/null || tree -C -L 2 \"{}\" 2>/dev/null); else (bat --style=plain --color=always --line-range :200 \"{}\" 2>/dev/null || highlight -O ansi -l \"{}\" 2>/dev/null || head -200 \"{}\" 2>/dev/null || file -b \"{}\" 2>/dev/null); fi' --preview-window=right,60%,border-left,wrap"
 
 # --- XDG Compliance (xdg-ninja fixes) ---
-export CARGO_HOME="$XDG_DATA_HOME/cargo"
-export RUSTUP_HOME="$XDG_DATA_HOME/rustup"
 export CCACHE_CONFIGPATH="$XDG_CONFIG_HOME/ccache.config"
 export CCACHE_DIR="$XDG_CACHE_HOME/ccache"
 export CRAWL_DIR="$XDG_DATA_HOME/crawl/"
 export CUDA_CACHE_PATH="$XDG_CACHE_HOME/cuda"
 export GHCUP_USE_XDG_DIRS=1
-export GOMODCACHE="$XDG_CACHE_HOME/gomod"
 export GRIM_DEFAULT_DIR="$HOME/pic/shots"
 export INPUTRC="$XDG_CONFIG_HOME/inputrc"
 export _JAVA_OPTIONS="-Djava.util.prefs.userRoot=$XDG_CONFIG_HOME/java"
@@ -143,6 +135,3 @@ if [[ ! -L ${HOME}/tmp ]]; then
   tmp_loc=$(mktemp -d)
   ln -fs "${tmp_loc}" "${HOME}/tmp"
 fi
-
-# Set path to local binaries
-export PATH="$HOME/.local/bin:$CARGO_HOME/bin:$HOME/.npm-global/bin:$PATH"
