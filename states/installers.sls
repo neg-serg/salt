@@ -85,7 +85,7 @@ install_rustmission:
 
 {{ curl_extract_zip('realesrgan', 'https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan/releases/download/v0.2.0/realesrgan-ncnn-vulkan-v0.2.0-ubuntu.zip', 'realesrgan-ncnn-vulkan-v0.2.0-ubuntu', binaries=['realesrgan-ncnn-vulkan'], chmod=True) }}
 
-{%- call run_with_error_context('install_essentia_extractor', creates='/var/home/neg/.local/bin/essentia_streaming_extractor_music') %}
+{% call run_with_error_context('install_essentia_extractor', creates='/var/home/neg/.local/bin/essentia_streaming_extractor_music') %}
 step "Downloading Essentia streaming extractor"
 curl -fsSL https://data.metabrainz.org/pub/musicbrainz/acousticbrainz/extractors/essentia-extractor-v2.1_beta2-linux-x86_64.tar.gz -o /tmp/essentia.tar.gz
 
