@@ -67,6 +67,64 @@ SRPMS_DIR="${RPM_BUILD_ROOT}/SRPMS"
 # Create RPM build directories
 mkdir -p "$SOURCES_DIR" "$SPECS_DIR" "$RPMS_DIR" "$SRPMS_DIR"
 
+# Build a package from git source: clone → tar → rpmbuild
+# Positional args: name version url deps
+# Options:
+#   --ref REF              git branch/tag to clone
+#   --arch ARCH            RPM arch (default: x86_64)
+#   --recursive            git clone --recursive
+#   --source-dir DIR       override source dir name (default: name-version)
+#   --dnf-flags FLAGS      override dnf flags (default: "--skip-broken")
+#   --extra-sources FILES  space-separated files to copy to SOURCES
+build_pkg() {
+    local name="$1" version="$2" url="$3" deps="$4"
+    shift 4
+
+    local ref="" arch="x86_64" source_dir="" dnf_flags="--skip-broken" extra_sources=""
+    local -a clone_extra=()
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --ref) ref="$2"; shift 2 ;;
+            --arch) arch="$2"; shift 2 ;;
+            --recursive) clone_extra+=(--recursive); shift ;;
+            --source-dir) source_dir="$2"; shift 2 ;;
+            --dnf-flags) dnf_flags="$2"; shift 2 ;;
+            --extra-sources) extra_sources="$2"; shift 2 ;;
+            *) echo "build_pkg: unknown option: $1" >&2; return 1 ;;
+        esac
+    done
+
+    source_dir="${source_dir:-${name}-${version}}"
+    local rpm_file="${name}-${version}-1.fc43.${arch}.rpm"
+
+    if [ -f "/build/rpms/${rpm_file}" ]; then
+        echo "${name} RPM (${rpm_file}) already exists, skipping."
+        return 0
+    fi
+
+    # shellcheck disable=SC2086
+    dnf install -y ${dnf_flags} ${deps}
+
+    local src="${RPM_BUILD_ROOT}/BUILD/${source_dir}"
+    if [ ! -d "${src}" ]; then
+        mkdir -p "${RPM_BUILD_ROOT}/BUILD"
+        git clone --depth 1 "${clone_extra[@]}" ${ref:+--branch "$ref"} "${url}" "${src}"
+    fi
+
+    tar -czf "${SOURCES_DIR}/${source_dir}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "${source_dir}"
+
+    if [[ -n "${extra_sources}" ]]; then
+        # shellcheck disable=SC2086
+        for f in ${extra_sources}; do
+            cp "${f}" "${SOURCES_DIR}/"
+        done
+    fi
+
+    cp "/build/salt/specs/${name}.spec" "${SPECS_DIR}/${name}.spec"
+    rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/${name}.spec"
+    find "${RPMS_DIR}" -name "${name}-*.rpm" -exec cp {} /build/rpms/ \;
+}
+
 # All packages in build order
 ALL_PACKAGES=(
     duf massren raise pipemixer richcolors neg-pretty-printer
@@ -92,106 +150,34 @@ fi
 
 case "$1" in
 duf)
-    DUF_RPM_NAME="duf-${DUF_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${DUF_RPM_NAME}" ]; then
-        echo "Duf RPM (${DUF_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar golang
-
-        DUF_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/duf-${DUF_VERSION}"
-        if [ ! -d "${DUF_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 https://github.com/neg-serg/duf.git "${DUF_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/duf-${DUF_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "duf-${DUF_VERSION}"
-        cp /build/salt/specs/duf.spec "${SPECS_DIR}/duf.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/duf.spec"
-
-        find "${RPMS_DIR}" -name "duf-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg duf "$DUF_VERSION" \
+        "https://github.com/neg-serg/duf.git" \
+        "git rpm-build tar golang"
     ;;
 massren)
-    MASSREN_RPM_NAME="massren-${MASSREN_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${MASSREN_RPM_NAME}" ]; then
-        echo "Massren RPM (${MASSREN_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar golang
-
-        MASSREN_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/massren-${MASSREN_VERSION}"
-        if [ ! -d "${MASSREN_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 https://github.com/laurent22/massren.git "${MASSREN_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/massren-${MASSREN_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "massren-${MASSREN_VERSION}"
-        cp /build/salt/specs/massren.spec "${SPECS_DIR}/massren.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/massren.spec"
-
-        find "${RPMS_DIR}" -name "massren-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg massren "$MASSREN_VERSION" \
+        "https://github.com/laurent22/massren.git" \
+        "git rpm-build tar golang"
     ;;
 raise)
-    RAISE_RPM_NAME="raise-${RAISE_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${RAISE_RPM_NAME}" ]; then
-        echo "Raise RPM (${RAISE_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar rust cargo
-
-        RAISE_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/raise-${RAISE_VERSION}"
-        if [ ! -d "${RAISE_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 https://github.com/neg-serg/raise.git "${RAISE_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/raise-${RAISE_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "raise-${RAISE_VERSION}"
-        cp /build/salt/specs/raise.spec "${SPECS_DIR}/raise.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/raise.spec"
-
-        find "${RPMS_DIR}" -name "raise-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg raise "$RAISE_VERSION" \
+        "https://github.com/neg-serg/raise.git" \
+        "git rpm-build tar rust cargo"
     ;;
 pipemixer)
-    PIPEMIXER_RPM_NAME="pipemixer-${PIPEMIXER_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${PIPEMIXER_RPM_NAME}" ]; then
-        echo "Pipemixer RPM (${PIPEMIXER_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar gcc meson ninja-build pkgconf-pkg-config pipewire-devel ncurses-devel inih-devel
-
-        PIPEMIXER_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/pipemixer-${PIPEMIXER_VERSION}"
-        if [ ! -d "${PIPEMIXER_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${PIPEMIXER_VERSION}" https://github.com/heather7283/pipemixer.git "${PIPEMIXER_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/pipemixer-${PIPEMIXER_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "pipemixer-${PIPEMIXER_VERSION}"
-        cp /build/salt/specs/pipemixer.spec "${SPECS_DIR}/pipemixer.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/pipemixer.spec"
-
-        find "${RPMS_DIR}" -name "pipemixer-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg pipemixer "$PIPEMIXER_VERSION" \
+        "https://github.com/heather7283/pipemixer.git" \
+        "git rpm-build tar gcc meson ninja-build pkgconf-pkg-config pipewire-devel ncurses-devel inih-devel" \
+        --ref "v${PIPEMIXER_VERSION}"
     ;;
 richcolors)
-    RICHCOLORS_RPM_NAME="richcolors-${RICHCOLORS_VERSION}-1.fc43.noarch.rpm"
-    if [ -f "/build/rpms/${RICHCOLORS_RPM_NAME}" ]; then
-        echo "Richcolors RPM (${RICHCOLORS_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar
-
-        RICHCOLORS_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/richcolors-${RICHCOLORS_VERSION}"
-        if [ ! -d "${RICHCOLORS_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 https://github.com/Rizen54/richcolors.git "${RICHCOLORS_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/richcolors-${RICHCOLORS_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "richcolors-${RICHCOLORS_VERSION}"
-        cp /build/salt/specs/richcolors.spec "${SPECS_DIR}/richcolors.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/richcolors.spec"
-
-        find "${RPMS_DIR}" -name "richcolors-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg richcolors "$RICHCOLORS_VERSION" \
+        "https://github.com/Rizen54/richcolors.git" \
+        "git rpm-build tar" \
+        --arch noarch
     ;;
 neg-pretty-printer)
+    # Custom: copies from local dir instead of git clone
     NEG_PRETTY_PRINTER_RPM_NAME="neg-pretty-printer-${NEG_PRETTY_PRINTER_VERSION}-1.fc43.noarch.rpm"
     if [ -f "/build/rpms/${NEG_PRETTY_PRINTER_RPM_NAME}" ]; then
         echo "neg-pretty-printer RPM (${NEG_PRETTY_PRINTER_RPM_NAME}) already exists, skipping."
@@ -212,486 +198,151 @@ neg-pretty-printer)
     fi
     ;;
 choose)
-    CHOOSE_RPM_NAME="choose-${CHOOSE_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${CHOOSE_RPM_NAME}" ]; then
-        echo "Choose RPM (${CHOOSE_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar rust cargo
-
-        CHOOSE_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/choose-${CHOOSE_VERSION}"
-        if [ ! -d "${CHOOSE_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${CHOOSE_VERSION}" https://github.com/theryangeary/choose.git "${CHOOSE_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/choose-${CHOOSE_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "choose-${CHOOSE_VERSION}"
-        cp /build/salt/specs/choose.spec "${SPECS_DIR}/choose.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/choose.spec"
-
-        find "${RPMS_DIR}" -name "choose-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg choose "$CHOOSE_VERSION" \
+        "https://github.com/theryangeary/choose.git" \
+        "git rpm-build tar rust cargo" \
+        --ref "v${CHOOSE_VERSION}"
     ;;
 ouch)
-    OUCH_RPM_NAME="ouch-${OUCH_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${OUCH_RPM_NAME}" ]; then
-        echo "Ouch RPM (${OUCH_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar rust cargo gcc-c++ clang clang-devel
-
-        OUCH_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/ouch-${OUCH_VERSION}"
-        if [ ! -d "${OUCH_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "${OUCH_VERSION}" https://github.com/ouch-org/ouch.git "${OUCH_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/ouch-${OUCH_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "ouch-${OUCH_VERSION}"
-        cp /build/salt/specs/ouch.spec "${SPECS_DIR}/ouch.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/ouch.spec"
-
-        find "${RPMS_DIR}" -name "ouch-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg ouch "$OUCH_VERSION" \
+        "https://github.com/ouch-org/ouch.git" \
+        "git rpm-build tar rust cargo gcc-c++ clang clang-devel" \
+        --ref "${OUCH_VERSION}"
     ;;
 htmlq)
-    HTMLQ_RPM_NAME="htmlq-${HTMLQ_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${HTMLQ_RPM_NAME}" ]; then
-        echo "Htmlq RPM (${HTMLQ_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar rust cargo
-
-        HTMLQ_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/htmlq-${HTMLQ_VERSION}"
-        if [ ! -d "${HTMLQ_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${HTMLQ_VERSION}" https://github.com/mgdm/htmlq.git "${HTMLQ_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/htmlq-${HTMLQ_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "htmlq-${HTMLQ_VERSION}"
-        cp /build/salt/specs/htmlq.spec "${SPECS_DIR}/htmlq.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/htmlq.spec"
-
-        find "${RPMS_DIR}" -name "htmlq-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg htmlq "$HTMLQ_VERSION" \
+        "https://github.com/mgdm/htmlq.git" \
+        "git rpm-build tar rust cargo" \
+        --ref "v${HTMLQ_VERSION}"
     ;;
 erdtree)
-    ERDTREE_RPM_NAME="erdtree-${ERDTREE_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${ERDTREE_RPM_NAME}" ]; then
-        echo "Erdtree RPM (${ERDTREE_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar rust cargo
-
-        ERDTREE_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/erdtree-${ERDTREE_VERSION}"
-        if [ ! -d "${ERDTREE_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${ERDTREE_VERSION}" https://github.com/solidiquis/erdtree.git "${ERDTREE_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/erdtree-${ERDTREE_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "erdtree-${ERDTREE_VERSION}"
-        cp /build/salt/specs/erdtree.spec "${SPECS_DIR}/erdtree.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/erdtree.spec"
-
-        find "${RPMS_DIR}" -name "erdtree-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg erdtree "$ERDTREE_VERSION" \
+        "https://github.com/solidiquis/erdtree.git" \
+        "git rpm-build tar rust cargo" \
+        --ref "v${ERDTREE_VERSION}"
     ;;
 viu)
-    VIU_RPM_NAME="viu-${VIU_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${VIU_RPM_NAME}" ]; then
-        echo "Viu RPM (${VIU_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar rust cargo
-
-        VIU_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/viu-${VIU_VERSION}"
-        if [ ! -d "${VIU_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${VIU_VERSION}" https://github.com/atanunq/viu.git "${VIU_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/viu-${VIU_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "viu-${VIU_VERSION}"
-        cp /build/salt/specs/viu.spec "${SPECS_DIR}/viu.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/viu.spec"
-
-        find "${RPMS_DIR}" -name "viu-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg viu "$VIU_VERSION" \
+        "https://github.com/atanunq/viu.git" \
+        "git rpm-build tar rust cargo" \
+        --ref "v${VIU_VERSION}"
     ;;
 fclones)
-    FCLONES_RPM_NAME="fclones-${FCLONES_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${FCLONES_RPM_NAME}" ]; then
-        echo "Fclones RPM (${FCLONES_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar rust cargo
-
-        FCLONES_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/fclones-${FCLONES_VERSION}"
-        if [ ! -d "${FCLONES_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${FCLONES_VERSION}" https://github.com/pkolaczk/fclones.git "${FCLONES_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/fclones-${FCLONES_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "fclones-${FCLONES_VERSION}"
-        cp /build/salt/specs/fclones.spec "${SPECS_DIR}/fclones.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/fclones.spec"
-
-        find "${RPMS_DIR}" -name "fclones-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg fclones "$FCLONES_VERSION" \
+        "https://github.com/pkolaczk/fclones.git" \
+        "git rpm-build tar rust cargo" \
+        --ref "v${FCLONES_VERSION}"
     ;;
 grex)
-    GREX_RPM_NAME="grex-${GREX_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${GREX_RPM_NAME}" ]; then
-        echo "Grex RPM (${GREX_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar rust cargo
-
-        GREX_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/grex-${GREX_VERSION}"
-        if [ ! -d "${GREX_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${GREX_VERSION}" https://github.com/pemistahl/grex.git "${GREX_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/grex-${GREX_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "grex-${GREX_VERSION}"
-        cp /build/salt/specs/grex.spec "${SPECS_DIR}/grex.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/grex.spec"
-
-        find "${RPMS_DIR}" -name "grex-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg grex "$GREX_VERSION" \
+        "https://github.com/pemistahl/grex.git" \
+        "git rpm-build tar rust cargo" \
+        --ref "v${GREX_VERSION}"
     ;;
 kmon)
-    KMON_RPM_NAME="kmon-${KMON_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${KMON_RPM_NAME}" ]; then
-        echo "Kmon RPM (${KMON_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar rust cargo
-
-        KMON_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/kmon-${KMON_VERSION}"
-        if [ ! -d "${KMON_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${KMON_VERSION}" https://github.com/orhun/kmon.git "${KMON_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/kmon-${KMON_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "kmon-${KMON_VERSION}"
-        cp /build/salt/specs/kmon.spec "${SPECS_DIR}/kmon.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/kmon.spec"
-
-        find "${RPMS_DIR}" -name "kmon-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg kmon "$KMON_VERSION" \
+        "https://github.com/orhun/kmon.git" \
+        "git rpm-build tar rust cargo" \
+        --ref "v${KMON_VERSION}"
     ;;
 jujutsu)
-    JUJUTSU_RPM_NAME="jujutsu-${JUJUTSU_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${JUJUTSU_RPM_NAME}" ]; then
-        echo "Jujutsu RPM (${JUJUTSU_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar rust cargo openssl-devel pkgconf-pkg-config cmake
-
-        JUJUTSU_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/jujutsu-${JUJUTSU_VERSION}"
-        if [ ! -d "${JUJUTSU_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${JUJUTSU_VERSION}" https://github.com/jj-vcs/jj.git "${JUJUTSU_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/jujutsu-${JUJUTSU_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "jujutsu-${JUJUTSU_VERSION}"
-        cp /build/salt/specs/jujutsu.spec "${SPECS_DIR}/jujutsu.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/jujutsu.spec"
-
-        find "${RPMS_DIR}" -name "jujutsu-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg jujutsu "$JUJUTSU_VERSION" \
+        "https://github.com/jj-vcs/jj.git" \
+        "git rpm-build tar rust cargo openssl-devel pkgconf-pkg-config cmake" \
+        --ref "v${JUJUTSU_VERSION}"
     ;;
 zfxtop)
-    ZFXTOP_RPM_NAME="zfxtop-${ZFXTOP_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${ZFXTOP_RPM_NAME}" ]; then
-        echo "Zfxtop RPM (${ZFXTOP_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar golang
-
-        ZFXTOP_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/zfxtop-${ZFXTOP_VERSION}"
-        if [ ! -d "${ZFXTOP_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "${ZFXTOP_VERSION}" https://github.com/ssleert/zfxtop.git "${ZFXTOP_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/zfxtop-${ZFXTOP_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "zfxtop-${ZFXTOP_VERSION}"
-        cp /build/salt/specs/zfxtop.spec "${SPECS_DIR}/zfxtop.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/zfxtop.spec"
-
-        find "${RPMS_DIR}" -name "zfxtop-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg zfxtop "$ZFXTOP_VERSION" \
+        "https://github.com/ssleert/zfxtop.git" \
+        "git rpm-build tar golang" \
+        --ref "${ZFXTOP_VERSION}"
     ;;
 pup)
-    PUP_RPM_NAME="pup-${PUP_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${PUP_RPM_NAME}" ]; then
-        echo "Pup RPM (${PUP_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar golang
-
-        PUP_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/pup-${PUP_VERSION}"
-        if [ ! -d "${PUP_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${PUP_VERSION}" https://github.com/ericchiang/pup.git "${PUP_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/pup-${PUP_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "pup-${PUP_VERSION}"
-        cp /build/salt/specs/pup.spec "${SPECS_DIR}/pup.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/pup.spec"
-
-        find "${RPMS_DIR}" -name "pup-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg pup "$PUP_VERSION" \
+        "https://github.com/ericchiang/pup.git" \
+        "git rpm-build tar golang" \
+        --ref "v${PUP_VERSION}"
     ;;
 scc)
-    SCC_RPM_NAME="scc-${SCC_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${SCC_RPM_NAME}" ]; then
-        echo "Scc RPM (${SCC_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar golang
-
-        SCC_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/scc-${SCC_VERSION}"
-        if [ ! -d "${SCC_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${SCC_VERSION}" https://github.com/boyter/scc.git "${SCC_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/scc-${SCC_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "scc-${SCC_VERSION}"
-        cp /build/salt/specs/scc.spec "${SPECS_DIR}/scc.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/scc.spec"
-
-        find "${RPMS_DIR}" -name "scc-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg scc "$SCC_VERSION" \
+        "https://github.com/boyter/scc.git" \
+        "git rpm-build tar golang" \
+        --ref "v${SCC_VERSION}"
     ;;
 ctop)
-    CTOP_RPM_NAME="ctop-${CTOP_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${CTOP_RPM_NAME}" ]; then
-        echo "Ctop RPM (${CTOP_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar golang
-
-        CTOP_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/ctop-${CTOP_VERSION}"
-        if [ ! -d "${CTOP_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${CTOP_VERSION}" https://github.com/bcicen/ctop.git "${CTOP_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/ctop-${CTOP_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "ctop-${CTOP_VERSION}"
-        cp /build/salt/specs/ctop.spec "${SPECS_DIR}/ctop.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/ctop.spec"
-
-        find "${RPMS_DIR}" -name "ctop-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg ctop "$CTOP_VERSION" \
+        "https://github.com/bcicen/ctop.git" \
+        "git rpm-build tar golang" \
+        --ref "v${CTOP_VERSION}"
     ;;
 dive)
-    DIVE_RPM_NAME="dive-${DIVE_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${DIVE_RPM_NAME}" ]; then
-        echo "Dive RPM (${DIVE_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar golang
-
-        DIVE_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/dive-${DIVE_VERSION}"
-        if [ ! -d "${DIVE_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${DIVE_VERSION}" https://github.com/wagoodman/dive.git "${DIVE_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/dive-${DIVE_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "dive-${DIVE_VERSION}"
-        cp /build/salt/specs/dive.spec "${SPECS_DIR}/dive.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/dive.spec"
-
-        find "${RPMS_DIR}" -name "dive-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg dive "$DIVE_VERSION" \
+        "https://github.com/wagoodman/dive.git" \
+        "git rpm-build tar golang" \
+        --ref "v${DIVE_VERSION}"
     ;;
 zk)
-    ZK_RPM_NAME="zk-${ZK_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${ZK_RPM_NAME}" ]; then
-        echo "Zk RPM (${ZK_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar golang gcc
-
-        ZK_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/zk-${ZK_VERSION}"
-        if [ ! -d "${ZK_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${ZK_VERSION}" https://github.com/zk-org/zk.git "${ZK_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/zk-${ZK_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "zk-${ZK_VERSION}"
-        cp /build/salt/specs/zk.spec "${SPECS_DIR}/zk.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/zk.spec"
-
-        find "${RPMS_DIR}" -name "zk-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg zk "$ZK_VERSION" \
+        "https://github.com/zk-org/zk.git" \
+        "git rpm-build tar golang gcc" \
+        --ref "v${ZK_VERSION}"
     ;;
 git-filter-repo)
-    GIT_FILTER_REPO_RPM_NAME="git-filter-repo-${GIT_FILTER_REPO_VERSION}-1.fc43.noarch.rpm"
-    if [ -f "/build/rpms/${GIT_FILTER_REPO_RPM_NAME}" ]; then
-        echo "git-filter-repo RPM (${GIT_FILTER_REPO_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar
-
-        GFR_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/git-filter-repo-${GIT_FILTER_REPO_VERSION}"
-        if [ ! -d "${GFR_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${GIT_FILTER_REPO_VERSION}" https://github.com/newren/git-filter-repo.git "${GFR_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/git-filter-repo-${GIT_FILTER_REPO_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "git-filter-repo-${GIT_FILTER_REPO_VERSION}"
-        cp /build/salt/specs/git-filter-repo.spec "${SPECS_DIR}/git-filter-repo.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/git-filter-repo.spec"
-
-        find "${RPMS_DIR}" -name "git-filter-repo-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg git-filter-repo "$GIT_FILTER_REPO_VERSION" \
+        "https://github.com/newren/git-filter-repo.git" \
+        "git rpm-build tar" \
+        --ref "v${GIT_FILTER_REPO_VERSION}" --arch noarch
     ;;
 epr)
-    EPR_RPM_NAME="epr-${EPR_VERSION}-1.fc43.noarch.rpm"
-    if [ -f "/build/rpms/${EPR_RPM_NAME}" ]; then
-        echo "Epr RPM (${EPR_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar
-
-        EPR_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/epr-${EPR_VERSION}"
-        if [ ! -d "${EPR_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${EPR_VERSION}" https://github.com/wustho/epr.git "${EPR_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/epr-${EPR_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "epr-${EPR_VERSION}"
-        cp /build/salt/specs/epr.spec "${SPECS_DIR}/epr.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/epr.spec"
-
-        find "${RPMS_DIR}" -name "epr-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg epr "$EPR_VERSION" \
+        "https://github.com/wustho/epr.git" \
+        "git rpm-build tar" \
+        --ref "v${EPR_VERSION}" --arch noarch
     ;;
 lutgen)
-    LUTGEN_RPM_NAME="lutgen-${LUTGEN_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${LUTGEN_RPM_NAME}" ]; then
-        echo "Lutgen RPM (${LUTGEN_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar rust cargo
-
-        LUTGEN_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/lutgen-${LUTGEN_VERSION}"
-        if [ ! -d "${LUTGEN_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${LUTGEN_VERSION}" https://github.com/ozwaldorf/lutgen-rs.git "${LUTGEN_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/lutgen-${LUTGEN_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "lutgen-${LUTGEN_VERSION}"
-        cp /build/salt/specs/lutgen.spec "${SPECS_DIR}/lutgen.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/lutgen.spec"
-
-        find "${RPMS_DIR}" -name "lutgen-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg lutgen "$LUTGEN_VERSION" \
+        "https://github.com/ozwaldorf/lutgen-rs.git" \
+        "git rpm-build tar rust cargo" \
+        --ref "v${LUTGEN_VERSION}"
     ;;
 taplo)
-    TAPLO_RPM_NAME="taplo-${TAPLO_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${TAPLO_RPM_NAME}" ]; then
-        echo "Taplo RPM (${TAPLO_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar rust cargo openssl-devel pkgconf-pkg-config
-
-        TAPLO_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/taplo-${TAPLO_VERSION}"
-        if [ ! -d "${TAPLO_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "${TAPLO_VERSION}" https://github.com/tamasfe/taplo.git "${TAPLO_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/taplo-${TAPLO_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "taplo-${TAPLO_VERSION}"
-        cp /build/salt/specs/taplo.spec "${SPECS_DIR}/taplo.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/taplo.spec"
-
-        find "${RPMS_DIR}" -name "taplo-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg taplo "$TAPLO_VERSION" \
+        "https://github.com/tamasfe/taplo.git" \
+        "git rpm-build tar rust cargo openssl-devel pkgconf-pkg-config" \
+        --ref "${TAPLO_VERSION}"
     ;;
 gist)
-    GIST_RPM_NAME="gist-${GIST_VERSION}-1.fc43.noarch.rpm"
-    if [ -f "/build/rpms/${GIST_RPM_NAME}" ]; then
-        echo "Gist RPM (${GIST_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar ruby rubygem-rake
-
-        GIST_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/gist-${GIST_VERSION}"
-        if [ ! -d "${GIST_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${GIST_VERSION}" https://github.com/defunkt/gist.git "${GIST_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/gist-${GIST_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "gist-${GIST_VERSION}"
-        cp /build/salt/specs/gist.spec "${SPECS_DIR}/gist.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/gist.spec"
-
-        find "${RPMS_DIR}" -name "gist-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg gist "$GIST_VERSION" \
+        "https://github.com/defunkt/gist.git" \
+        "git rpm-build tar ruby rubygem-rake" \
+        --ref "v${GIST_VERSION}" --arch noarch
     ;;
 xxh)
-    XXH_RPM_NAME="xxh-${XXH_VERSION}-1.fc43.noarch.rpm"
-    if [ -f "/build/rpms/${XXH_RPM_NAME}" ]; then
-        echo "Xxh RPM (${XXH_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar python3-devel python3-pip python3-setuptools python3-wheel
-
-        XXH_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/xxh-${XXH_VERSION}"
-        if [ ! -d "${XXH_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "${XXH_VERSION}" https://github.com/xxh/xxh.git "${XXH_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/xxh-${XXH_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "xxh-${XXH_VERSION}"
-        cp /build/salt/specs/xxh.spec "${SPECS_DIR}/xxh.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/xxh.spec"
-
-        find "${RPMS_DIR}" -name "xxh-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg xxh "$XXH_VERSION" \
+        "https://github.com/xxh/xxh.git" \
+        "git rpm-build tar python3-devel python3-pip python3-setuptools python3-wheel" \
+        --ref "${XXH_VERSION}" --arch noarch
     ;;
 nerdctl)
-    NERDCTL_RPM_NAME="nerdctl-${NERDCTL_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${NERDCTL_RPM_NAME}" ]; then
-        echo "Nerdctl RPM (${NERDCTL_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar golang
-
-        NERDCTL_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/nerdctl-${NERDCTL_VERSION}"
-        if [ ! -d "${NERDCTL_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${NERDCTL_VERSION}" https://github.com/containerd/nerdctl.git "${NERDCTL_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/nerdctl-${NERDCTL_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "nerdctl-${NERDCTL_VERSION}"
-        cp /build/salt/specs/nerdctl.spec "${SPECS_DIR}/nerdctl.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/nerdctl.spec"
-
-        find "${RPMS_DIR}" -name "nerdctl-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg nerdctl "$NERDCTL_VERSION" \
+        "https://github.com/containerd/nerdctl.git" \
+        "git rpm-build tar golang" \
+        --ref "v${NERDCTL_VERSION}"
     ;;
 rapidgzip)
-    RAPIDGZIP_RPM_NAME="rapidgzip-${RAPIDGZIP_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${RAPIDGZIP_RPM_NAME}" ]; then
-        echo "Rapidgzip RPM (${RAPIDGZIP_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar python3-devel python3-pip python3-setuptools python3-wheel gcc-c++ nasm
-
-        RAPIDGZIP_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/rapidgzip-${RAPIDGZIP_VERSION}"
-        if [ ! -d "${RAPIDGZIP_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --recursive --branch "rapidgzip-v${RAPIDGZIP_VERSION}" https://github.com/mxmlnkn/rapidgzip.git "${RAPIDGZIP_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/rapidgzip-${RAPIDGZIP_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "rapidgzip-${RAPIDGZIP_VERSION}"
-        cp /build/salt/specs/rapidgzip.spec "${SPECS_DIR}/rapidgzip.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/rapidgzip.spec"
-
-        find "${RPMS_DIR}" -name "rapidgzip-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg rapidgzip "$RAPIDGZIP_VERSION" \
+        "https://github.com/mxmlnkn/rapidgzip.git" \
+        "git rpm-build tar python3-devel python3-pip python3-setuptools python3-wheel gcc-c++ nasm" \
+        --ref "rapidgzip-v${RAPIDGZIP_VERSION}" --recursive
     ;;
 scour)
-    SCOUR_RPM_NAME="scour-${SCOUR_VERSION}-1.fc43.noarch.rpm"
-    if [ -f "/build/rpms/${SCOUR_RPM_NAME}" ]; then
-        echo "Scour RPM (${SCOUR_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar python3-devel
-
-        SCOUR_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/scour-${SCOUR_VERSION}"
-        if [ ! -d "${SCOUR_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${SCOUR_VERSION}" https://github.com/scour-project/scour.git "${SCOUR_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/scour-${SCOUR_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "scour-${SCOUR_VERSION}"
-        cp /build/salt/specs/scour.spec "${SPECS_DIR}/scour.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/scour.spec"
-
-        find "${RPMS_DIR}" -name "scour-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg scour "$SCOUR_VERSION" \
+        "https://github.com/scour-project/scour.git" \
+        "git rpm-build tar python3-devel" \
+        --ref "v${SCOUR_VERSION}" --arch noarch
     ;;
 iosevka)
+    # Custom: different source dir naming, git checkout, extra source file, different spec name
     IOSEVKA_RPM_NAME="iosevka-neg-fonts-${IOSEVKA_VERSION}-2.fc43.noarch.rpm"
     if [ -f "/build/rpms/${IOSEVKA_RPM_NAME}" ]; then
         echo "Iosevka RPM (${IOSEVKA_RPM_NAME}) already exists, skipping."
@@ -718,444 +369,143 @@ iosevka)
     fi
     ;;
 bandwhich)
-    BANDWHICH_RPM_NAME="bandwhich-${BANDWHICH_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${BANDWHICH_RPM_NAME}" ]; then
-        echo "Bandwhich RPM (${BANDWHICH_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar rust cargo
-        BANDWHICH_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/bandwhich-${BANDWHICH_VERSION}"
-        if [ ! -d "${BANDWHICH_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${BANDWHICH_VERSION}" https://github.com/imsnif/bandwhich.git "${BANDWHICH_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/bandwhich-${BANDWHICH_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "bandwhich-${BANDWHICH_VERSION}"
-        cp /build/salt/specs/bandwhich.spec "${SPECS_DIR}/bandwhich.spec"
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/bandwhich.spec"
-        find "${RPMS_DIR}" -name "bandwhich-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg bandwhich "$BANDWHICH_VERSION" \
+        "https://github.com/imsnif/bandwhich.git" \
+        "git rpm-build tar rust cargo" \
+        --ref "v${BANDWHICH_VERSION}"
     ;;
 xh)
-    XH_RPM_NAME="xh-${XH_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${XH_RPM_NAME}" ]; then
-        echo "Xh RPM (${XH_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar rust cargo
-        XH_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/xh-${XH_VERSION}"
-        if [ ! -d "${XH_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${XH_VERSION}" https://github.com/ducaale/xh.git "${XH_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/xh-${XH_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "xh-${XH_VERSION}"
-        cp /build/salt/specs/xh.spec "${SPECS_DIR}/xh.spec"
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/xh.spec"
-        find "${RPMS_DIR}" -name "xh-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg xh "$XH_VERSION" \
+        "https://github.com/ducaale/xh.git" \
+        "git rpm-build tar rust cargo" \
+        --ref "v${XH_VERSION}"
     ;;
 curlie)
-    CURLIE_RPM_NAME="curlie-${CURLIE_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${CURLIE_RPM_NAME}" ]; then
-        echo "Curlie RPM (${CURLIE_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar golang
-        CURLIE_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/curlie-${CURLIE_VERSION}"
-        if [ ! -d "${CURLIE_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${CURLIE_VERSION}" https://github.com/rs/curlie.git "${CURLIE_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/curlie-${CURLIE_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "curlie-${CURLIE_VERSION}"
-        cp /build/salt/specs/curlie.spec "${SPECS_DIR}/curlie.spec"
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/curlie.spec"
-        find "${RPMS_DIR}" -name "curlie-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg curlie "$CURLIE_VERSION" \
+        "https://github.com/rs/curlie.git" \
+        "git rpm-build tar golang" \
+        --ref "v${CURLIE_VERSION}"
     ;;
 doggo)
-    DOGGO_RPM_NAME="doggo-${DOGGO_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${DOGGO_RPM_NAME}" ]; then
-        echo "Doggo RPM (${DOGGO_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar golang
-        DOGGO_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/doggo-${DOGGO_VERSION}"
-        if [ ! -d "${DOGGO_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${DOGGO_VERSION}" https://github.com/mr-karan/doggo.git "${DOGGO_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/doggo-${DOGGO_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "doggo-${DOGGO_VERSION}"
-        cp /build/salt/specs/doggo.spec "${SPECS_DIR}/doggo.spec"
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/doggo.spec"
-        find "${RPMS_DIR}" -name "doggo-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg doggo "$DOGGO_VERSION" \
+        "https://github.com/mr-karan/doggo.git" \
+        "git rpm-build tar golang" \
+        --ref "v${DOGGO_VERSION}"
     ;;
 carapace)
-    CARAPACE_RPM_NAME="carapace-${CARAPACE_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${CARAPACE_RPM_NAME}" ]; then
-        echo "Carapace RPM (${CARAPACE_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar golang
-        CARAPACE_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/carapace-${CARAPACE_VERSION}"
-        if [ ! -d "${CARAPACE_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${CARAPACE_VERSION}" https://github.com/carapace-sh/carapace-bin.git "${CARAPACE_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/carapace-${CARAPACE_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "carapace-${CARAPACE_VERSION}"
-        cp /build/salt/specs/carapace.spec "${SPECS_DIR}/carapace.spec"
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/carapace.spec"
-        find "${RPMS_DIR}" -name "carapace-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg carapace "$CARAPACE_VERSION" \
+        "https://github.com/carapace-sh/carapace-bin.git" \
+        "git rpm-build tar golang" \
+        --ref "v${CARAPACE_VERSION}"
     ;;
 wallust)
-    WALLUST_RPM_NAME="wallust-${WALLUST_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${WALLUST_RPM_NAME}" ]; then
-        echo "Wallust RPM (${WALLUST_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar rust cargo
-        WALLUST_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/wallust-${WALLUST_VERSION}"
-        if [ ! -d "${WALLUST_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "${WALLUST_VERSION}" https://codeberg.org/explosion-mental/wallust.git "${WALLUST_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/wallust-${WALLUST_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "wallust-${WALLUST_VERSION}"
-        cp /build/salt/specs/wallust.spec "${SPECS_DIR}/wallust.spec"
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/wallust.spec"
-        find "${RPMS_DIR}" -name "wallust-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg wallust "$WALLUST_VERSION" \
+        "https://codeberg.org/explosion-mental/wallust.git" \
+        "git rpm-build tar rust cargo" \
+        --ref "${WALLUST_VERSION}"
     ;;
 wl-clip-persist)
-    WL_CLIP_PERSIST_RPM_NAME="wl-clip-persist-${WL_CLIP_PERSIST_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${WL_CLIP_PERSIST_RPM_NAME}" ]; then
-        echo "wl-clip-persist RPM (${WL_CLIP_PERSIST_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar rust cargo
-        WL_CLIP_PERSIST_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/wl-clip-persist-${WL_CLIP_PERSIST_VERSION}"
-        if [ ! -d "${WL_CLIP_PERSIST_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${WL_CLIP_PERSIST_VERSION}" https://github.com/Linus789/wl-clip-persist.git "${WL_CLIP_PERSIST_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/wl-clip-persist-${WL_CLIP_PERSIST_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "wl-clip-persist-${WL_CLIP_PERSIST_VERSION}"
-        cp /build/salt/specs/wl-clip-persist.spec "${SPECS_DIR}/wl-clip-persist.spec"
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/wl-clip-persist.spec"
-        find "${RPMS_DIR}" -name "wl-clip-persist-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg wl-clip-persist "$WL_CLIP_PERSIST_VERSION" \
+        "https://github.com/Linus789/wl-clip-persist.git" \
+        "git rpm-build tar rust cargo" \
+        --ref "v${WL_CLIP_PERSIST_VERSION}"
     ;;
 quickshell)
-    QUICKSHELL_RPM_NAME="quickshell-${QUICKSHELL_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${QUICKSHELL_RPM_NAME}" ]; then
-        echo "Quickshell RPM (${QUICKSHELL_RPM_NAME}) already exists, skipping."
-    else
-        # Install Qt6 packages from base repo only (without updates) to match
-        # the host's Wayblue base image Qt version (6.9.x, not 6.10.x)
-        dnf install -y --skip-unavailable --disablerepo=updates git rpm-build tar cmake ninja-build gcc-c++ \
-            qt6-qtbase-devel qt6-qtbase-private-devel qt6-qtdeclarative-devel \
-            qt6-qtshadertools-devel qt6-qtwayland-devel \
-            qt6-qtsvg-devel spirv-tools cli11-devel jemalloc-devel \
-            wayland-devel wayland-protocols-devel \
-            libdrm-devel mesa-libgbm-devel mesa-libEGL-devel \
-            pipewire-devel pam-devel \
-            polkit-devel glib2-devel \
-            libxcb-devel xcb-util-devel
-        QUICKSHELL_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/quickshell-${QUICKSHELL_VERSION}"
-        if [ ! -d "${QUICKSHELL_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${QUICKSHELL_VERSION}" https://github.com/quickshell-mirror/quickshell.git "${QUICKSHELL_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/quickshell-${QUICKSHELL_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "quickshell-${QUICKSHELL_VERSION}"
-        cp /build/salt/specs/quickshell.spec "${SPECS_DIR}/quickshell.spec"
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/quickshell.spec"
-        find "${RPMS_DIR}" -name "quickshell-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg quickshell "$QUICKSHELL_VERSION" \
+        "https://github.com/quickshell-mirror/quickshell.git" \
+        "git rpm-build tar cmake ninja-build gcc-c++ qt6-qtbase-devel qt6-qtbase-private-devel qt6-qtdeclarative-devel qt6-qtshadertools-devel qt6-qtwayland-devel qt6-qtsvg-devel spirv-tools cli11-devel jemalloc-devel wayland-devel wayland-protocols-devel libdrm-devel mesa-libgbm-devel mesa-libEGL-devel pipewire-devel pam-devel polkit-devel glib2-devel libxcb-devel xcb-util-devel" \
+        --ref "v${QUICKSHELL_VERSION}" \
+        --dnf-flags "--skip-unavailable --disablerepo=updates"
     ;;
 swayosd)
-    SWAYOSD_RPM_NAME="swayosd-${SWAYOSD_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${SWAYOSD_RPM_NAME}" ]; then
-        echo "SwayOSD RPM (${SWAYOSD_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar rust cargo meson ninja-build pkgconf-pkg-config glib2-devel sassc gtk4-devel gtk4-layer-shell-devel pulseaudio-libs-devel libinput-devel libevdev-devel systemd-devel dbus-devel
-        SWAYOSD_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/swayosd-${SWAYOSD_VERSION}"
-        if [ ! -d "${SWAYOSD_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${SWAYOSD_VERSION}" https://github.com/ErikReider/SwayOSD.git "${SWAYOSD_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/swayosd-${SWAYOSD_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "swayosd-${SWAYOSD_VERSION}"
-        cp /build/salt/specs/swayosd.spec "${SPECS_DIR}/swayosd.spec"
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/swayosd.spec"
-        find "${RPMS_DIR}" -name "swayosd-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg swayosd "$SWAYOSD_VERSION" \
+        "https://github.com/ErikReider/SwayOSD.git" \
+        "git rpm-build tar rust cargo meson ninja-build pkgconf-pkg-config glib2-devel sassc gtk4-devel gtk4-layer-shell-devel pulseaudio-libs-devel libinput-devel libevdev-devel systemd-devel dbus-devel" \
+        --ref "v${SWAYOSD_VERSION}"
     ;;
 xdg-desktop-portal-termfilechooser)
-    XDG_TERMFILECHOOSER_RPM_NAME="xdg-desktop-portal-termfilechooser-${XDG_TERMFILECHOOSER_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${XDG_TERMFILECHOOSER_RPM_NAME}" ]; then
-        echo "xdg-desktop-portal-termfilechooser RPM (${XDG_TERMFILECHOOSER_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar gcc meson ninja-build pkgconf-pkg-config inih-devel systemd-devel scdoc
-        XDG_TFC_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/xdg-desktop-portal-termfilechooser-${XDG_TERMFILECHOOSER_VERSION}"
-        if [ ! -d "${XDG_TFC_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 https://github.com/GermainZ/xdg-desktop-portal-termfilechooser.git "${XDG_TFC_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/xdg-desktop-portal-termfilechooser-${XDG_TERMFILECHOOSER_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "xdg-desktop-portal-termfilechooser-${XDG_TERMFILECHOOSER_VERSION}"
-        cp /build/salt/specs/xdg-desktop-portal-termfilechooser.spec "${SPECS_DIR}/xdg-desktop-portal-termfilechooser.spec"
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/xdg-desktop-portal-termfilechooser.spec"
-        find "${RPMS_DIR}" -name "xdg-desktop-portal-termfilechooser-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg xdg-desktop-portal-termfilechooser "$XDG_TERMFILECHOOSER_VERSION" \
+        "https://github.com/GermainZ/xdg-desktop-portal-termfilechooser.git" \
+        "git rpm-build tar gcc meson ninja-build pkgconf-pkg-config inih-devel systemd-devel scdoc"
     ;;
 bucklespring)
-    BUCKLESPRING_RPM_NAME="bucklespring-${BUCKLESPRING_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${BUCKLESPRING_RPM_NAME}" ]; then
-        echo "Bucklespring RPM (${BUCKLESPRING_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar gcc make pkgconf-pkg-config openal-soft-devel alure-devel libX11-devel libXtst-devel
-
-        BUCKLESPRING_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/bucklespring-${BUCKLESPRING_VERSION}"
-        if [ ! -d "${BUCKLESPRING_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${BUCKLESPRING_VERSION}" https://github.com/zevv/bucklespring.git "${BUCKLESPRING_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/bucklespring-${BUCKLESPRING_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "bucklespring-${BUCKLESPRING_VERSION}"
-        cp /build/salt/specs/bucklespring.spec "${SPECS_DIR}/bucklespring.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/bucklespring.spec"
-
-        find "${RPMS_DIR}" -name "bucklespring-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg bucklespring "$BUCKLESPRING_VERSION" \
+        "https://github.com/zevv/bucklespring.git" \
+        "git rpm-build tar gcc make pkgconf-pkg-config openal-soft-devel alure-devel libX11-devel libXtst-devel" \
+        --ref "v${BUCKLESPRING_VERSION}"
     ;;
 taoup)
-    TAOUP_RPM_NAME="taoup-${TAOUP_VERSION}-1.fc43.noarch.rpm"
-    if [ -f "/build/rpms/${TAOUP_RPM_NAME}" ]; then
-        echo "Taoup RPM (${TAOUP_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar ruby
-
-        TAOUP_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/taoup-${TAOUP_VERSION}"
-        if [ ! -d "${TAOUP_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${TAOUP_VERSION}" https://github.com/globalcitizen/taoup.git "${TAOUP_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/taoup-${TAOUP_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "taoup-${TAOUP_VERSION}"
-        cp /build/salt/specs/taoup.spec "${SPECS_DIR}/taoup.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/taoup.spec"
-
-        find "${RPMS_DIR}" -name "taoup-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg taoup "$TAOUP_VERSION" \
+        "https://github.com/globalcitizen/taoup.git" \
+        "git rpm-build tar ruby" \
+        --ref "v${TAOUP_VERSION}" --arch noarch
     ;;
 newsraft)
-    NEWSRAFT_RPM_NAME="newsraft-${NEWSRAFT_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${NEWSRAFT_RPM_NAME}" ]; then
-        echo "Newsraft RPM (${NEWSRAFT_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar gcc make ncurses-devel libcurl-devel yajl-devel gumbo-parser-devel sqlite-devel expat-devel scdoc
-
-        NEWSRAFT_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/newsraft-${NEWSRAFT_VERSION}"
-        if [ ! -d "${NEWSRAFT_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "newsraft-${NEWSRAFT_VERSION}" https://codeberg.org/newsraft/newsraft.git "${NEWSRAFT_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/newsraft-${NEWSRAFT_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "newsraft-${NEWSRAFT_VERSION}"
-        cp /build/salt/specs/newsraft.spec "${SPECS_DIR}/newsraft.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/newsraft.spec"
-
-        find "${RPMS_DIR}" -name "newsraft-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg newsraft "$NEWSRAFT_VERSION" \
+        "https://codeberg.org/newsraft/newsraft.git" \
+        "git rpm-build tar gcc make ncurses-devel libcurl-devel yajl-devel gumbo-parser-devel sqlite-devel expat-devel scdoc" \
+        --ref "newsraft-${NEWSRAFT_VERSION}"
     ;;
 unflac)
-    UNFLAC_RPM_NAME="unflac-${UNFLAC_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${UNFLAC_RPM_NAME}" ]; then
-        echo "Unflac RPM (${UNFLAC_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar golang
-
-        UNFLAC_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/unflac-${UNFLAC_VERSION}"
-        if [ ! -d "${UNFLAC_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "${UNFLAC_VERSION}" https://git.sr.ht/~ft/unflac "${UNFLAC_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/unflac-${UNFLAC_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "unflac-${UNFLAC_VERSION}"
-        cp /build/salt/specs/unflac.spec "${SPECS_DIR}/unflac.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/unflac.spec"
-
-        find "${RPMS_DIR}" -name "unflac-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg unflac "$UNFLAC_VERSION" \
+        "https://git.sr.ht/~ft/unflac" \
+        "git rpm-build tar golang" \
+        --ref "${UNFLAC_VERSION}"
     ;;
 albumdetails)
-    ALBUMDETAILS_RPM_NAME="albumdetails-${ALBUMDETAILS_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${ALBUMDETAILS_RPM_NAME}" ]; then
-        echo "Albumdetails RPM (${ALBUMDETAILS_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar gcc make taglib-devel
-
-        ALBUMDETAILS_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/albumdetails-master"
-        if [ ! -d "${ALBUMDETAILS_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 https://github.com/neg-serg/albumdetails.git "${ALBUMDETAILS_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/albumdetails-master.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "albumdetails-master"
-        cp /build/salt/specs/albumdetails.spec "${SPECS_DIR}/albumdetails.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/albumdetails.spec"
-
-        find "${RPMS_DIR}" -name "albumdetails-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg albumdetails "$ALBUMDETAILS_VERSION" \
+        "https://github.com/neg-serg/albumdetails.git" \
+        "git rpm-build tar gcc make taglib-devel" \
+        --source-dir "albumdetails-master"
     ;;
 cmake-language-server)
-    CMAKE_LS_RPM_NAME="cmake-language-server-${CMAKE_LS_VERSION}-1.fc43.noarch.rpm"
-    if [ -f "/build/rpms/${CMAKE_LS_RPM_NAME}" ]; then
-        echo "cmake-language-server RPM (${CMAKE_LS_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar python3-devel python3-pip python3-setuptools python3-wheel
-
-        CMAKE_LS_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/cmake-language-server-${CMAKE_LS_VERSION}"
-        if [ ! -d "${CMAKE_LS_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${CMAKE_LS_VERSION}" https://github.com/regen100/cmake-language-server.git "${CMAKE_LS_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/cmake-language-server-${CMAKE_LS_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "cmake-language-server-${CMAKE_LS_VERSION}"
-        cp /build/salt/specs/cmake-language-server.spec "${SPECS_DIR}/cmake-language-server.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/cmake-language-server.spec"
-
-        find "${RPMS_DIR}" -name "cmake-language-server-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg cmake-language-server "$CMAKE_LS_VERSION" \
+        "https://github.com/regen100/cmake-language-server.git" \
+        "git rpm-build tar python3-devel python3-pip python3-setuptools python3-wheel" \
+        --ref "v${CMAKE_LS_VERSION}" --arch noarch
     ;;
 nginx-language-server)
-    NGINX_LS_RPM_NAME="nginx-language-server-${NGINX_LS_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${NGINX_LS_RPM_NAME}" ]; then
-        echo "nginx-language-server RPM (${NGINX_LS_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar python3-devel python3-pip python3-setuptools python3-wheel
-
-        NGINX_LS_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/nginx-language-server-${NGINX_LS_VERSION}"
-        if [ ! -d "${NGINX_LS_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${NGINX_LS_VERSION}" https://github.com/pappasam/nginx-language-server.git "${NGINX_LS_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/nginx-language-server-${NGINX_LS_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "nginx-language-server-${NGINX_LS_VERSION}"
-        cp /build/salt/specs/nginx-language-server.spec "${SPECS_DIR}/nginx-language-server.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/nginx-language-server.spec"
-
-        find "${RPMS_DIR}" -name "nginx-language-server-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg nginx-language-server "$NGINX_LS_VERSION" \
+        "https://github.com/pappasam/nginx-language-server.git" \
+        "git rpm-build tar python3-devel python3-pip python3-setuptools python3-wheel" \
+        --ref "v${NGINX_LS_VERSION}"
     ;;
 systemd-language-server)
-    SYSTEMD_LS_RPM_NAME="systemd-language-server-${SYSTEMD_LS_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${SYSTEMD_LS_RPM_NAME}" ]; then
-        echo "systemd-language-server RPM (${SYSTEMD_LS_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar gcc python3-devel python3-pip python3-setuptools python3-wheel libxml2-devel libxslt-devel
-
-        SYSTEMD_LS_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/systemd-language-server-${SYSTEMD_LS_VERSION}"
-        if [ ! -d "${SYSTEMD_LS_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "${SYSTEMD_LS_VERSION}" https://github.com/psacawa/systemd-language-server.git "${SYSTEMD_LS_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/systemd-language-server-${SYSTEMD_LS_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "systemd-language-server-${SYSTEMD_LS_VERSION}"
-        cp /build/salt/specs/systemd-language-server.spec "${SPECS_DIR}/systemd-language-server.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/systemd-language-server.spec"
-
-        find "${RPMS_DIR}" -name "systemd-language-server-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg systemd-language-server "$SYSTEMD_LS_VERSION" \
+        "https://github.com/psacawa/systemd-language-server.git" \
+        "git rpm-build tar gcc python3-devel python3-pip python3-setuptools python3-wheel libxml2-devel libxslt-devel" \
+        --ref "${SYSTEMD_LS_VERSION}"
     ;;
 croc)
-    CROC_RPM_NAME="croc-${CROC_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${CROC_RPM_NAME}" ]; then
-        echo "Croc RPM (${CROC_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar golang
-
-        CROC_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/croc-${CROC_VERSION}"
-        if [ ! -d "${CROC_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${CROC_VERSION}" https://github.com/schollz/croc.git "${CROC_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/croc-${CROC_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "croc-${CROC_VERSION}"
-        cp /build/salt/specs/croc.spec "${SPECS_DIR}/croc.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/croc.spec"
-
-        find "${RPMS_DIR}" -name "croc-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg croc "$CROC_VERSION" \
+        "https://github.com/schollz/croc.git" \
+        "git rpm-build tar golang" \
+        --ref "v${CROC_VERSION}"
     ;;
 faker)
-    FAKER_RPM_NAME="faker-${FAKER_VERSION}-1.fc43.noarch.rpm"
-    if [ -f "/build/rpms/${FAKER_RPM_NAME}" ]; then
-        echo "Faker RPM (${FAKER_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar python3-devel python3-pip python3-setuptools python3-wheel
-
-        FAKER_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/faker-${FAKER_VERSION}"
-        if [ ! -d "${FAKER_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${FAKER_VERSION}" https://github.com/joke2k/faker.git "${FAKER_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/faker-${FAKER_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "faker-${FAKER_VERSION}"
-        cp /build/salt/specs/faker.spec "${SPECS_DIR}/faker.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/faker.spec"
-
-        find "${RPMS_DIR}" -name "faker-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg faker "$FAKER_VERSION" \
+        "https://github.com/joke2k/faker.git" \
+        "git rpm-build tar python3-devel python3-pip python3-setuptools python3-wheel" \
+        --ref "v${FAKER_VERSION}" --arch noarch
     ;;
 speedtest-go)
-    SPEEDTEST_GO_RPM_NAME="speedtest-go-${SPEEDTEST_GO_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${SPEEDTEST_GO_RPM_NAME}" ]; then
-        echo "speedtest-go RPM (${SPEEDTEST_GO_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar golang
-
-        SPEEDTEST_GO_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/speedtest-go-${SPEEDTEST_GO_VERSION}"
-        if [ ! -d "${SPEEDTEST_GO_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${SPEEDTEST_GO_VERSION}" https://github.com/showwin/speedtest-go.git "${SPEEDTEST_GO_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/speedtest-go-${SPEEDTEST_GO_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "speedtest-go-${SPEEDTEST_GO_VERSION}"
-        cp /build/salt/specs/speedtest-go.spec "${SPECS_DIR}/speedtest-go.spec"
-
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/speedtest-go.spec"
-
-        find "${RPMS_DIR}" -name "speedtest-go-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg speedtest-go "$SPEEDTEST_GO_VERSION" \
+        "https://github.com/showwin/speedtest-go.git" \
+        "git rpm-build tar golang" \
+        --ref "v${SPEEDTEST_GO_VERSION}"
     ;;
 greetd)
-    GREETD_RPM_NAME="greetd-${GREETD_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${GREETD_RPM_NAME}" ]; then
-        echo "greetd RPM (${GREETD_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar rust cargo scdoc pam-devel selinux-policy-devel systemd systemd-devel systemd-rpm-macros
-        GREETD_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/greetd-${GREETD_VERSION}"
-        if [ ! -d "${GREETD_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "${GREETD_VERSION}" https://git.sr.ht/~kennylevinsen/greetd "${GREETD_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/greetd-${GREETD_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "greetd-${GREETD_VERSION}"
-        # Copy auxiliary files to SOURCES
-        cp /build/salt/greetd-files/greetd.pam "${SOURCES_DIR}/"
-        cp /build/salt/greetd-files/greetd-greeter.pam "${SOURCES_DIR}/"
-        cp /build/salt/greetd-files/greetd.sysusers "${SOURCES_DIR}/"
-        cp /build/salt/greetd-files/greetd.tmpfiles "${SOURCES_DIR}/"
-        cp /build/salt/greetd-files/greetd.fc "${SOURCES_DIR}/"
-        cp /build/salt/specs/greetd.spec "${SPECS_DIR}/greetd.spec"
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/greetd.spec"
-        find "${RPMS_DIR}" -name "greetd*.rpm" ! -name "*debug*" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg greetd "$GREETD_VERSION" \
+        "https://git.sr.ht/~kennylevinsen/greetd" \
+        "git rpm-build tar rust cargo scdoc pam-devel selinux-policy-devel systemd systemd-devel systemd-rpm-macros" \
+        --ref "${GREETD_VERSION}" \
+        --extra-sources "/build/salt/greetd-files/greetd.pam /build/salt/greetd-files/greetd-greeter.pam /build/salt/greetd-files/greetd.sysusers /build/salt/greetd-files/greetd.tmpfiles /build/salt/greetd-files/greetd.fc"
     ;;
 rustnet)
-    RUSTNET_RPM_NAME="rustnet-${RUSTNET_VERSION}-1.fc43.x86_64.rpm"
-    if [ -f "/build/rpms/${RUSTNET_RPM_NAME}" ]; then
-        echo "Rustnet RPM (${RUSTNET_RPM_NAME}) already exists, skipping."
-    else
-        dnf install -y --skip-broken git rpm-build tar rust cargo libpcap-devel
-        RUSTNET_SOURCE_DIR="${RPM_BUILD_ROOT}/BUILD/rustnet-${RUSTNET_VERSION}"
-        if [ ! -d "${RUSTNET_SOURCE_DIR}" ]; then
-            mkdir -p "${RPM_BUILD_ROOT}/BUILD"
-            git clone --depth 1 --branch "v${RUSTNET_VERSION}" https://github.com/domcyrus/rustnet.git "${RUSTNET_SOURCE_DIR}"
-        fi
-        tar -czf "${SOURCES_DIR}/rustnet-${RUSTNET_VERSION}.tar.gz" -C "${RPM_BUILD_ROOT}/BUILD" "rustnet-${RUSTNET_VERSION}"
-        cp /build/salt/specs/rustnet.spec "${SPECS_DIR}/rustnet.spec"
-        rpmbuild --define "_topdir ${RPM_BUILD_ROOT}" -ba "${SPECS_DIR}/rustnet.spec"
-        find "${RPMS_DIR}" -name "rustnet-*.rpm" -exec cp {} /build/rpms/ \;
-    fi
+    build_pkg rustnet "$RUSTNET_VERSION" \
+        "https://github.com/domcyrus/rustnet.git" \
+        "git rpm-build tar rust cargo libpcap-devel" \
+        --ref "v${RUSTNET_VERSION}"
     ;;
 *)
     echo "Unknown package: $1" >&2
