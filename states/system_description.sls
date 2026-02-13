@@ -447,6 +447,26 @@ remove_unwanted_packages:
         {% endraw %}
     - onlyif: rpm -q {% for pkg in unwanted_packages %}{{ pkg }} {% endfor %}2>/dev/null | grep -v 'not installed'
 
+# Remove base-image packages we don't want (rpm-ostree override remove).
+{% set unwanted_base_packages = [
+    'firefox', 'firefox-langpacks',
+] %}
+remove_unwanted_base_packages:
+  cmd.run:
+    - name: |
+        {% raw %}
+        to_remove=()
+        pkgs=({% endraw %}{% for pkg in unwanted_base_packages %}'{{ pkg }}' {% endfor %}{% raw %})
+        for pkg in "${pkgs[@]}"; do
+          rpm -q "$pkg" > /dev/null 2>&1 && to_remove+=("$pkg")
+        done
+        if [ ${#to_remove[@]} -gt 0 ]; then
+          echo "Overriding base packages: ${to_remove[*]}"
+          rpm-ostree override remove "${to_remove[@]}"
+        fi
+        {% endraw %}
+    - onlyif: rpm -q {% for pkg in unwanted_base_packages %}{{ pkg }} {% endfor %}2>/dev/null | grep -v 'not installed'
+
 # Install all packages (system + COPR) in a single rpm-ostree transaction.
 # One transaction = one deployment, much faster than two separate ones.
 install_all_packages:
