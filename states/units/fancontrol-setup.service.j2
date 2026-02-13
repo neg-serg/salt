@@ -1,0 +1,25 @@
+[Unit]
+Description=Generate /etc/fancontrol from detected hwmon devices
+Before=fancontrol.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/fancontrol-setup
+Environment=MIN_TEMP=35
+Environment=MAX_TEMP=75
+Environment=MIN_PWM=70
+Environment=MAX_PWM=255
+Environment=HYST=3
+Environment=INTERVAL=2
+Environment=ALLOW_STOP=false
+Environment=GPU_PWM_CHANNELS=
+Environment=GPU_ENABLE={{ gpu_enable }}
+Environment=GPU_MIN_TEMP=50
+Environment=GPU_MAX_TEMP=85
+Environment=GPU_MIN_PWM=70
+Environment=GPU_MAX_PWM=255
+Environment=GPU_HYST=3
+RemainAfterExit=true
+
+[Install]
+WantedBy=fancontrol.service

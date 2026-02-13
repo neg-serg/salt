@@ -118,29 +118,10 @@ adguardhome_service:
   file.managed:
     - name: /etc/systemd/system/adguardhome.service
     - mode: '0644'
-    - contents: |
-        [Unit]
-        Description=AdGuard Home DNS filter
-        After=network-online.target{% if dns.unbound %} unbound.service{% endif %}
-
-        Wants=network-online.target
-{% if dns.unbound %}
-        Requires=unbound.service
-{% endif %}
-
-        [Service]
-        Type=simple
-        User=adguardhome
-        Group=adguardhome
-        WorkingDirectory=/var/lib/adguardhome
-        ExecStart=/usr/local/bin/adguardhome --no-check-update -w /var/lib/adguardhome
-        Restart=on-failure
-        RestartSec=5
-        AmbientCapabilities=CAP_NET_BIND_SERVICE CAP_NET_RAW
-        CapabilityBoundingSet=CAP_NET_BIND_SERVICE CAP_NET_RAW
-
-        [Install]
-        WantedBy=multi-user.target
+    - source: salt://units/adguardhome.service.j2
+    - template: jinja
+    - context:
+        dns_unbound: {{ dns.unbound }}
 
 {{ daemon_reload('adguardhome', ['file: adguardhome_service']) }}
 
