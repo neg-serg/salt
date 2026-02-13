@@ -1,4 +1,5 @@
 # Ollama LLM server: systemd service, SELinux policies, model pulls
+{% from '_macros.jinja' import selinux_policy %}
 
 ollama_service_unit:
   file.managed:
@@ -55,24 +56,15 @@ ollama_selinux_homedir:
     - unless: ls -Z /var/home/neg/.ollama/id_ed25519 | grep -q var_lib_t
 
 # ollama runs as init_t (no custom SELinux type) and needs outbound HTTPS for model pulls
-ollama_selinux_network:
-  cmd.run:
-    - name: |
-        TMP=$(mktemp -d)
-        cat > "$TMP/ollama-network.te" << 'POLICY'
-        module ollama-network 1.0;
-        require {
-            type init_t;
-            type http_port_t;
-            class tcp_socket name_connect;
-        }
-        allow init_t http_port_t:tcp_socket name_connect;
-        POLICY
-        checkmodule -M -m -o "$TMP/ollama-network.mod" "$TMP/ollama-network.te"
-        semodule_package -o "$TMP/ollama-network.pp" -m "$TMP/ollama-network.mod"
-        semodule -i "$TMP/ollama-network.pp"
-        rm -rf "$TMP"
-    - unless: semodule -l | grep -q '^ollama-network'
+{% call selinux_policy('ollama_selinux_network', 'ollama-network') %}
+module ollama-network 1.0;
+require {
+    type init_t;
+    type http_port_t;
+    class tcp_socket name_connect;
+}
+allow init_t http_port_t:tcp_socket name_connect;
+{% endcall %}
 
 ollama_enable:
   cmd.run:
