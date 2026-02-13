@@ -1,11 +1,21 @@
 # Salt state for Distrobox container management
 # Manages gaming containers declaratively via distrobox assemble
 
+# SELinux: relabel games dir so container can write to it
+# /var/mnt → /mnt in semanage per Fedora Atomic equivalency
+steam_games_selinux:
+  cmd.run:
+    - name: |
+        semanage fcontext -a -t user_home_t "/mnt/zero/games(/.*)?" 2>/dev/null || \
+        semanage fcontext -m -t user_home_t "/mnt/zero/games(/.*)?"
+        restorecon -Rv /var/mnt/zero/games
+    - unless: ls -dZ /var/mnt/zero/games | grep -q user_home_t
+
 distrobox_steam:
   cmd.run:
     - name: |
         unset SUDO_USER SUDO_UID SUDO_GID SUDO_COMMAND
-        distrobox assemble create --file /var/home/neg/.config/distrobox/distrobox.ini
+        distrobox assemble create --file /var/home/neg/.config/distrobox/steam.ini
     - runas: neg
     - unless: podman container exists steam
     - onlyif: command -v distrobox
