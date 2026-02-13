@@ -19,6 +19,7 @@ Carapace provides argument completion for multiple CLI commands in multiple shel
 %setup -q -n carapace-%{version}
 
 %build
+go generate ./cmd/carapace/...
 go build -ldflags="-s -w" -o carapace ./cmd/carapace
 
 %install
