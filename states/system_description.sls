@@ -604,42 +604,8 @@ greetd_config:
 greetd_hyprland_config:
   file.managed:
     - name: /etc/greetd/hyprland-greeter.conf
-    - contents: |
-        # Monitor: match main session resolution
-        {% if host.display %}
-        monitorv2 {
-            output = DP-2
-            mode = {{ host.display }}
-            position = 0x0
-            scale = 2
-            vrr = 3
-            bitdepth = 10
-        }
-        monitorv2 {
-            output = DP-1
-            disabled = true
-        }
-        experimental {
-            xx_color_management_v4 = true
-        }
-        {% endif %}
-
-        misc {
-            force_default_wallpaper = 0
-            disable_hyprland_logo = true
-        }
-
-        # Cursor: match main session theme
-        env = XCURSOR_THEME,Alkano-aio
-        env = XCURSOR_SIZE,23
-        env = HYPRCURSOR_THEME,Alkano-aio
-        env = HYPRCURSOR_SIZE,23
-        cursor {
-            sync_gsettings_theme = true
-        }
-
-        exec-once = sh -c 'echo "=== greeter-debug $(date) ===" >> /tmp/greeter-debug.log; ls -laZ ~/.cache/greeter-wallpaper >> /tmp/greeter-debug.log 2>&1; file ~/.cache/greeter-wallpaper >> /tmp/greeter-debug.log 2>&1; id >> /tmp/greeter-debug.log 2>&1'
-        exec-once = qs -p ~/.config/quickshell/greeter/greeter.qml
+    - source: salt://configs/greetd-hyprland.conf.j2
+    - template: jinja
     - user: root
     - group: root
     - mode: '0644'
@@ -996,10 +962,21 @@ install_ssh_to_age:
     - creates: /var/home/neg/.local/bin/ssh-to-age
 
 # --- COPR repo enables (fast test -f guards) ---
-copr_dualsensectl:
+{% set copr_repos = [
+    ('dualsensectl', 'kapsh',        'dualsensectl'),
+    ('espanso',      'eclipseo',     'espanso'),
+    ('himalaya',     'atim',         'himalaya'),
+    ('spotifyd',     'mbooth',       'spotifyd'),
+    ('sbctl',        'chenxiaolong', 'sbctl'),
+    ('yabridge',     'patrickl',     'wine-tkg'),
+    ('audinux',      'ycollet',      'audinux'),
+] %}
+{% for suffix, owner, project in copr_repos %}
+copr_{{ suffix }}:
   cmd.run:
-    - name: dnf copr enable -y kapsh/dualsensectl
-    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:kapsh:dualsensectl.repo
+    - name: dnf copr enable -y {{ owner }}/{{ project }}
+    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:{{ owner }}:{{ project }}.repo
+{% endfor %}
 
 {# Kernel variant from host_config: 'lto' → kernel-cachyos-lto, 'gcc' → kernel-cachyos #}
 {% set _kvar = host.features.kernel.variant %}
@@ -1010,36 +987,6 @@ copr_cachyos_kernel:
   cmd.run:
     - name: dnf copr enable -y bieszczaders/{{ _kcopr }}
     - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:bieszczaders:{{ _kcopr }}.repo
-
-copr_espanso:
-  cmd.run:
-    - name: dnf copr enable -y eclipseo/espanso
-    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:eclipseo:espanso.repo
-
-copr_himalaya:
-  cmd.run:
-    - name: dnf copr enable -y atim/himalaya
-    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:atim:himalaya.repo
-
-copr_spotifyd:
-  cmd.run:
-    - name: dnf copr enable -y mbooth/spotifyd
-    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:mbooth:spotifyd.repo
-
-copr_sbctl:
-  cmd.run:
-    - name: dnf copr enable -y chenxiaolong/sbctl
-    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:chenxiaolong:sbctl.repo
-
-copr_yabridge:
-  cmd.run:
-    - name: dnf copr enable -y patrickl/wine-tkg
-    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:patrickl:wine-tkg.repo
-
-copr_audinux:
-  cmd.run:
-    - name: dnf copr enable -y ycollet/audinux
-    - unless: test -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:ycollet:audinux.repo
 
 # --- RPM Fusion (nonfree — for Steam; pulls in free as dependency) ---
 rpmfusion_nonfree:

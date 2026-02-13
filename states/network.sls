@@ -1,4 +1,5 @@
 {% from 'host_config.jinja' import host %}
+{% from '_macros.jinja' import daemon_reload %}
 {% set net = host.features.network %}
 
 # --- VM Bridge: br0 for KVM/libvirt VMs ---
@@ -78,11 +79,7 @@ xray_service:
         [Install]
         WantedBy=multi-user.target
 
-xray_daemon_reload:
-  cmd.run:
-    - name: systemctl daemon-reload
-    - onchanges:
-      - file: xray_service
+{{ daemon_reload('xray', ['file: xray_service']) }}
 
 # Not enabled by default — needs config.json with secrets from gopass
 xray_not_enabled:
@@ -125,9 +122,5 @@ singbox_service:
 
         # No [Install] — manual start only: systemctl start sing-box-tun
 
-singbox_daemon_reload:
-  cmd.run:
-    - name: systemctl daemon-reload
-    - onchanges:
-      - file: singbox_service
+{{ daemon_reload('singbox', ['file: singbox_service']) }}
 {% endif %}

@@ -1,47 +1,11 @@
 {% from 'host_config.jinja' import host %}
+{% from '_macros.jinja' import daemon_reload %}
 
 # --- Custom udev rules: I/O schedulers, audio devices, SATA ALPM ---
 custom_udev_rules:
   file.managed:
     - name: /etc/udev/rules.d/99-custom.rules
-    - contents: |
-        # NVMe SSD: no scheduler needed (NVMe has its own internal queue)
-        ACTION=="add|change", KERNEL=="nvme[0-9]*", ATTR{queue/rotational}=="0", \
-            ATTR{queue/scheduler}="none"
-
-        # SATA/USB SSD: mq-deadline (low-latency, minimal overhead)
-        ACTION=="add|change", KERNEL=="sd[a-z]*|mmcblk[0-9]*", ATTR{queue/rotational}=="0", \
-            ATTR{queue/scheduler}="mq-deadline"
-
-        # HDD: BFQ (fair-queuing, good for rotational with mixed workloads)
-        ACTION=="add|change", KERNEL=="sd[a-z]*", ATTR{queue/rotational}=="1", \
-            ATTR{queue/scheduler}="bfq"
-
-        # Allow audio group access to cpu_dma_latency (for pro-audio low-latency)
-        DEVPATH=="/devices/virtual/misc/cpu_dma_latency", OWNER="root", GROUP="audio", MODE="0660"
-
-        # RME audio interface HID access (Fireface/Babyface)
-        KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="3434", ATTRS{idProduct}=="0b10", MODE="0660", GROUP="users", TAG+="uaccess", TAG+="udev-acl"
-        KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="3554", ATTRS{idProduct}=="f54b", MODE="0660", GROUP="users", TAG+="uaccess", TAG+="udev-acl"
-        SUBSYSTEMS=="usb", ATTRS{idVendor}=="3554", ATTRS{idProduct}=="f54b", GROUP="users", MODE="0666"
-        SUBSYSTEMS=="usb", ATTRS{idVendor}=="35ef", ATTRS{idProduct}=="2201", GROUP="users", MODE="0666"
-        SUBSYSTEMS=="usb", ATTRS{idVendor}=="35ef", ATTRS{idProduct}=="2200", GROUP="users", MODE="0666"
-        SUBSYSTEMS=="usb", ATTRS{idVendor}=="31e3", ATTRS{idProduct}=="1322", GROUP="users", MODE="0666"
-        SUBSYSTEMS=="usb", ATTRS{idVendor}=="31e3", ATTRS{idProduct}=="132f", GROUP="users", MODE="0666"
-
-        # NVMe: reduce read_ahead_kb (8MB default from tuned is excessive for NVMe)
-        ACTION=="add|change", KERNEL=="nvme[0-9]*", ATTR{queue/read_ahead_kb}="256"
-
-        # Device-mapper (LVM/LUKS): slightly higher read_ahead for crypto overhead
-        ACTION=="add|change", KERNEL=="dm-[0-9]*", ATTR{queue/read_ahead_kb}="512"
-
-        # NVMe: disable writeback throttling (NVMe manages its own queues)
-        ACTION=="add|change", KERNEL=="nvme[0-9]*", ATTR{queue/wbt_lat_usec}="0"
-
-        # SATA Active Link Power Management: max performance (avoid spin-down latency)
-        ACTION=="add", SUBSYSTEM=="scsi_host", KERNEL=="host*", \
-          ATTR{link_power_management_policy}=="*", \
-          ATTR{link_power_management_policy}="max_performance"
+    - source: salt://configs/udev-custom.rules
     - mode: '0644'
 
 udev_reload_custom:
@@ -142,12 +106,7 @@ fancontrol_service:
         WantedBy=multi-user.target
     - mode: '0644'
 
-fancontrol_systemd_reload:
-  cmd.run:
-    - name: systemctl daemon-reload
-    - onchanges:
-      - file: fancontrol_setup_service
-      - file: fancontrol_service
+{{ daemon_reload('fancontrol', ['file: fancontrol_setup_service', 'file: fancontrol_service']) }}
 
 fancontrol_enable:
   service.enabled:

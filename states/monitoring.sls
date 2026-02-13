@@ -1,4 +1,5 @@
 {% from 'host_config.jinja' import host %}
+{% from '_macros.jinja' import daemon_reload %}
 {% set mon = host.features.monitoring %}
 
 # --- Simple service enables (packages already in system_description.sls) ---
@@ -36,11 +37,7 @@ netdata_override:
     - require:
       - file: netdata_override_dir
 
-netdata_reload:
-  cmd.run:
-    - name: systemctl daemon-reload
-    - onchanges:
-      - file: netdata_override
+{{ daemon_reload('netdata', ['file: netdata_override']) }}
 {% endif %}
 
 # --- Loki: log aggregation ---
@@ -81,47 +78,7 @@ loki_config:
     - name: /etc/loki/config.yaml
     - makedirs: True
     - mode: '0644'
-    - contents: |
-        auth_enabled: false
-        server:
-          http_listen_address: 127.0.0.1
-          http_listen_port: 3100
-          grpc_listen_port: 0
-        common:
-          path_prefix: /var/lib/loki
-          storage:
-            filesystem:
-              chunks_directory: /var/lib/loki/chunks
-              rules_directory: /var/lib/loki/rules
-          replication_factor: 1
-          ring:
-            instance_addr: 127.0.0.1
-            kvstore:
-              store: inmemory
-        schema_config:
-          configs:
-            - from: "2020-10-24"
-              store: boltdb-shipper
-              object_store: filesystem
-              schema: v13
-              index:
-                prefix: index_
-                period: 24h
-        ruler:
-          rule_path: /var/lib/loki/rules-temp
-          storage:
-            type: local
-            local:
-              directory: /var/lib/loki/rules
-          alertmanager_url: http://127.0.0.1:9093
-        analytics:
-          reporting_enabled: false
-        limits_config:
-          allow_structured_metadata: false
-          retention_period: 30d
-        table_manager:
-          retention_deletes_enabled: true
-          retention_period: 30d
+    - source: salt://configs/loki.yaml
 
 loki_service:
   file.managed:
@@ -144,11 +101,7 @@ loki_service:
         [Install]
         WantedBy=multi-user.target
 
-loki_daemon_reload:
-  cmd.run:
-    - name: systemctl daemon-reload
-    - onchanges:
-      - file: loki_service
+{{ daemon_reload('loki', ['file: loki_service']) }}
 
 loki_enabled:
   service.enabled:
@@ -184,36 +137,8 @@ promtail_config:
     - name: /etc/promtail/config.yaml
     - makedirs: True
     - mode: '0644'
-    - contents: |
-        server:
-          http_listen_port: 9080
-          grpc_listen_port: 0
-        positions:
-          filename: /var/cache/promtail/positions.yaml
-        clients:
-          - url: http://127.0.0.1:3100/loki/api/v1/push
-        scrape_configs:
-          - job_name: journal
-            journal:
-              path: /var/log/journal
-              max_age: 12h
-              labels:
-                job: systemd-journal
-                host: {{ grains['host'] }}
-            relabel_configs:
-              - source_labels: ["__journal__systemd_unit"]
-                target_label: unit
-              - source_labels: ["__journal_priority"]
-                target_label: priority
-              - source_labels: ["__journal__hostname"]
-                target_label: host
-          - job_name: varlogs
-            static_configs:
-              - targets:
-                  - localhost
-                labels:
-                  job: varlogs
-                  __path__: /var/log/*.log
+    - source: salt://configs/promtail.yaml.j2
+    - template: jinja
 
 promtail_service:
   file.managed:
@@ -234,11 +159,7 @@ promtail_service:
         [Install]
         WantedBy=multi-user.target
 
-promtail_daemon_reload:
-  cmd.run:
-    - name: systemctl daemon-reload
-    - onchanges:
-      - file: promtail_service
+{{ daemon_reload('promtail', ['file: promtail_service']) }}
 
 promtail_enabled:
   service.enabled:

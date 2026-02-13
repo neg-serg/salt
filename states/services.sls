@@ -1,4 +1,5 @@
 {% from 'host_config.jinja' import host %}
+{% from '_macros.jinja' import daemon_reload %}
 {% set svc = host.features.services %}
 
 # --- Samba: SMB file sharing (manual start) ---
@@ -136,11 +137,7 @@ bitcoind_logrotate:
             su bitcoind bitcoind
         }
 
-bitcoind_daemon_reload:
-  cmd.run:
-    - name: systemctl daemon-reload
-    - onchanges:
-      - file: bitcoind_service
+{{ daemon_reload('bitcoind', ['file: bitcoind_service']) }}
 
 # Don't enable at boot — manual start: systemctl start bitcoind
 bitcoind_not_enabled:
@@ -194,12 +191,7 @@ duckdns_timer:
         [Install]
         WantedBy=timers.target
 
-duckdns_daemon_reload:
-  cmd.run:
-    - name: systemctl daemon-reload
-    - onchanges:
-      - file: duckdns_service
-      - file: duckdns_timer
+{{ daemon_reload('duckdns', ['file: duckdns_service', 'file: duckdns_timer']) }}
 
 # Timer disabled by default — enable after creating /etc/duckdns.env
 duckdns_not_enabled:
