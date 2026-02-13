@@ -1,13 +1,10 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import daemon_reload %}
+{% from '_macros.jinja' import daemon_reload, ostree_install %}
 {% set svc = host.features.services %}
 
 # --- Samba: SMB file sharing (manual start) ---
 {% if svc.samba %}
-install_samba:
-  cmd.run:
-    - name: rpm-ostree install --idempotent --apply-live samba
-    - unless: rpm -q samba
+{{ ostree_install('samba', 'samba') }}
 
 samba_share_dir:
   file.directory:
@@ -56,12 +53,7 @@ jellyfin_repo:
         enabled=1
     - mode: '0644'
 
-install_jellyfin:
-  cmd.run:
-    - name: rpm-ostree install --idempotent --apply-live jellyfin-server jellyfin-web
-    - unless: rpm -q jellyfin-server
-    - require:
-      - file: jellyfin_repo
+{{ ostree_install('jellyfin', 'jellyfin-server jellyfin-web', requires=['file: jellyfin_repo']) }}
 
 jellyfin_enabled:
   service.enabled:

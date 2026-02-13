@@ -1,5 +1,5 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import daemon_reload %}
+{% from '_macros.jinja' import daemon_reload, ostree_install %}
 {% set mon = host.features.monitoring %}
 
 # --- Simple service enables (packages already in system_description.sls) ---
@@ -187,12 +187,7 @@ grafana_repo:
         sslcacert=/etc/pki/tls/certs/ca-bundle.crt
     - mode: '0644'
 
-install_grafana:
-  cmd.run:
-    - name: rpm-ostree install --idempotent --apply-live grafana
-    - unless: rpm -q grafana
-    - require:
-      - file: grafana_repo
+{{ ostree_install('grafana', 'grafana', requires=['file: grafana_repo']) }}
 
 grafana_provisioning_dir:
   file.directory:
