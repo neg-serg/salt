@@ -119,7 +119,6 @@ export NPM_CONFIG_TMP="$XDG_RUNTIME_DIR/npm"
 export PARALLEL_HOME="$XDG_CONFIG_HOME/parallel"
 export PULSE_COOKIE="$XDG_CONFIG_HOME/pulse/cookie"
 export PYLINTHOME="$XDG_CONFIG_HOME/pylint"
-export TERMINFO="$XDG_DATA_HOME/terminfo"
 export TERMINFO_DIRS="$XDG_DATA_HOME/terminfo:/usr/share/terminfo"
 export VAGRANT_HOME="$XDG_DATA_HOME/vagrant"
 
