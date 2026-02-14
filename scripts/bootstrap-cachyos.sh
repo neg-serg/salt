@@ -30,8 +30,8 @@ PACKAGES=(
     # Base system
     base
     base-devel
-    linux-cachyos
-    linux-cachyos-headers
+    linux-cachyos-lts
+    linux-cachyos-lts-headers
     linux-firmware
 
     # CachyOS infra
@@ -290,15 +290,15 @@ interface_branding: CachyOS
 
 /CachyOS
     protocol: linux
-    kernel_path: boot():/vmlinuz-linux-cachyos
+    kernel_path: boot():/vmlinuz-linux-cachyos-lts
     kernel_cmdline: root=LABEL=cachyos rootflags=subvol=@ rw quiet splash
-    module_path: boot():/initramfs-linux-cachyos.img
+    module_path: boot():/initramfs-linux-cachyos-lts.img
 
 /CachyOS (fallback)
     protocol: linux
-    kernel_path: boot():/vmlinuz-linux-cachyos
+    kernel_path: boot():/vmlinuz-linux-cachyos-lts
     kernel_cmdline: root=LABEL=cachyos rootflags=subvol=@ rw
-    module_path: boot():/initramfs-linux-cachyos-fallback.img
+    module_path: boot():/initramfs-linux-cachyos-lts-fallback.img
 LIMINE
 
 # Copy Limine EFI binary

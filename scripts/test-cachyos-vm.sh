@@ -119,15 +119,15 @@ interface_branding: CachyOS VM
 
 /CachyOS
     protocol: linux
-    kernel_path: boot():/vmlinuz-linux-cachyos
+    kernel_path: boot():/vmlinuz-linux-cachyos-lts
     kernel_cmdline: root=UUID=${ROOT_UUID} rootflags=subvol=@ rw console=ttyS0,115200 console=tty0
-    module_path: boot():/initramfs-linux-cachyos.img
+    module_path: boot():/initramfs-linux-cachyos-lts.img
 
 /CachyOS (fallback)
     protocol: linux
-    kernel_path: boot():/vmlinuz-linux-cachyos
+    kernel_path: boot():/vmlinuz-linux-cachyos-lts
     kernel_cmdline: root=UUID=${ROOT_UUID} rootflags=subvol=@ rw console=ttyS0,115200 console=tty0
-    module_path: boot():/initramfs-linux-cachyos-fallback.img
+    module_path: boot():/initramfs-linux-cachyos-lts-fallback.img
 LIMINE
 
 # Copy Limine EFI to ESP
@@ -149,13 +149,13 @@ timeout 5
 LOADER
         cat > "$MNT/boot/efi/loader/entries/cachyos.conf" <<ENTRY
 title   CachyOS VM
-linux   /vmlinuz-linux-cachyos
-initrd  /initramfs-linux-cachyos.img
+linux   /vmlinuz-linux-cachyos-lts
+initrd  /initramfs-linux-cachyos-lts.img
 options root=UUID=${ROOT_UUID} rootflags=subvol=@ rw console=ttyS0,115200 console=tty0
 ENTRY
         # Copy kernel + initramfs to ESP
-        cp "$MNT/boot/vmlinuz-linux-cachyos" "$MNT/boot/efi/" 2>/dev/null || true
-        cp "$MNT/boot/initramfs-linux-cachyos.img" "$MNT/boot/efi/" 2>/dev/null || true
+        cp "$MNT/boot/vmlinuz-linux-cachyos-lts" "$MNT/boot/efi/" 2>/dev/null || true
+        cp "$MNT/boot/initramfs-linux-cachyos-lts.img" "$MNT/boot/efi/" 2>/dev/null || true
     fi
 fi
 
