@@ -1,0 +1,283 @@
+#!/usr/bin/env bash
+# Deploy bootstrapped CachyOS rootfs to NVMe with LVM + btrfs + Limine.
+#
+# Usage:
+#   sudo ./scripts/deploy-cachyos.sh /dev/nvme0n1 [ROOTFS_DIR]
+#
+# Default rootfs: /var/mnt/one/cachyos-root
+#
+# Layout:
+#   /dev/nvmeXn1p1  4 GiB  FAT32 (ESP)  → /boot
+#   /dev/nvmeXn1p2  rest   LVM PV
+#     └── VG: main → LV: sys (90%)
+#         └── btrfs: @, @home, @cache, @log, @snapshots
+#
+# See docs/deploy-cachyos.md for manual steps and troubleshooting.
+
+set -euo pipefail
+
+DISK="${1:-}"
+ROOTFS="${2:-/var/mnt/one/cachyos-root}"
+MNT="/mnt"
+LV_PERCENT="90"
+
+# -------------------------------------------------------------------
+# Validation
+# -------------------------------------------------------------------
+
+if [[ -z "$DISK" ]]; then
+    echo "usage: $0 /dev/nvmeXn1 [ROOTFS_DIR]" >&2
+    echo "  DISK is required (e.g. /dev/nvme0n1, /dev/sda)" >&2
+    exit 1
+fi
+
+if [[ $EUID -ne 0 ]]; then
+    echo "error: must run as root" >&2
+    exit 1
+fi
+
+if [[ ! -b "$DISK" ]]; then
+    echo "error: $DISK is not a block device" >&2
+    exit 1
+fi
+
+if [[ ! -d "$ROOTFS/usr/bin" ]]; then
+    echo "error: $ROOTFS doesn't look like a rootfs (no usr/bin)" >&2
+    echo "  run bootstrap-cachyos.sh first" >&2
+    exit 1
+fi
+
+for cmd in parted mkfs.fat mkfs.btrfs pvcreate vgcreate lvcreate \
+           btrfs rsync blkid chroot efibootmgr; do
+    if ! command -v "$cmd" &>/dev/null; then
+        echo "error: required command '$cmd' not found" >&2
+        exit 1
+    fi
+done
+
+# Detect partition naming: nvme0n1 → nvme0n1p1, sda → sda1
+if [[ "$DISK" =~ [0-9]$ ]]; then
+    PART1="${DISK}p1"
+    PART2="${DISK}p2"
+else
+    PART1="${DISK}1"
+    PART2="${DISK}2"
+fi
+
+# -------------------------------------------------------------------
+# Confirmation
+# -------------------------------------------------------------------
+
+echo "========================================"
+echo " CachyOS Deploy"
+echo "========================================"
+echo ""
+echo "  Disk:     $DISK"
+echo "    ESP:    $PART1  (4 GiB, FAT32)"
+echo "    LVM PV: $PART2 (rest)"
+echo "      VG:   main"
+echo "      LV:   sys (${LV_PERCENT}% of VG, btrfs)"
+echo ""
+echo "  Rootfs:   $ROOTFS"
+echo "  Target:   $MNT"
+echo ""
+echo "  WARNING: ALL DATA ON $DISK WILL BE DESTROYED"
+echo ""
+read -rp "  Type 'yes' to continue: " confirm
+if [[ "$confirm" != "yes" ]]; then
+    echo "Aborted."
+    exit 0
+fi
+
+# -------------------------------------------------------------------
+# Cleanup trap
+# -------------------------------------------------------------------
+
+cleanup() {
+    echo "==> Cleaning up mounts..."
+    umount -R "$MNT" 2>/dev/null || true
+}
+trap cleanup EXIT
+
+# -------------------------------------------------------------------
+# Part 1: Disk Setup
+# -------------------------------------------------------------------
+
+echo ""
+echo "==> Partitioning $DISK..."
+parted -s "$DISK" -- mklabel gpt
+parted -s "$DISK" -- mkpart ESP fat32 1MiB 4GiB
+parted -s "$DISK" -- set 1 esp on
+parted -s "$DISK" -- mkpart primary 4GiB 100%
+
+# Wait for partition devices to appear
+sleep 1
+partprobe "$DISK"
+sleep 1
+
+if [[ ! -b "$PART1" ]] || [[ ! -b "$PART2" ]]; then
+    echo "error: partition devices ($PART1, $PART2) not found after partitioning" >&2
+    exit 1
+fi
+
+echo "==> Formatting ESP ($PART1)..."
+mkfs.fat -F32 -n EFI "$PART1"
+
+echo "==> Setting up LVM on $PART2..."
+pvcreate -f "$PART2"
+vgcreate main "$PART2"
+lvcreate -l "${LV_PERCENT}%FREE" -n sys main
+
+echo "==> Creating btrfs on /dev/main/sys..."
+mkfs.btrfs -f -L cachyos /dev/main/sys
+
+echo "==> Creating btrfs subvolumes..."
+mount /dev/main/sys "$MNT"
+btrfs subvolume create "$MNT/@"
+btrfs subvolume create "$MNT/@home"
+btrfs subvolume create "$MNT/@cache"
+btrfs subvolume create "$MNT/@log"
+btrfs subvolume create "$MNT/@snapshots"
+umount "$MNT"
+
+# -------------------------------------------------------------------
+# Part 2: Mount & Copy
+# -------------------------------------------------------------------
+
+echo "==> Mounting target layout..."
+mount -o subvol=@,compress=zstd:1,noatime /dev/main/sys "$MNT"
+mkdir -p "$MNT"/{boot,home,.snapshots,var/cache,var/log}
+mount "$PART1" "$MNT/boot"
+mount -o subvol=@home,compress=zstd:1,noatime /dev/main/sys "$MNT/home"
+mount -o subvol=@snapshots,compress=zstd:1,noatime /dev/main/sys "$MNT/.snapshots"
+mount -o subvol=@cache,compress=zstd:1,noatime /dev/main/sys "$MNT/var/cache"
+mount -o subvol=@log,compress=zstd:1,noatime /dev/main/sys "$MNT/var/log"
+
+echo "==> Copying rootfs (this takes a while)..."
+rsync -aAXH --info=progress2 "$ROOTFS/" "$MNT/"
+
+# -------------------------------------------------------------------
+# Part 3: Chroot configuration
+# -------------------------------------------------------------------
+
+echo "==> Generating fstab..."
+ESP_UUID=$(blkid -s UUID -o value "$PART1")
+
+cat > "$MNT/etc/fstab" <<FSTAB
+# CachyOS — LVM + btrfs + ESP (generated by deploy-cachyos.sh)
+/dev/mapper/main-sys  /              btrfs  subvol=@,compress=zstd:1,noatime          0  0
+/dev/mapper/main-sys  /home          btrfs  subvol=@home,compress=zstd:1,noatime      0  0
+/dev/mapper/main-sys  /.snapshots    btrfs  subvol=@snapshots,compress=zstd:1,noatime 0  0
+/dev/mapper/main-sys  /var/cache     btrfs  subvol=@cache,compress=zstd:1,noatime     0  0
+/dev/mapper/main-sys  /var/log       btrfs  subvol=@log,compress=zstd:1,noatime       0  0
+UUID=${ESP_UUID}      /boot          vfat   umask=0077                                0  1
+FSTAB
+
+echo "==> Entering chroot for final configuration..."
+
+# Bind-mount pseudo-filesystems
+mount --bind /dev "$MNT/dev"
+mount --bind /dev/pts "$MNT/dev/pts"
+mount -t proc proc "$MNT/proc"
+mount -t sysfs sys "$MNT/sys"
+mount -t efivarfs efivarfs "$MNT/sys/firmware/efi/efivars" 2>/dev/null || true
+
+chroot "$MNT" /bin/bash <<CHROOT
+set -euo pipefail
+
+# --- mkinitcpio: ensure lvm2 hook ---
+if ! grep -q 'lvm2' /etc/mkinitcpio.conf; then
+    echo "  Adding lvm2 hook to mkinitcpio..."
+    sed -i 's/block filesystems/block lvm2 filesystems/' /etc/mkinitcpio.conf
+fi
+
+echo "  Rebuilding initramfs..."
+mkinitcpio -P
+
+# --- Limine bootloader config ---
+echo "  Writing Limine config..."
+cat > /boot/limine.conf <<'LIMINE'
+timeout: 5
+default_entry: 1
+interface_branding: CachyOS
+
+/CachyOS
+    protocol: linux
+    kernel_path: boot():/vmlinuz-linux-cachyos-lts
+    kernel_cmdline: root=/dev/mapper/main-sys rootflags=subvol=@ rw quiet splash
+    module_path: boot():/initramfs-linux-cachyos-lts.img
+
+/CachyOS (fallback)
+    protocol: linux
+    kernel_path: boot():/vmlinuz-linux-cachyos-lts
+    kernel_cmdline: root=/dev/mapper/main-sys rootflags=subvol=@ rw
+    module_path: boot():/initramfs-linux-cachyos-lts-fallback.img
+LIMINE
+
+# --- Install Limine EFI ---
+echo "  Installing Limine EFI binary..."
+mkdir -p /boot/EFI/BOOT
+cp /usr/share/limine/BOOTX64.EFI /boot/EFI/BOOT/BOOTX64.EFI
+
+# --- Register in UEFI boot menu ---
+echo "  Registering UEFI boot entry..."
+efibootmgr --create --disk "$DISK" --part 1 \
+    --label "CachyOS" --loader 'EFI\BOOT\BOOTX64.EFI' 2>/dev/null || \
+    echo "  WARNING: efibootmgr failed (expected if not booted in UEFI mode)"
+CHROOT
+
+# -------------------------------------------------------------------
+# Part 4: Verification
+# -------------------------------------------------------------------
+
+echo ""
+echo "==> Verification:"
+
+checks=(
+    "boot/vmlinuz-linux-cachyos-lts:kernel on ESP"
+    "boot/initramfs-linux-cachyos-lts.img:initramfs on ESP"
+    "boot/limine.conf:Limine config"
+    "boot/EFI/BOOT/BOOTX64.EFI:Limine EFI binary"
+    "etc/fstab:fstab"
+)
+
+ok=true
+for check in "${checks[@]}"; do
+    path="${check%%:*}"
+    label="${check#*:}"
+    if [[ -e "$MNT/$path" ]]; then
+        echo "  OK    $label"
+    else
+        echo "  FAIL  $label ($MNT/$path missing)"
+        ok=false
+    fi
+done
+
+# Verify lvm2 hook
+if grep -q 'lvm2' "$MNT/etc/mkinitcpio.conf"; then
+    echo "  OK    lvm2 hook in mkinitcpio"
+else
+    echo "  FAIL  lvm2 hook missing"
+    ok=false
+fi
+
+# -------------------------------------------------------------------
+# Done
+# -------------------------------------------------------------------
+
+echo ""
+if $ok; then
+    echo "==> Deploy complete."
+else
+    echo "==> Deploy finished with warnings — check output above."
+fi
+
+echo ""
+echo "Next steps:"
+echo "  1. Set passwords:  chroot $MNT passwd && chroot $MNT passwd neg"
+echo "  2. Unmount:        umount -R $MNT"
+echo "  3. Reboot and select 'CachyOS' in UEFI boot menu"
+echo "  4. After boot:     cd ~/src/salt && ./apply_cachyos.sh && chezmoi apply"
+
+# Disable automatic cleanup — user handles unmount manually after setting passwords
+trap - EXIT
