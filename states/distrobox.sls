@@ -5,6 +5,14 @@
 # SELinux: relabel games dir so container can write to it
 # /var/mnt → /mnt in semanage per Fedora Atomic equivalency
 {{ selinux_fcontext('steam_games_selinux', '/mnt/zero/games', '/var/mnt/zero/games', 'user_home_t') }}
+{{ selinux_fcontext('steam_library_selinux', '/mnt/zero/steam', '/var/mnt/zero/steam', 'user_home_t') }}
+
+steam_library_dir:
+  file.directory:
+    - name: /var/mnt/zero/steam/steamapps
+    - user: neg
+    - group: neg
+    - makedirs: True
 
 distrobox_steam:
   cmd.run:
@@ -14,6 +22,16 @@ distrobox_steam:
     - runas: neg
     - unless: podman container exists steam
     - onlyif: command -v distrobox
+
+steam_install_deps:
+  cmd.run:
+    - name: |
+        unset SUDO_USER SUDO_UID SUDO_GID SUDO_COMMAND
+        distrobox enter steam -- sudo pacman -S --noconfirm --needed lib32-libdisplay-info
+    - runas: neg
+    - unless: distrobox enter steam -- pacman -Q lib32-libdisplay-info 2>/dev/null
+    - require:
+      - cmd: distrobox_steam
 
 steam_export_app:
   cmd.run:
