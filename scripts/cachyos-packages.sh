@@ -14,6 +14,28 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
+# Retry wrapper for transient network failures (AUR RPC resets, mirror hiccups)
+# Usage: retry <max_attempts> <description> <command...>
+retry() {
+    local max_attempts="$1" desc="$2"
+    shift 2
+    local attempt=1 delay=10
+    while true; do
+        echo "==> [$desc] attempt $attempt/$max_attempts"
+        if "$@"; then
+            return 0
+        fi
+        if (( attempt >= max_attempts )); then
+            echo "==> [$desc] FAILED after $max_attempts attempts" >&2
+            return 1
+        fi
+        echo "==> [$desc] failed, retrying in ${delay}s..."
+        sleep "$delay"
+        (( attempt++ ))
+        (( delay *= 2 ))
+    done
+}
+
 # ===================================================================
 # OFFICIAL PACKAGES (pacman)
 # ===================================================================
@@ -426,11 +448,11 @@ AUR_PKGS=(
 # ===================================================================
 
 echo "==> Installing official packages (pacman)..."
-pacman -S --needed --noconfirm "${PACMAN_PKGS[@]}"
+retry 3 "pacman" pacman -S --needed --noconfirm "${PACMAN_PKGS[@]}"
 
 echo ""
 echo "==> Installing AUR packages (paru as user neg)..."
-su - neg -c "paru -S --needed --noconfirm --noprovides --skipreview ${AUR_PKGS[*]}"
+retry 5 "paru/AUR" su - neg -c "paru -S --needed --noconfirm --noprovides --skipreview ${AUR_PKGS[*]}"
 
 echo ""
 echo "==> Done. Packages needing manual build:"
