@@ -358,6 +358,7 @@ AUR_PKGS=(
     netmask             # IP address / netmask calculator
     no-more-secrets     # Sneakers movie decryption effect
     par                 # paragraph reformatter
+    claude-code         # Claude AI coding assistant CLI
     salt                # infrastructure configuration management
     pyprland            # Hyprland plugin framework (Python)
     wlogout             # Wayland logout menu
