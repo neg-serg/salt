@@ -18,7 +18,19 @@ ollama_models_dir:
     - require:
       - mount: mount_one
 
-{{ selinux_fcontext('ollama_selinux_context', '/mnt/one/ollama', '/var/mnt/one/ollama', 'var_lib_t', requires=['file: ollama_models_dir']) }}
+# file_contexts.local uses last-match-wins ordering: the broad /mnt/one(/.*)?
+# rule (user_home_t) overrides this specific rule if added earlier. Fix: delete
+# and re-add to ensure this rule is LAST in the file and takes precedence.
+ollama_selinux_context:
+  cmd.run:
+    - name: |
+        semanage fcontext -d -t var_lib_t '/mnt/one/ollama(/.*)?' 2>/dev/null || true
+        semanage fcontext -a -t var_lib_t '/mnt/one/ollama(/.*)?'
+        restorecon -Rv /var/mnt/one/ollama
+    - shell: /bin/bash
+    - unless: ls -Zd /var/mnt/one/ollama 2>/dev/null | grep -q var_lib_t
+    - require:
+      - file: ollama_models_dir
 
 # ollama server (init_t) needs to read its key from ~/.ollama/ (user_home_t → var_lib_t)
 # uses /var/home path per equivalency rule '/home /var/home'
