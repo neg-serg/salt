@@ -49,6 +49,9 @@ PACKAGES=(
     snapper
     snap-pac
 
+    # LVM (for /dev/main/sys)
+    lvm2
+
     # XFS support (for /var/mnt/zero, /var/mnt/one)
     xfsprogs
 
@@ -263,8 +266,10 @@ pacman-key --populate cachyos 2>/dev/null || {
 # vconsole.conf (silences mkinitcpio warning)
 echo "KEYMAP=us" > /etc/vconsole.conf
 
-# --- mkinitcpio: zstd compression (saves ESP space for Limine snapshots) ---
+# --- mkinitcpio: LVM hook + zstd compression ---
 if [[ -f /etc/mkinitcpio.conf ]]; then
+    # Add lvm2 hook before filesystems (required for LVM root)
+    sed -i "s/block filesystems/block lvm2 filesystems/" /etc/mkinitcpio.conf
     sed -i "s/^#\?COMPRESSION=.*/COMPRESSION=\"zstd\"/" /etc/mkinitcpio.conf
     sed -i "s/^#\?COMPRESSION_OPTIONS=.*/COMPRESSION_OPTIONS=(-19 -T0)/" /etc/mkinitcpio.conf
 else
@@ -272,7 +277,7 @@ else
 MODULES=()
 BINARIES=()
 FILES=()
-HOOKS=(base udev autodetect microcode modconf kms keyboard keymap consolefont block filesystems fsck)
+HOOKS=(base udev autodetect microcode modconf kms keyboard keymap consolefont block lvm2 filesystems fsck)
 COMPRESSION="zstd"
 COMPRESSION_OPTIONS=(-19 -T0)
 MKINIT
@@ -291,13 +296,13 @@ interface_branding: CachyOS
 /CachyOS
     protocol: linux
     kernel_path: boot():/vmlinuz-linux-cachyos-lts
-    kernel_cmdline: root=LABEL=cachyos rootflags=subvol=@ rw quiet splash
+    kernel_cmdline: root=/dev/mapper/main-sys rootflags=subvol=@ rw quiet splash
     module_path: boot():/initramfs-linux-cachyos-lts.img
 
 /CachyOS (fallback)
     protocol: linux
     kernel_path: boot():/vmlinuz-linux-cachyos-lts
-    kernel_cmdline: root=LABEL=cachyos rootflags=subvol=@ rw
+    kernel_cmdline: root=/dev/mapper/main-sys rootflags=subvol=@ rw
     module_path: boot():/initramfs-linux-cachyos-lts-fallback.img
 LIMINE
 
@@ -348,12 +353,12 @@ cat > /etc/deploy-notes/fstab-template <<FSTAB_TMPL
 # Replace LABEL=cachyos with UUID=<your-uuid> during deployment
 #
 # <device>        <mount>        <type>  <options>                                              <dump> <pass>
-# LABEL=cachyos   /              btrfs   subvol=@,compress=zstd:1,noatime          0  0
-# LABEL=cachyos   /home          btrfs   subvol=@home,compress=zstd:1,noatime      0  0
-# LABEL=cachyos   /.snapshots    btrfs   subvol=@snapshots,compress=zstd:1,noatime 0  0
-# LABEL=cachyos   /var/cache     btrfs   subvol=@cache,compress=zstd:1,noatime     0  0
-# LABEL=cachyos   /var/log       btrfs   subvol=@log,compress=zstd:1,noatime       0  0
-# LABEL=efi       /boot/efi      vfat    umask=0077                                              0     1
+# /dev/main/sys   /              btrfs   subvol=@,compress=zstd:1,noatime          0  0
+# /dev/main/sys   /home          btrfs   subvol=@home,compress=zstd:1,noatime      0  0
+# /dev/main/sys   /.snapshots    btrfs   subvol=@snapshots,compress=zstd:1,noatime 0  0
+# /dev/main/sys   /var/cache     btrfs   subvol=@cache,compress=zstd:1,noatime     0  0
+# /dev/main/sys   /var/log       btrfs   subvol=@log,compress=zstd:1,noatime       0  0
+# /dev/nvme0n1p1  /boot          vfat    umask=0077                                0  1
 FSTAB_TMPL
 
 # --- Networking ---

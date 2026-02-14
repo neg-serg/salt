@@ -90,6 +90,11 @@ cachyos_snapper_registered:
 # Initramfs
 # ===================================================================
 
+cachyos_mkinitcpio_lvm2_hook:
+  cmd.run:
+    - name: 'true'
+    - unless: grep -q 'lvm2' /etc/mkinitcpio.conf
+
 cachyos_mkinitcpio_zstd:
   cmd.run:
     - name: 'true'

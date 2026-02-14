@@ -10,6 +10,9 @@ set -euo pipefail
 # Creates a temporary qcow2 image, copies rootfs into it, boots with UEFI.
 # The VM gets a virtio NIC with user-mode networking (SLIRP) — DHCP auto.
 # SSH forwarded to host port 2222.
+#
+# Note: VM uses simple btrfs (no LVM) for quick testing.
+# Production deployment uses LVM — see docs/deploy-cachyos.md.
 
 ROOTFS="${1:-/var/mnt/one/cachyos-root}"
 VM_DIR="/tmp/cachyos-vm"
@@ -55,7 +58,7 @@ modprobe nbd max_part=8
 qemu-nbd --connect=/dev/nbd0 "$DISK"
 trap 'echo "==> Cleaning up..."; umount -R "$MNT" 2>/dev/null || true; qemu-nbd --disconnect /dev/nbd0 2>/dev/null || true' EXIT
 
-# Partition: 512M EFI + rest btrfs
+# Partition: 512M EFI (= /boot) + rest btrfs
 echo "==> Partitioning..."
 parted -s /dev/nbd0 -- mklabel gpt
 parted -s /dev/nbd0 -- mkpart ESP fat32 1MiB 513MiB
@@ -81,19 +84,22 @@ btrfs subvolume create "$MNT/@log"
 btrfs subvolume create "$MNT/@snapshots"
 umount "$MNT"
 
-# Mount subvolumes
+# Mount subvolumes (ESP at /boot — Limine reads FAT32 only)
 echo "==> Mounting subvolumes..."
 mount -o subvol=@,compress=zstd:1,noatime /dev/nbd0p2 "$MNT"
-mkdir -p "$MNT"/{home,boot/efi,.snapshots,var/cache,var/log}
+mkdir -p "$MNT"/{boot,home,.snapshots,var/cache,var/log}
 mount -o subvol=@home,compress=zstd:1,noatime /dev/nbd0p2 "$MNT/home"
 mount -o subvol=@snapshots,compress=zstd:1,noatime /dev/nbd0p2 "$MNT/.snapshots"
 mount -o subvol=@cache,compress=zstd:1,noatime /dev/nbd0p2 "$MNT/var/cache"
 mount -o subvol=@log,compress=zstd:1,noatime /dev/nbd0p2 "$MNT/var/log"
-mount /dev/nbd0p1 "$MNT/boot/efi"
 
-# Copy rootfs
+# Copy rootfs (without /boot — will populate ESP separately)
 echo "==> Copying rootfs (this takes a while)..."
-rsync -aAXH --info=progress2 "$ROOTFS/" "$MNT/"
+rsync -aAXH --info=progress2 --exclude='/boot/*' "$ROOTFS/" "$MNT/"
+
+# Mount ESP at /boot and copy boot files there
+mount /dev/nbd0p1 "$MNT/boot"
+rsync -aAXH "$ROOTFS/boot/" "$MNT/boot/"
 
 # Generate fstab
 echo "==> Generating fstab..."
@@ -107,10 +113,10 @@ UUID=${ROOT_UUID}  /home          btrfs  subvol=@home,compress=zstd:1,noatime   
 UUID=${ROOT_UUID}  /.snapshots    btrfs  subvol=@snapshots,compress=zstd:1,noatime 0  0
 UUID=${ROOT_UUID}  /var/cache     btrfs  subvol=@cache,compress=zstd:1,noatime     0  0
 UUID=${ROOT_UUID}  /var/log       btrfs  subvol=@log,compress=zstd:1,noatime       0  0
-UUID=${EFI_UUID}   /boot/efi      vfat   umask=0077                                0  1
+UUID=${EFI_UUID}   /boot          vfat   umask=0077                                0  1
 FSTAB
 
-# Update Limine config to use UUID instead of LABEL
+# Update Limine config for VM (direct btrfs root, no LVM)
 echo "==> Updating bootloader config..."
 cat > "$MNT/boot/limine.conf" <<LIMINE
 timeout: 5
@@ -130,32 +136,26 @@ interface_branding: CachyOS VM
     module_path: boot():/initramfs-linux-cachyos-lts-fallback.img
 LIMINE
 
-# Copy Limine EFI to ESP
-mkdir -p "$MNT/boot/efi/EFI/BOOT"
+# Install Limine EFI to ESP
+mkdir -p "$MNT/boot/EFI/BOOT"
 if [[ -f "$MNT/usr/share/limine/BOOTX64.EFI" ]]; then
-    cp "$MNT/usr/share/limine/BOOTX64.EFI" "$MNT/boot/efi/EFI/BOOT/BOOTX64.EFI"
-    # Also copy limine.conf to ESP root for Limine to find it
-    cp "$MNT/boot/limine.conf" "$MNT/boot/efi/limine.conf"
+    cp "$MNT/usr/share/limine/BOOTX64.EFI" "$MNT/boot/EFI/BOOT/BOOTX64.EFI"
     echo "  Limine EFI installed"
 else
     echo "  WARNING: Limine EFI binary not found, using systemd-boot fallback"
-    # Fallback: use systemd-boot if available
     if [[ -f "$MNT/usr/lib/systemd/boot/efi/systemd-bootx64.efi" ]]; then
-        cp "$MNT/usr/lib/systemd/boot/efi/systemd-bootx64.efi" "$MNT/boot/efi/EFI/BOOT/BOOTX64.EFI"
-        mkdir -p "$MNT/boot/efi/loader/entries"
-        cat > "$MNT/boot/efi/loader/loader.conf" <<LOADER
+        cp "$MNT/usr/lib/systemd/boot/efi/systemd-bootx64.efi" "$MNT/boot/EFI/BOOT/BOOTX64.EFI"
+        mkdir -p "$MNT/boot/loader/entries"
+        cat > "$MNT/boot/loader/loader.conf" <<LOADER
 default cachyos.conf
 timeout 5
 LOADER
-        cat > "$MNT/boot/efi/loader/entries/cachyos.conf" <<ENTRY
+        cat > "$MNT/boot/loader/entries/cachyos.conf" <<ENTRY
 title   CachyOS VM
 linux   /vmlinuz-linux-cachyos-lts
 initrd  /initramfs-linux-cachyos-lts.img
 options root=UUID=${ROOT_UUID} rootflags=subvol=@ rw console=ttyS0,115200 console=tty0
 ENTRY
-        # Copy kernel + initramfs to ESP
-        cp "$MNT/boot/vmlinuz-linux-cachyos-lts" "$MNT/boot/efi/" 2>/dev/null || true
-        cp "$MNT/boot/initramfs-linux-cachyos-lts.img" "$MNT/boot/efi/" 2>/dev/null || true
     fi
 fi
 
