@@ -368,13 +368,13 @@ chmod 440 /etc/sudoers.d/99-neg-nopasswd
 # --- Full package installation (separate chroot pass) ---
 if [[ -f /mnt/packages/cachyos-packages.sh ]]; then
     echo "==> [container] Copying package script into target..."
-    cp /mnt/packages/cachyos-packages.sh "$TARGET/tmp/cachyos-packages.sh"
-    chmod +x "$TARGET/tmp/cachyos-packages.sh"
+    cp /mnt/packages/cachyos-packages.sh "$TARGET/root/cachyos-packages.sh"
+    chmod +x "$TARGET/root/cachyos-packages.sh"
 
     echo "==> [container] Running full package installation in chroot..."
-    arch-chroot "$TARGET" /tmp/cachyos-packages.sh
+    arch-chroot "$TARGET" bash /root/cachyos-packages.sh
 
-    rm -f "$TARGET/tmp/cachyos-packages.sh"
+    rm -f "$TARGET/root/cachyos-packages.sh"
 else
     echo "==> WARNING: cachyos-packages.sh not found at /mnt/packages/, skipping full install"
 fi
