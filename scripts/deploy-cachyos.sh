@@ -18,7 +18,7 @@ set -euo pipefail
 
 DISK="${1:-}"
 ROOTFS="${2:-/var/mnt/one/cachyos-root}"
-MNT="/mnt"
+MNT="/mnt/deploy"
 LV_PERCENT="90"
 
 # -------------------------------------------------------------------
@@ -96,8 +96,11 @@ fi
 cleanup() {
     echo "==> Cleaning up mounts..."
     umount -R "$MNT" 2>/dev/null || true
+    rmdir "$MNT" 2>/dev/null || true
 }
 trap cleanup EXIT
+
+mkdir -p "$MNT"
 
 # -------------------------------------------------------------------
 # Part 1: Disk Setup
@@ -154,7 +157,7 @@ mount -o subvol=@cache,compress=zstd:1,noatime /dev/main/sys "$MNT/var/cache"
 mount -o subvol=@log,compress=zstd:1,noatime /dev/main/sys "$MNT/var/log"
 
 echo "==> Copying rootfs (this takes a while)..."
-rsync -aAXH --info=progress2 "$ROOTFS/" "$MNT/"
+rsync -aAH --info=progress2 "$ROOTFS/" "$MNT/"
 
 # -------------------------------------------------------------------
 # Part 3: Chroot configuration
