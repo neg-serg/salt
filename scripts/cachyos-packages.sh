@@ -106,6 +106,7 @@ PACMAN_PKGS=(
     sonic-visualiser    # audio waveform/spectrogram viewer
     wiremix             # TUI PipeWire mixer
     supercollider       # audio synthesis / algorithmic composition
+    sc3-plugins         # SuperCollider community plugins
     sox                 # audio processing CLI (Swiss Army knife)
     swayimg             # Wayland image viewer
     tesseract           # OCR engine
@@ -126,6 +127,7 @@ PACMAN_PKGS=(
     powertop            # power consumption analyzer
     s-tui               # terminal CPU stress test + monitor
     multipath-tools     # device-mapper multipath I/O
+    cpufetch            # CPU architecture info display
     fastfetch           # system info display (neofetch alternative)
     fio                 # flexible I/O benchmark
     gptfdisk            # GPT partition table tools (gdisk)
@@ -196,6 +198,7 @@ PACMAN_PKGS=(
     git-lfs             # Git Large File Storage
     glow                # terminal Markdown renderer
     gopass              # password manager (pass-compatible, GPG)
+    himalaya            # CLI email client (IMAP/SMTP)
     isync               # IMAP mailbox sync (mbsync)
     jc                  # JSON converter for CLI output
     lolcat              # rainbow text colorizer
@@ -247,6 +250,9 @@ PACMAN_PKGS=(
     wf-recorder         # Wayland screen recorder
     wtype               # Wayland keyboard input tool (xdotool equivalent)
     ydotool             # input automation (mouse/keyboard, Wayland)
+    quickshell          # Qt6/QML Wayland shell toolkit
+    swayosd             # on-screen display for Wayland (volume/brightness)
+    wl-clip-persist     # keep Wayland clipboard after app closes
 
     # --- Gaming & Emulation (disabled for now, Steam/Proton handled separately) ---
     # 0ad                 # RTS game (Age of Empires-like)
@@ -344,11 +350,10 @@ AUR_PKGS=(
     hw-probe            # hardware probe collector
     procdump            # process core dump generator (MS port)
     below               # cgroup2 resource monitor (Facebook)
-    cpufetch-git        # CPU architecture info display
     dcfldd              # forensic dd with hashing
     freeze-bin          # code screenshot generator (Charm)
     goimapnotify        # IMAP IDLE notification daemon
-    hyprland-qtutils    # Qt utilities for Hyprland (file dialogs)
+    # hyprland-qtutils  # conflicts with hyprland-guiutils from official repos
     neo-matrix          # Matrix rain terminal effect
     netmask             # IP address / netmask calculator
     no-more-secrets     # Sneakers movie decryption effect
@@ -367,9 +372,7 @@ AUR_PKGS=(
     # --- Former COPR packages ---
     dualsensectl        # DualSense controller LED/haptics control
     espanso-wayland     # text expander (Wayland build)
-    himalaya-git        # CLI email client (IMAP/SMTP)
     brutefir            # convolution audio engine
-    sc3-plugins-git     # SuperCollider community plugins
 
     # --- Packages not in official Arch repos ---
     jdupes              # duplicate file finder (fast, jody's)
@@ -393,9 +396,6 @@ AUR_PKGS=(
     python-rapidgzip    # fast parallel gzip decompressor
     xxh-git             # bring your shell through SSH
     gist                # GitHub Gist CLI (Ruby)
-    quickshell-git      # Qt6/QML Wayland shell toolkit
-    swayosd-git         # on-screen display for Wayland (volume/brightness)
-    wl-clip-persist-git # keep Wayland clipboard after app closes
     newsraft            # terminal RSS/Atom reader
     unflac              # FLAC + cue splitter
     cmake-language-server  # CMake LSP server
@@ -429,7 +429,7 @@ pacman -S --needed --noconfirm "${PACMAN_PKGS[@]}"
 
 echo ""
 echo "==> Installing AUR packages (paru as user neg)..."
-su - neg -c "paru -S --needed --noconfirm ${AUR_PKGS[*]}"
+su - neg -c "paru -S --needed --noconfirm --noprovides --skipreview ${AUR_PKGS[*]}"
 
 echo ""
 echo "==> Done. Packages needing manual build:"
