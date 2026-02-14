@@ -360,10 +360,24 @@ systemctl enable sshd
 systemctl enable snapper-timeline.timer
 systemctl enable snapper-cleanup.timer
 
-# --- AUR packages (installed via paru as user neg) ---
-echo "==> Installing AUR packages via paru..."
-su - neg -c "paru -S --noconfirm --needed amneziawg-tools amneziawg-dkms"
+# --- Passwordless sudo for neg (paru needs it for AUR builds) ---
+echo "neg ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/99-neg-nopasswd
+chmod 440 /etc/sudoers.d/99-neg-nopasswd
 '
+
+# --- Full package installation (separate chroot pass) ---
+if [[ -f /mnt/packages/cachyos-packages.sh ]]; then
+    echo "==> [container] Copying package script into target..."
+    cp /mnt/packages/cachyos-packages.sh "$TARGET/tmp/cachyos-packages.sh"
+    chmod +x "$TARGET/tmp/cachyos-packages.sh"
+
+    echo "==> [container] Running full package installation in chroot..."
+    arch-chroot "$TARGET" /tmp/cachyos-packages.sh
+
+    rm -f "$TARGET/tmp/cachyos-packages.sh"
+else
+    echo "==> WARNING: cachyos-packages.sh not found at /mnt/packages/, skipping full install"
+fi
 
 echo "==> [container] Bootstrap complete."
 INNER
@@ -377,10 +391,13 @@ INNER_SCRIPT="${INNER_SCRIPT//__PACKAGES__/${PACKAGES[*]}}"
 # Run in Podman
 # -------------------------------------------------------------------
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
 echo "==> Launching Arch container for bootstrap..."
 podman run --rm -it --privileged \
     --name cachyos-bootstrap \
     -v "$TARGET:/mnt/target" \
+    -v "$SCRIPT_DIR:/mnt/packages:ro" \
     "$ARCH_IMAGE" \
     bash -c "$INNER_SCRIPT"
 
