@@ -248,19 +248,19 @@ PACMAN_PKGS=(
     wtype               # Wayland keyboard input tool (xdotool equivalent)
     ydotool             # input automation (mouse/keyboard, Wayland)
 
-    # --- Gaming & Emulation ---
-    0ad                 # RTS game (Age of Empires-like)
-    angband             # classic roguelike dungeon crawler
-    crawl-tiles         # Dungeon Crawl Stone Soup (graphical)
-    endless-sky         # 2D space trading / combat game
-    gnuchess            # chess engine
-    nethack             # classic roguelike
-    openmw              # open Morrowind engine reimplementation
-    retroarch           # multi-system emulator frontend
-    supertux            # 2D platformer (Mario-like)
-    wesnoth             # turn-based strategy game
-    xaos                # real-time fractal zoomer
-    xonotic             # fast-paced FPS (Quake-like)
+    # --- Gaming & Emulation (disabled for now, Steam/Proton handled separately) ---
+    # 0ad                 # RTS game (Age of Empires-like)
+    # angband             # classic roguelike dungeon crawler
+    # crawl-tiles         # Dungeon Crawl Stone Soup (graphical)
+    # endless-sky         # 2D space trading / combat game
+    # gnuchess            # chess engine
+    # nethack             # classic roguelike
+    # openmw              # open Morrowind engine reimplementation
+    # retroarch           # multi-system emulator frontend
+    # supertux            # 2D platformer (Mario-like)
+    # wesnoth             # turn-based strategy game
+    # xaos                # real-time fractal zoomer
+    # xonotic             # fast-paced FPS (Quake-like)
 
     # --- Security ---
     hashcat             # GPU-accelerated password recovery
@@ -356,11 +356,11 @@ AUR_PKGS=(
     salt                # infrastructure configuration management
     pyprland            # Hyprland plugin framework (Python)
     wlogout             # Wayland logout menu
-    abuse               # side-scrolling action game
-    dosbox-staging      # DOS emulator (modern fork)
-    fheroes2            # Heroes of Might and Magic II engine
-    flare-game          # action RPG (Diablo-like)
-    bottles             # Wine prefix manager (GUI)
+    # abuse               # side-scrolling action game
+    # dosbox-staging      # DOS emulator (modern fork)
+    # fheroes2            # Heroes of Might and Magic II engine
+    # flare-game          # action RPG (Diablo-like)
+    # bottles             # Wine prefix manager (GUI)
     ddccontrol          # DDC/CI monitor control
     git-extras          # extra git commands (git-summary, etc.)
 
