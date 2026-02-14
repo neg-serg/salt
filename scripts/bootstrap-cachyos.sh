@@ -248,7 +248,8 @@ echo "root:changeme" | chpasswd
 # User
 useradd -m -G wheel -s /bin/zsh neg
 echo "neg:changeme" | chpasswd
-echo "%wheel ALL=(ALL:ALL) ALL" >> /etc/sudoers
+# Uncomment existing wheel rule (must stay BEFORE @includedir so NOPASSWD drop-in wins)
+sed -i 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 
 # Initialize pacman keyring properly inside target
 pacman-key --init
