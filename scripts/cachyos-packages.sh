@@ -447,12 +447,26 @@ AUR_PKGS=(
 # Install
 # ===================================================================
 
+pacman_install() {
+    # Refresh databases — mirrors may have synced since last failure
+    pacman -Sy --noconfirm
+    # Delete partial/corrupted cached downloads that would block re-download
+    find /var/cache/pacman/pkg/ -name '*.part' -delete 2>/dev/null || true
+    # --needed skips already-installed packages (safe after partial installs)
+    pacman -S --needed --noconfirm "${PACMAN_PKGS[@]}"
+}
+
+paru_install() {
+    # -Sy refreshes databases; --needed skips already-installed packages
+    su - neg -c "paru -Sy --needed --noconfirm --noprovides --skipreview ${AUR_PKGS[*]}"
+}
+
 echo "==> Installing official packages (pacman)..."
-retry 3 "pacman" pacman -S --needed --noconfirm "${PACMAN_PKGS[@]}"
+retry 3 "pacman" pacman_install
 
 echo ""
 echo "==> Installing AUR packages (paru as user neg)..."
-retry 5 "paru/AUR" su - neg -c "paru -S --needed --noconfirm --noprovides --skipreview ${AUR_PKGS[*]}"
+retry 5 "paru/AUR" paru_install
 
 echo ""
 echo "==> Done. Packages needing manual build:"
