@@ -54,6 +54,7 @@ PACKAGES=(
 
     # Network
     networkmanager
+    iwd
     openssh
 
     # AUR helper (available in CachyOS repos)
@@ -355,8 +356,23 @@ cat > /etc/deploy-notes/fstab-template <<FSTAB_TMPL
 # LABEL=efi       /boot/efi      vfat    umask=0077                                              0     1
 FSTAB_TMPL
 
+# --- Networking ---
+# Fallback resolv.conf until NetworkManager/DHCP populates it
+cat > /etc/resolv.conf <<RESOLV
+nameserver 1.1.1.1
+nameserver 8.8.8.8
+RESOLV
+
+# Tell NetworkManager to use iwd as Wi-Fi backend (iwd installed in packages)
+mkdir -p /etc/NetworkManager/conf.d
+cat > /etc/NetworkManager/conf.d/wifi-iwd.conf <<NMCONF
+[device]
+wifi.backend=iwd
+NMCONF
+
 # Services
 systemctl enable NetworkManager
+systemctl enable iwd
 systemctl enable sshd
 systemctl enable snapper-timeline.timer
 systemctl enable snapper-cleanup.timer

@@ -145,6 +145,10 @@ cachyos_svc_networkmanager:
   service.enabled:
     - name: NetworkManager
 
+cachyos_svc_iwd:
+  service.enabled:
+    - name: iwd
+
 cachyos_svc_sshd:
   service.enabled:
     - name: sshd
@@ -156,6 +160,24 @@ cachyos_svc_snapper_timeline:
 cachyos_svc_snapper_cleanup:
   service.enabled:
     - name: snapper-cleanup.timer
+
+# ===================================================================
+# Networking
+# ===================================================================
+
+cachyos_nm_iwd_backend:
+  file.exists:
+    - name: /etc/NetworkManager/conf.d/wifi-iwd.conf
+
+cachyos_nm_iwd_backend_content:
+  cmd.run:
+    - name: 'true'
+    - unless: grep -q 'wifi.backend=iwd' /etc/NetworkManager/conf.d/wifi-iwd.conf
+
+cachyos_resolv_conf:
+  cmd.run:
+    - name: 'true'
+    - unless: test -s /etc/resolv.conf
 
 # ===================================================================
 # Key packages (spot-check representative set from each category)
