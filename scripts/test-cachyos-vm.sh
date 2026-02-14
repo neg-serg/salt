@@ -95,11 +95,11 @@ mount -o subvol=@log,compress=zstd:1,noatime /dev/nbd0p2 "$MNT/var/log"
 
 # Copy rootfs (without /boot — will populate ESP separately)
 echo "==> Copying rootfs (this takes a while)..."
-rsync -aAXH --info=progress2 --exclude='/boot/*' "$ROOTFS/" "$MNT/"
+rsync -aH --info=progress2 --exclude='/boot/*' "$ROOTFS/" "$MNT/"
 
-# Mount ESP at /boot and copy boot files there
+# Mount ESP at /boot and copy boot files there (no -X: FAT32 has no xattrs)
 mount /dev/nbd0p1 "$MNT/boot"
-rsync -aAXH "$ROOTFS/boot/" "$MNT/boot/"
+rsync -aH "$ROOTFS/boot/" "$MNT/boot/"
 
 # Generate fstab
 echo "==> Generating fstab..."
