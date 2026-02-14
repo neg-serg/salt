@@ -265,7 +265,106 @@ else
 fi
 
 # -------------------------------------------------------------------
-# Done
+# Write post-boot instructions to target filesystem
+# -------------------------------------------------------------------
+
+cat > "$MNT/root/POST-BOOT.md" <<'POSTBOOT'
+# CachyOS Post-Boot Guide
+
+## 1. Set passwords (in chroot before reboot, or after first boot)
+
+    passwd          # root
+    passwd neg      # user
+
+## 2. Network
+
+NetworkManager starts automatically. For Wi-Fi:
+
+    nmcli device wifi list
+    nmcli device wifi connect <SSID> --ask
+
+Verify:
+
+    ping -c1 archlinux.org
+
+## 3. Mount XFS data disks
+
+    sudo vgchange -ay xenon argon
+    sudo mkdir -p /mnt/{one,zero}
+    sudo mount /dev/mapper/xenon-one /mnt/one
+    sudo mount /dev/mapper/argon-zero /mnt/zero
+
+Salt repo and rootfs backup are on xenon-one:
+
+    /mnt/one/salt/              ← full salt repo
+    /mnt/one/cachyos-root/      ← original rootfs
+
+## 4. Copy salt repo to home
+
+    mkdir -p ~/src
+    cp -a /mnt/one/salt ~/src/salt
+    cd ~/src/salt
+
+## 5. GPG + Yubikey
+
+Plug in the Yubikey, then:
+
+    gpg --card-status          # verify card is detected
+    gpg --card-edit             # fetch if needed:  fetch → quit
+
+GPG agent starts via socket activation (systemd user units).
+No manual daemon start needed.
+
+## 6. Gopass (secrets)
+
+    gopass clone git@github.com:<user>/password-store.git
+    gopass ls                  # verify decryption works
+
+If cloning via SSH fails (no key yet), use HTTPS:
+
+    gopass clone https://github.com/<user>/password-store.git
+
+Secrets needed by chezmoi templates:
+
+    api/github-token           email/gmail/address
+    api/brave-search           email/gmail/app-password
+    api/context7               lastfm/username, lastfm/password
+
+## 7. Apply Salt + chezmoi
+
+    cd ~/src/salt
+    ./apply_cachyos.sh
+
+This runs:
+  - Salt verification state (cachyos.sls) — checks packages, services, configs
+  - chezmoi apply — deploys all dotfiles (renders .tmpl files via gopass)
+
+## 8. Switch git remote to SSH (if cloned via HTTPS)
+
+    cd ~/src/salt
+    git remote set-url origin git@github.com:neg-serg/salt.git
+
+## 9. Add XFS mounts to fstab (permanent)
+
+    echo '/dev/mapper/xenon-one  /mnt/one  xfs  noatime  0  0' | sudo tee -a /etc/fstab
+    echo '/dev/mapper/argon-zero /mnt/zero xfs  noatime  0  0' | sudo tee -a /etc/fstab
+
+## 10. Reboot and verify
+
+    sudo reboot
+
+After reboot, everything should be functional:
+  - Hyprland (compositor), kitty (terminal), rofi (launcher)
+  - GPG agent (Yubikey), gopass (secrets)
+  - Mail (mbsync), calendar (vdirsyncer)
+  - MPD (music), mpv (video)
+  - All user services auto-start via systemd
+POSTBOOT
+
+echo "  OK    post-boot guide written to /root/POST-BOOT.md"
+
+# -------------------------------------------------------------------
+# Console output
 # -------------------------------------------------------------------
 
 echo ""
@@ -276,11 +375,23 @@ else
 fi
 
 echo ""
-echo "Next steps:"
-echo "  1. Set passwords:  chroot $MNT passwd && chroot $MNT passwd neg"
-echo "  2. Unmount:        umount -R $MNT"
-echo "  3. Reboot and select 'CachyOS' in UEFI boot menu"
-echo "  4. After boot:     cd ~/src/salt && ./apply_cachyos.sh && chezmoi apply"
+echo "Before reboot (still in chroot/live USB):"
+echo "  1. Set passwords:    chroot $MNT passwd && chroot $MNT passwd neg"
+echo "  2. Unmount:          umount -R $MNT"
+echo "  3. Reboot:           select 'CachyOS' in UEFI boot menu"
+echo ""
+echo "After first boot as neg:"
+echo "  4. Mount XFS:        sudo vgchange -ay xenon argon"
+echo "                       sudo mkdir -p /mnt/{one,zero}"
+echo "                       sudo mount /dev/mapper/xenon-one /mnt/one"
+echo "                       sudo mount /dev/mapper/argon-zero /mnt/zero"
+echo "  5. Copy salt repo:   cp -a /mnt/one/salt ~/src/salt"
+echo "  6. Yubikey + gopass:  gpg --card-status && gopass clone <store-url>"
+echo "  7. Apply config:     cd ~/src/salt && ./apply_cachyos.sh"
+echo "  8. Add to fstab:     see /root/POST-BOOT.md (step 9)"
+echo ""
+echo "Full guide saved to: $MNT/root/POST-BOOT.md"
+echo "Salt repo on XFS:    /mnt/one/salt/"
 
 # Disable automatic cleanup — user handles unmount manually after setting passwords
 trap - EXIT

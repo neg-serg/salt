@@ -453,14 +453,24 @@ for check in "${checks[@]}"; do
 done
 
 if $ok; then
-    # Copy deploy script alongside rootfs for use from live USB
-    DEPLOY_SCRIPT="$SCRIPT_DIR/deploy-cachyos.sh"
     TARGET_DIR="$(dirname "$TARGET")"
-    if [[ -f "$DEPLOY_SCRIPT" ]]; then
-        cp "$DEPLOY_SCRIPT" "$TARGET_DIR/deploy-cachyos.sh"
-        chmod +x "$TARGET_DIR/deploy-cachyos.sh"
-        echo "  OK  deploy script copied to $TARGET_DIR/"
-    fi
+    REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+    # Copy salt repo alongside rootfs (needed after NVMe is reformatted)
+    echo ""
+    echo "==> Copying salt repo to $TARGET_DIR/salt/ ..."
+    rsync -a --delete \
+        --exclude='rpms/' \
+        --exclude='.venv/' \
+        --exclude='logs/' \
+        --exclude='.salt_runtime/' \
+        --exclude='.claude/' \
+        --exclude='__pycache__/' \
+        --exclude='.password' \
+        --exclude='tt' \
+        "$REPO_ROOT/" "$TARGET_DIR/salt/"
+    chmod +x "$TARGET_DIR/salt/scripts/deploy-cachyos.sh"
+    echo "  OK  salt repo copied to $TARGET_DIR/salt/"
 
     echo ""
     echo "==> Rootfs ready at: $TARGET"
@@ -471,7 +481,7 @@ if $ok; then
     echo "Deploy from a live USB:"
     echo "  vgchange -ay xenon"
     echo "  mount /dev/mapper/xenon-one /mnt/one"
-    echo "  bash /mnt/one/deploy-cachyos.sh /dev/nvme0n1 /mnt/one/cachyos-root"
+    echo "  bash /mnt/one/salt/scripts/deploy-cachyos.sh /dev/nvme0n1 /mnt/one/cachyos-root"
 else
     echo ""
     echo "==> Bootstrap may have failed — check output above"
