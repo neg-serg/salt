@@ -55,6 +55,7 @@ ollama_start:
         done
         echo "ollama failed to start within 30s" >&2
         exit 1
+    - shell: /bin/bash
     - unless: curl -sf http://127.0.0.1:11434/api/tags >/dev/null 2>&1
     - require:
       - cmd: ollama_enable
@@ -64,9 +65,10 @@ ollama_start:
 pull_{{ model | replace('.', '_') | replace(':', '_') | replace('-', '_') }}:
   cmd.run:
     - name: >-
-        curl -sf --max-time 600
+        curl -fSs --max-time 600
         -X POST http://127.0.0.1:11434/api/pull
         -d '{"name": "{{ model }}", "stream": false}'
+    - shell: /bin/bash
     - unless: >-
         curl -sf http://127.0.0.1:11434/api/tags |
         grep -q '"{{ model }}"'
