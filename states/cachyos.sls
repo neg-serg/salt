@@ -195,7 +195,7 @@ cachyos_resolv_conf:
     'nmap', 'ollama', 'telegram-desktop',
     'tmux', 'gopass', 'chezmoi', 'git-delta',
     'libvirt', 'qemu-desktop',
-    'rofi', 'dunst', 'swappy',
+    'rofi', 'dunst', 'swappy', 'quickshell', 'swayosd', 'wl-clip-persist',
     'imagemagick', 'yt-dlp',
     'unbound', 'avahi', 'samba', 'grafana',
 ] %}
@@ -212,7 +212,7 @@ cachyos_pkg_{{ pkg | replace('-', '_') }}:
 # ===================================================================
 
 {% set check_aur = [
-    'pyprland', 'wlogout', 'quickshell-git', 'swayosd-git',
+    'pyprland', 'wlogout',
     'carapace-bin', 'doggo', 'wallust',
     'pipemixer', 'newsraft', 'salt',
     'amneziawg-tools', 'amneziawg-dkms',
