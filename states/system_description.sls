@@ -67,6 +67,16 @@ sudo_timeout:
     - mode: '0440'
     - check_cmd: /usr/sbin/visudo -c -f
 
+sudo_nopasswd:
+  file.managed:
+    - name: /etc/sudoers.d/99-neg-nopasswd
+    - contents: |
+        neg ALL=(ALL) NOPASSWD: ALL
+    - user: root
+    - group: root
+    - mode: '0440'
+    - check_cmd: /usr/sbin/visudo -c -f
+
 # Package lists: see packages.jinja (categories, copr, flatpak, extensions)
 
 include:
