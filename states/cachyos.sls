@@ -71,7 +71,7 @@ cachyos_limine_efi:
 cachyos_limine_conf_content:
   cmd.run:
     - name: 'true'
-    - unless: grep -q 'vmlinuz-linux-cachyos' /boot/limine.conf
+    - unless: grep -q 'vmlinuz-linux-cachyos-lts' /boot/limine.conf
 
 # ===================================================================
 # Btrfs & Snapper
@@ -98,7 +98,7 @@ cachyos_mkinitcpio_zstd:
 cachyos_initramfs_exists:
   cmd.run:
     - name: 'true'
-    - unless: test -f /boot/initramfs-linux-cachyos.img
+    - unless: test -f /boot/initramfs-linux-cachyos-lts.img
 
 # ===================================================================
 # Pacman & Repos
@@ -184,7 +184,7 @@ cachyos_resolv_conf:
 # ===================================================================
 
 {% set check_packages = [
-    'base', 'linux-cachyos', 'linux-firmware',
+    'base', 'linux-cachyos-lts', 'linux-firmware',
     'limine', 'btrfs-progs', 'snapper', 'snap-pac',
     'networkmanager', 'openssh', 'paru', 'sudo', 'zsh', 'git',
     'hyprland', 'kitty', 'podman', 'pipewire',

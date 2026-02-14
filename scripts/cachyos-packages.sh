@@ -44,7 +44,7 @@ PACMAN_PKGS=(
     hexyl               # hex viewer with colored output
     hyperfine           # command-line benchmarking tool
     just                # command runner (modern make alternative)
-    # linux-cachyos-headers already in bootstrap
+    # linux-cachyos-lts-headers already in bootstrap
     lldb                # LLVM debugger
     openocd             # on-chip debugger for embedded
     nodejs              # JavaScript runtime
