@@ -64,15 +64,23 @@ ollama_start:
 {% for model in ['deepseek-r1:8b', 'llama3.2:3b', 'qwen2.5-coder:7b'] %}
 pull_{{ model | replace('.', '_') | replace(':', '_') | replace('-', '_') }}:
   cmd.run:
-    - name: >-
-        curl -fSs --max-time 600
-        -X POST http://127.0.0.1:11434/api/pull
-        -d '{"name": "{{ model }}", "stream": false}'
+    - name: |
+        response=$(curl -sS --max-time 600 \
+          -X POST http://127.0.0.1:11434/api/pull \
+          -d '{"name": "{{ model }}", "stream": false}')
+        status=$(echo "$response" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('status',''))" 2>/dev/null)
+        if [ "$status" = "success" ]; then
+          echo "{{ model }}: pulled successfully"
+        else
+          echo "{{ model }}: pull failed" >&2
+          echo "$response" >&2
+          exit 1
+        fi
     - shell: /bin/bash
     - unless: >-
         curl -sf http://127.0.0.1:11434/api/tags |
         grep -q '"{{ model }}"'
-    - timeout: 600
+    - timeout: 660
     - require:
       - cmd: ollama_start
       - cmd: ollama_selinux_network
