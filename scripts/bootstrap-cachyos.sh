@@ -58,6 +58,7 @@ PACKAGES=(
     # Network
     networkmanager
     iwd
+    dhcpcd
     openssh
 
     # AUR helper (available in CachyOS repos)
