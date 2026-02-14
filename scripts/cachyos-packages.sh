@@ -56,10 +56,12 @@ PACMAN_PKGS=(
     shellcheck          # shell script static analysis
     shfmt               # shell script formatter
     strace              # system call tracer
+    tree-sitter-cli     # tree-sitter grammar tool
     valgrind            # memory debugging / profiling
     yamllint            # YAML linter
 
     # --- File Management ---
+    7zip                # 7-Zip file archiver
     bat                 # cat clone with syntax highlighting
     borg                # deduplicating backup (borgbackup)
     convmv              # filename encoding converter
@@ -68,6 +70,8 @@ PACMAN_PKGS=(
     dust                # disk usage tree (du alternative)
     enca                # character encoding detector
     fd                  # fast find alternative
+    fzf                 # fuzzy finder (Ctrl-R, Ctrl-T, Alt-C)
+    inotify-tools       # inotifywait/inotifywatch filesystem events
     ncdu                # interactive disk usage analyzer
     plocate             # fast file locate
     ripgrep             # fast recursive grep
@@ -110,10 +114,16 @@ PACMAN_PKGS=(
     zbar                # barcode/QR reader
     media-player-info   # media player capability database
 
+    # --- Media (tools) ---
+    imagemagick         # image manipulation suite (convert, identify)
+    yt-dlp              # video downloader (YouTube, etc.)
+
     # --- Monitoring & System ---
     atop                # advanced system/process monitor
     bucklespring        # mechanical keyboard sound simulator
     btop                # resource monitor (htop alternative)
+    lsof                # list open files / who holds a file
+    powertop            # power consumption analyzer
     s-tui               # terminal CPU stress test + monitor
     multipath-tools     # device-mapper multipath I/O
     fastfetch           # system info display (neofetch alternative)
@@ -167,6 +177,8 @@ PACMAN_PKGS=(
     w3m                 # terminal web browser
     waypipe             # Wayland remote display (SSH forwarding)
     wayvnc              # VNC server for Wayland compositors
+    mtr                 # traceroute + ping combined
+    unbound             # recursive DNS resolver
     zmap                # fast Internet-wide port scanner
 
     # --- Shell & Tools ---
@@ -184,6 +196,7 @@ PACMAN_PKGS=(
     git-lfs             # Git Large File Storage
     glow                # terminal Markdown renderer
     gopass              # password manager (pass-compatible, GPG)
+    isync               # IMAP mailbox sync (mbsync)
     jc                  # JSON converter for CLI output
     lolcat              # rainbow text colorizer
     lowdown             # Markdown → terminal/HTML/roff renderer
@@ -195,6 +208,7 @@ PACMAN_PKGS=(
     parallel            # shell command parallelizer
     pastel              # color manipulation CLI (HSL, mix, etc.)
     pwgen               # random password generator
+    qrencode            # QR code generator
     recoll              # full-text desktop search engine
     reptyr              # re-parent process to new terminal
     rlwrap              # readline wrapper for any CLI
@@ -214,7 +228,15 @@ PACMAN_PKGS=(
     zoxide              # smart cd with frecency (z/autojump alternative)
     zsh                 # Z shell
 
-    # --- Wayland ---
+    # --- Wayland / Desktop ---
+    distrobox           # run any Linux distro in containers
+    hyprland            # tiling Wayland compositor
+    hypridle            # Hyprland idle daemon
+    hyprlock            # Hyprland lock screen
+    hyprpaper           # Hyprland wallpaper daemon
+    kitty               # GPU-accelerated terminal emulator
+    podman              # rootless container engine (Docker alternative)
+    xdg-desktop-portal-hyprland  # XDG desktop portal for Hyprland
     cliphist            # Wayland clipboard history manager
     dunst               # notification daemon
     rofi                # application launcher / dmenu replacement
@@ -251,6 +273,12 @@ PACMAN_PKGS=(
     dnsmasq             # lightweight DNS/DHCP (for libvirt NAT)
     qemu-desktop        # full system emulator (KVM backend)
     virt-manager        # libvirt GUI manager
+
+    # --- Services ---
+    avahi               # mDNS/DNS-SD service discovery
+    nss-mdns            # mDNS hostname resolution (NSS module)
+    grafana             # monitoring dashboard platform
+    samba               # SMB/CIFS file sharing
 
     # --- Desktop ---
     corectrl            # AMD GPU/CPU control panel
@@ -319,6 +347,8 @@ AUR_PKGS=(
     cpufetch-git        # CPU architecture info display
     dcfldd              # forensic dd with hashing
     freeze-bin          # code screenshot generator (Charm)
+    goimapnotify        # IMAP IDLE notification daemon
+    hyprland-qtutils    # Qt utilities for Hyprland (file dialogs)
     neo-matrix          # Matrix rain terminal effect
     netmask             # IP address / netmask calculator
     no-more-secrets     # Sneakers movie decryption effect
