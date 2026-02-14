@@ -348,11 +348,11 @@ cat > /etc/deploy-notes/fstab-template <<FSTAB_TMPL
 # Replace LABEL=cachyos with UUID=<your-uuid> during deployment
 #
 # <device>        <mount>        <type>  <options>                                              <dump> <pass>
-# LABEL=cachyos   /              btrfs   subvol=@,compress=zstd:1,noatime,ssd,space_cache=v2    0      0
-# LABEL=cachyos   /home          btrfs   subvol=@home,compress=zstd:1,noatime,ssd,space_cache=v2 0     0
-# LABEL=cachyos   /.snapshots    btrfs   subvol=@snapshots,compress=zstd:1,noatime,ssd,space_cache=v2 0 0
-# LABEL=cachyos   /var/cache     btrfs   subvol=@cache,compress=zstd:1,noatime,ssd,space_cache=v2 0   0
-# LABEL=cachyos   /var/log       btrfs   subvol=@log,compress=zstd:1,noatime,ssd,space_cache=v2 0     0
+# LABEL=cachyos   /              btrfs   subvol=@,compress=zstd:1,noatime          0  0
+# LABEL=cachyos   /home          btrfs   subvol=@home,compress=zstd:1,noatime      0  0
+# LABEL=cachyos   /.snapshots    btrfs   subvol=@snapshots,compress=zstd:1,noatime 0  0
+# LABEL=cachyos   /var/cache     btrfs   subvol=@cache,compress=zstd:1,noatime     0  0
+# LABEL=cachyos   /var/log       btrfs   subvol=@log,compress=zstd:1,noatime       0  0
 # LABEL=efi       /boot/efi      vfat    umask=0077                                              0     1
 FSTAB_TMPL
 
