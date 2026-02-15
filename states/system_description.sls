@@ -72,6 +72,7 @@ sudo_nopasswd:
 include:
   - amnezia
   - bind_mounts
+  - custom_pkgs
   - distrobox
   - dns
   - fira-code-nerd
@@ -80,6 +81,7 @@ include:
   - hardware
   - hy3
   - installers
+  - iosevka
   - kernel_modules
   - kernel_params
   - monitoring
