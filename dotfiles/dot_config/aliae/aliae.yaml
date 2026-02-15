@@ -419,20 +419,6 @@ alias:
   - name: unlove
     value: mpc sendmessage mpdas unlove
 
-  # Flatpak apps
-  - name: floorp
-    value: flatpak run one.ablaze.floorp
-  - name: pcsx2
-    value: flatpak run net.pcsx2.PCSX2
-  - name: bottles
-    value: flatpak run com.usebottles.bottles
-  - name: obs
-    value: flatpak run com.obsproject.Studio
-  - name: onlyoffice
-    value: QT_QPA_PLATFORM=xcb flatpak run org.onlyoffice.desktopeditors
-  - name: zoom
-    value: flatpak run us.zoom.Zoom
-
   # ugrep aliases
   - name: grep
     value: ug -G
