@@ -31,7 +31,7 @@ done
 # --- Binaries ---
 section "Binaries"
 
-for bin in greetd agreety qs starthyprland Hyprland; do
+for bin in greetd agreety qs start-hyprland Hyprland; do
     path=$(command -v "$bin" 2>/dev/null)
     if [ -n "$path" ]; then
         ok "$bin → $path"
