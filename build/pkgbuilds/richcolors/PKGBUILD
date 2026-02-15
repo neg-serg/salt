@@ -7,10 +7,10 @@ arch=('any')
 url='https://github.com/Rizen54/richcolors'
 license=('Unlicense')
 depends=('python' 'python-pillow')
-source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz")
+source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/refs/heads/main.tar.gz")
 sha256sums=('SKIP')
 
 package() {
-    cd "${pkgname}-${pkgver}"
+    cd "${pkgname}-main"
     install -Dm755 richcolors "${pkgdir}/usr/bin/richcolors"
 }
