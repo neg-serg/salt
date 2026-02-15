@@ -201,6 +201,8 @@ cachyos_resolv_conf:
     'tmux', 'gopass', 'chezmoi', 'git-delta',
     'libvirt', 'qemu-desktop',
     'rofi', 'dunst', 'swappy', 'quickshell', 'swayosd', 'wl-clip-persist', 'ttf-material-symbols-variable',
+    'ttf-jetbrains-mono-nerd', 'ttf-icomoon-feather', 'otf-font-awesome',
+    'noto-fonts', 'noto-fonts-emoji', 'ttf-ibm-plex', 'inter-font',
     'imagemagick', 'yt-dlp',
     'unbound', 'avahi', 'samba', 'grafana',
 ] %}
