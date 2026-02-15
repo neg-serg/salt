@@ -72,7 +72,6 @@ include:
   - amnezia
   - bind_mounts
   - custom_pkgs
-  - distrobox
   - dns
   - fira-code-nerd
   - floorp
