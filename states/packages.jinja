@@ -9,9 +9,6 @@
 #}
 {% from 'host_config.jinja' import host %}
 
-{# Steam + gaming tools (gamescope, mangohud, protontricks, vkBasalt) are in
-   Distrobox CachyOS container — see states/distrobox.sls #}
-
 {% set categories = {
     'Archives & Compression': [
         {'name': 'lbzip2',              'desc': 'Parallel bzip2 compression utility'},
