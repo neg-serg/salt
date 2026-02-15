@@ -20,30 +20,6 @@ _exists curl && {
     geoip(){ curl ipinfo.io/$1; }
     sprunge(){ curl -F "sprunge=<-" http://sprunge.us <"$1" ;}
 }
-if [[ -e /etc/NIXOS ]] || _exists nix; then
-    # thx to @oni: https://discourse.nixos.org/t/nvd-simple-nix-nixos-version-diff-tool/12397/3
-    hash -d nix-now="/run/current-system"
-    hash -d nix-boot="/nix/var/nix/profiles/system"
-    _exists nixos-rebuild && {
-        unalias nixos-rebuild 2>/dev/null
-    }
-    foobar(){nix run github:emmanuelrosa/erosanix#foobar2000}
-    flake-checker(){nix run github:DeterminateSystems/flake-checker}
-
-    qi(){ NIXPKGS_ALLOW_UNFREE=1 nix shell --impure 'nixpkgs#'$1 }
-    q(){ nix shell 'nixpkgs#'$1 }
-    flakify() {
-        # thx to Mic92:
-        if [ ! -e flake.nix ]; then
-            nix flake new -t github:Mic92/flake-templates#nix-develop .
-        elif [ ! -e .envrc ]; then
-            echo "use flake" > .envrc
-        fi
-        direnv allow
-        ${EDITOR:-vim} flake.nix
-    }
-fi
-
 _exists docker && {
     carbonyl(){docker run --rm -ti fathyb/carbonyl https://youtube.com}
     ipmi_one(){ docker run -p 127.0.0.1:5900:5900 -p 127.0.0.1:8080:8080 gari123/ipmi-kvm-docker; echo xdg-open http://127.0.0.1:8080|wl-copy }
