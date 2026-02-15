@@ -21,9 +21,13 @@ if [ -z "$DBUS_SESSION_BUS_ADDRESS" ] && [ -n "$XDG_RUNTIME_DIR" ] && [ -S "$XDG
     export DBUS_SESSION_BUS_ADDRESS="unix:path=$XDG_RUNTIME_DIR/bus"
 fi
 
-# --- Fallback if rofi not available ---
-if ! command -v rofi >/dev/null 2>&1; then
-    exec /usr/bin/pinentry-gnome3 "$@"
+# --- Fallback chain: rofi → gnome3 → curses → tty ---
+if ! command -v rofi >/dev/null 2>&1 || [ -z "$WAYLAND_DISPLAY" ] && [ -z "$DISPLAY" ]; then
+    for fb in pinentry-gnome3 pinentry-curses pinentry-tty; do
+        if command -v "$fb" >/dev/null 2>&1; then
+            exec "$fb" "$@"
+        fi
+    done
 fi
 
 # --- Assuan pinentry protocol ---
