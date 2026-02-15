@@ -73,14 +73,14 @@ install_{{ name | replace('-', '_') }}:
     - creates: /home/neg/.local/bin/{{ target }}
 {%- endmacro -%}
 
-{# pip install --user.
+{# pipx install (PEP 668 compatible).
    Usage: {{ pip_pkg('httpstat') }}
-          {{ pip_pkg('neovim_deps', pkg='pynvim neovim-remote', bin='nvr') }}
+          {{ pip_pkg('neovim_python_deps', pkg='neovim-remote', bin='nvr') }}
 #}
 {%- macro pip_pkg(name, pkg=None, bin=None) -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
-    - name: pip install --user {{ pkg or name }}
+    - name: pipx install {{ pkg or name }}
     - runas: neg
     - creates: /home/neg/.local/bin/{{ bin or name }}
 {%- endmacro -%}

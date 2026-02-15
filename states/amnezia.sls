@@ -7,6 +7,12 @@
     - group: neg
     - makedirs: True
 
+/mnt/one/pkg/cache/amnezia:
+  file.directory:
+    - user: neg
+    - group: neg
+    - makedirs: True
+
 # Build all Amnezia components in parallel
 build_amnezia_all:
   cmd.script:

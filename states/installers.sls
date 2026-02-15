@@ -2,7 +2,7 @@
 {% from '_macros.jinja' import curl_bin, github_tar, github_release, pip_pkg, cargo_pkg, curl_extract_tar, curl_extract_zip, run_with_error_context %}
 
 # --- Neovim Python dependencies (nvr + pynvim) ---
-{{ pip_pkg('neovim_python_deps', pkg='pynvim neovim-remote', bin='nvr') }}
+{{ pip_pkg('neovim_python_deps', pkg='neovim-remote', bin='nvr') }}
 
 install_zi:
   cmd.run:
@@ -187,17 +187,11 @@ install_throne:
     - shell: /bin/bash
     - creates: /home/neg/.local/opt/throne
 
-# --- Overskride (Bluetooth GTK4 client, Flatpak bundle from GitHub) ---
+# --- Overskride (Bluetooth GTK4 client, AUR) ---
 install_overskride:
   cmd.run:
-    - name: |
-        set -eo pipefail
-        curl -fsSL https://github.com/kaii-lb/overskride/releases/download/v0.6.6/overskride.flatpak -o /tmp/overskride.flatpak
-        flatpak install --user -y /tmp/overskride.flatpak
-        rm -f /tmp/overskride.flatpak
-    - runas: neg
-    - shell: /bin/bash
-    - unless: flatpak info io.github.kaii_lb.Overskride &>/dev/null
+    - name: sudo -u neg paru -S --noconfirm --needed overskride-bin
+    - unless: pacman -Q overskride-bin &>/dev/null
 
 # --- Nyxt browser (Electron AppImage) ---
 install_nyxt:
