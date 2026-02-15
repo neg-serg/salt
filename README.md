@@ -19,8 +19,3 @@
 - [x] matugen-themes - Collection of templates for Matugen.
 - [x] oldschool-pc-font-pack - Classic PC bitmap/outline fonts. (manual download: https://int10h.org/oldschool-pc-fonts/)
 - [x] surfingkeys-conf - Custom configuration for SurfingKeys browser extension.
-
-
-3. Shell Aliases (Directly running from GitHub)
-Your configuration uses nix run github:neg-serg/... for several tools:
-- tewi, playscii, wl-ocr, tws, music-clap, webcamize, subsonic-tui, neopyter, blissify-rs, ls-iommu, rtcqs, transmission-exporter, mkvcleaner, cxxmatrix, bpf-host-latency.
