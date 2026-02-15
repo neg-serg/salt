@@ -155,11 +155,6 @@ else
   echo "Full log: ${LOG_FILE}"
   if [[ $RC -eq 0 ]]; then
     echo "--- ${STATE}: all states passed ---"
-    # Only run chezmoi for the main cachyos verification state
-    if [[ "$STATE" == "cachyos" ]]; then
-      echo "--- Applying dotfiles (chezmoi) ---"
-      chezmoi apply --force --source "${SCRIPT_DIR}/dotfiles"
-    fi
   else
     echo "--- ${STATE}: some states failed (see log above) ---"
     exit $RC
