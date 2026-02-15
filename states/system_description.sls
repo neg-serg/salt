@@ -145,6 +145,8 @@ running_services:
       - dbus-broker
       - libvirtd
       - openrgb
+      - bluetooth
+      - systemd-timesyncd
     - enable: True
 
 # Disable tuned: its throughput-performance profile conflicts with custom

@@ -70,13 +70,17 @@
         {'name': 'ripgrep',             'desc': 'Fast regex search tool'},
         {'name': 'rclone',              'desc': 'Cloud storage sync tool'},
         {'name': 'rmlint',              'desc': 'Find space waste and other broken things on your filesystem'},
-        {'name': 'testdisk',            'desc': 'Data recovery and partition repair tool'}
+        {'name': 'testdisk',            'desc': 'Data recovery and partition repair tool'},
+        {'name': 'gvfs-mtp',            'desc': 'GVFS MTP backend (Android/media devices)'},
+        {'name': 'gvfs-smb',            'desc': 'GVFS SMB/CIFS backend (Windows shares)'},
+        {'name': 'tumbler',             'desc': 'D-Bus thumbnailing service (file managers)'}
     ],
     'Fonts': [
         {'name': 'inter-font',                'desc': 'Inter UI typeface'},
         {'name': 'iosevka-neg-fonts',          'desc': 'Custom Iosevka + Nerd Font (PKGBUILD)'},
         {'name': 'material-icons-fonts',       'desc': 'Material Design icons fonts'},
         {'name': 'noto-fonts',                 'desc': 'Google Noto TTF fonts'},
+        {'name': 'noto-fonts-cjk',            'desc': 'Google Noto CJK fonts (Chinese, Japanese, Korean)'},
         {'name': 'noto-fonts-emoji',           'desc': 'Google Noto Color Emoji'},
         {'name': 'otf-font-awesome',           'desc': 'Font Awesome 6 icon font'},
         {'name': 'ttf-ibm-plex',               'desc': 'IBM Plex Sans/Mono/Serif'},
@@ -92,6 +96,9 @@
         {'name': 'wireplumber',         'desc': 'PipeWire session/policy manager'},
     ],
     'Media': [
+        {'name': 'gst-plugins-bad',     'desc': 'GStreamer bad plugins (codecs: AAC, HEVC, VP9, etc.)'},
+        {'name': 'gst-plugins-ugly',    'desc': 'GStreamer ugly plugins (codecs: x264, libmpeg2, a52dec)'},
+        {'name': 'gst-libav',           'desc': 'GStreamer FFmpeg/libav codec plugin'},
         {'name': 'advancecomp',         'desc': 'Recompression utilities for .png, .mng, .zip, .gz'},
         {'name': 'Carla',               'desc': 'Audio plugin host (LADSPA, DSSI, LV2, VST2/3)'},
         {'name': 'beets',               'desc': 'Music library manager and tagger'},
@@ -261,6 +268,9 @@
         {'name': 'wf-recorder',         'desc': 'Wayland screen recorder'},
         {'name': 'wlogout',             'desc': 'Wayland logout menu'},
         {'name': 'wtype',               'desc': 'xdotool type for Wayland'},
+        {'name': 'xdg-desktop-portal-gtk','desc': 'GTK file picker and portal for Wayland (needed for file dialogs)'},
+        {'name': 'qt5-wayland',          'desc': 'Qt5 Wayland platform plugin'},
+        {'name': 'qt6-wayland',          'desc': 'Qt6 Wayland platform plugin'},
         {'name': 'ydotool',             'desc': 'Generic command-line automation tool for Wayland'}
     ],
     'Gaming & Emulation': [
@@ -294,6 +304,7 @@
         {'name': 'virt-manager',        'desc': 'Virtual machine manager GUI'}
     ],
     'Desktop': [
+        {'name': 'bluez-utils',         'desc': 'Bluetooth utilities (bluetoothctl, btmon)'},
         {'name': 'corectrl',            'desc': 'AMD GPU power and fan control'},
         {'name': 'ddccontrol',          'desc': 'DDC monitor control'},
         {'name': 'hunspell-ru',         'desc': 'Russian dictionary for spellchecking'},
@@ -301,7 +312,10 @@
         {'name': 'kvantum',             'desc': 'SVG-based Qt theme engine'},
         {'name': 'openrgb',             'desc': 'Peripheral RGB LED controller'},
         {'name': 'qt5ct',               'desc': 'Qt5 configuration tool'},
-        {'name': 'texlive-scheme-basic', 'desc': 'TeX Live basic scheme'}
+        {'name': 'nm-connection-editor', 'desc': 'NetworkManager connection editor GUI'},
+        {'name': 'texlive-scheme-basic', 'desc': 'TeX Live basic scheme'},
+        {'name': 'fwupd',               'desc': 'Firmware update daemon (LVFS)'},
+        {'name': 'upower',              'desc': 'Power management abstraction daemon'}
     ],
     'Version Control': [
         {'name': 'chezmoi',             'desc': 'Manage your dotfiles across multiple diverse machines'},
