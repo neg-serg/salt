@@ -106,10 +106,12 @@ success "Essentia streaming extractor installed"
 {{ pip_pkg('scdl') }}
 {{ pip_pkg('dr14_tmeter', pkg='git+https://github.com/simon-r/dr14_t.meter.git') }}
 {{ pip_pkg('euporie') }}
+{{ pip_pkg('faker') }}
 
 # --- cargo installs ---
 {{ cargo_pkg('handlr', pkg='handlr-regex') }}
 {{ cargo_pkg('agg', git='https://github.com/asciinema/agg') }}
+{{ cargo_pkg('rustnet', git='https://github.com/domcyrus/rustnet') }}
 
 # NOTE: tailray needs dbus headers (libdbus-sys).
 install_tailray:
