@@ -20,18 +20,18 @@ Deploy bootstrapped CachyOS rootfs to NVMe with LVM + btrfs + Limine.
 
 ## Quick Start
 
-### 1. Bootstrap (on Fedora host)
+### 1. Bootstrap
 
 ```bash
 sudo ./scripts/bootstrap-cachyos.sh
 ```
 
-Produces rootfs at `/var/mnt/one/cachyos-root/` and copies the salt
-repo to `/var/mnt/one/salt/` for use from a live USB.
+Produces rootfs at `/mnt/one/cachyos-root/` and copies the salt
+repo to `/mnt/one/salt/` for use from a live USB.
 
-### 2. Deploy (from Fedora host or live USB)
+### 2. Deploy (from existing host or live USB)
 
-**From the Fedora host:**
+**From the host:**
 
 ```bash
 sudo ./scripts/deploy-cachyos.sh /dev/nvme0n1
@@ -117,11 +117,6 @@ After bootstrap, everything needed for deploy lives on XFS:
 - `systemctl start NetworkManager`
 - Wi-Fi: `nmcli device wifi connect <SSID> --ask`
 - DNS fallback: `cat /etc/resolv.conf` (1.1.1.1, 8.8.8.8)
-
-**Deploy script: rsync error on Fedora host**
-- `/mnt` is a symlink to `/var/mnt` on Fedora Atomic
-- The script uses `/mnt/deploy` to avoid shadowing `/var/mnt/one`
-- If running manually, don't mount target at `/mnt`
 
 **Custom packages (automated by Salt)**
 - 5 packages built from PKGBUILDs in `build/pkgbuilds/` via Salt states:

@@ -83,7 +83,7 @@ include:
   - installers
   - iosevka
   - kernel_modules
-  - kernel_params
+  - kernel_params_limine
   - monitoring
   - mpd
   - network
@@ -152,7 +152,7 @@ running_services:
 
 # Disable tuned: its throughput-performance profile conflicts with custom
 # I/O tuning (sets read_ahead_kb=8192 on NVMe, may override sysctl values).
-# All tuning is managed manually via sysctl.sls, kernel_params.sls, hardware.sls.
+# All tuning is managed manually via sysctl.sls, kernel_params_limine.sls, hardware.sls.
 disable_tuned:
   service.dead:
     - name: tuned

@@ -12,7 +12,6 @@ local _fzf_cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/fzf"
 [[ -d "$_fzf_cache_dir" ]] || mkdir -p -- "$_fzf_cache_dir"
 
 # Sync files if missing/empty or older than source
-# Fedora puts them in /usr/share/fzf/shell/
 # Completion is often /usr/share/zsh/site-functions/_fzf
 for f in key-bindings.zsh completion.zsh; do
   local src=""

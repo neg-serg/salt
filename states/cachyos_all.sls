@@ -6,7 +6,4 @@
 
 include:
   - cachyos
-  - kernel_modules
-  - kernel_params_limine
-  - sysctl
-  - hardware
+  - system_description
