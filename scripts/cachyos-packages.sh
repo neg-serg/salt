@@ -350,7 +350,6 @@ PACMAN_PKGS=(
     git-filter-repo     # fast git history rewriting
     scour               # SVG optimizer
 
-    # --- Former COPR packages now in official repos ---
     spotifyd            # headless Spotify daemon
     sbctl               # Secure Boot key manager
     patchmatrix         # JACK patchbay matrix GUI
@@ -394,7 +393,6 @@ AUR_PKGS=(
     ddccontrol          # DDC/CI monitor control
     git-extras          # extra git commands (git-summary, etc.)
 
-    # --- Former COPR packages ---
     dualsensectl        # DualSense controller LED/haptics control
     # espanso-wayland     # text expander (Wayland build) — FTBFS on CachyOS
     brutefir            # convolution audio engine
