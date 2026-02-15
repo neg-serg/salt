@@ -1,7 +1,7 @@
 # Floorp browser: user.js + userChrome.css + userContent.css + extensions
 {% from 'packages.jinja' import floorp_extensions, unwanted_extensions %}
 
-{% set floorp_profile = '/var/home/neg/.var/app/one.ablaze.floorp/.floorp/ltjcyqj7.default-default' %}
+{% set floorp_profile = '/home/neg/.var/app/one.ablaze.floorp/.floorp/ltjcyqj7.default-default' %}
 
 floorp_user_js:
   file.managed:

@@ -268,8 +268,8 @@ mount_one:
 # mount mechanism ignores compress= fstab option (not shown in /proc/mounts).
 btrfs_compress_home:
   cmd.run:
-    - name: btrfs property set /var/home compression zstd:-1
-    - unless: btrfs property get /var/home compression 2>/dev/null | grep -q 'zstd:-1'
+    - name: btrfs property set /home compression zstd:-1
+    - unless: btrfs property get /home compression 2>/dev/null | grep -q 'zstd:-1'
 
 btrfs_compress_var:
   cmd.run:
@@ -357,7 +357,7 @@ install_cachyos_kernel:
 # --- SSH directory setup ---
 ssh_dir:
   file.directory:
-    - name: /var/home/neg/.ssh
+    - name: /home/neg/.ssh
     - user: neg
     - group: neg
     - mode: '0700'
@@ -365,14 +365,14 @@ ssh_dir:
 # --- Wallust cache defaults (prevents hyprland source errors on first boot) ---
 wallust_cache_dir:
   file.directory:
-    - name: /var/home/neg/.cache/wallust
+    - name: /home/neg/.cache/wallust
     - user: neg
     - group: neg
     - mode: '0755'
 
 wallust_hyprland_defaults:
   file.managed:
-    - name: /var/home/neg/.cache/wallust/hyprland.conf
+    - name: /home/neg/.cache/wallust/hyprland.conf
     - user: neg
     - group: neg
     - mode: '0644'

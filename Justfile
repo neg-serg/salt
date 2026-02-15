@@ -22,7 +22,7 @@ info:
 clean:
     rm -rf __pycache__
     rm -rf .venv
-    rm -rf /var/home/neg/.gemini/tmp/salt_config
+    rm -rf /home/neg/.gemini/tmp/salt_config
 
 # Lint Salt states and Python scripts
 lint:

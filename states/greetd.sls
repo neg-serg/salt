@@ -60,12 +60,12 @@ greetd_session_wrapper:
 greetd_wallpaper:
   cmd.run:
     - name: |
-        wallpaper=$(tr '\0' '\n' < /var/home/neg/.cache/swww/DP-2 2>/dev/null | grep '^/')
+        wallpaper=$(tr '\0' '\n' < /home/neg/.cache/swww/DP-2 2>/dev/null | grep '^/')
         if [ -n "$wallpaper" ] && [ -f "$wallpaper" ]; then
-          cp -f "$wallpaper" /var/home/neg/.cache/greeter-wallpaper
+          cp -f "$wallpaper" /home/neg/.cache/greeter-wallpaper
         fi
     - runas: neg
-    - unless: test -f /var/home/neg/.cache/greeter-wallpaper
+    - unless: test -f /home/neg/.cache/greeter-wallpaper
     - require:
       - file: greetd_config_dir
 

@@ -11,7 +11,7 @@ ollama_service_unit:
 
 ollama_models_dir:
   file.directory:
-    - name: /var/mnt/one/ollama/models
+    - name: /mnt/one/ollama/models
     - user: neg
     - group: neg
     - makedirs: True
@@ -26,15 +26,15 @@ ollama_selinux_context:
     - name: |
         semanage fcontext -d -t var_lib_t '/mnt/one/ollama(/.*)?' 2>/dev/null || true
         semanage fcontext -a -t var_lib_t '/mnt/one/ollama(/.*)?'
-        restorecon -Rv /var/mnt/one/ollama
+        restorecon -Rv /mnt/one/ollama
     - shell: /bin/bash
-    - unless: ls -Zd /var/mnt/one/ollama 2>/dev/null | grep -q var_lib_t
+    - unless: ls -Zd /mnt/one/ollama 2>/dev/null | grep -q var_lib_t
     - require:
       - file: ollama_models_dir
 
 # ollama server (init_t) needs to read its key from ~/.ollama/ (user_home_t → var_lib_t)
-# uses /var/home path per equivalency rule '/home /var/home'
-{{ selinux_fcontext('ollama_selinux_homedir', '/var/home/neg/\\.ollama', '/var/home/neg/.ollama', 'var_lib_t', check_path='/var/home/neg/.ollama/id_ed25519') }}
+# label ~/.ollama/ as var_lib_t so ollama (init_t) can read its key
+{{ selinux_fcontext('ollama_selinux_homedir', '/home/neg/\\.ollama', '/home/neg/.ollama', 'var_lib_t', check_path='/home/neg/.ollama/id_ed25519') }}
 
 # ollama runs as init_t (no custom SELinux type) and needs outbound HTTPS for model pulls
 {% call selinux_policy('ollama_selinux_network', 'ollama-network') %}
@@ -103,4 +103,4 @@ install_openclaw:
   cmd.run:
     - name: npm install -g openclaw
     - runas: neg
-    - creates: /var/home/neg/.npm-global/bin/openclaw
+    - creates: /home/neg/.npm-global/bin/openclaw

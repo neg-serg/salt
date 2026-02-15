@@ -6,15 +6,15 @@
 # bind mounts (kernel reports the underlying block device, not bind source).
 
 {% set user = 'neg' %}
-{% set home = '/var/home/' ~ user %}
+{% set home = '/home/' ~ user %}
 
 {% set mounts = [
-    {'name': 'mail',    'device': '/var/mnt/zero/mail',    'target': home ~ '/.local/mail'},
-    {'name': 'music',   'device': '/var/mnt/one/music',    'target': home ~ '/music'},
-    {'name': 'vid',     'device': '/var/mnt/one/vid',      'target': home ~ '/vid'},
-    {'name': 'doc',     'device': '/var/mnt/one/doc',      'target': home ~ '/doc'},
-    {'name': 'torrent', 'device': '/var/mnt/one/torrent',  'target': home ~ '/torrent'},
-    {'name': 'games',   'device': '/var/mnt/zero/games',   'target': home ~ '/games'},
+    {'name': 'mail',    'device': '/mnt/zero/mail',    'target': home ~ '/.local/mail'},
+    {'name': 'music',   'device': '/mnt/one/music',    'target': home ~ '/music'},
+    {'name': 'vid',     'device': '/mnt/one/vid',      'target': home ~ '/vid'},
+    {'name': 'doc',     'device': '/mnt/one/doc',      'target': home ~ '/doc'},
+    {'name': 'torrent', 'device': '/mnt/one/torrent',  'target': home ~ '/torrent'},
+    {'name': 'games',   'device': '/mnt/zero/games',   'target': home ~ '/games'},
 ] %}
 
 {% for m in mounts %}

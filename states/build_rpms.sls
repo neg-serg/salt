@@ -4,8 +4,8 @@
 
 {% import_yaml 'build/versions.yaml' as versions %}
 {% set max_parallel = 4 %}
-{% set rpms_dir = '/var/mnt/one/pkg/cache/rpms' %}
-{% set build_dir = '/var/home/neg/src/salt/build' %}
+{% set rpms_dir = '/mnt/one/pkg/cache/rpms' %}
+{% set build_dir = '/home/neg/src/salt/build' %}
 {% set base_image = 'registry.fedoraproject.org/fedora-toolbox:43' %}
 
 {# Package names — version auto-derived from versions.yaml via versions[name] #}
@@ -28,8 +28,8 @@
 ) %}
 
 {% set extra_vol = {
-    'neg-pretty-printer': '-v /var/home/neg/src/salt/build/pretty-printer:/build/pretty-printer:z',
-    'greetd': '-v /var/home/neg/src/salt/build/greetd-files:/build/salt/greetd-files:z',
+    'neg-pretty-printer': '-v /home/neg/src/salt/build/pretty-printer:/build/pretty-printer:z',
+    'greetd': '-v /home/neg/src/salt/build/greetd-files:/build/salt/greetd-files:z',
 } %}
 
 {# Build package dicts from names + overrides #}
@@ -48,7 +48,7 @@
     'release': '2',
     'arch': 'noarch',
     'timeout': 7200,
-    'extra_volumes': '-v /var/home/neg/src/salt/build/iosevka-neg.toml:/build/iosevka-neg.toml:z'
+    'extra_volumes': '-v /home/neg/src/salt/build/iosevka-neg.toml:/build/iosevka-neg.toml:z'
 } %}
 
 {# Compute RPM filename from package dict (avoids repeating the formula) #}

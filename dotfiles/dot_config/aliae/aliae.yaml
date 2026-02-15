@@ -351,7 +351,7 @@ alias:
   - name: ping
     value: prettyping
   - name: df
-    value: "duf --theme neg --style plain --no-header --bar-style modern --hide special --hide-mp '/var/home/neg/*,/var/lib/*'"
+    value: "duf --theme neg --style plain --no-header --bar-style modern --hide special --hide-mp '/home/neg/*,/var/lib/*'"
   - name: sp
     value: dust -r
   - name: htop

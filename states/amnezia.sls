@@ -1,7 +1,7 @@
 # Salt state for Amnezia build and deploy (Local User version)
 # All 3 components build in parallel for faster deployment
 
-/var/home/neg/.local/bin:
+/home/neg/.local/bin:
   file.directory:
     - user: neg
     - group: neg
@@ -15,16 +15,16 @@ build_amnezia_all:
     - timeout: 3600
     - output_loglevel: info
     - unless: >-
-        test -f /var/mnt/one/pkg/cache/amnezia/amneziawg-go-bin &&
-        test -f /var/mnt/one/pkg/cache/amnezia/awg-bin &&
-        test -f /var/mnt/one/pkg/cache/amnezia/AmneziaVPN-bin
+        test -f /mnt/one/pkg/cache/amnezia/amneziawg-go-bin &&
+        test -f /mnt/one/pkg/cache/amnezia/awg-bin &&
+        test -f /mnt/one/pkg/cache/amnezia/AmneziaVPN-bin
     - require:
-      - file: /var/mnt/one/pkg/cache/amnezia
+      - file: /mnt/one/pkg/cache/amnezia
 
 install_amneziawg_go:
   file.managed:
-    - name: /var/home/neg/.local/bin/amneziawg-go
-    - source: /var/mnt/one/pkg/cache/amnezia/amneziawg-go-bin
+    - name: /home/neg/.local/bin/amneziawg-go
+    - source: /mnt/one/pkg/cache/amnezia/amneziawg-go-bin
     - mode: '0755'
     - user: neg
     - group: neg
@@ -33,8 +33,8 @@ install_amneziawg_go:
 
 install_amneziawg_tools:
   file.managed:
-    - name: /var/home/neg/.local/bin/awg
-    - source: /var/mnt/one/pkg/cache/amnezia/awg-bin
+    - name: /home/neg/.local/bin/awg
+    - source: /mnt/one/pkg/cache/amnezia/awg-bin
     - mode: '0755'
     - user: neg
     - group: neg
@@ -44,22 +44,22 @@ install_amneziawg_tools:
 # Symlinks for sudo access
 /usr/local/bin/amneziawg-go:
   file.symlink:
-    - target: /var/home/neg/.local/bin/amneziawg-go
+    - target: /home/neg/.local/bin/amneziawg-go
     - force: True
     - require:
       - file: install_amneziawg_go
 
 /usr/local/bin/awg:
   file.symlink:
-    - target: /var/home/neg/.local/bin/awg
+    - target: /home/neg/.local/bin/awg
     - force: True
     - require:
       - file: install_amneziawg_tools
 
 install_amnezia_vpn:
   file.managed:
-    - name: /var/home/neg/.local/bin/AmneziaVPN
-    - source: /var/mnt/one/pkg/cache/amnezia/AmneziaVPN-bin
+    - name: /home/neg/.local/bin/AmneziaVPN
+    - source: /mnt/one/pkg/cache/amnezia/AmneziaVPN-bin
     - mode: '0755'
     - user: neg
     - group: neg
@@ -69,23 +69,23 @@ install_amnezia_vpn:
 # Verification
 verify_amneziawg_go:
   cmd.run:
-    - name: /var/home/neg/.local/bin/amneziawg-go --version
+    - name: /home/neg/.local/bin/amneziawg-go --version
     - require:
       - file: install_amneziawg_go
 
 verify_awg:
   cmd.run:
-    - name: /var/home/neg/.local/bin/awg --version
+    - name: /home/neg/.local/bin/awg --version
     - require:
       - file: install_amneziawg_tools
 
 verify_amnezia_vpn:
   cmd.run:
-    - name: ldd /var/home/neg/.local/bin/AmneziaVPN
+    - name: ldd /home/neg/.local/bin/AmneziaVPN
     - require:
       - file: install_amnezia_vpn
 
-/var/home/neg/.local/share/applications:
+/home/neg/.local/share/applications:
   file.directory:
     - user: neg
     - group: neg
@@ -93,17 +93,17 @@ verify_amnezia_vpn:
 
 amnezia_desktop_entry:
   file.managed:
-    - name: /var/home/neg/.local/share/applications/amnezia-vpn.desktop
+    - name: /home/neg/.local/share/applications/amnezia-vpn.desktop
     - contents: |
         [Desktop Entry]
         Type=Application
         Name=AmneziaVPN (Source)
         Comment=Amnezia VPN Client (Self-built)
-        Exec=/var/home/neg/.local/bin/AmneziaVPN
+        Exec=/home/neg/.local/bin/AmneziaVPN
         Icon=amnezia-vpn
         Terminal=false
         Categories=Network;VPN;
     - user: neg
     - group: neg
     - require:
-      - file: /var/home/neg/.local/share/applications
+      - file: /home/neg/.local/share/applications

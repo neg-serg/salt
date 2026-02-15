@@ -48,7 +48,7 @@ Migrated from NixOS (nix-maid/mkHomeFiles). NixOS source: `~/src/nixos-config/`.
 | `network.sls` | VM bridge, xray, sing-box |
 | `kernel_modules.sls` | Kernel module loading |
 | `kernel_params.sls` | Kernel boot parameters |
-| `bind_mounts.sls` | Bind mounts for /var/mnt paths |
+| `bind_mounts.sls` | Bind mounts for /mnt paths |
 | `distrobox.sls` | Distrobox containers + Steam SELinux |
 | `sysctl.sls` | Sysctl tuning |
 | `pkg_cache.sls` | RPM package cache on /mnt/one |
@@ -86,7 +86,7 @@ Migrated from NixOS (nix-maid/mkHomeFiles). NixOS source: `~/src/nixos-config/`.
   - Current issue: `qt6ct` uninstallable (needs Qt 6.10, base has 6.9.2). Using `qt5ct` + kvantum instead.
 - **Fedora Atomic**: `/usr` is read-only. User-level installs go to `~/.local/` or are layered via rpm-ostree.
 - **Podman (not Docker)**: All container operations use podman. Build containers mount `build/` and `rpms/` as volumes.
-- **SELinux path equivalency**: `/var/mnt` → use `/mnt` in `semanage fcontext`, `/home` → use `/var/home`
+- **Standard paths**: `/home/neg` for user home, `/mnt/one` and `/mnt/zero` for external storage
 
 ## Secrets
 

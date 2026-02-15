@@ -11,13 +11,13 @@ install_zi:
         mkdir -p "$ZI_HOME"
         git clone https://github.com/z-shell/zi.git "$ZI_HOME/bin"
     - runas: neg
-    - creates: /var/home/neg/.config/zi/bin/zi.zsh
+    - creates: /home/neg/.config/zi/bin/zi.zsh
 
 install_oh_my_posh:
   cmd.run:
     - name: curl -fsSL https://ohmyposh.dev/install.sh | bash -s -- -d ~/.local/bin
     - runas: neg
-    - creates: /var/home/neg/.local/bin/oh-my-posh
+    - creates: /home/neg/.local/bin/oh-my-posh
 
 {{ curl_bin('aliae', 'https://github.com/JanDeDobbeleer/aliae/releases/latest/download/aliae-linux-amd64') }}
 
@@ -34,7 +34,7 @@ install_hyprevents:
         rm -rf "$tmpdir"
     - runas: neg
     - shell: /bin/bash
-    - creates: /var/home/neg/.local/bin/hyprevents
+    - creates: /home/neg/.local/bin/hyprevents
 
 {{ curl_bin('hyprprop', 'https://raw.githubusercontent.com/vilari-mickopf/hyprprop/master/hyprprop') }}
 
@@ -54,7 +54,7 @@ install_rustmission:
         rm -f /tmp/rustmission.tar.xz
     - runas: neg
     - shell: /bin/bash
-    - creates: /var/home/neg/.local/bin/rustmission
+    - creates: /home/neg/.local/bin/rustmission
 
 {{ pip_pkg('httpstat') }}
 
@@ -85,7 +85,7 @@ install_rustmission:
 
 {{ curl_extract_zip('realesrgan', 'https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan/releases/download/v0.2.0/realesrgan-ncnn-vulkan-v0.2.0-ubuntu.zip', 'realesrgan-ncnn-vulkan-v0.2.0-ubuntu', binaries=['realesrgan-ncnn-vulkan'], chmod=True) }}
 
-{% call run_with_error_context('install_essentia_extractor', creates='/var/home/neg/.local/bin/essentia_streaming_extractor_music') %}
+{% call run_with_error_context('install_essentia_extractor', creates='/home/neg/.local/bin/essentia_streaming_extractor_music') %}
 step "Downloading Essentia streaming extractor"
 curl -fsSL https://data.metabrainz.org/pub/musicbrainz/acousticbrainz/extractors/essentia-extractor-v2.1_beta2-linux-x86_64.tar.gz -o /tmp/essentia.tar.gz
 
@@ -117,7 +117,7 @@ install_tailray:
   cmd.run:
     - name: cargo install --git https://github.com/NotAShelf/tailray
     - runas: neg
-    - creates: /var/home/neg/.local/share/cargo/bin/tailray
+    - creates: /home/neg/.local/share/cargo/bin/tailray
     - onlyif:
       - pkg-config --exists dbus-1
       - command -v cargo
@@ -138,7 +138,7 @@ install_dool:
         rm -rf /tmp/dool
     - runas: neg
     - shell: /bin/bash
-    - creates: /var/home/neg/.local/bin/dool
+    - creates: /home/neg/.local/bin/dool
 
 install_qmk_udev_rules:
   cmd.run:
@@ -157,7 +157,7 @@ install_oldschool_pc_fonts:
         rm -rf /tmp/fonts.zip /tmp/oldschool-fonts
     - runas: neg
     - shell: /bin/bash
-    - creates: /var/home/neg/.local/share/fonts/oldschool-pc
+    - creates: /home/neg/.local/share/fonts/oldschool-pc
 
 # --- Special: RoomEQ Wizard (Java acoustic measurement) ---
 install_roomeqwizard:
@@ -170,7 +170,7 @@ install_roomeqwizard:
         rm -f /tmp/rew.zip
     - runas: neg
     - shell: /bin/bash
-    - creates: /var/home/neg/.local/opt/roomeqwizard
+    - creates: /home/neg/.local/opt/roomeqwizard
 
 # --- Throne (sing-box GUI proxy frontend, bundled Qt) ---
 install_throne:
@@ -184,7 +184,7 @@ install_throne:
         rm -f /tmp/throne.zip
     - runas: neg
     - shell: /bin/bash
-    - creates: /var/home/neg/.local/opt/throne
+    - creates: /home/neg/.local/opt/throne
 
 # --- Overskride (Bluetooth GTK4 client, Flatpak bundle from GitHub) ---
 install_overskride:
@@ -210,7 +210,7 @@ install_nyxt:
         rm -f /tmp/nyxt.tar.gz
     - runas: neg
     - shell: /bin/bash
-    - creates: /var/home/neg/.local/bin/nyxt
+    - creates: /home/neg/.local/bin/nyxt
 
 # --- Open Sound Meter (FFT acoustic analysis, AppImage) ---
 {{ curl_bin('opensoundmeter', 'https://github.com/psmokotnin/osm/releases/download/v1.5.2/Open_Sound_Meter-v1.5.2-x86_64.AppImage') }}
@@ -228,7 +228,7 @@ install_matugen_themes:
         rm -rf /tmp/matugen-themes
     - runas: neg
     - shell: /bin/bash
-    - creates: /var/home/neg/.config/matugen/templates
+    - creates: /home/neg/.config/matugen/templates
 
 # --- DroidCam (phone as webcam via v4l2loopback) ---
 install_v4l2loopback:
@@ -248,7 +248,7 @@ install_droidcam:
         rm -rf /tmp/droidcam.zip /tmp/droidcam
     - runas: neg
     - shell: /bin/bash
-    - creates: /var/home/neg/.local/bin/droidcam
+    - creates: /home/neg/.local/bin/droidcam
 
 # --- blesh (Bash Line Editor) ---
 install_blesh:
@@ -260,7 +260,7 @@ install_blesh:
         rm -f /tmp/blesh.tar.xz
     - runas: neg
     - shell: /bin/bash
-    - creates: /var/home/neg/.local/share/ble.sh
+    - creates: /home/neg/.local/share/ble.sh
 
 # --- hishtory (synced shell history search) ---
 {{ github_release('hishtory', 'ddworken/hishtory', 'hishtory-linux-amd64') }}
@@ -288,7 +288,7 @@ install_kora_icons:
         rm -rf /tmp/kora.tar.gz /tmp/kora-*
     - runas: neg
     - shell: /bin/bash
-    - creates: /var/home/neg/.local/share/icons/kora
+    - creates: /home/neg/.local/share/icons/kora
 
 install_flight_gtk_theme:
   cmd.run:
@@ -301,7 +301,7 @@ install_flight_gtk_theme:
         rm -rf /tmp/flight-gtk
     - runas: neg
     - shell: /bin/bash
-    - creates: /var/home/neg/.local/share/themes/Flight-Dark-GTK
+    - creates: /home/neg/.local/share/themes/Flight-Dark-GTK
 
 # --- MPV scripts (installed per-user, not in Fedora repos) ---
 install_mpv_scripts:
@@ -328,4 +328,4 @@ install_mpv_scripts:
         curl -fsSL https://raw.githubusercontent.com/rushmj/mpv-video-cutter/master/cutter.lua -o "$SCRIPTS_DIR/cutter.lua"
     - runas: neg
     - shell: /bin/bash
-    - creates: /var/home/neg/.config/mpv/scripts/thumbfast.lua
+    - creates: /home/neg/.config/mpv/scripts/thumbfast.lua

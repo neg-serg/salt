@@ -4,12 +4,12 @@
 # Remove legacy custom mpdris2.service (replaced by drop-in for RPM unit)
 mpdris2_legacy_cleanup:
   file.absent:
-    - name: /var/home/neg/.config/systemd/user/mpdris2.service
+    - name: /home/neg/.config/systemd/user/mpdris2.service
 
 # Drop-in override for RPM-shipped mpDris2.service: adds MPD ordering
 mpdris2_user_service:
   file.managed:
-    - name: /var/home/neg/.config/systemd/user/mpDris2.service.d/override.conf
+    - name: /home/neg/.config/systemd/user/mpDris2.service.d/override.conf
     - user: neg
     - group: neg
     - mode: '0644'
@@ -30,7 +30,7 @@ mpdris2_daemon_reload:
 
 chezmoi_config:
   file.managed:
-    - name: /var/home/neg/.config/chezmoi/chezmoi.toml
+    - name: /home/neg/.config/chezmoi/chezmoi.toml
     - source: salt://dotfiles/dot_config/chezmoi/chezmoi.toml
     - user: neg
     - group: neg
@@ -39,8 +39,8 @@ chezmoi_config:
 
 chezmoi_source_symlink:
   file.symlink:
-    - name: /var/home/neg/.local/share/chezmoi
-    - target: /var/home/neg/src/salt/dotfiles
+    - name: /home/neg/.local/share/chezmoi
+    - target: /home/neg/src/salt/dotfiles
     - user: neg
     - group: neg
     - force: True
@@ -53,12 +53,12 @@ chezmoi_source_symlink:
 mail_directories:
   file.directory:
     - names:
-      - /var/home/neg/.local/mail/gmail/INBOX
-      - /var/home/neg/.local/mail/gmail/[Gmail]/Sent Mail
-      - /var/home/neg/.local/mail/gmail/[Gmail]/Drafts
-      - /var/home/neg/.local/mail/gmail/[Gmail]/All Mail
-      - /var/home/neg/.local/mail/gmail/[Gmail]/Trash
-      - /var/home/neg/.local/mail/gmail/[Gmail]/Spam
+      - /home/neg/.local/mail/gmail/INBOX
+      - /home/neg/.local/mail/gmail/[Gmail]/Sent Mail
+      - /home/neg/.local/mail/gmail/[Gmail]/Drafts
+      - /home/neg/.local/mail/gmail/[Gmail]/All Mail
+      - /home/neg/.local/mail/gmail/[Gmail]/Trash
+      - /home/neg/.local/mail/gmail/[Gmail]/Spam
     - user: neg
     - group: neg
     - makedirs: True
@@ -66,7 +66,7 @@ mail_directories:
 # --- Systemd user services for mail ---
 mbsync_gmail_service:
   file.managed:
-    - name: /var/home/neg/.config/systemd/user/mbsync-gmail.service
+    - name: /home/neg/.config/systemd/user/mbsync-gmail.service
     - user: neg
     - group: neg
     - mode: '0644'
@@ -84,7 +84,7 @@ mbsync_gmail_service:
 
 mbsync_gmail_timer:
   file.managed:
-    - name: /var/home/neg/.config/systemd/user/mbsync-gmail.timer
+    - name: /home/neg/.config/systemd/user/mbsync-gmail.timer
     - user: neg
     - group: neg
     - mode: '0644'
@@ -100,7 +100,7 @@ mbsync_gmail_timer:
 
 imapnotify_gmail_service:
   file.managed:
-    - name: /var/home/neg/.config/systemd/user/imapnotify-gmail.service
+    - name: /home/neg/.config/systemd/user/imapnotify-gmail.service
     - user: neg
     - group: neg
     - mode: '0644'
@@ -120,7 +120,7 @@ imapnotify_gmail_service:
 # --- Systemd user services for calendar ---
 vdirsyncer_service:
   file.managed:
-    - name: /var/home/neg/.config/systemd/user/vdirsyncer.service
+    - name: /home/neg/.config/systemd/user/vdirsyncer.service
     - user: neg
     - group: neg
     - mode: '0644'
@@ -136,7 +136,7 @@ vdirsyncer_service:
 
 vdirsyncer_timer:
   file.managed:
-    - name: /var/home/neg/.config/systemd/user/vdirsyncer.timer
+    - name: /home/neg/.config/systemd/user/vdirsyncer.timer
     - user: neg
     - group: neg
     - mode: '0644'
@@ -153,7 +153,7 @@ vdirsyncer_timer:
 # --- Surfingkeys HTTP server (browser extension helper) ---
 surfingkeys_server_service:
   file.managed:
-    - name: /var/home/neg/.config/systemd/user/surfingkeys-server.service
+    - name: /home/neg/.config/systemd/user/surfingkeys-server.service
     - user: neg
     - group: neg
     - mode: '0644'
@@ -173,7 +173,7 @@ surfingkeys_server_service:
 # --- Pic dirs indexer (inotifywait + zoxide) ---
 pic_dirs_list_service:
   file.managed:
-    - name: /var/home/neg/.config/systemd/user/pic-dirs-list.service
+    - name: /home/neg/.config/systemd/user/pic-dirs-list.service
     - user: neg
     - group: neg
     - mode: '0644'
