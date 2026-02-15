@@ -102,7 +102,7 @@ mpd_service:
       - file: mpd_directories
       - cmd: music_mount
       - cmd: mpd_fifo
-    - onlyif: rpm -q mpd
+    - onlyif: pacman -Q mpd
     - unless: systemctl --user is-active mpd.service
 
 # --- Deploy mpdas config via gopass ---
@@ -138,8 +138,8 @@ mpd_companion_services:
     - name: |
         {% raw %}
         services=()
-        rpm -q mpdris2 >/dev/null 2>&1 && ! systemctl --user is-enabled mpDris2.service 2>/dev/null && services+=(mpDris2.service)
-        rpm -q mpdas >/dev/null 2>&1 && ! systemctl --user is-enabled mpdas.service 2>/dev/null && services+=(mpdas.service)
+        pacman -Q mpdris2 >/dev/null 2>&1 && ! systemctl --user is-enabled mpDris2.service 2>/dev/null && services+=(mpDris2.service)
+        pacman -Q mpdas >/dev/null 2>&1 && ! systemctl --user is-enabled mpdas.service 2>/dev/null && services+=(mpdas.service)
         [ ${#services[@]} -gt 0 ] && systemctl --user enable --now "${services[@]}" || true
         {% endraw %}
     - runas: {{ user }}
@@ -152,5 +152,5 @@ mpd_companion_services:
       - cmd: mpdas_config
       - file: mpdas_service_file
     - unless: |
-        (! rpm -q mpdris2 >/dev/null 2>&1 || systemctl --user is-enabled mpDris2.service 2>/dev/null) &&
-        (! rpm -q mpdas >/dev/null 2>&1 || systemctl --user is-enabled mpdas.service 2>/dev/null)
+        (! pacman -Q mpdris2 >/dev/null 2>&1 || systemctl --user is-enabled mpDris2.service 2>/dev/null) &&
+        (! pacman -Q mpdas >/dev/null 2>&1 || systemctl --user is-enabled mpdas.service 2>/dev/null)

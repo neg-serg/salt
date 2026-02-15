@@ -1,5 +1,5 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import daemon_reload, ostree_install, service_with_unit, system_daemon_user %}
+{% from '_macros.jinja' import daemon_reload, pacman_install, service_with_unit, system_daemon_user %}
 {% set mon = host.features.monitoring %}
 
 # --- Simple service enables (packages already in system_description.sls) ---
@@ -108,13 +108,7 @@ promtail_config:
 
 # --- Grafana: dashboard with Loki datasource ---
 {% if mon.grafana %}
-grafana_repo:
-  file.managed:
-    - name: /etc/yum.repos.d/grafana.repo
-    - source: salt://configs/grafana.repo
-    - mode: '0644'
-
-{{ ostree_install('grafana', 'grafana', requires=['file: grafana_repo']) }}
+{{ pacman_install('grafana', 'grafana') }}
 
 grafana_provisioning_dir:
   file.directory:

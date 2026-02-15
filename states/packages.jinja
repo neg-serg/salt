@@ -1,20 +1,15 @@
 {#
-    Package lists for system_description.sls
+    Package lists for system_description.sls (CachyOS)
 
     All software data lives here; state logic stays in the SLS file.
-    Import: {% from 'packages.jinja' import categories, copr_packages,
-                unwanted_packages, unwanted_base_packages,
+    Packages are installed via pacman/paru outside Salt.
+    This file serves as a reference for what should be installed.
+    Import: {% from 'packages.jinja' import categories,
                 flatpak_apps, floorp_extensions, unwanted_extensions %}
 #}
 {% from 'host_config.jinja' import host %}
 
-{# Packages already in Wayblue base image (do NOT layer):
-   7zip-standalone (obsoletes p7zip), fzf, ImageMagick, inotify-tools, jq,
-   kitty, lsof, make, mtr, procps-ng, psmisc, qrencode, rust,
-   tree-sitter-cli, unzip, waybar, xz, yt-dlp, zip
-   Hyprland-specific (shipped by image): hyprland, hyprland-qtutils, hyprlock,
-   hypridle, hyprpaper, xdg-desktop-portal-hyprland
-   Steam + gaming tools (gamescope, mangohud, protontricks, vkBasalt) moved to
+{# Steam + gaming tools (gamescope, mangohud, protontricks, vkBasalt) are in
    Distrobox CachyOS container — see states/distrobox.sls #}
 
 {% set categories = {
@@ -306,44 +301,6 @@
     {'name': 'powertop', 'desc': 'Power consumption analyzer'},
 ]) %}
 {% endif %}
-
-{# Packages from COPR repos (repos enabled in system_description.sls) #}
-{% set copr_packages = [
-    {'name': 'dualsensectl',                'desc': 'DualSense controller LED/haptics control'},
-    {'name': 'espanso-wayland',             'desc': 'Cross-platform text expander (Wayland build)'},
-    {'name': 'himalaya',                    'desc': 'CLI email client using JMAP/IMAP'},
-    {'name': 'spotifyd',                    'desc': 'Lightweight Spotify Connect daemon'},
-    {'name': 'sbctl',                       'desc': 'Secure Boot key manager'},
-    {'name': 'brutefir',                    'desc': 'Software convolution audio engine'},
-    {'name': 'patchmatrix',                 'desc': 'JACK patchbay in flow matrix form'},
-    {'name': 'supercollider-sc3-plugins',   'desc': 'Community UGen plugins for SuperCollider'},
-] %}
-{# '86Box' removed — needs Qt 6.10, base image pins 6.9.2 #}
-
-{# Packages to remove (replaced by better alternatives or no longer needed).
-   rpm-ostree only adds, never removes — this handles cleanup explicitly.
-   Rationale:
-   - nnn/ranger/stow/axel/speedtest-cli/pcem: replaced by better alternatives
-   - python3-devel etc.: orphan build deps no longer needed at runtime
-   - pass: replaced by gopass
-   - *-debug{info,source}: debug packages from custom RPM builds
-   - alacritty/foot/g++: replaced terminals / unused compiler
-   - nethogs: replaced by bandwhich (custom RPM)
-   - steam etc.: moved to Distrobox CachyOS container #}
-{% set unwanted_packages = [
-    'nnn', 'ranger', 'stow', 'axel', 'speedtest-cli', 'pcem', 'nethogs',
-    'python3-devel', 'ncurses-devel', 'pulseaudio-libs-devel', 'taglib-devel',
-    'pass',
-    'albumdetails-debuginfo', 'albumdetails-debugsource',
-    'amneziawg-tools-debuginfo', 'amneziawg-tools-debugsource',
-    'alacritty', 'foot', 'g++',
-    'steam', 'gamescope', 'mangohud', 'protontricks', 'python3-vkbasalt-cli', 'vkBasalt',
-] %}
-
-{# Base-image packages to override-remove (firefox replaced by Floorp Flatpak) #}
-{% set unwanted_base_packages = [
-    'firefox', 'firefox-langpacks',
-] %}
 
 {# Flatpak applications (installed per-user from Flathub) #}
 {% set flatpak_apps = [

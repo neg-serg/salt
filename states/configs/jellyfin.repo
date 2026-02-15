@@ -1,6 +1,0 @@
-[jellyfin]
-name=Jellyfin
-baseurl=https://repo.jellyfin.org/releases/server/fedora/stable/$basearch
-gpgcheck=1
-gpgkey=https://repo.jellyfin.org/releases/server/fedora/stable/RPM-GPG-KEY-jellyfin-server
-enabled=1

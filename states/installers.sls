@@ -111,8 +111,7 @@ success "Essentia streaming extractor installed"
 {{ cargo_pkg('handlr', pkg='handlr-regex') }}
 {{ cargo_pkg('agg', git='https://github.com/asciinema/agg') }}
 
-# NOTE: tailray needs dbus-devel (libdbus-sys). May fail on first run
-# if dbus-devel was just layered and not yet active (requires reboot).
+# NOTE: tailray needs dbus headers (libdbus-sys).
 install_tailray:
   cmd.run:
     - name: cargo install --git https://github.com/NotAShelf/tailray
@@ -231,10 +230,7 @@ install_matugen_themes:
     - creates: /home/neg/.config/matugen/templates
 
 # --- DroidCam (phone as webcam via v4l2loopback) ---
-install_v4l2loopback:
-  cmd.run:
-    - name: rpm-ostree install -y akmod-v4l2loopback
-    - unless: rpm -q akmod-v4l2loopback &>/dev/null || rpm-ostree status | grep -q v4l2loopback
+# v4l2loopback-dkms installed via pacman outside Salt
 
 install_droidcam:
   cmd.run:
@@ -271,7 +267,7 @@ install_blesh:
 # --- rofi-pass (password-store rofi frontend) ---
 {{ curl_bin('rofi-pass', 'https://raw.githubusercontent.com/carnager/rofi-pass/master/rofi-pass') }}
 
-# --- Theme packages not in Fedora repos ---
+# --- Theme packages ---
 install_kora_icons:
   cmd.run:
     - name: |
@@ -303,7 +299,7 @@ install_flight_gtk_theme:
     - shell: /bin/bash
     - creates: /home/neg/.local/share/themes/Flight-Dark-GTK
 
-# --- MPV scripts (installed per-user, not in Fedora repos) ---
+# --- MPV scripts (installed per-user) ---
 install_mpv_scripts:
   cmd.run:
     - name: |

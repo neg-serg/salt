@@ -2,7 +2,7 @@
 # shellcheck disable=SC2015  # A && B || C pattern is intentional (B=echo never fails)
 set -uo pipefail
 BUILD=/mnt/one/pkg/cache/amnezia
-IMG=registry.fedoraproject.org/fedora-toolbox:43
+IMG=archlinux:latest
 PIDS=()
 NAMES=()
 FAILURES=0
@@ -23,7 +23,7 @@ if [ ! -f "$BUILD/amneziawg-go-bin" ]; then
     (
         echo "[BUILD] amneziawg-go"
         podman run --rm -v "$BUILD:/build:Z" "$IMG" bash -c "
-        dnf install -y git golang make && \
+        pacman -Syu --noconfirm git go make && \
         git clone https://github.com/amnezia-vpn/amneziawg-go.git /build/amneziawg-go-src && \
         cd /build/amneziawg-go-src && \
         make && \
@@ -38,7 +38,7 @@ if [ ! -f "$BUILD/awg-bin" ]; then
     (
         echo "[BUILD] amneziawg-tools"
         podman run --rm -v "$BUILD:/build:Z" "$IMG" bash -c "
-        dnf install -y git make gcc libmnl-devel && \
+        pacman -Syu --noconfirm git make gcc libmnl && \
         git clone https://github.com/amnezia-vpn/amneziawg-tools.git /build/amneziawg-tools-src && \
         cd /build/amneziawg-tools-src/src && \
         make && \
@@ -53,12 +53,11 @@ if [ ! -f "$BUILD/AmneziaVPN-bin" ]; then
     (
         echo "[BUILD] amnezia-vpn"
         podman run --rm -v "$BUILD:/build:Z" "$IMG" bash -c "
-        dnf install -y --disablerepo=fedora-cisco-openh264 --setopt=install_weak_deps=False \
-            git cmake make gcc-c++ qt6-qtbase-devel qt6-qtsvg-devel \
-            qt6-qtdeclarative-devel qt6-qttools-devel libmnl-devel libmount-devel \
-            qt6-qt5compat-devel qt6-qtshadertools-devel qt6-qtmultimedia-devel \
-            qt6-qtbase-static qt6-qtdeclarative-static qt6-qtremoteobjects-devel \
-            libsecret-devel libstdc++-static && \
+        pacman -Syu --noconfirm \
+            git cmake make gcc qt6-base qt6-svg \
+            qt6-declarative qt6-tools libmnl util-linux \
+            qt6-5compat qt6-shadertools qt6-multimedia \
+            qt6-remoteobjects libsecret && \
         git clone --recursive https://github.com/amnezia-vpn/amnezia-client.git /build/amnezia-client-src && \
         mkdir -p /build/amnezia-client-src/build && cd /build/amnezia-client-src/build && \
         cmake .. -DCMAKE_BUILD_TYPE=Release -DVERSION=2.1.2 && \

@@ -1,5 +1,4 @@
-# Ollama LLM server: systemd service, SELinux policies, model pulls
-{% from '_macros.jinja' import selinux_policy, selinux_fcontext %}
+# Ollama LLM server: systemd service, model pulls
 
 ollama_service_unit:
   file.managed:
@@ -18,43 +17,12 @@ ollama_models_dir:
     - require:
       - mount: mount_one
 
-# file_contexts.local uses last-match-wins ordering: the broad /mnt/one(/.*)?
-# rule (user_home_t) overrides this specific rule if added earlier. Fix: delete
-# and re-add to ensure this rule is LAST in the file and takes precedence.
-ollama_selinux_context:
-  cmd.run:
-    - name: |
-        semanage fcontext -d -t var_lib_t '/mnt/one/ollama(/.*)?' 2>/dev/null || true
-        semanage fcontext -a -t var_lib_t '/mnt/one/ollama(/.*)?'
-        restorecon -Rv /mnt/one/ollama
-    - shell: /bin/bash
-    - unless: ls -Zd /mnt/one/ollama 2>/dev/null | grep -q var_lib_t
-    - require:
-      - file: ollama_models_dir
-
-# ollama server (init_t) needs to read its key from ~/.ollama/ (user_home_t → var_lib_t)
-# label ~/.ollama/ as var_lib_t so ollama (init_t) can read its key
-{{ selinux_fcontext('ollama_selinux_homedir', '/home/neg/\\.ollama', '/home/neg/.ollama', 'var_lib_t', check_path='/home/neg/.ollama/id_ed25519') }}
-
-# ollama runs as init_t (no custom SELinux type) and needs outbound HTTPS for model pulls
-{% call selinux_policy('ollama_selinux_network', 'ollama-network') %}
-module ollama-network 1.0;
-require {
-    type init_t;
-    type http_port_t;
-    class tcp_socket name_connect;
-}
-allow init_t http_port_t:tcp_socket name_connect;
-{% endcall %}
-
 ollama_enable:
   cmd.run:
     - name: systemctl daemon-reload && systemctl enable ollama
     - onchanges:
       - file: ollama_service_unit
     - onlyif: command -v ollama
-    - require:
-      - cmd: ollama_selinux_context
 
 ollama_start:
   cmd.run:
@@ -71,7 +39,6 @@ ollama_start:
     - unless: curl -sf http://127.0.0.1:11434/api/tags >/dev/null 2>&1
     - require:
       - cmd: ollama_enable
-      - cmd: ollama_selinux_homedir
 
 {% for model in ['deepseek-r1:8b', 'llama3.2:3b', 'qwen2.5-coder:7b'] %}
 pull_{{ model | replace('.', '_') | replace(':', '_') | replace('-', '_') }}:
@@ -95,7 +62,6 @@ pull_{{ model | replace('.', '_') | replace(':', '_') | replace('-', '_') }}:
     - timeout: 660
     - require:
       - cmd: ollama_start
-      - cmd: ollama_selinux_network
 {% endfor %}
 
 # --- openclaw (local AI assistant agent) ---

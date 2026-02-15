@@ -1,57 +1,50 @@
-# Salt Project — Fedora Atomic Workstation Config
+# Salt Project — CachyOS Workstation Config
 
 ## Overview
 
-Salt states + chezmoi dotfiles for configuring a Fedora Silverblue/Atomic workstation.
-Migrated from NixOS (nix-maid/mkHomeFiles). NixOS source: `~/src/nixos-config/`.
+Salt states + chezmoi dotfiles for configuring a CachyOS (Arch-based) workstation.
+Migrated from NixOS (nix-maid/mkHomeFiles), then Fedora Atomic/Silverblue.
+Packages installed via pacman/paru outside Salt; Salt handles configuration management.
 
 ## Key Paths
 
 | Path | Purpose |
 |---|---|
 | `states/` | Salt state files (`.sls`) and Jinja templates |
-| `states/system_description.sls` | Core system setup: packages, repos, flatpak, mounts, users |
-| `states/_macros.jinja` | Reusable Jinja macros (9 macros, see below) |
+| `states/system_description.sls` | Core system setup: flatpak, mounts, users, zsh |
+| `states/_macros.jinja` | Reusable Jinja macros (see below) |
 | `states/host_config.jinja` | Per-host config map keyed by `grains['host']` |
-| `states/packages.jinja` | Package lists by category, COPR repos, flatpak apps |
+| `states/packages.jinja` | Package reference lists, flatpak apps |
 | `states/configs/` | External config files served via `salt://configs/` |
 | `states/units/` | Systemd unit files served via `salt://units/` |
 | `states/scripts/` | Shell scripts served via `salt://scripts/` |
-| `states/build_rpms.sls` | Orchestrates RPM builds via podman |
-| `states/install_rpms.sls` | Installs custom RPMs via rpm-ostree |
-| `build/build-rpm.sh` | Build script run inside containers |
-| `build/specs/*.spec` | RPM spec files |
 | `build/iosevka-neg.toml` | Custom Iosevka font build config |
-| `rpms/` | Built RPM output (gitignored) |
 | `dotfiles/` | Chezmoi source dir (dot_ prefix = . in paths) |
 | `docs/` | Documentation (migration tracking, secrets, setup guides) |
-| `scripts/` | Utility scripts (rebase, debug, comparison, linting) |
+| `scripts/` | Utility scripts (linting, comparison) |
 
-## Salt State Modules (23 files)
+## Salt State Modules (20 files)
 
 | Module | Purpose |
 |---|---|
-| `system_description.sls` | Core: containers, timezone, locale, users, packages, flatpak, mounts, zsh |
+| `system_description.sls` | Core: timezone, locale, users, flatpak, mounts, zsh |
 | `installers.sls` | CLI tools: GitHub releases, pip/cargo installs, scripts, themes |
 | `user_services.sls` | User systemd services: chezmoi, mail, vdirsyncer, GPG agent |
 | `dns.sls` | Unbound, AdGuardHome, Avahi |
 | `monitoring.sls` | Sysstat, vnstat, netdata, Loki/Promtail/Grafana stack |
 | `services.sls` | Samba, Jellyfin, Bitcoind, DuckDNS |
-| `build_rpms.sls` | RPM builds via podman containers |
-| `install_rpms.sls` | rpm-ostree install of custom RPMs |
 | `mpd.sls` | MPD + mpdris2 + mpdas + scrobbling |
 | `amnezia.sls` | AmneziaVPN build and deploy |
 | `greetd.sls` | greetd login manager (replaces SDDM) |
-| `ollama.sls` | Ollama LLM service + SELinux + model pulls |
+| `ollama.sls` | Ollama LLM service + model pulls |
 | `floorp.sls` | Floorp browser configs + extensions |
 | `hardware.sls` | Fan control, GPU, hardware-specific setup |
 | `network.sls` | VM bridge, xray, sing-box |
 | `kernel_modules.sls` | Kernel module loading |
-| `kernel_params.sls` | Kernel boot parameters |
+| `kernel_params.sls` | Kernel boot parameters via /etc/kernel/cmdline |
 | `bind_mounts.sls` | Bind mounts for /mnt paths |
-| `distrobox.sls` | Distrobox containers + Steam SELinux |
+| `distrobox.sls` | Distrobox containers (Steam gaming) |
 | `sysctl.sls` | Sysctl tuning |
-| `pkg_cache.sls` | RPM package cache on /mnt/one |
 | `fira-code-nerd.sls` | FiraCode Nerd Font install |
 | `hy3.sls` | Hyprland hy3 plugin |
 
@@ -65,28 +58,28 @@ Migrated from NixOS (nix-maid/mkHomeFiles). NixOS source: `~/src/nixos-config/`.
 | `github_release(name, repo, asset, ...)` | GitHub release install (bin/tar.gz, with tag fetch) |
 | `pip_pkg(name, pkg, bin)` | pip install to `~/.local/` |
 | `cargo_pkg(name, pkg, bin, git)` | cargo install |
-| `selinux_policy(state_id, module)` | Compile + load SELinux policy module |
-| `selinux_fcontext(name, selinux_path, real_path, ...)` | SELinux file context labeling |
-| `ostree_install(name, pkgs, check, requires)` | rpm-ostree install with idempotency guard |
+| `pacman_install(name, pkgs, check, requires)` | pacman install with idempotency guard |
+| `system_daemon_user(name, home_dir)` | Create system daemon user + data directory |
+| `service_with_unit(name, source)` | Deploy systemd unit + enable service |
+| `curl_extract_tar(name, url, binary_pattern)` | Download + extract tar/tar.gz to `~/.local/bin/` |
+| `curl_extract_zip(name, url, binary_path)` | Download + extract zip to `~/.local/bin/` |
+| `run_with_error_context(state_id)` | cmd.run with error handling helpers |
 
 ## Conventions
 
 - **Chezmoi naming**: `dot_config/foo/bar` deploys to `~/.config/foo/bar`
-- **RPM builds**: Each package has a section in `build/build-rpm.sh` + entry in `states/build_rpms.sls` + a `build/specs/*.spec` file
-- **Build containers**: `registry.fedoraproject.org/fedora-toolbox:43`, ephemeral (`--rm`)
+- **Build containers**: `archlinux:latest`, ephemeral (`--rm`)
 - **Salt creates guard**: `creates:` directive prevents re-running completed builds
 - **Inline content**: Configs ≥10 lines go to `configs/`, systemd units go to `units/`, scripts go to `scripts/`
-- **Commit style**: `[scope] description` — scopes: `salt`, `dotfiles`, `docs`, `rpm`
-- **SELinux fcontext**: Use `selinux_fcontext` macro. Guard with `ls -Zd | grep -q TYPE`, not `matchpathcon -V`
-- **Service enable**: Use `service.enabled` for base packages; use `cmd.run: systemctl enable` for rpm-ostree layered packages
+- **Commit style**: `[scope] description` — scopes: `salt`, `dotfiles`, `docs`
+- **Service enable**: Use `service.enabled` for packages installed via pacman
 
-## Platform Constraints
+## Platform
 
-- **rpm-ostree**: Base image packages are pinned. Layered packages can't upgrade base libs.
-  - Current issue: `qt6ct` uninstallable (needs Qt 6.10, base has 6.9.2). Using `qt5ct` + kvantum instead.
-- **Fedora Atomic**: `/usr` is read-only. User-level installs go to `~/.local/` or are layered via rpm-ostree.
-- **Podman (not Docker)**: All container operations use podman. Build containers mount `build/` and `rpms/` as volumes.
+- **CachyOS (Arch-based)**: Packages managed via pacman/paru outside Salt
+- **Podman (not Docker)**: All container operations use podman
 - **Standard paths**: `/home/neg` for user home, `/mnt/one` and `/mnt/zero` for external storage
+- **Kernel params**: Managed via `/etc/kernel/cmdline` + `reinstall-kernels`
 
 ## Secrets
 
@@ -94,13 +87,3 @@ Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full de
 - Chezmoi templates: `{{ gopass "key/path" }}` in `.tmpl` files
 - Salt states: `gopass show -o key/path` in `cmd.run`
 - No plaintext secrets in this repo
-
-## Custom RPMs (35 packages)
-
-Rust: bandwhich, choose, erdtree, fclones, grex, htmlq, jujutsu, kmon, lutgen, ouch, raise, taplo, viu, wallust, xh
-Go: carapace, ctop, curlie, dive, doggo, duf, massren, nerdctl, pup, scc, zfxtop, zk
-C/meson: pipemixer, xdg-desktop-portal-termfilechooser
-Python: epr, git-filter-repo, neg-pretty-printer, rapidgzip, richcolors, scour, xxh
-Ruby: gist
-Font: iosevka-neg-fonts
-Qt6/C++: quickshell
