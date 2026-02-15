@@ -87,6 +87,7 @@ include:
   - network
   - ollama
   - services
+  - steam
   - sysctl
   - user_services
 
