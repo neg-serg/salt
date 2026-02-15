@@ -348,7 +348,6 @@ PACMAN_PKGS=(
     viu                 # terminal image viewer
     xh                  # friendly HTTP client (httpie alternative, Rust)
     curlie              # curl + httpie hybrid
-    duf                 # disk usage (df alternative)
     nerdctl             # containerd CLI (Docker-compatible)
     ctop                # container metrics top
     dive                # Docker/OCI image layer explorer
