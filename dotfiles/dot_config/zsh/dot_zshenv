@@ -17,6 +17,9 @@ export XDG_VIDEOS_DIR="$HOME/vid"
 export XDG_PUBLICSHARE_DIR="$HOME/.local/public"
 export XDG_TEMPLATES_DIR="$HOME/.local/templates"
 
+# --- GPG ---
+export GPG_TTY=$(tty)
+
 # --- Shell ---
 export ZDOTDIR="$HOME/.config/zsh"
 export WORDCHARS='*/?_-.[]~&;!#$%^(){}<>~` '
