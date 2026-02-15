@@ -14,7 +14,7 @@ process_tracking = false
 [scratchpads.music]
 animation = ""
 command = "kitty --class music -e rmpc"
-margin = "80%"
+margin = 80
 class = "music"
 position = "15% 50%"
 size = "70% 40%"
