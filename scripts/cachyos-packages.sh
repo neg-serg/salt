@@ -449,6 +449,12 @@ pkgbuild_install() {
     # Provide iosevka design config alongside its PKGBUILD
     cp "${SALT_DIR}/build/iosevka-neg.toml" "${PKGBUILD_DIR}/iosevka-neg-fonts/"
 
+    # iosevka-neg-fonts needs ttfautohint (AUR-only, makepkg can't install it)
+    if ! pacman -Q ttfautohint &>/dev/null; then
+        echo "  Installing ttfautohint from AUR (needed for iosevka build)..."
+        su - neg -c "paru -S --needed --noconfirm --skipreview ttfautohint"
+    fi
+
     for pkg in "${CUSTOM_PKGS[@]}"; do
         if pacman -Q "$pkg" &>/dev/null; then
             echo "  $pkg already installed, skipping"

@@ -7,7 +7,8 @@ arch=('any')
 url='https://github.com/be5invis/Iosevka'
 license=('OFL-1.1')
 depends=('fontconfig')
-makedepends=('npm' 'git' 'ttfautohint' 'python-fonttools' 'fontforge')
+# ttfautohint is also needed but is AUR-only; installed by cachyos-packages.sh
+makedepends=('npm' 'git' 'python-fonttools' 'fontforge')
 source=("iosevka-source-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz"
         'iosevka-neg.toml')
 sha256sums=('SKIP' 'SKIP')
