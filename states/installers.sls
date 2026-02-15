@@ -93,8 +93,7 @@ step "Extracting archive"
 tar -xzf /tmp/essentia.tar.gz -C /tmp
 
 step "Installing to ~/.local/bin/"
-mv /tmp/streaming_extractor_music ~/.local/bin/essentia_streaming_extractor_music
-chmod +x ~/.local/bin/essentia_streaming_extractor_music
+install -m755 /tmp/streaming_extractor_music ~/.local/bin/essentia_streaming_extractor_music
 
 step "Cleaning up"
 rm -f /tmp/essentia.tar.gz
