@@ -434,14 +434,38 @@ AUR_PKGS=(
 )
 
 # ===================================================================
-# PACKAGES NEEDING MANUAL BUILD (PKGBUILDs or custom)
+# CUSTOM PKGBUILD PACKAGES (makepkg)
 # ===================================================================
-# raise               — custom window raise tool
-# neg-pretty-printer  — custom/personal
-# richcolors          — custom/personal
-# taoup               — Unix philosophy quotes
-# albumdetails        — custom C tool
-# iosevka-neg-fonts   — custom Iosevka font build
+# Packages with no official/AUR equivalent, built from local PKGBUILDs.
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SALT_DIR="$(dirname "$SCRIPT_DIR")"
+PKGBUILD_DIR="${SALT_DIR}/build/pkgbuilds"
+
+# iosevka-neg-fonts last: 2+ hour build
+CUSTOM_PKGS=(raise neg-pretty-printer richcolors albumdetails taoup iosevka-neg-fonts)
+
+pkgbuild_install() {
+    # Provide iosevka design config alongside its PKGBUILD
+    cp "${SALT_DIR}/build/iosevka-neg.toml" "${PKGBUILD_DIR}/iosevka-neg-fonts/"
+
+    for pkg in "${CUSTOM_PKGS[@]}"; do
+        if pacman -Q "$pkg" &>/dev/null; then
+            echo "  $pkg already installed, skipping"
+            continue
+        fi
+        if [[ ! -f "${PKGBUILD_DIR}/${pkg}/PKGBUILD" ]]; then
+            echo "  WARNING: no PKGBUILD for ${pkg}, skipping" >&2
+            continue
+        fi
+        echo "  Building ${pkg}..."
+        sudo -u neg bash -c "cd '${PKGBUILD_DIR}/${pkg}' && makepkg -sfC --noconfirm"
+        pacman -U --noconfirm "${PKGBUILD_DIR}/${pkg}/"*.pkg.tar.zst
+    done
+
+    # Ruby gem for taoup color output
+    gem install ansi --no-document --no-user-install 2>/dev/null || true
+}
 
 # ===================================================================
 # Install
@@ -469,5 +493,9 @@ echo "==> Installing AUR packages (paru as user neg)..."
 retry 5 "paru/AUR" paru_install
 
 echo ""
-echo "==> Done. Packages needing manual build:"
-echo "    raise, neg-pretty-printer, richcolors, taoup, albumdetails, iosevka-neg-fonts"
+echo "==> Building and installing custom packages (makepkg as user neg)..."
+echo "    NOTE: iosevka-neg-fonts takes 2+ hours to build"
+pkgbuild_install
+
+echo ""
+echo "==> Done. All packages installed."

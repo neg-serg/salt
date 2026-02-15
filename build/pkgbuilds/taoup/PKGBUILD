@@ -1,0 +1,16 @@
+# Maintainer: neg-serg <neg-serg@example.com>
+pkgname=taoup
+pkgver=1.1.23
+pkgrel=1
+pkgdesc='The Art of Unix Programming wisdom quotes'
+arch=('any')
+url='https://github.com/globalcitizen/taoup'
+license=('GPL-3.0-only')
+depends=('ruby')
+source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz")
+sha256sums=('SKIP')
+
+package() {
+    cd "${pkgname}-${pkgver}"
+    install -Dm755 taoup "${pkgdir}/usr/bin/taoup"
+}
