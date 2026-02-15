@@ -23,7 +23,7 @@ Packages installed via pacman/paru outside Salt; Salt handles configuration mana
 | `docs/` | Documentation (migration tracking, secrets, setup guides) |
 | `scripts/` | Utility scripts (linting, comparison) |
 
-## Salt State Modules (20 files)
+## Salt State Modules (22 files)
 
 | Module | Purpose |
 |---|---|
@@ -46,6 +46,8 @@ Packages installed via pacman/paru outside Salt; Salt handles configuration mana
 | `distrobox.sls` | Distrobox containers (Steam gaming) |
 | `sysctl.sls` | Sysctl tuning |
 | `fira-code-nerd.sls` | FiraCode Nerd Font install |
+| `iosevka.sls` | Custom Iosevka Nerd Font build from PKGBUILD |
+| `custom_pkgs.sls` | Build raise, neg-pretty-printer, richcolors, albumdetails from PKGBUILDs |
 | `hy3.sls` | Hyprland hy3 plugin |
 
 ## Macros (`_macros.jinja`)

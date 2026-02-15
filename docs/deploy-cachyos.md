@@ -123,7 +123,8 @@ After bootstrap, everything needed for deploy lives on XFS:
 - The script uses `/mnt/deploy` to avoid shadowing `/var/mnt/one`
 - If running manually, don't mount target at `/mnt`
 
-**Custom packages not installed**
-- 5 packages need manual build (PKGBUILDs in `build/pkgbuilds/`):
-  raise, neg-pretty-printer, richcolors, albumdetails, iosevka-neg-fonts
-- Build with `makepkg -si` in each PKGBUILD directory
+**Custom packages (automated by Salt)**
+- 5 packages built from PKGBUILDs in `build/pkgbuilds/` via Salt states:
+  raise, neg-pretty-printer, richcolors, albumdetails (custom_pkgs.sls),
+  iosevka-neg-fonts (iosevka.sls)
+- Built automatically during `apply_cachyos.sh`
