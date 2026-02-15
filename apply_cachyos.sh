@@ -87,6 +87,67 @@ get_sudo() {
   fi
 }
 
+# Inline Salt runner: patches removed stdlib modules for Python 3.13+
+# (crypt, spwd) and suppresses Salt's internal DeprecationWarnings.
+SALT_RUNNER='
+import sys
+import warnings
+
+_orig_showwarning = warnings.showwarning
+
+def _showwarning(msg, cat, filename, lineno, file=None, line=None):
+    if cat is DeprecationWarning and "/salt/" in filename:
+        return
+    _orig_showwarning(msg, cat, filename, lineno, file, line)
+
+warnings.showwarning = _showwarning
+
+class MockCrypt:
+    def __init__(self):
+        try:
+            import passlib.hash as hash
+            self.hash = hash
+        except ImportError:
+            self.hash = None
+            print("Warning: passlib not found. Salt user password management might fail.")
+
+        class Method:
+            def __init__(self, name, ident):
+                self.name = name
+                self.ident = ident
+
+        self.methods = [
+            Method("sha512", "6"),
+            Method("sha256", "5"),
+            Method("md5", "1"),
+            Method("crypt", ""),
+        ]
+
+    def crypt(self, word, salt):
+        if not self.hash:
+            raise ImportError("passlib is required for crypt emulation")
+        from passlib.hash import des_crypt, md5_crypt, sha256_crypt, sha512_crypt
+
+        if salt.startswith("$6$"):
+            return sha512_crypt.hash(word, salt=salt.split("$")[2])
+        if salt.startswith("$5$"):
+            return sha256_crypt.hash(word, salt=salt.split("$")[2])
+        if salt.startswith("$1$"):
+            return md5_crypt.hash(word, salt=salt.split("$")[2])
+        return des_crypt.hash(word, salt=salt)
+
+sys.modules["crypt"] = MockCrypt()
+
+class MockSpwd:
+    def getspnam(self, name):
+        raise KeyError(f"spwd.getspnam emulation: user {name} lookup failed or not implemented")
+
+sys.modules["spwd"] = MockSpwd()
+
+import salt.scripts
+salt.scripts.salt_call()
+'
+
 run_salt() {
   local extra_args="${1:-}"
   echo "=== Applying ${STATE} ($(date)) ==="
@@ -133,7 +194,7 @@ run_salt() {
   # Run salt-call; stdout goes to log only (awk handles terminal display).
   # Use python -u for unbuffered output so summary lines reach the log immediately.
   if [[ -n "${SUDO_PASS:-}" ]]; then
-    echo "$SUDO_PASS" | $SUDO_CMD "$VENV_DIR/bin/python3" -u "${SCRIPT_DIR}/run_salt.py" \
+    echo "$SUDO_PASS" | $SUDO_CMD "$VENV_DIR/bin/python3" -u -c "$SALT_RUNNER" \
       --config-dir="${RUNTIME_CONFIG_DIR}" \
       --local \
       --log-level=warning \
@@ -142,7 +203,7 @@ run_salt() {
       --state-output=mixed_id \
       ${ACTION} ${STATE} ${extra_args} 2>&1 | tee -a "${LOG_FILE}" > /dev/null
   else
-    $SUDO_CMD "$VENV_DIR/bin/python3" -u "${SCRIPT_DIR}/run_salt.py" \
+    $SUDO_CMD "$VENV_DIR/bin/python3" -u -c "$SALT_RUNNER" \
       --config-dir="${RUNTIME_CONFIG_DIR}" \
       --local \
       --log-level=warning \
