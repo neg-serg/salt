@@ -33,10 +33,11 @@ install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: |
         set -eo pipefail
-        curl -fsSL {{ url }} -o /tmp/{{ name }}.tar.gz
-        tar -xzf /tmp/{{ name }}.tar.gz -C /tmp {{ name }}
-        install -m755 /tmp/{{ name }} ~/.local/bin/{{ name }}
-        rm -f /tmp/{{ name }}.tar.gz /tmp/{{ name }}
+        TMPDIR=$(mktemp -d)
+        curl -fsSL {{ url }} -o "$TMPDIR/archive.tar.gz"
+        tar -xzf "$TMPDIR/archive.tar.gz" -C "$TMPDIR"
+        find "$TMPDIR" -name '{{ name }}' -type f -exec install -m755 {} ~/.local/bin/{{ name }} \;
+        rm -rf "$TMPDIR"
     - runas: neg
     - shell: /bin/bash
     - creates: /home/neg/.local/bin/{{ name }}
@@ -164,7 +165,8 @@ install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: |
         set -uo pipefail
-        source /build/salt/error-helpers.sh
+        step() { printf "[%s] %s\n" "$(date +'%H:%M:%S')" "$*"; }
+        success() { printf "[  ✓  ] %s\n" "$*"; }
         trap 'echo "[EXIT] Cleanup on exit (code: $?)" >&2' EXIT
         {{ caller() | indent(8) }}
     - shell: {{ shell }}
