@@ -231,6 +231,22 @@ cachyos_aur_{{ pkg | replace('-', '_') }}:
 {% endfor %}
 
 # ===================================================================
+# Custom PKGBUILD packages (spot-check)
+# ===================================================================
+
+{% set check_custom = [
+    'raise', 'neg-pretty-printer', 'richcolors',
+    'albumdetails', 'taoup', 'iosevka-neg-fonts',
+] %}
+
+{% for pkg in check_custom %}
+cachyos_custom_{{ pkg | replace('-', '_') }}:
+  cmd.run:
+    - name: 'true'
+    - unless: pacman -Q {{ pkg }} >/dev/null 2>&1
+{% endfor %}
+
+# ===================================================================
 # Zsh configuration
 # ===================================================================
 
