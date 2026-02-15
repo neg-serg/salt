@@ -23,8 +23,8 @@ Hyprland or the QuickShell theme changes.
    just workspace-icons
    ```
 
-   The `just` recipe launches `quickshell/.config/quickshell/Tools/workspace-icons/generate.py`
-   inside a `nix shell` with python 3.13, `fonttools`, `xmllint`, and `rsvg-convert`.
+   The `just` recipe launches `quickshell/.config/quickshell/Tools/workspace-icons/generate.py`.
+   Requires: `python`, `python-fonttools`, `libxml2` (xmllint), `librsvg` (rsvg-convert).
 
 1. The script will:
 

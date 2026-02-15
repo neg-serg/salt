@@ -8,7 +8,7 @@ ______________________________________________________________________
 
 Quick Checklist
 
-- Build shaders: `nix shell nixpkgs#qt6.qtshadertools -c bash -lc 'scripts/compile_shaders.sh'`
+- Build shaders: `scripts/compile_shaders.sh` (requires `qt6-shadertools`)
 - Visibility test: `QS_ENABLE_WEDGE_CLIP=1 QS_WEDGE_DEBUG=1 QS_WEDGE_SHADER_TEST=1 qs` (must see
   magenta)
 - If no magenta: move bars to Overlay (auto in debug), check logs with `debugLogs: true`
