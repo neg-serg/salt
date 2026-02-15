@@ -177,6 +177,8 @@ else
   echo "Full log: ${LOG_FILE}"
   if [[ $RC -eq 0 ]]; then
     echo "--- ${STATE}: all states passed ---"
+    echo "--- Applying dotfiles (chezmoi) ---"
+    chezmoi apply --force --source "${SCRIPT_DIR}/dotfiles"
   else
     echo "--- ${STATE}: some states failed (see log above) ---"
     exit $RC
