@@ -81,7 +81,7 @@ install_rustmission:
 
 {{ github_tar('opencode', 'https://github.com/opencode-ai/opencode/releases/latest/download/opencode-linux-x86_64.tar.gz') }}
 
-{{ curl_bin('adguardian', 'https://github.com/Lissy93/AdGuardian-Term/releases/latest/download/adguardian-linux') }}
+{{ cargo_pkg('adguardian') }}
 
 {{ curl_extract_zip('realesrgan', 'https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan/releases/download/v0.2.0/realesrgan-ncnn-vulkan-v0.2.0-ubuntu.zip', 'realesrgan-ncnn-vulkan-v0.2.0-ubuntu', binaries=['realesrgan-ncnn-vulkan'], chmod=True) }}
 
@@ -104,7 +104,11 @@ success "Essentia streaming extractor installed"
 
 # --- pip installs ---
 {{ pip_pkg('scdl') }}
-{{ pip_pkg('dr14_tmeter', pkg='git+https://github.com/simon-r/dr14_t.meter.git') }}
+install_dr14_tmeter:
+  cmd.run:
+    - name: GIT_CONFIG_GLOBAL=/dev/null pipx install git+https://github.com/simon-r/dr14_t.meter.git
+    - runas: neg
+    - creates: /home/neg/.local/bin/dr14_tmeter
 {{ pip_pkg('euporie') }}
 {{ pip_pkg('faker') }}
 
