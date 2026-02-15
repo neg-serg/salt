@@ -1,17 +1,32 @@
 #!/bin/bash
 set -uo pipefail
 
-# Apply CachyOS verification/configuration state via Salt.
-# Analogous to apply_config.sh but targets the cachyos.sls state.
+# Apply Salt states on CachyOS.
+# Defaults to the cachyos.sls verification state; accepts any state name.
 #
 # Usage:
-#   ./apply_cachyos.sh            # apply state
-#   ./apply_cachyos.sh --dry-run  # test mode (no changes)
+#   ./apply_cachyos.sh                        # apply cachyos.sls
+#   ./apply_cachyos.sh kernel_modules         # apply kernel_modules.sls
+#   ./apply_cachyos.sh sysctl                 # apply sysctl.sls
+#   ./apply_cachyos.sh kernel_params_limine   # apply Limine kernel params
+#   ./apply_cachyos.sh hardware               # apply hardware/fancontrol
+#   ./apply_cachyos.sh sysctl --dry-run       # test mode
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VENV_DIR="${SCRIPT_DIR}/.venv"
 ACTION="state.sls"
+
+# Parse arguments: first non-flag arg is STATE, --dry-run is a flag
 STATE="cachyos"
+DRY_RUN=false
+for arg in "$@"; do
+    case "$arg" in
+        --dry-run) DRY_RUN=true ;;
+        -*) echo "Unknown flag: $arg" >&2; exit 1 ;;
+        *) STATE="$arg" ;;
+    esac
+done
+
 LOG_DIR="${SCRIPT_DIR}/logs"
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 LOG_FILE="${LOG_DIR}/${STATE}-${TIMESTAMP}.log"
@@ -128,21 +143,25 @@ bootstrap_salt
 setup_config
 get_sudo
 
-if [[ "${1:-}" == "--dry-run" ]]; then
-  echo "--- Running in test mode (no changes will be applied) ---"
+if $DRY_RUN; then
+  echo "--- Running ${STATE} in test mode (no changes will be applied) ---"
   run_salt "test=True"
 else
+  echo "--- Applying state: ${STATE} ---"
   run_salt ""
   RC=$?
   echo ""
-  echo "=== Finished salt (exit code: ${RC}) at $(date) ==="
+  echo "=== Finished ${STATE} (exit code: ${RC}) at $(date) ==="
   echo "Full log: ${LOG_FILE}"
   if [[ $RC -eq 0 ]]; then
-    echo "--- All CachyOS checks passed ---"
-    echo "--- Applying dotfiles (chezmoi) ---"
-    chezmoi apply --force --source "${SCRIPT_DIR}/dotfiles"
+    echo "--- ${STATE}: all states passed ---"
+    # Only run chezmoi for the main cachyos verification state
+    if [[ "$STATE" == "cachyos" ]]; then
+      echo "--- Applying dotfiles (chezmoi) ---"
+      chezmoi apply --force --source "${SCRIPT_DIR}/dotfiles"
+    fi
   else
-    echo "--- Some checks failed (see log above) ---"
+    echo "--- ${STATE}: some states failed (see log above) ---"
     exit $RC
   fi
 fi
