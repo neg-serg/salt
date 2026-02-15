@@ -1,0 +1,16 @@
+# Maintainer: neg-serg <neg-serg@example.com>
+pkgname=richcolors
+pkgver=0.1.0
+pkgrel=1
+pkgdesc='CLI that renders color palette images from hex code files'
+arch=('any')
+url='https://github.com/Rizen54/richcolors'
+license=('Unlicense')
+depends=('python' 'python-pillow')
+source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz")
+sha256sums=('SKIP')
+
+package() {
+    cd "${pkgname}-${pkgver}"
+    install -Dm755 richcolors "${pkgdir}/usr/bin/richcolors"
+}

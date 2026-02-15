@@ -1,0 +1,23 @@
+# Maintainer: neg-serg <neg-serg@example.com>
+pkgname=neg-pretty-printer
+pkgver=0.1.0
+pkgrel=1
+pkgdesc='Custom pretty-printer utilities for scripts (colors, file info)'
+arch=('any')
+url='https://github.com/neg-serg'
+license=('Unlicense')
+depends=('python' 'python-colored')
+makedepends=('python-build' 'python-installer' 'python-setuptools' 'python-wheel')
+# Local source — copy build/pretty-printer/ into this directory as src before building
+source=()
+sha256sums=()
+
+build() {
+    cd "${srcdir}"
+    python -m build --wheel --no-isolation "${startdir}/../../pretty-printer"
+}
+
+package() {
+    cd "${srcdir}"
+    python -m installer --destdir="${pkgdir}" dist/*.whl
+}
