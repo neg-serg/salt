@@ -19,5 +19,4 @@ build() {
 package() {
     cd "${pkgname}-${pkgver}"
     install -Dm755 "target/release/raise" "${pkgdir}/usr/bin/raise"
-    install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
 }
