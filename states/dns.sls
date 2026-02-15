@@ -67,7 +67,7 @@ unbound_running:
 install_adguardhome:
   cmd.run:
     - name: |
-        TAG=$(curl -s https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | jq -r .tag_name)
+        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/AdguardTeam/AdGuardHome/releases/latest | grep -oP '[^/]+$')
         VER=${TAG#v}
         curl -sL "https://github.com/AdguardTeam/AdGuardHome/releases/download/${TAG}/AdGuardHome_linux_amd64.tar.gz" -o /tmp/adguardhome.tar.gz
         tar -xzf /tmp/adguardhome.tar.gz -C /tmp

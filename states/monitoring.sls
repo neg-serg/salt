@@ -45,7 +45,7 @@ netdata_override:
 install_loki:
   cmd.run:
     - name: |
-        TAG=$(curl -s https://api.github.com/repos/grafana/loki/releases/latest | jq -r .tag_name)
+        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/grafana/loki/releases/latest | grep -oP '[^/]+$')
         curl -sL "https://github.com/grafana/loki/releases/download/${TAG}/loki-linux-amd64.zip" -o /tmp/loki.zip
         unzip -o /tmp/loki.zip -d /tmp
         install -m 0755 /tmp/loki-linux-amd64 /usr/local/bin/loki
@@ -81,7 +81,7 @@ loki_config:
 install_promtail:
   cmd.run:
     - name: |
-        TAG=$(curl -s https://api.github.com/repos/grafana/loki/releases/latest | jq -r .tag_name)
+        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/grafana/loki/releases/latest | grep -oP '[^/]+$')
         curl -sL "https://github.com/grafana/loki/releases/download/${TAG}/promtail-linux-amd64.zip" -o /tmp/promtail.zip
         unzip -o /tmp/promtail.zip -d /tmp
         install -m 0755 /tmp/promtail-linux-amd64 /usr/local/bin/promtail
