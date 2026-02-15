@@ -98,63 +98,16 @@ install_{{ name | replace('-', '_') }}:
     - creates: /home/neg/.local/share/cargo/bin/{{ bin or name }}
 {%- endmacro -%}
 
-{# Install a custom SELinux policy module (compile .te → .pp → semodule -i).
-   Uses caller() block for multi-line policy content.
-   Usage:
-     {% call selinux_policy('ollama_selinux_network', 'ollama-network') %}
-     module ollama-network 1.0;
-     require { type init_t; type http_port_t; class tcp_socket name_connect; }
-     allow init_t http_port_t:tcp_socket name_connect;
-     {% endcall %}
-#}
-{%- macro selinux_policy(state_id, module) -%}
-{{ state_id }}:
-  cmd.run:
-    - name: |
-        TMP=$(mktemp -d)
-        cat > "$TMP/{{ module }}.te" << 'POLICY'
-{{ caller() | trim | indent(8, first=true) }}
-        POLICY
-        checkmodule -M -m -o "$TMP/{{ module }}.mod" "$TMP/{{ module }}.te"
-        semodule_package -o "$TMP/{{ module }}.pp" -m "$TMP/{{ module }}.mod"
-        semodule -i "$TMP/{{ module }}.pp"
-        rm -rf "$TMP"
-    - unless: semodule -l | grep -q '^{{ module }}'
-{%- endmacro -%}
-
-{# Set SELinux file context on a path (semanage fcontext + restorecon).
-   selinux_path is the path for semanage fcontext.
-   real_path is the actual filesystem path for restorecon.
-   check_path overrides what ls -Zd checks (defaults to real_path).
-   Usage: {{ selinux_fcontext('steam_selinux', '/mnt/zero/games', '/mnt/zero/games', 'user_home_t') }}
-          {{ selinux_fcontext('ollama_ctx', '/mnt/one/ollama', '/mnt/one/ollama', 'var_lib_t', requires=['file: ollama_models_dir']) }}
-#}
-{%- macro selinux_fcontext(name, selinux_path, real_path, selinux_type, check_path=None, requires=None) -%}
-{{ name }}:
-  cmd.run:
-    - name: |
-        semanage fcontext -a -t {{ selinux_type }} "{{ selinux_path }}(/.*)?" 2>/dev/null || \
-        semanage fcontext -m -t {{ selinux_type }} "{{ selinux_path }}(/.*)?"
-        restorecon -Rv {{ real_path }}
-    - unless: ls -Zd {{ check_path or real_path }} 2>/dev/null | grep -q {{ selinux_type }}
-{%- if requires %}
-    - require:
-{%- for req in requires %}
-      - {{ req }}
-{%- endfor %}
-{%- endif %}
-{%- endmacro -%}
-
-{# rpm-ostree install with --apply-live (for conditional/feature-gated packages).
+{# Install packages via pacman (CachyOS/Arch).
    check defaults to first package. requires is an optional list of requisites.
-   Usage: {{ ostree_install('unbound', 'unbound') }}
-          {{ ostree_install('jellyfin', 'jellyfin-server jellyfin-web', requires=['file: jellyfin_repo']) }}
+   Usage: {{ pacman_install('unbound', 'unbound') }}
+          {{ pacman_install('jellyfin', 'jellyfin-server jellyfin-web') }}
 #}
-{%- macro ostree_install(name, pkgs, check=None, requires=None) -%}
+{%- macro pacman_install(name, pkgs, check=None, requires=None) -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
-    - name: rpm-ostree install --idempotent --apply-live {{ pkgs }}
-    - unless: rpm -q {{ check or pkgs.split()[0] }}
+    - name: pacman -S --noconfirm --needed {{ pkgs }}
+    - unless: pacman -Q {{ check or pkgs.split()[0] }}
 {%- if requires %}
     - require:
 {%- for req in requires %}

@@ -1,11 +1,5 @@
 # Salt state for Distrobox container management
 # Manages gaming containers declaratively via distrobox assemble
-{% from '_macros.jinja' import selinux_fcontext %}
-
-# SELinux: relabel games dir so container can write to it
-# /mnt → /mnt in semanage per Fedora Atomic equivalency
-{{ selinux_fcontext('steam_games_selinux', '/mnt/zero/games', '/mnt/zero/games', 'user_home_t') }}
-{{ selinux_fcontext('steam_library_selinux', '/mnt/zero/steam', '/mnt/zero/steam', 'user_home_t') }}
 
 steam_library_dir:
   file.directory:

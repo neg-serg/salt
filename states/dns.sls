@@ -1,10 +1,10 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import daemon_reload, ostree_install, system_daemon_user %}
+{% from '_macros.jinja' import daemon_reload, pacman_install, system_daemon_user %}
 {% set dns = host.features.dns %}
 
 # --- Unbound: recursive DNS resolver with DNSSEC + DoT ---
 {% if dns.unbound %}
-{{ ostree_install('unbound', 'unbound') }}
+{{ pacman_install('unbound', 'unbound') }}
 
 unbound_config:
   file.managed:
@@ -12,15 +12,6 @@ unbound_config:
     - makedirs: True
     - mode: '0644'
     - source: salt://configs/unbound.conf
-
-unbound_selinux_port:
-  cmd.run:
-    - name: |
-        semanage port -a -t dns_port_t -p tcp 5353 2>/dev/null || semanage port -m -t dns_port_t -p tcp 5353
-        semanage port -a -t dns_port_t -p udp 5353 2>/dev/null || semanage port -m -t dns_port_t -p udp 5353
-    - unless: semanage port -l | grep dns_port_t | grep -q 5353
-    - require:
-      - cmd: install_unbound
 
 unbound_root_key:
   cmd.run:
@@ -69,7 +60,6 @@ unbound_running:
     - require:
       - cmd: unbound_enabled
       - cmd: unbound_reset_failed
-      - cmd: unbound_selinux_port
 {% endif %}
 
 # --- AdGuardHome: DNS filtering + ad blocking ---
@@ -163,7 +153,7 @@ resolved_restart:
 
 # --- Avahi: mDNS/Bonjour local service discovery ---
 {% if dns.avahi %}
-{{ ostree_install('avahi', 'avahi avahi-tools nss-mdns') }}
+{{ pacman_install('avahi', 'avahi avahi-tools nss-mdns') }}
 
 avahi_config:
   file.managed:

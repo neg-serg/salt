@@ -2,7 +2,7 @@
 # Kernel boot parameters migrated from NixOS (modules/system/kernel/params.nix,
 # hosts/telfir/hardware.nix, modules/system/profiles/)
 #
-# Applied via rpm-ostree kargs. Requires reboot to take effect.
+# Applied via /etc/kernel/cmdline (systemd-boot). Requires reinstall-kernels + reboot.
 #
 # Hardware / display:   cpu pstate, 8250, video, nvme_core, acpi_osi
 # Memory:               lru_gen, transparent_hugepage, mem_sleep_default
@@ -62,22 +62,15 @@
 {% endfor %}
 
 set_kernel_params:
+  file.managed:
+    - name: /etc/kernel/cmdline
+    - contents: {{ kargs | join(' ') }}
+    - user: root
+    - group: root
+    - mode: '0644'
+
+reinstall_kernels:
   cmd.run:
-    - name: |
-        current=$(rpm-ostree kargs)
-        wanted=({% for karg in kargs %}'{{ karg }}' {% endfor %})
-        missing=()
-        for k in "${wanted[@]}"; do
-          [[ "$current" == *"$k"* ]] || missing+=("$k")
-        done
-        if [ -n "${missing[*]}" ]; then
-          args=()
-          for k in "${missing[@]}"; do args+=("--append=$k"); done
-          rpm-ostree kargs "${args[@]}"
-        fi
-    - unless: |
-        current=$(rpm-ostree kargs)
-        wanted=({% for karg in kargs %}'{{ karg }}' {% endfor %})
-        for k in "${wanted[@]}"; do
-          [[ "$current" == *"$k"* ]] || exit 1
-        done
+    - name: reinstall-kernels
+    - onchanges:
+      - file: set_kernel_params

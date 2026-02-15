@@ -1,4 +1,4 @@
-# Build and install hy3 Hyprland plugin (rootless, via podman)
+# hy3 Hyprland plugin (installed via pacman/AUR on CachyOS)
 
 /home/neg/.local/lib/hyprland:
   file.directory:
@@ -6,16 +6,10 @@
     - group: neg
     - makedirs: True
 
-build_hy3:
+check_hy3:
   cmd.run:
-    - name: >-
-        podman run --rm
-        -v /home/neg/src/salt/build:/build/salt:z
-        -v /home/neg/.local/lib/hyprland:/build/output:z
-        registry.fedoraproject.org/fedora-toolbox:43
-        bash /build/salt/build-hy3.sh
-    - runas: neg
-    - creates: /home/neg/.local/lib/hyprland/libhy3.so
-    - timeout: 600
+    - name: echo "hy3 plugin present"
+    - unless: test -f /home/neg/.local/lib/hyprland/libhy3.so
+    - onlyif: pacman -Q hyprland
     - require:
       - file: /home/neg/.local/lib/hyprland

@@ -31,8 +31,7 @@ LOG_DIR="${SCRIPT_DIR}/logs"
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 LOG_FILE="${LOG_DIR}/${STATE}-${TIMESTAMP}.log"
 
-# Runtime salt config (paths derived from SCRIPT_DIR, works on both
-# standard Arch /home)
+# Runtime salt config (paths derived from SCRIPT_DIR)
 RUNTIME_CONFIG_DIR="${SCRIPT_DIR}/.salt_runtime"
 
 mkdir -p "${LOG_DIR}"

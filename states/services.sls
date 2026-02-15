@@ -1,10 +1,10 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import daemon_reload, ostree_install, system_daemon_user %}
+{% from '_macros.jinja' import daemon_reload, pacman_install, system_daemon_user %}
 {% set svc = host.features.services %}
 
 # --- Samba: SMB file sharing (manual start) ---
 {% if svc.samba %}
-{{ ostree_install('samba', 'samba') }}
+{{ pacman_install('samba', 'samba') }}
 
 samba_share_dir:
   file.directory:
@@ -32,13 +32,7 @@ samba_not_enabled:
 
 # --- Jellyfin: media server ---
 {% if svc.jellyfin %}
-jellyfin_repo:
-  file.managed:
-    - name: /etc/yum.repos.d/jellyfin.repo
-    - source: salt://configs/jellyfin.repo
-    - mode: '0644'
-
-{{ ostree_install('jellyfin', 'jellyfin-server jellyfin-web', requires=['file: jellyfin_repo']) }}
+{{ pacman_install('jellyfin', 'jellyfin-server jellyfin-web') }}
 
 jellyfin_enabled:
   service.enabled:
