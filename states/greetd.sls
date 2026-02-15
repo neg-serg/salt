@@ -49,7 +49,7 @@ greetd_session_wrapper:
         set -a
         [ -f "$HOME/.config/environment.d/10-user.conf" ] && . "$HOME/.config/environment.d/10-user.conf"
         set +a
-        exec /usr/bin/starthyprland
+        exec /usr/bin/start-hyprland
     - user: root
     - group: root
     - mode: '0755'
