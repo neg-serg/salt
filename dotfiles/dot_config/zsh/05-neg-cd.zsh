@@ -4,7 +4,6 @@ typeset -ga NEGCD_DIRS=(
   "$HOME/notes"
   "$HOME/dw"
   ""
-  "/etc/nixos"
   # add more...
 )
 
