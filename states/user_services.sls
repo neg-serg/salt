@@ -191,6 +191,31 @@ pic_dirs_list_service:
         [Install]
         WantedBy=graphical-session.target
 
+# --- Vicinae: application launcher daemon ---
+vicinae_service:
+  file.managed:
+    - name: /home/neg/.config/systemd/user/vicinae.service
+    - user: neg
+    - group: neg
+    - mode: '0644'
+    - makedirs: True
+    - contents: |
+        [Unit]
+        Description=Vicinae Launcher Daemon
+        Documentation=https://docs.vicinae.com
+        After=graphical-session.target
+        Requires=dbus.socket
+        PartOf=graphical-session.target
+        [Service]
+        Type=simple
+        ExecStart=%h/.local/bin/vicinae-appimage server --replace
+        ExecReload=/bin/kill -HUP $MAINPID
+        Restart=always
+        RestartSec=60
+        KillMode=process
+        [Install]
+        WantedBy=graphical-session.target
+
 # --- Enable user services: single daemon-reload + batch enable ---
 enable_user_services:
   cmd.run:
