@@ -3,6 +3,13 @@
 # Build artifacts
 rpms/
 *.log
+*.pkg.tar.zst
+build/pkgbuilds/*/src/
+build/pkgbuilds/*/pkg/
+build/pkgbuilds/*/*.tar.gz
+build/pretty-printer/build/
+build/pretty-printer/dist/
+build/pretty-printer/src/*.egg-info/
 
 # Python
 .venv/

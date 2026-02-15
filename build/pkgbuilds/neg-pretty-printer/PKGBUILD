@@ -6,18 +6,19 @@ pkgdesc='Custom pretty-printer utilities for scripts (colors, file info)'
 arch=('any')
 url='https://github.com/neg-serg'
 license=('Unlicense')
-depends=('python' 'python-colored')
-makedepends=('python-build' 'python-installer' 'python-setuptools' 'python-wheel')
-# Local source — copy build/pretty-printer/ into this directory as src before building
+depends=('python')
+makedepends=('python-build' 'python-installer')
 source=()
 sha256sums=()
 
+_pretty_printer_dir="${startdir}/../../pretty-printer"
+
 build() {
-    cd "${srcdir}"
-    python -m build --wheel --no-isolation "${startdir}/../../pretty-printer"
+    python -m build --wheel "$_pretty_printer_dir"
 }
 
 package() {
-    cd "${srcdir}"
-    python -m installer --destdir="${pkgdir}" dist/*.whl
+    python -m installer --destdir="${pkgdir}" "$_pretty_printer_dir"/dist/*.whl
+    # Install runtime dependency not in official repos
+    pip install --break-system-packages --target="${pkgdir}/$(python -c 'import site; print(site.getsitepackages()[0])')" colored 2>/dev/null || true
 }
