@@ -69,6 +69,7 @@ sudo_nopasswd:
 # Package lists: see packages.jinja (categories, flatpak, extensions)
 
 include:
+  - audio
   - amnezia
   - bind_mounts
   - custom_pkgs
