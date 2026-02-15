@@ -55,7 +55,7 @@ install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: |
         set -eo pipefail
-        TAG=$(curl -fsSL https://api.github.com/repos/{{ repo }}/releases/latest | jq -r .tag_name)
+        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ repo }}/releases/latest | grep -oP '[^/]+$')
 {%- if strip_v %}
         VER=${TAG#v}
 {%- endif %}
@@ -205,7 +205,7 @@ install_{{ name | replace('-', '_') }}:
     - name: |
         set -eo pipefail
 {%- if fetch_tag %}
-        TAG=$(curl -fsSL https://api.github.com/repos/{{ repo_path }}/releases/latest | jq -r .tag_name)
+        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ repo_path }}/releases/latest | grep -oP '[^/]+$')
 {%- endif %}
         curl -fsSL "{{ url }}" -o /tmp/{{ name }}.{{ archive_ext }}
         tar -x{{ ext_flag }}f /tmp/{{ name }}.{{ archive_ext }} -C /tmp

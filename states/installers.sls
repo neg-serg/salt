@@ -272,7 +272,7 @@ install_kora_icons:
   cmd.run:
     - name: |
         set -eo pipefail
-        TAG=$(curl -fsSL https://api.github.com/repos/bikass/kora/releases/latest | jq -r .tag_name)
+        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/bikass/kora/releases/latest | grep -oP '[^/]+$')
         curl -fsSL "https://github.com/bikass/kora/archive/refs/tags/${TAG}.tar.gz" -o /tmp/kora.tar.gz
         tar -xzf /tmp/kora.tar.gz -C /tmp
         mkdir -p ~/.local/share/icons
@@ -307,7 +307,7 @@ install_mpv_scripts:
         SCRIPTS_DIR=~/.config/mpv/scripts
         mkdir -p "$SCRIPTS_DIR"
         # uosc (modern UI)
-        TAG=$(curl -fsSL https://api.github.com/repos/tomasklaen/uosc/releases/latest | jq -r .tag_name)
+        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/tomasklaen/uosc/releases/latest | grep -oP '[^/]+$')
         curl -fsSL "https://github.com/tomasklaen/uosc/releases/download/${TAG}/uosc.zip" -o /tmp/uosc.zip
         unzip -qo /tmp/uosc.zip -d ~/.config/mpv/
         rm /tmp/uosc.zip
@@ -318,7 +318,7 @@ install_mpv_scripts:
         # quality-menu
         curl -fsSL https://raw.githubusercontent.com/christoph-heinrich/mpv-quality-menu/master/quality-menu.lua -o "$SCRIPTS_DIR/quality-menu.lua"
         # mpris
-        TAG=$(curl -fsSL https://api.github.com/repos/hoyon/mpv-mpris/releases/latest | jq -r .tag_name)
+        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/hoyon/mpv-mpris/releases/latest | grep -oP '[^/]+$')
         curl -fsSL "https://github.com/hoyon/mpv-mpris/releases/download/${TAG}/mpris.so" -o "$SCRIPTS_DIR/mpris.so"
         # cutter
         curl -fsSL https://raw.githubusercontent.com/rushmj/mpv-video-cutter/master/cutter.lua -o "$SCRIPTS_DIR/cutter.lua"
