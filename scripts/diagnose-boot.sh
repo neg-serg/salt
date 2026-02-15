@@ -18,8 +18,8 @@ echo "--- Build dir top-level ---"
 ls -la /var/lib/dkms/amneziawg/1.0.0/build/ 2>/dev/null || echo "(not found)"
 echo "--- src/ subdir ---"
 ls /var/lib/dkms/amneziawg/1.0.0/build/src/ 2>/dev/null || echo "(not found)"
-echo "--- kernel-devel installed ---"
-rpm -qa | grep kernel-devel || echo "(none)"
+echo "--- linux-headers installed ---"
+pacman -Q linux-cachyos-lts-headers 2>/dev/null || pacman -Q linux-headers 2>/dev/null || echo "(none)"
 echo "--- Running kernel ---"
 uname -r
 echo "--- Available kernel source trees ---"
@@ -35,7 +35,7 @@ rfkill list 2>/dev/null || true
 
 section "NFS statd state dir"
 ls -la /var/lib/nfs/statd/ 2>/dev/null || echo "/var/lib/nfs/statd/ does not exist"
-rpm -q nfs-utils 2>/dev/null || echo "nfs-utils not installed"
+pacman -Q nfs-utils 2>/dev/null || echo "nfs-utils not installed"
 
 section "RNNoise filter-chain (PipeWire)"
 ls /usr/lib64/ladspa/librnnoise_ladspa.so 2>/dev/null && echo "RNNoise LADSPA plugin present" || echo "RNNoise LADSPA plugin MISSING"
@@ -55,11 +55,7 @@ section "ALSA HDMI device details"
 aplay -l 2>/dev/null | grep -i hdmi || echo "No HDMI audio devices"
 cat /proc/asound/card0/pcm0c/info 2>/dev/null || true
 
-section "systemd-remount-fs (expected on Atomic)"
-systemctl status systemd-remount-fs.service 2>/dev/null | head -20 || true
+section "Root filesystem"
 mount | grep ' / ' || true
-
-section "SELinux denials this boot"
-ausearch -m avc -ts boot 2>/dev/null | tail -30 || echo "ausearch not available or no denials"
 
 echo -e "\n===== DONE ====="

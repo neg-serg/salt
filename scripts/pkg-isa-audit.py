@@ -289,7 +289,7 @@ def main():
             "deep_scan": deep,
             "isa_levels": {
                 "v1": "baseline x86-64 (SSE2)",
-                "v2": "+SSE4.2, POPCNT, CMPXCHG16B (Fedora 40+ default)",
+                "v2": "+SSE4.2, POPCNT, CMPXCHG16B",
                 "v3": "+AVX2, BMI1/2, FMA (CachyOS default)",
                 "v4": "+AVX-512F/VL/BW/CD/DQ (Zen 4+, some Xeon)",
             },

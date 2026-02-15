@@ -23,7 +23,7 @@ Packages installed via pacman/paru outside Salt; Salt handles configuration mana
 | `docs/` | Documentation (migration tracking, secrets, setup guides) |
 | `scripts/` | Utility scripts (linting, comparison) |
 
-## Salt State Modules (22 files)
+## Salt State Modules (21 files)
 
 | Module | Purpose |
 |---|---|
@@ -41,7 +41,7 @@ Packages installed via pacman/paru outside Salt; Salt handles configuration mana
 | `hardware.sls` | Fan control, GPU, hardware-specific setup |
 | `network.sls` | VM bridge, xray, sing-box |
 | `kernel_modules.sls` | Kernel module loading |
-| `kernel_params.sls` | Kernel boot parameters via /etc/kernel/cmdline |
+| `kernel_params_limine.sls` | Kernel boot parameters via /boot/limine.conf |
 | `bind_mounts.sls` | Bind mounts for /mnt paths |
 | `distrobox.sls` | Distrobox containers (Steam gaming) |
 | `sysctl.sls` | Sysctl tuning |

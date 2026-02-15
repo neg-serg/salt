@@ -1,6 +1,6 @@
 {% from 'host_config.jinja' import host %}
 # Kernel boot parameters for CachyOS (Limine bootloader).
-# Equivalent of kernel_params.sls (rpm-ostree) but uses /boot/limine.conf.
+# Manages kernel_cmdline entries in /boot/limine.conf.
 #
 # Applied by editing kernel_cmdline in limine.conf. Requires reboot.
 # Run: sudo salt-call --local -c .salt_runtime state.sls kernel_params_limine
