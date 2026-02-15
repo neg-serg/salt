@@ -33,6 +33,8 @@
 {# CPU-vendor-specific P-state driver #}
 {% if host.cpu_vendor == 'amd' %}
 {% do kargs.append('amd_pstate=active') %}
+{# Full ppfeaturemask unlocks corectrl overclocking/undervolting for RDNA3 #}
+{% do kargs.append('amdgpu.ppfeaturemask=0xffffffff') %}
 {% elif host.cpu_vendor == 'intel' %}
 {% do kargs.append('intel_pstate=active') %}
 {% endif %}
