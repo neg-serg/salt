@@ -102,6 +102,7 @@ PACMAN_PKGS=(
 
     # --- Fonts ---
     # material-icons-fonts → AUR (ttf-material-design-icons-git)
+    ttf-material-symbols-variable  # Material Symbols (Outlined/Rounded/Sharp) for quickshell
 
     # --- Media ---
     carla               # audio plugin host (JACK/LV2/VST)
@@ -188,6 +189,7 @@ PACMAN_PKGS=(
     iwd                 # Intel wireless daemon (wpa_supplicant alternative)
     nicotine+           # Soulseek P2P music sharing client
     nmap                # network scanner + ncat
+    socat               # multipurpose relay (socket proxy, Hyprland IPC)
     ollama              # local LLM inference server
     prettyping          # colorful ping wrapper
     sshpass             # non-interactive SSH password auth

@@ -197,10 +197,10 @@ cachyos_resolv_conf:
     'bat', 'fd', 'fzf', 'ripgrep', 'zoxide',
     'mpd', 'mpv', 'ffmpegthumbnailer',
     'btop', 'fastfetch', 'smartmontools',
-    'nmap', 'ollama', 'telegram-desktop',
+    'nmap', 'socat', 'ollama', 'telegram-desktop',
     'tmux', 'gopass', 'chezmoi', 'git-delta',
     'libvirt', 'qemu-desktop',
-    'rofi', 'dunst', 'swappy', 'quickshell', 'swayosd', 'wl-clip-persist',
+    'rofi', 'dunst', 'swappy', 'quickshell', 'swayosd', 'wl-clip-persist', 'ttf-material-symbols-variable',
     'imagemagick', 'yt-dlp',
     'unbound', 'avahi', 'samba', 'grafana',
 ] %}

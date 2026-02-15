@@ -5,9 +5,9 @@ set -uo pipefail
 # Defaults to the cachyos.sls verification state; accepts any state name.
 #
 # Usage:
-#   ./apply_cachyos.sh                        # apply cachyos.sls
+#   ./apply_cachyos.sh                        # apply all states (system_description)
+#   ./apply_cachyos.sh cachyos                # smoke-test only (verify bootstrap)
 #   ./apply_cachyos.sh kernel_modules         # apply kernel_modules.sls
-#   ./apply_cachyos.sh sysctl                 # apply sysctl.sls
 #   ./apply_cachyos.sh kernel_params_limine   # apply Limine kernel params
 #   ./apply_cachyos.sh hardware               # apply hardware/fancontrol
 #   ./apply_cachyos.sh sysctl --dry-run       # test mode
@@ -17,7 +17,7 @@ VENV_DIR="${SCRIPT_DIR}/.venv"
 ACTION="state.sls"
 
 # Parse arguments: first non-flag arg is STATE, --dry-run is a flag
-STATE="cachyos"
+STATE="system_description"
 DRY_RUN=false
 for arg in "$@"; do
     case "$arg" in
@@ -92,46 +92,69 @@ run_salt() {
   echo "=== Applying ${STATE} ($(date)) ==="
   echo "Log: ${LOG_FILE}"
 
-  # Show state progress from the debug log in real-time
+  # Show state progress from the debug log in real-time.
+  # Debug log has "Executing state X for [name]" (real-time) but only shows the
+  # 'name' param (e.g. "true") not the state ID.  The stdout summary has
+  # "Name: state_id - Function: ... - Result: ... - Duration: ..." with proper IDs.
+  # Strategy: real-time spinner from debug, completion lines from stdout summary.
   touch "${LOG_FILE}"
   tail -f "${LOG_FILE}" | awk -v maxlen=100 '
+    # Real-time progress from debug log
     match($0, /Executing state ([^ ]+) for \[([^]]+)\]/, m) {
-      line = "▶ " m[1] " " m[2]
+      state_n++
+      line = "▶ [" state_n "] " m[1] " " m[2]
       if (length(line) > maxlen) line = substr(line, 1, maxlen) "…"
       printf "\r\033[K%s", line
       fflush()
     }
-    match($0, /Completed state \[([^]]+)\].*duration_in_ms=([^)]+)\)/, m) {
-      suffix = " (" m[2] "ms)"
-      name = "✓ " m[1]
-      cut = maxlen - length(suffix)
-      if (length(name) > cut) name = substr(name, 1, cut) "…"
-      printf "\r\033[K%s\n", name suffix
+    # Clear spinner when summary section begins
+    /^local:/ {
+      printf "\r\033[K"
       fflush()
-    }' &
+    }
+    # Completion from stdout summary (shows state ID, not command name)
+    match($0, /^  Name: ([^ ]+) - Function: ([^ ]+) - Result: ([^ ]+) - Started: [^ ]+ - Duration: ([0-9.]+ ms)/, m) {
+      dur = " (" m[4] ")"
+      if (m[3] == "Changed") mark = "\033[33m✦\033[0m"
+      else if (m[3] ~ /^Fail/) mark = "\033[31m✗\033[0m"
+      else mark = "✓"
+      name = mark " " m[1]
+      cut = maxlen - length(dur) + 9  # +9 for ANSI escape chars in mark
+      printf "%s%s\n", name, dur
+      fflush()
+    }
+    # Pass through summary stats
+    /^Summary for / { in_summary=1 }
+    in_summary && /^[-]+$/ { print; fflush() }
+    in_summary && /^(Succeeded|Failed|Total)/ { print; fflush() }
+  ' &
   local tail_pid=$!
 
+  # Run salt-call; stdout goes to log only (awk handles terminal display).
+  # Use python -u for unbuffered output so summary lines reach the log immediately.
   if [[ -n "${SUDO_PASS:-}" ]]; then
-    echo "$SUDO_PASS" | $SUDO_CMD "$VENV_DIR/bin/python3" "${SCRIPT_DIR}/run_salt.py" \
+    echo "$SUDO_PASS" | $SUDO_CMD "$VENV_DIR/bin/python3" -u "${SCRIPT_DIR}/run_salt.py" \
       --config-dir="${RUNTIME_CONFIG_DIR}" \
       --local \
       --log-level=warning \
       --log-file="${LOG_FILE}" \
       --log-file-level=debug \
       --state-output=mixed_id \
-      ${ACTION} ${STATE} ${extra_args} 2>&1 | tee -a "${LOG_FILE}"
+      ${ACTION} ${STATE} ${extra_args} 2>&1 | tee -a "${LOG_FILE}" > /dev/null
   else
-    $SUDO_CMD "$VENV_DIR/bin/python3" "${SCRIPT_DIR}/run_salt.py" \
+    $SUDO_CMD "$VENV_DIR/bin/python3" -u "${SCRIPT_DIR}/run_salt.py" \
       --config-dir="${RUNTIME_CONFIG_DIR}" \
       --local \
       --log-level=warning \
       --log-file="${LOG_FILE}" \
       --log-file-level=debug \
       --state-output=mixed_id \
-      ${ACTION} ${STATE} ${extra_args} 2>&1 | tee -a "${LOG_FILE}"
+      ${ACTION} ${STATE} ${extra_args} 2>&1 | tee -a "${LOG_FILE}" > /dev/null
   fi
   local rc="${PIPESTATUS[0]}"
 
+  # Give awk time to process final lines from the log
+  sleep 0.3
   kill "$tail_pid" 2>/dev/null
   wait "$tail_pid" 2>/dev/null
   return "$rc"
