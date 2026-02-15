@@ -1,6 +1,6 @@
 # CachyOS Deployment Guide
 
-Deploy bootstrapped CachyOS rootfs to NVMe with LVM + btrfs.
+Deploy bootstrapped CachyOS rootfs to NVMe with LVM + btrfs + Limine.
 
 ## Layout
 
@@ -18,193 +18,112 @@ Deploy bootstrapped CachyOS rootfs to NVMe with LVM + btrfs.
                 └── @snapshots → /.snapshots
 ```
 
-## Prerequisites
+## Quick Start
 
-Bootstrapped rootfs at `/var/mnt/one/cachyos-root` (from `bootstrap-cachyos.sh`).
-
-All commands below run as **root** from the Fedora host.
-
-## Part 1: Disk Setup
+### 1. Bootstrap (on Fedora host)
 
 ```bash
-# ── Partition ──────────────────────────────────────────────
-parted /dev/nvme0n1 -- mklabel gpt
-parted /dev/nvme0n1 -- mkpart ESP fat32 1MiB 4GiB
-parted /dev/nvme0n1 -- set 1 esp on
-parted /dev/nvme0n1 -- mkpart primary 4GiB 100%
-
-# ── Format ESP ────────────────────────────────────────────
-mkfs.fat -F32 -n EFI /dev/nvme0n1p1
-
-# ── LVM ───────────────────────────────────────────────────
-pvcreate /dev/nvme0n1p2
-vgcreate main /dev/nvme0n1p2
-lvcreate -l 90%FREE -n sys main
-
-# ── btrfs on LVM ──────────────────────────────────────────
-mkfs.btrfs -f -L cachyos /dev/main/sys
-
-# ── Create subvolumes ─────────────────────────────────────
-mount /dev/main/sys /mnt
-btrfs subvolume create /mnt/@
-btrfs subvolume create /mnt/@home
-btrfs subvolume create /mnt/@cache
-btrfs subvolume create /mnt/@log
-btrfs subvolume create /mnt/@snapshots
-umount /mnt
+sudo ./scripts/bootstrap-cachyos.sh
 ```
 
-## Part 2: Mount & Copy
+Produces rootfs at `/var/mnt/one/cachyos-root/` and copies the salt
+repo to `/var/mnt/one/salt/` for use from a live USB.
+
+### 2. Deploy (from Fedora host or live USB)
+
+**From the Fedora host:**
 
 ```bash
-# ── Mount target layout ───────────────────────────────────
-mount -o subvol=@,compress=zstd:1,noatime /dev/main/sys /mnt
-mkdir -p /mnt/{boot,home,.snapshots,var/cache,var/log}
-mount /dev/nvme0n1p1 /mnt/boot
-mount -o subvol=@home,compress=zstd:1,noatime /dev/main/sys /mnt/home
-mount -o subvol=@snapshots,compress=zstd:1,noatime /dev/main/sys /mnt/.snapshots
-mount -o subvol=@cache,compress=zstd:1,noatime /dev/main/sys /mnt/var/cache
-mount -o subvol=@log,compress=zstd:1,noatime /dev/main/sys /mnt/var/log
-
-# ── Copy rootfs ───────────────────────────────────────────
-rsync -aAXH --info=progress2 /var/mnt/one/cachyos-root/ /mnt/
+sudo ./scripts/deploy-cachyos.sh /dev/nvme0n1
 ```
 
-After rsync, kernel + initramfs + limine.conf + EFI binary are on ESP
-(they were in `/boot/` in the rootfs, which maps to the ESP mount).
-
-## Part 3: Chroot
+**From a live USB:**
 
 ```bash
-# ── Bind-mount pseudo-filesystems ─────────────────────────
-mount --bind /dev /mnt/dev
-mount --bind /dev/pts /mnt/dev/pts
-mount -t proc proc /mnt/proc
-mount -t sysfs sys /mnt/sys
-mount -t efivarfs efivarfs /mnt/sys/firmware/efi/efivars 2>/dev/null || true
-
-chroot /mnt /bin/bash
+vgchange -ay xenon
+mount /dev/mapper/xenon-one /mnt/one
+bash /mnt/one/salt/scripts/deploy-cachyos.sh /dev/nvme0n1 /mnt/one/cachyos-root
 ```
 
-Everything below runs **inside the chroot**.
+The script handles everything automatically:
+- GPT partitioning (4 GiB ESP + LVM)
+- LVM setup (VG `main`, LV `sys` at 90%)
+- Btrfs with subvolumes (@, @home, @cache, @log, @snapshots)
+- rsync of rootfs
+- fstab generation
+- mkinitcpio with lvm2 hook
+- Limine bootloader + UEFI boot entry
 
-### 3.1 Generate fstab
-
-```bash
-ESP_UUID=$(blkid -s UUID -o value /dev/nvme0n1p1)
-
-cat > /etc/fstab <<EOF
-# CachyOS — LVM + btrfs + ESP
-/dev/mapper/main-sys  /              btrfs  subvol=@,compress=zstd:1,noatime          0  0
-/dev/mapper/main-sys  /home          btrfs  subvol=@home,compress=zstd:1,noatime      0  0
-/dev/mapper/main-sys  /.snapshots    btrfs  subvol=@snapshots,compress=zstd:1,noatime 0  0
-/dev/mapper/main-sys  /var/cache     btrfs  subvol=@cache,compress=zstd:1,noatime     0  0
-/dev/mapper/main-sys  /var/log       btrfs  subvol=@log,compress=zstd:1,noatime       0  0
-UUID=${ESP_UUID}      /boot          vfat   umask=0077                                0  1
-EOF
-```
-
-### 3.2 Verify mkinitcpio hooks
+### 3. Set passwords and reboot
 
 ```bash
-# lvm2 hook must be present (bootstrap adds it)
-grep -q 'lvm2' /etc/mkinitcpio.conf || \
-  sed -i 's/block filesystems/block lvm2 filesystems/' /etc/mkinitcpio.conf
-
-# Rebuild initramfs
-mkinitcpio -P
-```
-
-### 3.3 Update Limine config
-
-```bash
-cat > /boot/limine.conf <<'LIMINE'
-timeout: 5
-default_entry: 1
-interface_branding: CachyOS
-
-/CachyOS
-    protocol: linux
-    kernel_path: boot():/vmlinuz-linux-cachyos-lts
-    kernel_cmdline: root=/dev/mapper/main-sys rootflags=subvol=@ rw quiet splash
-    module_path: boot():/initramfs-linux-cachyos-lts.img
-
-/CachyOS (fallback)
-    protocol: linux
-    kernel_path: boot():/vmlinuz-linux-cachyos-lts
-    kernel_cmdline: root=/dev/mapper/main-sys rootflags=subvol=@ rw
-    module_path: boot():/initramfs-linux-cachyos-lts-fallback.img
-LIMINE
-```
-
-### 3.4 Install Limine EFI
-
-```bash
-mkdir -p /boot/EFI/BOOT
-cp /usr/share/limine/BOOTX64.EFI /boot/EFI/BOOT/BOOTX64.EFI
-
-# Register in UEFI boot menu
-efibootmgr --create --disk /dev/nvme0n1 --part 1 \
-  --label "CachyOS" --loader "EFI\\BOOT\\BOOTX64.EFI"
-```
-
-### 3.5 Set passwords
-
-```bash
-passwd        # root
-passwd neg    # user
-```
-
-### 3.6 Verify and exit
-
-```bash
-# Quick sanity checks
-ls /boot/vmlinuz-linux-cachyos-lts    # kernel on ESP
-ls /boot/initramfs-linux-cachyos-lts.img
-cat /etc/fstab
-grep lvm2 /etc/mkinitcpio.conf
-systemctl is-enabled NetworkManager
-systemctl is-enabled sshd
-
-# Exit chroot
-exit
-```
-
-## Part 4: Cleanup & Reboot
-
-```bash
-umount -R /mnt
+chroot /mnt/deploy passwd        # root
+chroot /mnt/deploy passwd neg    # user
+umount -R /mnt/deploy
 reboot
 ```
 
-Select "CachyOS" in UEFI boot menu (or it boots automatically via
-`EFI/BOOT/BOOTX64.EFI` fallback path).
+### 4. After first boot
 
-## Post-Boot
-
-After first successful boot:
+A detailed guide is written to `/root/POST-BOOT.md` during deploy.
+Summary:
 
 ```bash
-# Apply Salt configuration
-cd ~/src/salt
-./apply_cachyos.sh
+# Mount XFS data disks
+sudo vgchange -ay xenon argon
+sudo mkdir -p /mnt/{one,zero}
+sudo mount /dev/mapper/xenon-one /mnt/one
+sudo mount /dev/mapper/argon-zero /mnt/zero
 
-# Deploy dotfiles
-chezmoi apply
+# Copy salt repo
+cp -a /mnt/one/salt ~/src/salt
+
+# Set up GPG (Yubikey) + gopass
+gpg --card-status
+gopass clone <store-url>
+
+# Apply config + dotfiles
+cd ~/src/salt && ./apply_cachyos.sh
+
+# Persist XFS mounts
+echo '/dev/mapper/xenon-one  /mnt/one  xfs  noatime  0  0' | sudo tee -a /etc/fstab
+echo '/dev/mapper/argon-zero /mnt/zero xfs  noatime  0  0' | sudo tee -a /etc/fstab
 ```
+
+## What's on xenon-one
+
+After bootstrap, everything needed for deploy lives on XFS:
+
+| Path | Purpose |
+|------|---------|
+| `/mnt/one/cachyos-root/` | Bootstrapped rootfs |
+| `/mnt/one/salt/` | Full salt repo (states, dotfiles, scripts, build) |
+| `/mnt/one/salt/scripts/deploy-cachyos.sh` | Deploy script |
+| `/mnt/one/salt/scripts/cachyos-packages.sh` | Package installer |
+| `/mnt/one/salt/apply_cachyos.sh` | Post-boot Salt + chezmoi apply |
 
 ## Troubleshooting
 
 **Kernel panic: VFS unable to mount root**
-- Check that mkinitcpio has `lvm2` hook: `grep HOOKS /etc/mkinitcpio.conf`
+- Check lvm2 hook: `grep HOOKS /etc/mkinitcpio.conf`
 - Rebuild: `mkinitcpio -P`
-- Verify root device: `lvs` should show `main/sys`
+- Verify: `lvs` should show `main/sys`
 
 **Limine doesn't find kernel**
-- ESP must be mounted at `/boot` (not `/boot/efi`)
-- `ls /boot/vmlinuz-linux-cachyos-lts` must exist on the FAT32 partition
+- ESP must be at `/boot` (not `/boot/efi`)
+- Verify: `ls /boot/vmlinuz-linux-cachyos-lts`
 
 **No network after boot**
 - `systemctl start NetworkManager`
-- `nmcli device wifi list` (Wi-Fi via iwd backend)
-- Check: `cat /etc/resolv.conf` (fallback DNS: 1.1.1.1, 8.8.8.8)
+- Wi-Fi: `nmcli device wifi connect <SSID> --ask`
+- DNS fallback: `cat /etc/resolv.conf` (1.1.1.1, 8.8.8.8)
+
+**Deploy script: rsync error on Fedora host**
+- `/mnt` is a symlink to `/var/mnt` on Fedora Atomic
+- The script uses `/mnt/deploy` to avoid shadowing `/var/mnt/one`
+- If running manually, don't mount target at `/mnt`
+
+**Custom packages not installed**
+- 5 packages need manual build (PKGBUILDs in `build/pkgbuilds/`):
+  raise, neg-pretty-printer, richcolors, albumdetails, iosevka-neg-fonts
+- Build with `makepkg -si` in each PKGBUILD directory
