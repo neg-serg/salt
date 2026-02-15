@@ -22,7 +22,7 @@ install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: curl -fsSL {{ url }} -o ~/.local/bin/{{ name }} && chmod +x ~/.local/bin/{{ name }}
     - runas: neg
-    - creates: /var/home/neg/.local/bin/{{ name }}
+    - creates: /home/neg/.local/bin/{{ name }}
 {%- endmacro -%}
 
 {# Download tar.gz, extract single binary to ~/.local/bin/.
@@ -39,7 +39,7 @@ install_{{ name | replace('-', '_') }}:
         rm -f /tmp/{{ name }}.tar.gz /tmp/{{ name }}
     - runas: neg
     - shell: /bin/bash
-    - creates: /var/home/neg/.local/bin/{{ name }}
+    - creates: /home/neg/.local/bin/{{ name }}
 {%- endmacro -%}
 
 {# Download latest GitHub release asset to ~/.local/bin/.
@@ -70,7 +70,7 @@ install_{{ name | replace('-', '_') }}:
 {%- endif %}
     - runas: neg
     - shell: /bin/bash
-    - creates: /var/home/neg/.local/bin/{{ target }}
+    - creates: /home/neg/.local/bin/{{ target }}
 {%- endmacro -%}
 
 {# pip install --user.
@@ -82,7 +82,7 @@ install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: pip install --user {{ pkg or name }}
     - runas: neg
-    - creates: /var/home/neg/.local/bin/{{ bin or name }}
+    - creates: /home/neg/.local/bin/{{ bin or name }}
 {%- endmacro -%}
 
 {# cargo install (crates.io or git).
@@ -95,7 +95,7 @@ install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: cargo install {{ '--git ' ~ git if git else pkg or name }}
     - runas: neg
-    - creates: /var/home/neg/.local/share/cargo/bin/{{ bin or name }}
+    - creates: /home/neg/.local/share/cargo/bin/{{ bin or name }}
 {%- endmacro -%}
 
 {# Install a custom SELinux policy module (compile .te → .pp → semodule -i).
@@ -123,11 +123,11 @@ install_{{ name | replace('-', '_') }}:
 {%- endmacro -%}
 
 {# Set SELinux file context on a path (semanage fcontext + restorecon).
-   selinux_path uses equivalency rules (e.g. /mnt not /var/mnt).
+   selinux_path is the path for semanage fcontext.
    real_path is the actual filesystem path for restorecon.
    check_path overrides what ls -Zd checks (defaults to real_path).
-   Usage: {{ selinux_fcontext('steam_selinux', '/mnt/zero/games', '/var/mnt/zero/games', 'user_home_t') }}
-          {{ selinux_fcontext('ollama_ctx', '/mnt/one/ollama', '/var/mnt/one/ollama', 'var_lib_t', requires=['file: ollama_models_dir']) }}
+   Usage: {{ selinux_fcontext('steam_selinux', '/mnt/zero/games', '/mnt/zero/games', 'user_home_t') }}
+          {{ selinux_fcontext('ollama_ctx', '/mnt/one/ollama', '/mnt/one/ollama', 'var_lib_t', requires=['file: ollama_models_dir']) }}
 #}
 {%- macro selinux_fcontext(name, selinux_path, real_path, selinux_type, check_path=None, requires=None) -%}
 {{ name }}:
@@ -267,7 +267,7 @@ install_{{ name | replace('-', '_') }}:
         rm -rf /tmp/{{ name }}.{{ archive_ext }} /tmp/{{ name }}-* /tmp/{{ name }}
     - runas: neg
     - shell: /bin/bash
-    - creates: /var/home/neg/.local/bin/{{ binaries[0] if binaries else binary_pattern.rsplit('/', 1)[-1] }}
+    - creates: /home/neg/.local/bin/{{ binaries[0] if binaries else binary_pattern.rsplit('/', 1)[-1] }}
 
 {%- endmacro -%}
 
@@ -299,7 +299,7 @@ install_{{ name | replace('-', '_') }}:
         rm -rf /tmp/{{ name }}.zip /tmp/{{ name }}_extracted
     - runas: neg
     - shell: /bin/bash
-    - creates: /var/home/neg/.local/bin/{{ binaries[0] if binaries else binary_path.rsplit('/', 1)[-1] }}
+    - creates: /home/neg/.local/bin/{{ binaries[0] if binaries else binary_path.rsplit('/', 1)[-1] }}
 
 
 {%- endmacro -%}

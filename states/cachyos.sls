@@ -21,7 +21,7 @@ cachyos_sudo_nopasswd:
 cachyos_sudo_nopasswd_content:
   cmd.run:
     - name: 'true'
-    - unless: grep -q 'neg ALL=(ALL) NOPASSWD: ALL' /etc/sudoers.d/99-neg-nopasswd
+    - unless: "grep -q 'neg ALL=(ALL) NOPASSWD: ALL' /etc/sudoers.d/99-neg-nopasswd"
 
 cachyos_wheel_sudoers:
   cmd.run:

@@ -32,13 +32,13 @@ TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 LOG_FILE="${LOG_DIR}/${STATE}-${TIMESTAMP}.log"
 
 # Runtime salt config (paths derived from SCRIPT_DIR, works on both
-# Fedora Atomic /var/home and standard Arch /home)
+# standard Arch /home)
 RUNTIME_CONFIG_DIR="${SCRIPT_DIR}/.salt_runtime"
 
 mkdir -p "${LOG_DIR}"
 
 setup_config() {
-  mkdir -p "${RUNTIME_CONFIG_DIR}/pki/minion" "${RUNTIME_CONFIG_DIR}/var/cache/salt" "${RUNTIME_CONFIG_DIR}/var/log/salt"
+  mkdir -p "${RUNTIME_CONFIG_DIR}/pki/minion" "${RUNTIME_CONFIG_DIR}/var/cache/salt/pillar_cache" "${RUNTIME_CONFIG_DIR}/var/log/salt"
   cat > "${RUNTIME_CONFIG_DIR}/minion" <<EOF
 pki_dir: ${RUNTIME_CONFIG_DIR}/pki/minion
 log_file: ${RUNTIME_CONFIG_DIR}/var/log/salt/minion

@@ -5,7 +5,7 @@ include:
   - bind_mounts
 
 {% set user = 'neg' %}
-{% set home = '/var/home/' ~ user %}
+{% set home = '/home/' ~ user %}
 
 # --- MPD directories ---
 mpd_directories:

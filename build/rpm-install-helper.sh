@@ -5,7 +5,7 @@
 #   install — install missing RPMs via rpm-ostree
 set -euo pipefail
 
-RPM_DIR=/var/mnt/one/pkg/cache/rpms
+RPM_DIR=/mnt/one/pkg/cache/rpms
 
 # Discover RPMs, excluding debuginfo/debugsource
 shopt -s nullglob

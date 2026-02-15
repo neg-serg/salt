@@ -1,7 +1,7 @@
 #!/bin/bash
 # shellcheck disable=SC2015  # A && B || C pattern is intentional (B=echo never fails)
 set -uo pipefail
-BUILD=/var/mnt/one/pkg/cache/amnezia
+BUILD=/mnt/one/pkg/cache/amnezia
 IMG=registry.fedoraproject.org/fedora-toolbox:43
 PIDS=()
 NAMES=()

@@ -1,9 +1,9 @@
 # Salt state to install Fira Code Nerd Font
 {% set user = 'neg' %}
-{% set home = '/var/home/' ~ user %}
+{% set home = '/home/' ~ user %}
 {% set version = '3.3.0' %}
 
-/var/home/neg/.local/share/fonts/FiraCodeNerd:
+/home/neg/.local/share/fonts/FiraCodeNerd:
   file.directory:
     - user: {{ user }}
     - group: {{ user }}
@@ -19,4 +19,4 @@ download_fira_code_nerd:
     - runas: {{ user }}
     - unless: "ls {{ home }}/.local/share/fonts/FiraCodeNerd/FiraCodeNerdFontMono-Regular.ttf"
     - require:
-      - file: /var/home/neg/.local/share/fonts/FiraCodeNerd
+      - file: /home/neg/.local/share/fonts/FiraCodeNerd
