@@ -53,7 +53,6 @@
     azure                   # azure account name (https://docs.microsoft.com/en-us/cli/azure)
     gcloud                  # google cloud cli account and project (https://cloud.google.com/)
     google_app_cred         # google application credentials (https://cloud.google.com/docs/authentication/production)
-    toolbox                 # toolbox name (https://github.com/containers/toolbox)
     context                 # user@hostname
     nordvpn                 # nordvpn connection status, linux only (https://nordvpn.com/)
     ranger                  # ranger shell (https://github.com/ranger/ranger)
@@ -61,7 +60,6 @@
     xplr                    # xplr shell (https://github.com/sayanarijit/xplr)
     vim_shell               # vim shell indicator (:sh)
     midnight_commander      # midnight commander shell (https://midnight-commander.org/)
-    nix_shell               # nix shell (https://nixos.org/nixos/nix-pills/developing-with-nix-shell.html)
     # vpn_ip                # virtual private network indicator
     # load                  # CPU load
     # disk_usage            # disk usage
@@ -285,7 +283,6 @@
   typeset -g POWERLEVEL9K_XPLR_FOREGROUND=72
   typeset -g POWERLEVEL9K_VIM_SHELL_FOREGROUND=34
   typeset -g POWERLEVEL9K_MIDNIGHT_COMMANDER_FOREGROUND=178
-  typeset -g POWERLEVEL9K_NIX_SHELL_FOREGROUND=74
   typeset -g POWERLEVEL9K_DISK_USAGE_NORMAL_FOREGROUND=35
   typeset -g POWERLEVEL9K_DISK_USAGE_WARNING_FOREGROUND=220
   typeset -g POWERLEVEL9K_DISK_USAGE_CRITICAL_FOREGROUND=160
@@ -414,8 +411,6 @@
       '*'             DEFAULT)
   typeset -g POWERLEVEL9K_GOOGLE_APP_CRED_DEFAULT_FOREGROUND=32
   typeset -g POWERLEVEL9K_GOOGLE_APP_CRED_DEFAULT_CONTENT_EXPANSION='${P9K_GOOGLE_APP_CRED_PROJECT_ID//\%/%%}'
-  typeset -g POWERLEVEL9K_TOOLBOX_FOREGROUND=178
-  typeset -g POWERLEVEL9K_TOOLBOX_CONTENT_EXPANSION='${P9K_TOOLBOX_NAME:#toolbox-*}'
   typeset -g POWERLEVEL9K_PUBLIC_IP_FOREGROUND=94
   typeset -g POWERLEVEL9K_VPN_IP_FOREGROUND=81
   typeset -g POWERLEVEL9K_VPN_IP_CONTENT_EXPANSION=
