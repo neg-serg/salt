@@ -1,0 +1,69 @@
+# Maintainer: neg-serg <neg-serg@example.com>
+pkgname=iosevka-neg-fonts
+pkgver=34.1.0
+pkgrel=1
+pkgdesc='Custom Iosevka Nerd Fonts by neg-serg'
+arch=('any')
+url='https://github.com/be5invis/Iosevka'
+license=('OFL-1.1')
+depends=('fontconfig')
+makedepends=('npm' 'git' 'ttfautohint' 'python-fonttools' 'fontforge')
+source=("iosevka-source-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz"
+        'iosevka-neg.toml')
+sha256sums=('SKIP' 'SKIP')
+options=('!strip')
+
+prepare() {
+    cd "Iosevka-${pkgver}"
+    cp "${srcdir}/iosevka-neg.toml" private-build-plans.toml
+}
+
+build() {
+    cd "Iosevka-${pkgver}"
+
+    # Build Iosevka
+    npm install
+    npm run build -- contents::Iosevkaneg
+
+    # Clone nerd-font-patcher
+    git clone --depth 1 https://github.com/ryanoasis/nerd-fonts.git "${srcdir}/nerd-fonts-patcher"
+
+    # Collect built TTFs
+    mkdir -p "${srcdir}/iosevka-build/ttf"
+    cp dist/Iosevkaneg/TTF/*.ttf "${srcdir}/iosevka-build/ttf/"
+
+    # Patch with Nerd Font glyphs
+    mkdir -p "${srcdir}/iosevka-build/nerd-fonts"
+    find "${srcdir}/iosevka-build/ttf" -name "*.ttf" -print0 | \
+        xargs -0 -n 1 fontforge -script "${srcdir}/nerd-fonts-patcher/font-patcher" \
+        --complete -s --makegroups '-1' --careful --quiet \
+        --outputdir "${srcdir}/iosevka-build/nerd-fonts"
+
+    # Strip "Nerd Font" from family names so the font is just "Iosevka"
+    python3 -c "
+import glob, os
+from fontTools.ttLib import TTFont
+for path in sorted(glob.glob('${srcdir}/iosevka-build/nerd-fonts/*.ttf')):
+    font = TTFont(path)
+    nt = font['name']
+    for rec in nt.names:
+        try:
+            text = rec.toUnicode()
+        except UnicodeDecodeError:
+            continue
+        orig = text
+        text = text.replace(' Nerd Font', '').replace('NerdFont', '').replace('Nerd Font', '')
+        if text != orig:
+            nt.setName(text, rec.nameID, rec.platformID, rec.platEncID, rec.langID)
+    font.save(path)
+    base = os.path.basename(path)
+    newbase = base.replace('NerdFont', '')
+    if newbase != base:
+        os.rename(path, os.path.join(os.path.dirname(path), newbase))
+"
+}
+
+package() {
+    install -d "${pkgdir}/usr/share/fonts/TTF"
+    install -m644 "${srcdir}/iosevka-build/nerd-fonts/"*.ttf "${pkgdir}/usr/share/fonts/TTF/"
+}
