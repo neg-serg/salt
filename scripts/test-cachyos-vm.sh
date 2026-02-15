@@ -142,21 +142,9 @@ if [[ -f "$MNT/usr/share/limine/BOOTX64.EFI" ]]; then
     cp "$MNT/usr/share/limine/BOOTX64.EFI" "$MNT/boot/EFI/BOOT/BOOTX64.EFI"
     echo "  Limine EFI installed"
 else
-    echo "  WARNING: Limine EFI binary not found, using systemd-boot fallback"
-    if [[ -f "$MNT/usr/lib/systemd/boot/efi/systemd-bootx64.efi" ]]; then
-        cp "$MNT/usr/lib/systemd/boot/efi/systemd-bootx64.efi" "$MNT/boot/EFI/BOOT/BOOTX64.EFI"
-        mkdir -p "$MNT/boot/loader/entries"
-        cat > "$MNT/boot/loader/loader.conf" <<LOADER
-default cachyos.conf
-timeout 5
-LOADER
-        cat > "$MNT/boot/loader/entries/cachyos.conf" <<ENTRY
-title   CachyOS VM
-linux   /vmlinuz-linux-cachyos-lts
-initrd  /initramfs-linux-cachyos-lts.img
-options root=UUID=${ROOT_UUID} rootflags=subvol=@ rw console=ttyS0,115200 console=tty0
-ENTRY
-    fi
+    echo "  ERROR: Limine EFI binary not found at $MNT/usr/share/limine/BOOTX64.EFI" >&2
+    echo "  Ensure limine package is installed in the VM image" >&2
+    exit 1
 fi
 
 echo "==> Unmounting..."
