@@ -30,6 +30,31 @@ build_{{ safe }}:
       - file: {{ safe }}_pkgbuild
 
 {% endfor %}
+# --- duf (neg-serg fork with --style plain, replaces stock duf) ---
+duf_pkgbuild:
+  file.recurse:
+    - name: {{ build_base }}/duf
+    - source: salt://build/pkgbuilds/duf
+    - makedirs: True
+    - user: {{ user }}
+    - group: {{ user }}
+
+build_duf:
+  cmd.run:
+    - name: |
+        set -eo pipefail
+        if pacman -Q duf &>/dev/null && ! pacman -Qi duf 2>/dev/null | grep -q 'neg-serg'; then
+            pacman -Rdd --noconfirm duf
+        fi
+        su - {{ user }} -c 'cd {{ build_base }}/duf && makepkg -sf --noconfirm'
+        pacman -U --noconfirm {{ build_base }}/duf/*.pkg.tar.zst
+        rm -rf {{ build_base }}/duf
+    - shell: /bin/bash
+    - timeout: 600
+    - unless: pacman -Qi duf 2>/dev/null | grep -q neg-serg
+    - require:
+      - file: duf_pkgbuild
+
 # --- neg-pretty-printer (needs local source from build/pretty-printer/) ---
 neg_pretty_printer_pkgbuild:
   file.recurse:
