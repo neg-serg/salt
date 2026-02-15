@@ -277,6 +277,8 @@ PACMAN_PKGS=(
     quickshell          # Qt6/QML Wayland shell toolkit
     swayosd             # on-screen display for Wayland (volume/brightness)
     wl-clip-persist     # keep Wayland clipboard after app closes
+    greetd              # minimal login manager (greeter daemon)
+    greetd-regreet      # GTK4 greeter for greetd
 
     # --- Gaming & Emulation (disabled for now, Steam/Proton handled separately) ---
     # 0ad                 # RTS game (Age of Empires-like)
@@ -318,6 +320,9 @@ PACMAN_PKGS=(
     openrgb             # RGB lighting control
     qt5ct               # Qt5 appearance configuration tool
     texlive-basic       # TeX Live base distribution
+
+    # --- Python ---
+    python-pipx         # install Python apps in isolated envs
 
     # --- Version Control ---
     chezmoi             # dotfile manager
@@ -393,6 +398,7 @@ AUR_PKGS=(
     ddccontrol          # DDC/CI monitor control
     git-extras          # extra git commands (git-summary, etc.)
 
+    overskride-bin      # Bluetooth GTK4 client
     dualsensectl        # DualSense controller LED/haptics control
     # espanso-wayland     # text expander (Wayland build) — FTBFS on CachyOS
     brutefir            # convolution audio engine

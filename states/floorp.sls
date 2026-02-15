@@ -34,8 +34,6 @@ floorp_ext_{{ ext.slug | replace('-', '_') }}:
     - name: curl -fsSL -o '{{ floorp_profile }}/extensions/{{ ext.id }}.xpi' 'https://addons.mozilla.org/firefox/downloads/latest/{{ ext.slug }}/latest.xpi'
     - creates: {{ floorp_profile }}/extensions/{{ ext.id }}.xpi
     - runas: neg
-    - require:
-      - cmd: install_flatpak_apps
 {% endfor %}
 
 # Remove extensions no longer wanted (list in packages.jinja).

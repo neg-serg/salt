@@ -1,5 +1,4 @@
 {% from 'host_config.jinja' import host %}
-{% from 'packages.jinja' import flatpak_apps %}
 # Salt state for CachyOS workstation
 # Packages installed via pacman/paru outside Salt; Salt handles configuration
 
@@ -142,10 +141,7 @@ running_services:
   service.running:
     - names:
       - NetworkManager
-      - firewalld
-      - chronyd
       - dbus-broker
-      - bluetooth
       - libvirtd
       - openrgb
     - enable: True
@@ -195,35 +191,6 @@ btrfs_compress_var:
     - name: btrfs property set /var compression zstd:-1
     - unless: btrfs property get /var compression 2>/dev/null | grep -q 'zstd:-1'
 
-# Flatpak applications (list in packages.jinja)
-install_flatpak_apps:
-  cmd.run:
-    - name: |
-        installed=$(flatpak list --user --app --columns=application)
-        apps=({% for app in flatpak_apps %}'{{ app.id }}' {% endfor %})
-        missing=()
-        for app in "${apps[@]}"; do
-          grep -qxF "$app" <<< "$installed" || missing+=("$app")
-        done
-        if [ -n "${missing[*]}" ]; then
-          flatpak install --user -y flathub "${missing[@]}"
-        fi
-    - runas: neg
-    - unless: |
-        installed=$(flatpak list --user --app --columns=application)
-        apps=({% for app in flatpak_apps %}'{{ app.id }}' {% endfor %})
-        for app in "${apps[@]}"; do
-          grep -qxF "$app" <<< "$installed" || exit 1
-        done
-
-# Flatpak overrides: Wayland cursor + GTK dark theme
-flatpak_overrides:
-  cmd.run:
-    - name: flatpak override --user --env=XCURSOR_PATH=/run/host/user-share/icons:/run/host/share/icons --env=GTK_THEME=Adwaita:dark
-    - runas: neg
-    - require:
-      - cmd: install_flatpak_apps
-    - unless: flatpak override --user --show 2>/dev/null | grep -q XCURSOR_PATH
 
 # --- SSH directory setup ---
 ssh_dir:
