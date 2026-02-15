@@ -362,7 +362,7 @@ AUR_PKGS=(
     # --- From main package list ---
     patool              # universal archive manager (wrapper)
     act-bin             # run GitHub Actions locally
-    hxtools             # misc Linux utilities collection
+    # hxtools             # misc Linux utilities collection — FTBFS on CachyOS
     ttf-material-design-icons-git  # Material Design icon font
     advancecomp         # recompression tools (advpng, advzip)
     id3v2               # ID3v2 tag editor
@@ -370,14 +370,14 @@ AUR_PKGS=(
     mpdris2             # MPRIS2 bridge for MPD
     raysession          # JACK session manager GUI
     hw-probe            # hardware probe collector
-    procdump            # process core dump generator (MS port)
-    below               # cgroup2 resource monitor (Facebook)
+    # procdump            # process core dump generator (MS port) — FTBFS on CachyOS
+    # below               # cgroup2 resource monitor (Facebook) — FTBFS on CachyOS
     dcfldd              # forensic dd with hashing
     freeze-bin          # code screenshot generator (Charm)
     goimapnotify        # IMAP IDLE notification daemon
     # hyprland-qtutils  # conflicts with hyprland-guiutils from official repos
     neo-matrix          # Matrix rain terminal effect
-    netmask             # IP address / netmask calculator
+    # netmask             # IP address / netmask calculator — FTBFS on CachyOS
     no-more-secrets     # Sneakers movie decryption effect
     par                 # paragraph reformatter
     claude-code         # Claude AI coding assistant CLI
@@ -394,7 +394,7 @@ AUR_PKGS=(
 
     # --- Former COPR packages ---
     dualsensectl        # DualSense controller LED/haptics control
-    espanso-wayland     # text expander (Wayland build)
+    # espanso-wayland     # text expander (Wayland build) — FTBFS on CachyOS
     brutefir            # convolution audio engine
 
     # --- Packages not in official Arch repos ---
@@ -411,13 +411,13 @@ AUR_PKGS=(
     massren             # bulk file rename with editor
     pup-bin             # HTML stream processor (jq for HTML)
     scc                 # source code line counter (fast)
-    zfxtop              # TUI process/system monitor (Go)
+    # zfxtop              # TUI process/system monitor (Go) — FTBFS on CachyOS
     zk                  # Zettelkasten CLI note manager
     pipemixer           # TUI PipeWire mixer (C)
     xdg-desktop-portal-termfilechooser-git  # terminal file chooser portal
     epr-git             # terminal EPUB reader
     python-rapidgzip    # fast parallel gzip decompressor
-    xxh-git             # bring your shell through SSH
+    # xxh-git             # bring your shell through SSH — FTBFS on CachyOS
     gist                # GitHub Gist CLI (Ruby)
     newsraft            # terminal RSS/Atom reader
     unflac              # FLAC + cue splitter
@@ -490,7 +490,7 @@ retry 3 "pacman" pacman_install
 
 echo ""
 echo "==> Installing AUR packages (paru as user neg)..."
-retry 5 "paru/AUR" paru_install
+retry 5 "paru/AUR" paru_install || echo "WARNING: some AUR packages failed (non-fatal, continuing)"
 
 echo ""
 echo "==> Building and installing custom packages (makepkg as user neg)..."
