@@ -10,7 +10,7 @@ User setup for the Quickshell status bar and greeter.
 
 Wedge Shader Quick Checklist
 
-- Build: `nix shell nixpkgs#qt6.qtshadertools -c bash -lc 'scripts/compile_shaders.sh'`
+- Build: `scripts/compile_shaders.sh` (requires `qt6-shadertools`)
 - Test visibility: `QS_ENABLE_WEDGE_CLIP=1 QS_WEDGE_DEBUG=1 QS_WEDGE_SHADER_TEST=1 qs`
 - If no magenta: ensure `.qsb` files exist, debug puts bars on `WlrLayer.Overlay`; enable
   `debugLogs` in `Settings.json`

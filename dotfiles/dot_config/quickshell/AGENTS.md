@@ -16,8 +16,8 @@ Relevant docs and scripts
 Shader build rules (Qt 6)
 
 - Always compile fragment shaders to `.qsb` with: `qsb --glsl "100es,120,150"`.
-- Use the provided script:
-  `nix shell nixpkgs#qt6.qtshadertools -c bash -lc 'scripts/compile_shaders.sh'`.
+- Use the provided script: `scripts/compile_shaders.sh`
+  (requires `qt6-shadertools` package).
 - In QML, `ShaderEffect.fragmentShader` must point to a `.qsb` file via
   `Qt.resolvedUrl("../shaders/<name>.frag.qsb")`.
 
@@ -50,9 +50,7 @@ Style / contribution
 - Do not introduce unrelated changes; mention known unrelated issues separately.
 - Update Docs when behavior or workflow changes; the docs are considered part of the contract for
   this config.
-- `nix build` is allowed without sudo to sanity-check flakes; feel free to run it after changes
-  (counts as a test).
-- Running any available linters/formatters (treefmt, statix, deadnix, etc.) is welcome when touching
+- Running any available linters/formatters is welcome when touching
   relevant files; fix their findings before committing.
 - All code comments must be written in English.
 
