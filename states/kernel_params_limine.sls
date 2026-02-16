@@ -5,56 +5,24 @@
 # Applied by editing kernel_cmdline in limine.conf. Requires reboot.
 # Run: sudo salt-call --local -c .salt_runtime state.sls kernel_params_limine
 
-{# Common kernel parameters (all hosts) #}
-{% set kargs = [
-    '8250.nr_uarts=0',
-    'nvme_core.default_ps_max_latency_us=0',
-    'lru_gen=1',
-    'lru_gen.min_ttl_ms=1000',
-    'transparent_hugepage=madvise',
-    'page_alloc.shuffle=1',
-    'slab_nomerge',
-    'init_on_alloc=1',
-    'randomize_kstack_offset=on',
-    'vsyscall=none',
-    'debugfs=off',
-    'vt.global_cursor_default=0',
-    'noreplace-smp',
-    'pcie_aspm=performance',
-    'rcupdate.rcu_expedited=1',
-    'tsc=reliable',
-    'split_lock_detect=off',
-    'nowatchdog',
-    'kernel.nmi_watchdog=0',
-    'idle=nomwait',
-    'usbcore.autosuspend=-1',
-] %}
+{% import_yaml 'data/kernel_params.yaml' as kp %}
 
-{# CPU-vendor-specific P-state driver #}
+{# Assemble kargs from data file + host-specific conditionals #}
+{% set kargs = kp.common[:] %}
 {% if host.cpu_vendor == 'amd' %}
-{% do kargs.append('amd_pstate=active') %}
-{# Full ppfeaturemask unlocks corectrl overclocking/undervolting for RDNA3 #}
-{% do kargs.append('amdgpu.ppfeaturemask=0xffffffff') %}
+{% do kargs.extend(kp.amd) %}
 {% elif host.cpu_vendor == 'intel' %}
-{% do kargs.append('intel_pstate=active') %}
+{% do kargs.extend(kp.intel) %}
 {% endif %}
-
-{# Display resolution (host-specific) #}
 {% if host.display %}
 {% do kargs.append('video=' ~ host.display) %}
 {% endif %}
-
-{# ACPI compatibility (desktop BIOS quirk) #}
 {% if not host.is_laptop %}
-{% do kargs.extend(['acpi_osi=!', 'acpi_osi=Linux']) %}
+{% do kargs.extend(kp.desktop) %}
 {% endif %}
-
-{# Suspend-to-RAM (laptop-only) #}
 {% if host.is_laptop %}
-{% do kargs.append('mem_sleep_default=deep') %}
+{% do kargs.extend(kp.laptop) %}
 {% endif %}
-
-{# Per-host extra kargs #}
 {% for karg in host.extra_kargs %}
 {% do kargs.append(karg) %}
 {% endfor %}
