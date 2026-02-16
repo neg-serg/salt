@@ -46,6 +46,8 @@ minion_pillar_cache: True
 pillar_cache: True
 pillar_cache_backend: disk
 pillar_cache_ttl: 3600
+state_output: changes
+file_client: local
 file_roots:
   base:
     - ${SCRIPT_DIR}/states/
