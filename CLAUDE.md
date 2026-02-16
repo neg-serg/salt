@@ -81,7 +81,7 @@ Packages installed via pacman/paru outside Salt; Salt handles configuration mana
 - **Build containers**: `archlinux:latest`, ephemeral (`--rm`)
 - **Salt creates guard**: `creates:` directive prevents re-running completed builds
 - **Inline content**: Configs ≥10 lines go to `configs/`, systemd units go to `units/`, scripts go to `scripts/`
-- **Commit style**: `[scope] description` — scopes: `salt`, `dotfiles`, `docs`
+- **Commit style**: `[scope] description` — scope should be specific to what changed (e.g. `[nvim]`, `[zsh]`, `[mpd]`, `[dns]`, `[macros]`, `[fonts]`, `[hyprland]`). Use generic `[salt]` or `[dotfiles]` only for broad refactors that don't fit a specific scope. `[docs]` for documentation.
 - **Service enable**: Use `service.enabled` for packages installed via pacman
 
 ## Platform
