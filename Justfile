@@ -46,6 +46,25 @@ check-updates:
 update-tools *ARGS:
     .venv/bin/python3 scripts/update-tools.py --update {{ARGS}}
 
+# Test idempotency: verify applying states would make no changes (needs prior apply)
+test-idempotency STATE="system_description":
+    #!/usr/bin/env bash
+    set -uo pipefail
+    echo "--- Idempotency check: {{STATE}} (test=True) ---"
+    ./apply_cachyos.sh {{STATE}} --dry-run
+    log=$(ls -t logs/{{STATE}}-*.log 2>/dev/null | head -1)
+    if [ -z "$log" ]; then
+        echo "ERROR: no log file found"
+        exit 1
+    fi
+    if grep -q 'changed=' "$log"; then
+        echo ""
+        echo "FAIL: non-idempotent states detected in $log"
+        grep 'changed=' "$log"
+        exit 1
+    fi
+    echo "PASS: all states idempotent"
+
 # Validate all states render without errors (no execution)
 validate:
     #!/usr/bin/env bash
