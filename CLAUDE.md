@@ -23,11 +23,15 @@ Packages installed via pacman/paru outside Salt; Salt handles configuration mana
 | `docs/` | Documentation (migration tracking, secrets, setup guides) |
 | `scripts/` | Utility scripts (linting, comparison) |
 
-## Salt State Modules (21 files)
+## Salt State Modules (25 files)
 
 | Module | Purpose |
 |---|---|
-| `system_description.sls` | Core: timezone, locale, users, flatpak, mounts, zsh |
+| `system_description.sls` | Top-level orchestrator: locale, timezone, hostname, include list |
+| `users.sls` | User accounts, groups, sudo configuration |
+| `zsh.sls` | Zsh: system-wide config, ZDOTDIR, force shell |
+| `mounts.sls` | Disk mounts (/mnt/zero, /mnt/one), btrfs compression |
+| `desktop.sls` | Desktop: system services, SSH, wallust defaults, dconf themes |
 | `fonts.sls` | All fonts: pacman, Iosevka PKGBUILD, FiraCode, downloaded fonts |
 | `installers.sls` | CLI tools: GitHub releases, pip/cargo installs, scripts |
 | `installers_desktop.sls` | Desktop apps: RoomEQ, Throne, Overskride, Nyxt, DroidCam |
