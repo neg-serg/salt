@@ -1,14 +1,55 @@
 {% from 'host_config.jinja' import host %}
+{% from '_macros.jinja' import curl_bin, github_tar, github_release, pip_pkg, cargo_pkg, curl_extract_tar, curl_extract_zip, run_with_error_context %}
+{% import_yaml 'data/installers.yaml' as tools %}
 {% set user = host.user %}
 {% set home = host.home %}
-# CLI tool installers: binaries, pip, cargo, scripts
-{% from '_macros.jinja' import curl_bin, github_tar, github_release, pip_pkg, cargo_pkg, curl_extract_tar, curl_extract_zip, run_with_error_context %}
 {% set realesrgan_ver = '0.2.0' %}
 {% set essentia_ver = '2.1_beta2' %}
 
-# --- Neovim Python dependencies (nvr + pynvim) ---
-{{ pip_pkg('neovim_python_deps', pkg='neovim-remote', bin='nvr') }}
+# ===========================================================================
+# Data-driven installs (definitions in data/installers.yaml)
+# ===========================================================================
 
+# --- Direct binary downloads to ~/.local/bin/ ---
+{% for name, url in tools.curl_bin.items() %}
+{{ curl_bin(name, url) }}
+{% endfor %}
+
+# --- GitHub tar.gz archives ---
+{% for name, url in tools.github_tar.items() %}
+{{ github_tar(name, url) }}
+{% endfor %}
+
+# --- GitHub releases (with tag fetching) ---
+{% for name, opts in tools.github_release.items() %}
+{{ github_release(name, opts.repo, opts.asset, bin=opts.get('bin'), format=opts.get('format', 'bin'), strip_v=opts.get('strip_v', False)) }}
+{% endfor %}
+
+# --- pip installs (pipx) ---
+{% for name, opts in tools.pip_pkg.items() %}
+{{ pip_pkg(name, pkg=opts.get('pkg'), bin=opts.get('bin')) }}
+{% endfor %}
+
+# --- cargo installs ---
+{% for name, opts in tools.cargo_pkg.items() %}
+{{ cargo_pkg(name, pkg=opts.get('pkg'), bin=opts.get('bin'), git=opts.get('git')) }}
+{% endfor %}
+
+# --- ZIP archive extractions ---
+{% for name, opts in tools.curl_extract_zip.items() %}
+{{ curl_extract_zip(name, opts.url, opts.binary_path, binaries=opts.get('binaries'), chmod=opts.get('chmod', False)) }}
+{% endfor %}
+
+# --- tar.gz archive extractions ---
+{% for name, opts in tools.curl_extract_tar.items() %}
+{{ curl_extract_tar(name, opts.url, opts.binary_pattern, fetch_tag=opts.get('fetch_tag', False), binaries=opts.get('binaries')) }}
+{% endfor %}
+
+# ===========================================================================
+# Custom installs (not data-driven — unique logic or version interpolation)
+# ===========================================================================
+
+# --- Shell frameworks ---
 install_zi:
   cmd.run:
     - name: |
@@ -24,9 +65,7 @@ install_oh_my_posh:
     - runas: {{ user }}
     - creates: {{ home }}/.local/bin/oh-my-posh
 
-{{ curl_bin('aliae', 'https://github.com/JanDeDobbeleer/aliae/releases/latest/download/aliae-linux-amd64') }}
-{{ curl_bin('grimblast', 'https://raw.githubusercontent.com/hyprwm/contrib/main/grimblast/grimblast') }}
-
+# --- Hyprland tools (multi-binary) ---
 install_hyprevents:
   cmd.run:
     - name: |
@@ -40,28 +79,10 @@ install_hyprevents:
     - shell: /bin/bash
     - creates: {{ home }}/.local/bin/hyprevents
 
-{{ curl_bin('hyprprop', 'https://raw.githubusercontent.com/vilari-mickopf/hyprprop/master/hyprprop') }}
-{{ github_release('sops', 'getsops/sops', 'sops-${TAG}.linux.amd64') }}
-{{ curl_bin('xdg-ninja', 'https://github.com/b3nj5m1n/xdg-ninja/releases/latest/download/xdgnj') }}
-{{ github_release('rmpc', 'mierak/rmpc', 'rmpc-${TAG}-x86_64-unknown-linux-gnu.tar.gz', format='tar.gz') }}
-{{ cargo_pkg('rustmission') }}
-{{ pip_pkg('httpstat') }}
-{{ curl_bin('ssh-to-age', 'https://github.com/Mic92/ssh-to-age/releases/latest/download/ssh-to-age.linux-amd64') }}
-{{ curl_extract_zip('yazi', 'https://github.com/sxyazi/yazi/releases/latest/download/yazi-x86_64-unknown-linux-musl.zip', 'yazi-x86_64-unknown-linux-musl', binaries=['yazi', 'ya']) }}
-{{ curl_bin('broot', 'https://dystroy.org/broot/download/x86_64-linux/broot') }}
-{{ curl_extract_tar('nushell', 'https://github.com/nushell/nushell/releases/latest/download/nu-${TAG}-x86_64-unknown-linux-musl.tar.gz', 'nu-*-x86_64-unknown-linux-musl/nu*', fetch_tag=True, binaries=['nu', 'nu_plugin_*']) }}
-{{ github_tar('eza', 'https://github.com/eza-community/eza/releases/latest/download/eza_x86_64-unknown-linux-musl.tar.gz') }}
-{{ github_release('television', 'alexpasmantier/television', 'tv-${TAG}-x86_64-unknown-linux-musl.tar.gz', bin='tv', format='tar.gz') }}
-
-# --- GitHub binary downloads (remaining migration packages) ---
-{{ curl_extract_zip('xray', 'https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip', 'xray', chmod=True) }}
-{{ github_release('sing-box', 'SagerNet/sing-box', 'sing-box-${VER}-linux-amd64.tar.gz', format='tar.gz', strip_v=True) }}
-{{ github_tar('tdl', 'https://github.com/iyear/tdl/releases/latest/download/tdl_Linux_64bit.tar.gz') }}
-{{ github_tar('camilladsp', 'https://github.com/HEnquist/camilladsp/releases/latest/download/camilladsp-linux-amd64.tar.gz') }}
-{{ github_tar('opencode', 'https://github.com/opencode-ai/opencode/releases/latest/download/opencode-linux-x86_64.tar.gz') }}
-{{ cargo_pkg('adguardian') }}
+# --- Image upscaling (version-pinned) ---
 {{ curl_extract_zip('realesrgan', 'https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan/releases/download/v' ~ realesrgan_ver ~ '/realesrgan-ncnn-vulkan-v' ~ realesrgan_ver ~ '-ubuntu.zip', 'realesrgan-ncnn-vulkan-v' ~ realesrgan_ver ~ '-ubuntu', binaries=['realesrgan-ncnn-vulkan'], chmod=True) }}
 
+# --- Audio analysis (version-pinned) ---
 {% call run_with_error_context('install_essentia_extractor', creates=home ~ '/.local/bin/essentia_streaming_extractor_music') %}
 step "Downloading Essentia streaming extractor"
 curl -fsSL https://data.metabrainz.org/pub/musicbrainz/acousticbrainz/extractors/essentia-extractor-v{{ essentia_ver }}-linux-x86_64.tar.gz -o /tmp/essentia.tar.gz
@@ -74,22 +95,14 @@ rm -f /tmp/essentia.tar.gz
 success "Essentia streaming extractor installed"
 {%- endcall %}
 
-# --- pip installs ---
-{{ pip_pkg('scdl') }}
+# --- pip: dr14_tmeter (custom git install, not standard pip_pkg) ---
 install_dr14_tmeter:
   cmd.run:
     - name: GIT_CONFIG_GLOBAL=/dev/null pipx install git+https://github.com/simon-r/dr14_t.meter.git
     - runas: {{ user }}
     - creates: {{ home }}/.local/bin/dr14_tmeter
-{{ pip_pkg('euporie') }}
-{{ pip_pkg('faker') }}
 
-# --- cargo installs ---
-{{ cargo_pkg('handlr', pkg='handlr-regex') }}
-{{ cargo_pkg('agg', git='https://github.com/asciinema/agg') }}
-{{ cargo_pkg('rustnet', git='https://github.com/domcyrus/rustnet') }}
-
-# NOTE: tailray needs dbus headers (libdbus-sys).
+# --- cargo: tailray (needs dbus headers, has onlyif guards) ---
 install_tailray:
   cmd.run:
     - name: cargo install --git https://github.com/NotAShelf/tailray
@@ -99,12 +112,7 @@ install_tailray:
       - pkg-config --exists dbus-1
       - command -v cargo
 
-{{ cargo_pkg('pzip', bin='pz') }}
-
-# --- Script and file installs ---
-{{ curl_bin('mpvc', 'https://raw.githubusercontent.com/lwilletts/mpvc/master/mpvc') }}
-{{ curl_bin('rofi-systemd', 'https://raw.githubusercontent.com/IvanMalison/rofi-systemd/master/rofi-systemd') }}
-
+# --- Script installs ---
 install_dool:
   cmd.run:
     - name: |
@@ -133,10 +141,6 @@ install_blesh:
     - runas: {{ user }}
     - shell: /bin/bash
     - creates: {{ home }}/.local/share/ble.sh
-
-{{ github_release('hishtory', 'ddworken/hishtory', 'hishtory-linux-amd64') }}
-{{ cargo_pkg('iwmenu', git='https://github.com/e-tho/iwmenu') }}
-{{ curl_bin('rofi-pass', 'https://raw.githubusercontent.com/carnager/rofi-pass/master/rofi-pass') }}
 
 # --- MPV scripts (installed per-user) ---
 install_mpv_scripts:

@@ -3,6 +3,7 @@
 
 import collections
 import glob
+import re
 import sys
 
 import jinja2
@@ -39,6 +40,23 @@ def check_jinja_syntax(files):
     return errors
 
 
+def _resolve_import_yaml(source, states_dir="states"):
+    """Pre-scan template source for {% import_yaml %} and load the referenced files.
+
+    Returns a dict of {var_name: loaded_data} to inject into the render context.
+    """
+    yaml_vars = {}
+    for match in re.finditer(r"\{%-?\s*import_yaml\s+['\"]([^'\"]+)['\"]\s+as\s+(\w+)", source):
+        rel_path, var_name = match.group(1), match.group(2)
+        yaml_path = f"{states_dir}/{rel_path}"
+        try:
+            with open(yaml_path) as fh:
+                yaml_vars[var_name] = yaml.safe_load(fh.read())
+        except (FileNotFoundError, yaml.YAMLError):
+            pass
+    return yaml_vars
+
+
 def check_duplicate_state_ids(sls_files):
     """Render .sls files with stub context and check for duplicate state IDs."""
     env = jinja2.Environment(
@@ -52,7 +70,10 @@ def check_duplicate_state_ids(sls_files):
         name = path.removeprefix("states/")
         try:
             t = env.get_template(name)
-            rendered = t.render(grains={"host": "lint-check"})
+            # Pre-load any {% import_yaml %} data so templates render correctly
+            with open(path) as fh:
+                yaml_vars = _resolve_import_yaml(fh.read())
+            rendered = t.render(grains={"host": "lint-check"}, **yaml_vars)
             for doc in yaml.safe_load_all(rendered):
                 if doc and isinstance(doc, dict):
                     all_ids.extend(doc.keys())
@@ -85,7 +106,11 @@ def check_yaml_configs(config_files):
 def main():
     sls_files = sorted(glob.glob("states/*.sls"))
     jinja_files = sorted(glob.glob("states/*.jinja"))
-    yaml_configs = sorted(glob.glob("states/configs/*.yaml") + glob.glob("states/configs/*.yml"))
+    yaml_configs = sorted(
+        glob.glob("states/configs/*.yaml")
+        + glob.glob("states/configs/*.yml")
+        + glob.glob("states/data/*.yaml")
+    )
     all_jinja = sls_files + jinja_files
 
     total_errors = 0

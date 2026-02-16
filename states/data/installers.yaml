@@ -1,0 +1,86 @@
+# Tool definitions for installers.sls — data separated from logic.
+# Adding/updating a tool is a YAML-only edit; no Jinja changes needed.
+# Grouped by macro type (maps 1:1 to _macros.jinja macro signatures).
+
+curl_bin:
+  aliae: "https://github.com/JanDeDobbeleer/aliae/releases/latest/download/aliae-linux-amd64"
+  grimblast: "https://raw.githubusercontent.com/hyprwm/contrib/main/grimblast/grimblast"
+  hyprprop: "https://raw.githubusercontent.com/vilari-mickopf/hyprprop/master/hyprprop"
+  xdg-ninja: "https://github.com/b3nj5m1n/xdg-ninja/releases/latest/download/xdgnj"
+  ssh-to-age: "https://github.com/Mic92/ssh-to-age/releases/latest/download/ssh-to-age.linux-amd64"
+  broot: "https://dystroy.org/broot/download/x86_64-linux/broot"
+  mpvc: "https://raw.githubusercontent.com/lwilletts/mpvc/master/mpvc"
+  rofi-systemd: "https://raw.githubusercontent.com/IvanMalison/rofi-systemd/master/rofi-systemd"
+  rofi-pass: "https://raw.githubusercontent.com/carnager/rofi-pass/master/rofi-pass"
+
+github_tar:
+  eza: "https://github.com/eza-community/eza/releases/latest/download/eza_x86_64-unknown-linux-musl.tar.gz"
+  tdl: "https://github.com/iyear/tdl/releases/latest/download/tdl_Linux_64bit.tar.gz"
+  camilladsp: "https://github.com/HEnquist/camilladsp/releases/latest/download/camilladsp-linux-amd64.tar.gz"
+  opencode: "https://github.com/opencode-ai/opencode/releases/latest/download/opencode-linux-x86_64.tar.gz"
+
+github_release:
+  sops:
+    repo: getsops/sops
+    asset: "sops-${TAG}.linux.amd64"
+  rmpc:
+    repo: mierak/rmpc
+    asset: "rmpc-${TAG}-x86_64-unknown-linux-gnu.tar.gz"
+    format: tar.gz
+  television:
+    repo: alexpasmantier/television
+    asset: "tv-${TAG}-x86_64-unknown-linux-musl.tar.gz"
+    bin: tv
+    format: tar.gz
+  sing-box:
+    repo: SagerNet/sing-box
+    asset: "sing-box-${VER}-linux-amd64.tar.gz"
+    format: tar.gz
+    strip_v: true
+  hishtory:
+    repo: ddworken/hishtory
+    asset: hishtory-linux-amd64
+
+pip_pkg:
+  httpstat: {}
+  scdl: {}
+  euporie: {}
+  faker: {}
+  neovim_python_deps:
+    pkg: neovim-remote
+    bin: nvr
+
+cargo_pkg:
+  rustmission: {}
+  adguardian: {}
+  handlr:
+    pkg: handlr-regex
+  agg:
+    git: "https://github.com/asciinema/agg"
+  rustnet:
+    git: "https://github.com/domcyrus/rustnet"
+  pzip:
+    bin: pz
+  iwmenu:
+    git: "https://github.com/e-tho/iwmenu"
+
+curl_extract_zip:
+  yazi:
+    url: "https://github.com/sxyazi/yazi/releases/latest/download/yazi-x86_64-unknown-linux-musl.zip"
+    binary_path: yazi-x86_64-unknown-linux-musl
+    binaries:
+      - yazi
+      - ya
+  xray:
+    url: "https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip"
+    binary_path: xray
+    chmod: true
+
+curl_extract_tar:
+  nushell:
+    url: "https://github.com/nushell/nushell/releases/latest/download/nu-${TAG}-x86_64-unknown-linux-musl.tar.gz"
+    binary_pattern: "nu-*-x86_64-unknown-linux-musl/nu*"
+    fetch_tag: true
+    binaries:
+      - "nu"
+      - "nu_plugin_*"
