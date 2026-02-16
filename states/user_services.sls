@@ -78,7 +78,7 @@ mbsync_gmail_service:
         Wants=network-online.target
         [Service]
         Type=oneshot
-        ExecStart=/usr/bin/mbsync gmail
+        ExecStart=/usr/bin/mbsync -c %h/.config/mbsync/mbsyncrc gmail
         [Install]
         WantedBy=default.target
 
@@ -210,7 +210,7 @@ vicinae_service:
         Type=simple
         ExecStart=/usr/bin/vicinae server --replace
         ExecReload=/bin/kill -HUP $MAINPID
-        Restart=always
+        Restart=on-failure
         RestartSec=60
         KillMode=process
         [Install]
