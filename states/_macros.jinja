@@ -355,7 +355,7 @@ install_{{ name | replace('-', '_') }}:
     - runas: {{ user }}
 {%- endif %}
     - shell: /bin/bash
-    - creates: {{ creates or (dest if dest else (bin_dest or home ~ '/.local/bin') ~ '/' ~ (bin or (binaries[0] if binaries else binary_pattern.rsplit('/', 1)[-1]))) }}
+    - creates: {{ creates or ((dest | replace('~', home)) if dest else (bin_dest or home ~ '/.local/bin') ~ '/' ~ (bin or (binaries[0] if binaries else binary_pattern.rsplit('/', 1)[-1]))) }}
     - retry:
         attempts: 3
         interval: 10
@@ -405,7 +405,7 @@ install_{{ name | replace('-', '_') }}:
         rm -rf /tmp/{{ name }}.zip /tmp/{{ name }}_extracted
     - runas: {{ user }}
     - shell: /bin/bash
-    - creates: {{ creates or (dest if dest else home ~ '/.local/bin/' ~ (binaries[0] if binaries else binary_path.rsplit('/', 1)[-1])) }}
+    - creates: {{ creates or ((dest | replace('~', home)) if dest else home ~ '/.local/bin/' ~ (binaries[0] if binaries else binary_path.rsplit('/', 1)[-1])) }}
     - retry:
         attempts: 3
         interval: 10
@@ -481,7 +481,7 @@ install_{{ name }}:
         rm -f /tmp/{{ name }}.zip
     - runas: {{ user }}
     - shell: /bin/bash
-    - unless: "ls {{ fonts_dir }}/{{ subdir }}/*.otf 2>/dev/null || ls {{ fonts_dir }}/{{ subdir }}/*.ttf 2>/dev/null"
+    - unless: "find {{ fonts_dir }}/{{ subdir }} -name '*.otf' -o -name '*.ttf' 2>/dev/null | head -1 | grep -q ."
     - retry:
         attempts: 3
         interval: 10
@@ -513,7 +513,7 @@ install_{{ name | replace('-', '_') }}:
 {%- endif %}
     - runas: {{ user }}
     - shell: /bin/bash
-    - creates: {{ creates or dest }}
+    - creates: {{ creates or (dest | replace('~', home)) }}
     - retry:
         attempts: 3
         interval: 10
