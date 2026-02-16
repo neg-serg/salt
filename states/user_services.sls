@@ -183,6 +183,7 @@ vicinae_service:
 enable_user_services:
   cmd.run:
     - name: |
+        set -eo pipefail
         systemctl --user daemon-reload
         systemctl --user enable imapnotify-gmail.service surfingkeys-server.service pic-dirs-list.service vicinae.service gpg-agent.socket gpg-agent-ssh.socket
         systemctl --user enable --now mbsync-gmail.timer vdirsyncer.timer
