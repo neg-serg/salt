@@ -1,5 +1,32 @@
 {# Reusable Salt state macros for common patterns #}
 
+{# Clear failed state + ensure service is running with config watches.
+   Emits two states: {{ name }}_reset_failed and {{ name }}_running.
+   Usage: {{ ensure_running('unbound', watch=['file: unbound_config']) }}
+          {{ ensure_running('adguardhome', watch=['file: adguardhome_service']) }}
+#}
+{%- macro ensure_running(name, watch=None) -%}
+{{ name }}_reset_failed:
+  cmd.run:
+    - name: systemctl reset-failed {{ name }} 2>/dev/null; true
+    - onlyif: systemctl is-failed {{ name }}
+    - require:
+      - service: {{ name }}_enabled
+
+{{ name }}_running:
+  service.running:
+    - name: {{ name }}
+{%- if watch %}
+    - watch:
+{%- for w in watch %}
+      - {{ w }}
+{%- endfor %}
+{%- endif %}
+    - require:
+      - service: {{ name }}_enabled
+      - cmd: {{ name }}_reset_failed
+{%- endmacro -%}
+
 {# Trigger systemd daemon-reload when listed states change.
    Usage: {{ daemon_reload('unbound', ['cmd: install_unbound', 'file: unbound_override']) }}
 #}
@@ -287,8 +314,9 @@ build_{{ safe }}:
           {{ curl_extract_tar('blesh', 'https://github.com/.../ble-nightly.tar.xz', archive_ext='tar.xz', dest='~/.local/share', strip_components=1, creates=home ~ '/.local/share/ble.sh') }}
           {{ curl_extract_tar('nyxt', '...', 'Nyxt-x86_64.AppImage', bin='nyxt', chmod=True) }}
 #}
-{%- macro curl_extract_tar(name, url, binary_pattern=None, archive_ext='tar.gz', fetch_tag=False, binaries=None, bin=None, chmod=False, dest=None, strip_components=None, creates=None, user='neg', home='/home/neg') -%}
+{%- macro curl_extract_tar(name, url, binary_pattern=None, archive_ext='tar.gz', fetch_tag=False, binaries=None, bin=None, chmod=False, dest=None, strip_components=None, creates=None, bin_dest=None, user='neg', home='/home/neg') -%}
 {%- set ext_flag = 'J' if archive_ext == 'tar.xz' else 'z' -%}
+{%- set target_dir = bin_dest or '~/.local/bin' -%}
 {%- if fetch_tag %}
 {%- if '/api.github.com/repos/' in url %}
 {%- set repo_path = url.split('/repos/')[1].split('/')[0:2] | join('/') %}
@@ -310,22 +338,24 @@ install_{{ name | replace('-', '_') }}:
 {%- else %}
         tar -x{{ ext_flag }}f /tmp/{{ name }}.{{ archive_ext }} -C /tmp
 {%- if binaries %}
-{% for bin in binaries %}
-        mv /tmp/{{ binary_pattern.replace('*', bin) if '*' in binary_pattern else binary_pattern }}/{{ bin }} ~/.local/bin/ 2>/dev/null || mv /tmp/{{ binary_pattern.rsplit('/', 1)[0] }}/{{ bin }} ~/.local/bin/
+{% for b in binaries %}
+        install -m 0755 /tmp/{{ binary_pattern.replace('*', b) if '*' in binary_pattern else binary_pattern }}/{{ b }} {{ target_dir }}/ 2>/dev/null || install -m 0755 /tmp/{{ binary_pattern.rsplit('/', 1)[0] }}/{{ b }} {{ target_dir }}/
 {%- endfor %}
 {%- else %}
-        find /tmp -maxdepth 3 -path "*{{ binary_pattern }}*" -type f ! -name "*.tar*" -exec install -m755 {} ~/.local/bin/{{ bin or binary_pattern.rsplit('/', 1)[-1] }} \;
+        find /tmp -maxdepth 3 -path "*{{ binary_pattern }}*" -type f ! -name "*.tar*" -exec install -m755 {} {{ target_dir }}/{{ bin or binary_pattern.rsplit('/', 1)[-1] }} \;
 {%- endif %}
 {%- if chmod %}
 {%- for b in (binaries or [bin or binary_pattern.rsplit('/', 1)[-1]]) %}
-        chmod +x ~/.local/bin/{{ b }}
+        chmod +x {{ target_dir }}/{{ b }}
 {%- endfor %}
 {%- endif %}
 {%- endif %}
         rm -rf /tmp/{{ name }}.{{ archive_ext }} /tmp/{{ name }}-* /tmp/{{ name }}
+{%- if user %}
     - runas: {{ user }}
+{%- endif %}
     - shell: /bin/bash
-    - creates: {{ creates or (dest if dest else home ~ '/.local/bin/' ~ (bin or (binaries[0] if binaries else binary_pattern.rsplit('/', 1)[-1]))) }}
+    - creates: {{ creates or (dest if dest else (bin_dest or home ~ '/.local/bin') ~ '/' ~ (bin or (binaries[0] if binaries else binary_pattern.rsplit('/', 1)[-1]))) }}
     - retry:
         attempts: 3
         interval: 10
