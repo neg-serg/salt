@@ -205,7 +205,7 @@ return function()
         t.green = '#287373' -- use vibrant green for accents like tilde
         -- Also ensure white_dim has a sensible value for neg
         if not t.white_dim or t.white_dim == fallback.white_dim then
-          t.white_dim = '#4a6078'
+          t.white_dim = '#8998a7'
         end
       end
       return t
@@ -229,16 +229,16 @@ return function()
     -- Update here if the kitty palette changes to keep the statusline consistent.
     local colors_fallback = {
       black = 'NONE',
-      white = '#6d839e',   -- kitty color247 (statusline foreground)
+      white = '#9fabbb',   -- kitty foreground (#6C7E96) lightened ~35%
       red = '#970d4f',     -- kitty accent for diagnostics
       green = '#007a51',   -- kitty green used across widgets
       blue = '#005faf',    -- kitty directory / separator blue
       yellow = '#c678dd',  -- kitty magenta-ish accent (warnings/LSP)
-      cyan = '#6587b3',
-      blue_light = '#517f8d',
-      white_dim = '#3f5063',
-      line_zero = '#3f5876', -- kitty color243, used for padded zeros in position
-      dir_mid = '#7c90a8',   -- kitty color248, applied on cwd mid segments
+      cyan = '#9bb1ce',    -- kitty cyan lightened ~35%
+      blue_light = '#8eacb5', -- kitty blue_light lightened ~35%
+      white_dim = '#828d9a', -- kitty color238 area lightened ~35%
+      line_zero = '#8292a6', -- kitty color243 (#3f5876) lightened ~35%
+      dir_mid = '#aab7c6',   -- kitty color248 (#7c90a8) lightened ~35%
     }
     local colors = themed_colors(colors_fallback)
     apply_palette_adjustments(colors)
