@@ -11,26 +11,6 @@
     Any key not specified inherits from `defaults`.
 #}
 
-{# Recursive deep merge: overlay values override base, nested dicts merge recursively #}
-{%- macro _deep_merge(target, base, overlay) -%}
-    {%- for key in base -%}
-        {%- if key in overlay -%}
-            {%- if base[key] is mapping and overlay[key] is mapping -%}
-                {%- set _sub = {} -%}
-                {%- do target.update({key: _sub}) -%}
-                {{- _deep_merge(_sub, base[key], overlay[key]) -}}
-            {%- else -%}
-                {%- do target.update({key: overlay[key]}) -%}
-            {%- endif -%}
-        {%- else -%}
-            {%- do target.update({key: base[key]}) -%}
-        {%- endif -%}
-    {%- endfor -%}
-    {%- for key in overlay if key not in base -%}
-        {%- do target.update({key: overlay[key]}) -%}
-    {%- endfor -%}
-{%- endmacro -%}
-
 {% set defaults = {
     'user':           'neg',
     'home':           '/home/neg',
@@ -112,8 +92,6 @@
     'cachyos': 'telfir',
 } %}
 
-{# Build merged host config: host-specific values override defaults #}
+{# Build merged host config: host-specific values override defaults (recursive deep merge) #}
 {% set current_host = aliases.get(grains['host'], grains['host']) %}
-{% set _host = {} %}
-{{- _deep_merge(_host, defaults, hosts.get(current_host, {})) -}}
-{% set host = _host %}
+{% set host = salt['slsutil.merge'](defaults, hosts.get(current_host, {}), strategy='recurse') %}
