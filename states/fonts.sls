@@ -1,7 +1,7 @@
 # All font installs: pacman, downloaded, custom PKGBUILD builds
 # Run: sudo salt-call --local state.apply fonts
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import pacman_install, pkgbuild_install %}
+{% from '_macros.jinja' import pacman_install, pkgbuild_install, download_font_zip %}
 {% set user = host.user %}
 {% set home = host.home %}
 {% set fonts_dir = home ~ '/.local/share/fonts' %}
@@ -65,65 +65,7 @@ install_oldschool_pc_fonts:
     - shell: /bin/bash
     - creates: {{ fonts_dir }}/oldschool-pc
 
-# --- SF Pro Display (Apple) — hyprlock SF_Pro / Arfan_on_Clouds themes ---
-{{ fonts_dir }}/SFProDisplay:
-  file.directory:
-    - user: {{ user }}
-    - group: {{ user }}
-    - makedirs: True
-
-install_sf_pro_display:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        curl -fsSL 'https://font.download/dl/font/sf-pro-display.zip' -o /tmp/sf-pro-display.zip
-        unzip -o /tmp/sf-pro-display.zip -d {{ fonts_dir }}/SFProDisplay
-        fc-cache -f {{ fonts_dir }}/SFProDisplay
-        rm -f /tmp/sf-pro-display.zip
-    - runas: {{ user }}
-    - shell: /bin/bash
-    - unless: "ls {{ fonts_dir }}/SFProDisplay/*.otf 2>/dev/null || ls {{ fonts_dir }}/SFProDisplay/*.ttf 2>/dev/null"
-    - require:
-      - file: {{ fonts_dir }}/SFProDisplay
-
-# --- Anurati — hyprlock Anurati theme ---
-{{ fonts_dir }}/Anurati:
-  file.directory:
-    - user: {{ user }}
-    - group: {{ user }}
-    - makedirs: True
-
-install_anurati:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        curl -fsSL 'https://font.download/dl/font/anurati.zip' -o /tmp/anurati.zip
-        unzip -o /tmp/anurati.zip -d {{ fonts_dir }}/Anurati
-        fc-cache -f {{ fonts_dir }}/Anurati
-        rm -f /tmp/anurati.zip
-    - runas: {{ user }}
-    - shell: /bin/bash
-    - unless: "ls {{ fonts_dir }}/Anurati/*.otf 2>/dev/null || ls {{ fonts_dir }}/Anurati/*.ttf 2>/dev/null"
-    - require:
-      - file: {{ fonts_dir }}/Anurati
-
-# --- Alfa Slab One — hyprlock Arfan_on_Clouds theme ---
-{{ fonts_dir }}/AlfaSlabOne:
-  file.directory:
-    - user: {{ user }}
-    - group: {{ user }}
-    - makedirs: True
-
-install_alfa_slab_one:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        curl -fsSL 'https://font.download/dl/font/alfa-slab-one.zip' -o /tmp/alfa-slab-one.zip
-        unzip -o /tmp/alfa-slab-one.zip -d {{ fonts_dir }}/AlfaSlabOne
-        fc-cache -f {{ fonts_dir }}/AlfaSlabOne
-        rm -f /tmp/alfa-slab-one.zip
-    - runas: {{ user }}
-    - shell: /bin/bash
-    - unless: "ls {{ fonts_dir }}/AlfaSlabOne/*.otf 2>/dev/null || ls {{ fonts_dir }}/AlfaSlabOne/*.ttf 2>/dev/null"
-    - require:
-      - file: {{ fonts_dir }}/AlfaSlabOne
+# --- Hyprlock theme fonts (downloaded from font.download) ---
+{{ download_font_zip('sf_pro_display', 'https://font.download/dl/font/sf-pro-display.zip', 'SFProDisplay', user=user, home=home) }}
+{{ download_font_zip('anurati', 'https://font.download/dl/font/anurati.zip', 'Anurati', user=user, home=home) }}
+{{ download_font_zip('alfa_slab_one', 'https://font.download/dl/font/alfa-slab-one.zip', 'AlfaSlabOne', user=user, home=home) }}
