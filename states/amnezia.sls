@@ -1,6 +1,7 @@
 {% from 'host_config.jinja' import host %}
 {% set user = host.user %}
 {% set home = host.home %}
+{% set cache = '/mnt/one/pkg/cache/amnezia' %}
 # Salt state for Amnezia build and deploy (Local User version)
 # All 3 components build in parallel for faster deployment
 {% if host.features.amnezia %}
@@ -11,7 +12,7 @@
     - group: {{ user }}
     - makedirs: True
 
-/mnt/one/pkg/cache/amnezia:
+{{ cache }}:
   file.directory:
     - user: {{ user }}
     - group: {{ user }}
@@ -25,16 +26,16 @@ build_amnezia_all:
     - timeout: 3600
     - output_loglevel: info
     - unless: >-
-        test -f /mnt/one/pkg/cache/amnezia/amneziawg-go-bin &&
-        test -f /mnt/one/pkg/cache/amnezia/awg-bin &&
-        test -f /mnt/one/pkg/cache/amnezia/AmneziaVPN-bin
+        test -f {{ cache }}/amneziawg-go-bin &&
+        test -f {{ cache }}/awg-bin &&
+        test -f {{ cache }}/AmneziaVPN-bin
     - require:
-      - file: /mnt/one/pkg/cache/amnezia
+      - file: {{ cache }}
 
 install_amneziawg_go:
   file.managed:
     - name: {{ home }}/.local/bin/amneziawg-go
-    - source: /mnt/one/pkg/cache/amnezia/amneziawg-go-bin
+    - source: {{ cache }}/amneziawg-go-bin
     - mode: '0755'
     - user: {{ user }}
     - group: {{ user }}
@@ -44,7 +45,7 @@ install_amneziawg_go:
 install_amneziawg_tools:
   file.managed:
     - name: {{ home }}/.local/bin/awg
-    - source: /mnt/one/pkg/cache/amnezia/awg-bin
+    - source: {{ cache }}/awg-bin
     - mode: '0755'
     - user: {{ user }}
     - group: {{ user }}
@@ -69,7 +70,7 @@ install_amneziawg_tools:
 install_amnezia_vpn:
   file.managed:
     - name: {{ home }}/.local/bin/AmneziaVPN
-    - source: /mnt/one/pkg/cache/amnezia/AmneziaVPN-bin
+    - source: {{ cache }}/AmneziaVPN-bin
     - mode: '0755'
     - user: {{ user }}
     - group: {{ user }}

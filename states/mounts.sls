@@ -11,6 +11,7 @@ mount_zero:
     - mkmnt: True
     - opts: noatime
     - persist: True
+    - failhard: True
 
 /mnt/one:
   file.directory:
@@ -24,6 +25,7 @@ mount_one:
     - mkmnt: True
     - opts: noatime
     - persist: True
+    - failhard: True
 
 # btrfs compression: set as filesystem property (complements fstab compress= option).
 btrfs_compress_home:
