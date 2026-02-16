@@ -1,21 +1,11 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import daemon_reload %}
+{% from '_macros.jinja' import service_with_unit %}
 {% set user = host.user %}
 {% set home = host.home %}
 # Ollama LLM server: systemd service, model pulls
 {% if host.features.ollama %}
 
-ollama_service_unit:
-  file.managed:
-    - name: /etc/systemd/system/ollama.service
-    - source: salt://units/ollama.service
-    - template: jinja
-    - context:
-        user: {{ user }}
-        home: {{ home }}
-    - user: root
-    - group: root
-    - mode: '0644'
+{{ service_with_unit('ollama', 'salt://units/ollama.service', template='jinja', context={'user': user, 'home': home}, onlyif='command -v ollama') }}
 
 ollama_models_dir:
   file.directory:
@@ -25,16 +15,6 @@ ollama_models_dir:
     - makedirs: True
     - require:
       - mount: mount_one
-
-{{ daemon_reload('ollama', ['file: ollama_service_unit']) }}
-
-ollama_enabled:
-  service.enabled:
-    - name: ollama
-    - require:
-      - file: ollama_service_unit
-      - cmd: ollama_daemon_reload
-    - onlyif: command -v ollama
 
 ollama_start:
   cmd.run:

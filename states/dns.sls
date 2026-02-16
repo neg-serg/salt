@@ -1,5 +1,5 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import daemon_reload, pacman_install, system_daemon_user, github_release_system %}
+{% from '_macros.jinja' import daemon_reload, pacman_install, system_daemon_user, github_release_system, service_with_unit %}
 {% set dns = host.features.dns %}
 
 # --- Unbound: recursive DNS resolver with DNSSEC + DoT ---
@@ -78,25 +78,7 @@ adguardhome_config:
     - require:
       - file: adguardhome_data_dir
 
-adguardhome_service:
-  file.managed:
-    - name: /etc/systemd/system/adguardhome.service
-    - mode: '0644'
-    - source: salt://units/adguardhome.service.j2
-    - template: jinja
-    - context:
-        dns_unbound: {{ dns.unbound }}
-
-{{ daemon_reload('adguardhome', ['file: adguardhome_service']) }}
-
-adguardhome_enabled:
-  service.enabled:
-    - name: adguardhome
-    - require:
-      - file: adguardhome_service
-      - cmd: install_adguardhome
-      - file: adguardhome_config
-      - cmd: adguardhome_daemon_reload
+{{ service_with_unit('adguardhome', 'salt://units/adguardhome.service.j2', template='jinja', context={'dns_unbound': dns.unbound}, requires=['cmd: install_adguardhome', 'file: adguardhome_config']) }}
 
 adguardhome_reset_failed:
   cmd.run:
