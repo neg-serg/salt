@@ -145,6 +145,21 @@ install_{{ name | replace('-', '_') }}:
         interval: 10
 {%- endmacro -%}
 
+{# npm install -g (global npm package).
+   Usage: {{ npm_pkg('openclaw') }}
+          {{ npm_pkg('prettier', bin='prettier') }}
+#}
+{%- macro npm_pkg(name, pkg=None, bin=None, user='neg', home='/home/neg') -%}
+install_{{ name | replace('-', '_') }}:
+  cmd.run:
+    - name: npm install -g {{ pkg or name }}
+    - runas: {{ user }}
+    - creates: {{ home }}/.local/bin/{{ bin or name }}
+    - retry:
+        attempts: 3
+        interval: 10
+{%- endmacro -%}
+
 {# Install packages via pacman (CachyOS/Arch).
    check defaults to first package. requires is an optional list of requisites.
    Usage: {{ pacman_install('unbound', 'unbound') }}
@@ -263,10 +278,16 @@ build_{{ safe }}:
    binary_pattern: path pattern for finding binaries after extraction (e.g., "nu-*/nu" or "streaming_extractor_music").
    binaries: optional list of binary names to move. If None, uses basename of binary_pattern.
    chmod: True (default False) to chmod +x extracted binaries.
+   bin: output binary name (default: basename of binary_pattern). Use when archive name differs from desired binary name.
+   dest: extract directly to this directory (skips find+move, for non-binary archives).
+   strip_components: --strip-components=N for tar (used with dest).
+   creates: override creates guard (default: ~/.local/bin/<binary> or dest).
    Usage: {{ curl_extract_tar('nushell', 'https://github.com/nushell/nushell/releases/latest/download/nu-${TAG}-x86_64-unknown-linux-musl.tar.gz', 'nu-*/nu', fetch_tag=True) }}
           {{ curl_extract_tar('hyprevents', 'https://github.com/vilari-mickopf/hyprevents/archive/refs/heads/master.tar.gz', 'hyprevents/hyprevents', binaries=['hyprevents', 'event_handler', 'event_loader']) }}
+          {{ curl_extract_tar('blesh', 'https://github.com/.../ble-nightly.tar.xz', archive_ext='tar.xz', dest='~/.local/share', strip_components=1, creates=home ~ '/.local/share/ble.sh') }}
+          {{ curl_extract_tar('nyxt', '...', 'Nyxt-x86_64.AppImage', bin='nyxt', chmod=True) }}
 #}
-{%- macro curl_extract_tar(name, url, binary_pattern, archive_ext='tar.gz', fetch_tag=False, binaries=None, chmod=False, user='neg', home='/home/neg') -%}
+{%- macro curl_extract_tar(name, url, binary_pattern=None, archive_ext='tar.gz', fetch_tag=False, binaries=None, bin=None, chmod=False, dest=None, strip_components=None, creates=None, user='neg', home='/home/neg') -%}
 {%- set ext_flag = 'J' if archive_ext == 'tar.xz' else 'z' -%}
 {%- if fetch_tag %}
 {%- if '/api.github.com/repos/' in url %}
@@ -283,23 +304,28 @@ install_{{ name | replace('-', '_') }}:
         TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ repo_path }}/releases/latest | grep -oP '[^/]+$')
 {%- endif %}
         curl -fsSL "{{ url }}" -o /tmp/{{ name }}.{{ archive_ext }}
+{%- if dest %}
+        mkdir -p {{ dest }}
+        tar -x{{ ext_flag }}f /tmp/{{ name }}.{{ archive_ext }} -C {{ dest }}{{ ' --strip-components=' ~ strip_components if strip_components }}
+{%- else %}
         tar -x{{ ext_flag }}f /tmp/{{ name }}.{{ archive_ext }} -C /tmp
 {%- if binaries %}
 {% for bin in binaries %}
         mv /tmp/{{ binary_pattern.replace('*', bin) if '*' in binary_pattern else binary_pattern }}/{{ bin }} ~/.local/bin/ 2>/dev/null || mv /tmp/{{ binary_pattern.rsplit('/', 1)[0] }}/{{ bin }} ~/.local/bin/
 {%- endfor %}
 {%- else %}
-        find /tmp -maxdepth 3 -path "*{{ binary_pattern }}*" -type f ! -name "*.tar*" -exec install -m755 {} ~/.local/bin/{{ binary_pattern.rsplit('/', 1)[-1] }} \;
+        find /tmp -maxdepth 3 -path "*{{ binary_pattern }}*" -type f ! -name "*.tar*" -exec install -m755 {} ~/.local/bin/{{ bin or binary_pattern.rsplit('/', 1)[-1] }} \;
 {%- endif %}
 {%- if chmod %}
-{%- for bin in (binaries or [binary_pattern.rsplit('/', 1)[-1]]) %}
-        chmod +x ~/.local/bin/{{ bin }}
+{%- for b in (binaries or [bin or binary_pattern.rsplit('/', 1)[-1]]) %}
+        chmod +x ~/.local/bin/{{ b }}
 {%- endfor %}
+{%- endif %}
 {%- endif %}
         rm -rf /tmp/{{ name }}.{{ archive_ext }} /tmp/{{ name }}-* /tmp/{{ name }}
     - runas: {{ user }}
     - shell: /bin/bash
-    - creates: {{ home }}/.local/bin/{{ binaries[0] if binaries else binary_pattern.rsplit('/', 1)[-1] }}
+    - creates: {{ creates or (dest if dest else home ~ '/.local/bin/' ~ (bin or (binaries[0] if binaries else binary_pattern.rsplit('/', 1)[-1]))) }}
     - retry:
         attempts: 3
         interval: 10
@@ -311,15 +337,27 @@ install_{{ name | replace('-', '_') }}:
    binary_path: path pattern relative to extraction dir (e.g., "yazi-x86_64-unknown-linux-musl/yazi").
    binaries: optional list of binaries to move. If None, uses last part of binary_path.
    chmod: True (default False) to chmod +x extracted binaries.
+   dest: extract directly to this directory (skips find+move, for app bundles).
+   symlink: create symlink from dest/<symlink> to ~/.local/bin/<name> after extraction.
+   creates: override creates guard (default: ~/.local/bin/<binary> or dest).
    Usage: {{ curl_extract_zip('xray', 'https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip', 'xray/xray', chmod=True) }}
           {{ curl_extract_zip('yazi', 'https://github.com/sxyazi/yazi/releases/latest/download/yazi-x86_64-unknown-linux-musl.zip', 'yazi-x86_64-unknown-linux-musl', binaries=['yazi', 'ya']) }}
+          {{ curl_extract_zip('roomeqwizard', '...', dest='~/.local/opt/roomeqwizard') }}
+          {{ curl_extract_zip('throne', '...', dest='~/.local/opt/throne', symlink='Throne') }}
 #}
-{%- macro curl_extract_zip(name, url, binary_path, binaries=None, chmod=False, user='neg', home='/home/neg') -%}
+{%- macro curl_extract_zip(name, url, binary_path=None, binaries=None, chmod=False, dest=None, symlink=None, creates=None, user='neg', home='/home/neg') -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: |
         set -eo pipefail
         curl -fsSL "{{ url }}" -o /tmp/{{ name }}.zip
+{%- if dest %}
+        mkdir -p {{ dest }}
+        unzip -o /tmp/{{ name }}.zip -d {{ dest }}
+{%- if symlink %}
+        ln -sf {{ dest }}/{{ symlink }} ~/.local/bin/{{ name }}
+{%- endif %}
+{%- else %}
         unzip -o /tmp/{{ name }}.zip -d /tmp/{{ name }}_extracted
 {%- if binaries %}
 {%- for bin in binaries %}
@@ -333,15 +371,36 @@ install_{{ name | replace('-', '_') }}:
         chmod +x ~/.local/bin/{{ bin }}
 {%- endfor %}
 {%- endif %}
+{%- endif %}
         rm -rf /tmp/{{ name }}.zip /tmp/{{ name }}_extracted
     - runas: {{ user }}
     - shell: /bin/bash
-    - creates: {{ home }}/.local/bin/{{ binaries[0] if binaries else binary_path.rsplit('/', 1)[-1] }}
+    - creates: {{ creates or (dest if dest else home ~ '/.local/bin/' ~ (binaries[0] if binaries else binary_path.rsplit('/', 1)[-1])) }}
     - retry:
         attempts: 3
         interval: 10
 
 
+{%- endmacro -%}
+
+{# Download Firefox/Floorp extension .xpi from addons.mozilla.org.
+   ext: dict with 'id' (extension GUID) and 'slug' (AMO slug).
+   profile: path to browser profile directory.
+   Usage: {{ firefox_extension(ext, floorp_profile, require='floorp_extensions_dir') }}
+#}
+{%- macro firefox_extension(ext, profile, require=None, user='neg') -%}
+floorp_ext_{{ ext.slug | replace('-', '_') }}:
+  cmd.run:
+    - name: curl -fsSL -o '{{ profile }}/extensions/{{ ext.id }}.xpi' 'https://addons.mozilla.org/firefox/downloads/latest/{{ ext.slug }}/latest.xpi'
+    - creates: {{ profile }}/extensions/{{ ext.id }}.xpi
+    - runas: {{ user }}
+{%- if require %}
+    - require:
+      - file: {{ require }}
+{%- endif %}
+    - retry:
+        attempts: 3
+        interval: 10
 {%- endmacro -%}
 
 {# Deploy inline systemd user unit file (~/.config/systemd/user/).
@@ -402,20 +461,26 @@ install_{{ name }}:
 
 {# Git clone a repo to /tmp, copy selected items to dest, clean up.
    items: list of paths relative to repo root to cp -r (e.g., ['Flight-Dark-GTK', 'Flight-light-GTK'] or ['*/']).
+          If omitted, clones directly to dest (repo itself IS the install).
    creates: idempotency guard (defaults to dest).
    Usage: {{ git_clone_deploy('flight-gtk', 'https://github.com/neg-serg/Flight-Plasma-Themes.git', '~/.local/share/themes', ['Flight-Dark-GTK', 'Flight-light-GTK']) }}
+          {{ git_clone_deploy('zi', 'https://github.com/z-shell/zi.git', '~/.config/zi/bin', creates=home ~ '/.config/zi/bin/zi.zsh') }}
 #}
-{%- macro git_clone_deploy(name, repo, dest, items, creates=None, user='neg', home='/home/neg') -%}
+{%- macro git_clone_deploy(name, repo, dest, items=None, creates=None, user='neg', home='/home/neg') -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: |
         set -eo pipefail
+{%- if items %}
         git clone --depth=1 {{ repo }} /tmp/{{ name }}
         mkdir -p {{ dest }}
 {%- for item in items %}
         cp -r /tmp/{{ name }}/{{ item }} {{ dest }}/
 {%- endfor %}
         rm -rf /tmp/{{ name }}
+{%- else %}
+        git clone --depth=1 {{ repo }} {{ dest }}
+{%- endif %}
     - runas: {{ user }}
     - shell: /bin/bash
     - creates: {{ creates or dest }}
