@@ -1,0 +1,22 @@
+# MPV plugin/script definitions for installers.sls — data separated from logic.
+# Each entry gets its own Salt state with individual creates guard.
+
+# Raw file downloads: filename → url (downloaded to ~/.config/mpv/scripts/)
+raw:
+  thumbfast.lua: "https://raw.githubusercontent.com/po5/thumbfast/master/thumbfast.lua"
+  sponsorblock.lua: "https://raw.githubusercontent.com/po5/mpv_sponsorblock/master/sponsorblock.lua"
+  quality-menu.lua: "https://raw.githubusercontent.com/christoph-heinrich/mpv-quality-menu/master/quality-menu.lua"
+  cutter.lua: "https://raw.githubusercontent.com/rushmj/mpv-video-cutter/master/cutter.lua"
+
+# GitHub release binary: filename → {repo, asset} (downloaded to ~/.config/mpv/scripts/)
+github_release:
+  mpris.so:
+    repo: hoyon/mpv-mpris
+    asset: mpris.so
+
+# GitHub release ZIP: name → {repo, asset, dest} (extracted to dest, creates guard in scripts/)
+github_release_zip:
+  uosc:
+    repo: tomasklaen/uosc
+    asset: uosc.zip
+    dest: "~/.config/mpv"
