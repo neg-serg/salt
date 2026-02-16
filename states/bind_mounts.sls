@@ -5,8 +5,9 @@
 # Salt's device mismatch detection which always triggers remounts on
 # bind mounts (kernel reports the underlying block device, not bind source).
 
-{% set user = 'neg' %}
-{% set home = '/home/' ~ user %}
+{% from 'host_config.jinja' import host %}
+{% set user = host.user %}
+{% set home = host.home %}
 
 {% set mounts = [
     {'name': 'mail',    'device': '/mnt/zero/mail',    'target': home ~ '/.local/mail'},

@@ -3,8 +3,9 @@
 
 {% from '_macros.jinja' import pacman_install %}
 
-{% set user = 'neg' %}
-{% set home = '/home/' ~ user %}
+{% from 'host_config.jinja' import host %}
+{% set user = host.user %}
+{% set home = host.home %}
 {% set fonts_dir = home ~ '/.local/share/fonts' %}
 
 # ===================================================================
