@@ -2,22 +2,7 @@
 {% from '_macros.jinja' import github_tar %}
 {% set user = host.user %}
 {% set home = host.home %}
-# Theme, icon, and font installers
-
-# --- oldschool PC fonts (bitmap-style OTF) ---
-install_oldschool_pc_fonts:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        mkdir -p ~/.local/share/fonts/oldschool-pc
-        curl -fsSL https://int10h.org/oldschool-pc-fonts/download/oldschool_pc_font_pack_v2.2_linux.zip -o /tmp/fonts.zip
-        unzip -o /tmp/fonts.zip -d /tmp/oldschool-fonts
-        find /tmp/oldschool-fonts -name '*.otf' -exec cp {} ~/.local/share/fonts/oldschool-pc/ \;
-        fc-cache -f ~/.local/share/fonts/oldschool-pc/
-        rm -rf /tmp/fonts.zip /tmp/oldschool-fonts
-    - runas: {{ user }}
-    - shell: /bin/bash
-    - creates: {{ home }}/.local/share/fonts/oldschool-pc
+# Theme and icon installers
 
 # --- matugen (Material You color generation) ---
 {{ github_tar('matugen', 'https://github.com/InioX/matugen/releases/download/v3.1.0/matugen-3.1.0-x86_64.tar.gz') }}

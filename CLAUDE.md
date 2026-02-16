@@ -23,15 +23,17 @@ Packages installed via pacman/paru outside Salt; Salt handles configuration mana
 | `docs/` | Documentation (migration tracking, secrets, setup guides) |
 | `scripts/` | Utility scripts (linting, comparison) |
 
-## Salt State Modules (23 files)
+## Salt State Modules (21 files)
 
 | Module | Purpose |
 |---|---|
 | `system_description.sls` | Core: timezone, locale, users, flatpak, mounts, zsh |
+| `fonts.sls` | All fonts: pacman, Iosevka PKGBUILD, FiraCode, downloaded fonts |
 | `installers.sls` | CLI tools: GitHub releases, pip/cargo installs, scripts |
 | `installers_desktop.sls` | Desktop apps: RoomEQ, Throne, Overskride, Nyxt, DroidCam |
-| `installers_themes.sls` | Themes/icons/fonts: matugen, kora, Flight GTK, oldschool-pc |
+| `installers_themes.sls` | Themes/icons: matugen, kora, Flight GTK |
 | `user_services.sls` | User systemd services: chezmoi, mail, vdirsyncer, GPG agent |
+| `custom_pkgs.sls` | Build raise, neg-pretty-printer, richcolors, albumdetails from PKGBUILDs |
 | `dns.sls` | Unbound, AdGuardHome, Avahi |
 | `monitoring.sls` | Sysstat, vnstat, netdata, Loki/Promtail/Grafana stack |
 | `services.sls` | Samba, Jellyfin, Bitcoind, DuckDNS |
@@ -47,9 +49,6 @@ Packages installed via pacman/paru outside Salt; Salt handles configuration mana
 | `bind_mounts.sls` | Bind mounts for /mnt paths |
 | `distrobox.sls` | Distrobox containers (Steam gaming) |
 | `sysctl.sls` | Sysctl tuning |
-| `fira-code-nerd.sls` | FiraCode Nerd Font install |
-| `iosevka.sls` | Custom Iosevka Nerd Font build from PKGBUILD |
-| `custom_pkgs.sls` | Build raise, neg-pretty-printer, richcolors, albumdetails from PKGBUILDs |
 | `hy3.sls` | Hyprland hy3 plugin |
 
 ## Macros (`_macros.jinja`)
