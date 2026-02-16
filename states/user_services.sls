@@ -1,4 +1,5 @@
 {% from 'host_config.jinja' import host %}
+{% from '_macros.jinja' import user_service %}
 {% set user = host.user %}
 {% set home = host.home %}
 {% set runtime_dir = '/run/user/' ~ host.uid|string %}
@@ -68,132 +69,90 @@ mail_directories:
     - makedirs: True
 
 # --- Systemd user services for mail ---
-mbsync_gmail_service:
-  file.managed:
-    - name: {{ home }}/.config/systemd/user/mbsync-gmail.service
-    - user: {{ user }}
-    - group: {{ user }}
-    - mode: '0644'
-    - makedirs: True
-    - contents: |
-        [Unit]
-        Description=Mailbox synchronization (Gmail)
-        After=network-online.target
-        Wants=network-online.target
-        [Service]
-        Type=oneshot
-        ExecStart=/usr/bin/mbsync -c %h/.config/mbsync/mbsyncrc gmail
-        [Install]
-        WantedBy=default.target
+{% call user_service('mbsync_gmail_service', 'mbsync-gmail.service', user=user, home=home) %}
+[Unit]
+Description=Mailbox synchronization (Gmail)
+After=network-online.target
+Wants=network-online.target
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/mbsync -c %h/.config/mbsync/mbsyncrc gmail
+[Install]
+WantedBy=default.target
+{% endcall %}
 
-mbsync_gmail_timer:
-  file.managed:
-    - name: {{ home }}/.config/systemd/user/mbsync-gmail.timer
-    - user: {{ user }}
-    - group: {{ user }}
-    - mode: '0644'
-    - makedirs: True
-    - contents: |
-        [Unit]
-        Description=Mailbox synchronization timer (Gmail)
-        [Timer]
-        OnBootSec=2min
-        OnUnitActiveSec=10min
-        [Install]
-        WantedBy=timers.target
+{% call user_service('mbsync_gmail_timer', 'mbsync-gmail.timer', user=user, home=home) %}
+[Unit]
+Description=Mailbox synchronization timer (Gmail)
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=10min
+[Install]
+WantedBy=timers.target
+{% endcall %}
 
-imapnotify_gmail_service:
-  file.managed:
-    - name: {{ home }}/.config/systemd/user/imapnotify-gmail.service
-    - user: {{ user }}
-    - group: {{ user }}
-    - mode: '0644'
-    - makedirs: True
-    - contents: |
-        [Unit]
-        Description=IMAP IDLE notifications (Gmail)
-        After=network-online.target
-        Wants=network-online.target
-        [Service]
-        ExecStart=/usr/bin/goimapnotify -conf %h/.config/imapnotify/gmail.json
-        Restart=on-failure
-        RestartSec=30
-        [Install]
-        WantedBy=default.target
+{% call user_service('imapnotify_gmail_service', 'imapnotify-gmail.service', user=user, home=home) %}
+[Unit]
+Description=IMAP IDLE notifications (Gmail)
+After=network-online.target
+Wants=network-online.target
+[Service]
+ExecStart=/usr/bin/goimapnotify -conf %h/.config/imapnotify/gmail.json
+Restart=on-failure
+RestartSec=30
+[Install]
+WantedBy=default.target
+{% endcall %}
 
 # --- Systemd user services for calendar ---
-vdirsyncer_service:
-  file.managed:
-    - name: {{ home }}/.config/systemd/user/vdirsyncer.service
-    - user: {{ user }}
-    - group: {{ user }}
-    - mode: '0644'
-    - makedirs: True
-    - contents: |
-        [Unit]
-        Description=Synchronize calendars and contacts (vdirsyncer)
-        After=network-online.target
-        Wants=network-online.target
-        [Service]
-        Type=oneshot
-        ExecStart=/usr/bin/vdirsyncer sync
+{% call user_service('vdirsyncer_service', 'vdirsyncer.service', user=user, home=home) %}
+[Unit]
+Description=Synchronize calendars and contacts (vdirsyncer)
+After=network-online.target
+Wants=network-online.target
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/vdirsyncer sync
+{% endcall %}
 
-vdirsyncer_timer:
-  file.managed:
-    - name: {{ home }}/.config/systemd/user/vdirsyncer.timer
-    - user: {{ user }}
-    - group: {{ user }}
-    - mode: '0644'
-    - makedirs: True
-    - contents: |
-        [Unit]
-        Description=Synchronize calendars and contacts timer
-        [Timer]
-        OnBootSec=2min
-        OnUnitActiveSec=5min
-        [Install]
-        WantedBy=timers.target
+{% call user_service('vdirsyncer_timer', 'vdirsyncer.timer', user=user, home=home) %}
+[Unit]
+Description=Synchronize calendars and contacts timer
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+[Install]
+WantedBy=timers.target
+{% endcall %}
 
 # --- Surfingkeys HTTP server (browser extension helper) ---
-surfingkeys_server_service:
-  file.managed:
-    - name: {{ home }}/.config/systemd/user/surfingkeys-server.service
-    - user: {{ user }}
-    - group: {{ user }}
-    - mode: '0644'
-    - makedirs: True
-    - contents: |
-        [Unit]
-        Description=Surfingkeys HTTP server (browser extension helper)
-        After=graphical-session.target
-        PartOf=graphical-session.target
-        [Service]
-        ExecStart=%h/.local/bin/surfingkeys-server
-        Restart=on-failure
-        RestartSec=5
-        [Install]
-        WantedBy=graphical-session.target
+{% call user_service('surfingkeys_server_service', 'surfingkeys-server.service', user=user, home=home) %}
+[Unit]
+Description=Surfingkeys HTTP server (browser extension helper)
+After=graphical-session.target
+PartOf=graphical-session.target
+[Service]
+ExecStart=%h/.local/bin/surfingkeys-server
+Restart=on-failure
+RestartSec=5
+[Install]
+WantedBy=graphical-session.target
+{% endcall %}
 
 # --- Pic dirs indexer (inotifywait + zoxide) ---
-pic_dirs_list_service:
-  file.managed:
-    - name: {{ home }}/.config/systemd/user/pic-dirs-list.service
-    - user: {{ user }}
-    - group: {{ user }}
-    - mode: '0644'
-    - makedirs: True
-    - contents: |
-        [Unit]
-        Description=Index picture directories into zoxide on changes
-        After=graphical-session.target
-        PartOf=graphical-session.target
-        [Service]
-        ExecStart=%h/.local/bin/pic-dirs-list
-        Restart=on-failure
-        RestartSec=5
-        Environment=XDG_PICTURES_DIR=%h/pic
-        [Install]
-        WantedBy=graphical-session.target
+{% call user_service('pic_dirs_list_service', 'pic-dirs-list.service', user=user, home=home) %}
+[Unit]
+Description=Index picture directories into zoxide on changes
+After=graphical-session.target
+PartOf=graphical-session.target
+[Service]
+ExecStart=%h/.local/bin/pic-dirs-list
+Restart=on-failure
+RestartSec=5
+Environment=XDG_PICTURES_DIR=%h/pic
+[Install]
+WantedBy=graphical-session.target
+{% endcall %}
 
 # --- Vicinae: application launcher daemon ---
 vicinae_service:
