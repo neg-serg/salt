@@ -92,7 +92,7 @@ mpd_config:
     - makedirs: True
 
 # --- Enable native MPD systemd user service ---
-mpd_service:
+mpd_enabled:
   cmd.run:
     - name: systemctl --user enable --now mpd.service
     - runas: {{ user }}
@@ -150,7 +150,7 @@ mpd_companion_services:
       - DBUS_SESSION_BUS_ADDRESS: unix:path={{ runtime_dir }}/bus
     - shell: /bin/bash
     - require:
-      - cmd: mpd_service
+      - cmd: mpd_enabled
       - cmd: mpdas_config
       - file: mpdas_service_file
     - unless: |

@@ -184,7 +184,7 @@ enable_user_services:
   cmd.run:
     - name: |
         systemctl --user daemon-reload
-        systemctl --user enable imapnotify-gmail.service surfingkeys-server.service pic-dirs-list.service gpg-agent.socket gpg-agent-ssh.socket
+        systemctl --user enable imapnotify-gmail.service surfingkeys-server.service pic-dirs-list.service vicinae.service gpg-agent.socket gpg-agent-ssh.socket
         systemctl --user enable --now mbsync-gmail.timer vdirsyncer.timer
     - runas: {{ user }}
     - env:
@@ -196,6 +196,7 @@ enable_user_services:
         systemctl --user is-enabled vdirsyncer.timer 2>/dev/null &&
         systemctl --user is-enabled surfingkeys-server.service 2>/dev/null &&
         systemctl --user is-enabled pic-dirs-list.service 2>/dev/null &&
+        systemctl --user is-enabled vicinae.service 2>/dev/null &&
         systemctl --user is-enabled gpg-agent-ssh.socket 2>/dev/null
     - require:
       - file: imapnotify_gmail_service
@@ -203,3 +204,4 @@ enable_user_services:
       - file: vdirsyncer_timer
       - file: surfingkeys_server_service
       - file: pic_dirs_list_service
+      - file: vicinae_service
