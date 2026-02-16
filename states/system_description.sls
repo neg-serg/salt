@@ -1,4 +1,8 @@
 {% from 'host_config.jinja' import host %}
+{% set user = host.user %}
+{% set home = host.home %}
+{% set uid = host.uid %}
+{% set runtime_dir = '/run/user/' ~ uid|string %}
 # Salt state for CachyOS workstation
 # Packages installed via pacman/paru outside Salt; Salt handles configuration
 
@@ -28,10 +32,10 @@ user_root:
 
 user_neg:
   user.present:
-    - name: neg
+    - name: {{ user }}
     - shell: /usr/bin/zsh
-    - uid: 1000
-    - gid: 1000
+    - uid: {{ uid }}
+    - gid: {{ uid }}
 
 plugdev_group:
   group.present:
@@ -41,8 +45,8 @@ plugdev_group:
 # user.present groups broken on Python 3.14 (crypt module removed)
 neg_groups:
   cmd.run:
-    - name: usermod -aG wheel,libvirt,plugdev neg
-    - unless: id -nG neg | tr ' ' '\n' | grep -qx plugdev
+    - name: usermod -aG wheel,libvirt,plugdev {{ user }}
+    - unless: id -nG {{ user }} | tr ' ' '\n' | grep -qx plugdev
     - require:
       - group: plugdev_group
 
@@ -58,9 +62,9 @@ sudo_timeout:
 
 sudo_nopasswd:
   file.managed:
-    - name: /etc/sudoers.d/99-neg-nopasswd
+    - name: /etc/sudoers.d/99-{{ user }}-nopasswd
     - contents: |
-        neg ALL=(ALL) NOPASSWD: ALL
+        {{ user }} ALL=(ALL) NOPASSWD: ALL
     - user: root
     - group: root
     - mode: '0440'
@@ -127,8 +131,8 @@ cleanup_old_etc_zshenv:
 # Force shell update for users
 force_zsh_neg:
   cmd.run:
-    - name: usermod -s /usr/bin/zsh neg
-    - unless: 'test "$(getent passwd neg | cut -d: -f7)" = "/usr/bin/zsh"'
+    - name: usermod -s /usr/bin/zsh {{ user }}
+    - unless: 'test "$(getent passwd {{ user }} | cut -d: -f7)" = "/usr/bin/zsh"'
 
 force_zsh_root:
   cmd.run:
@@ -201,24 +205,24 @@ btrfs_compress_var:
 # --- SSH directory setup ---
 ssh_dir:
   file.directory:
-    - name: /home/neg/.ssh
-    - user: neg
-    - group: neg
+    - name: {{ home }}/.ssh
+    - user: {{ user }}
+    - group: {{ user }}
     - mode: '0700'
 
 # --- Wallust cache defaults (prevents hyprland source errors on first boot) ---
 wallust_cache_dir:
   file.directory:
-    - name: /home/neg/.cache/wallust
-    - user: neg
-    - group: neg
+    - name: {{ home }}/.cache/wallust
+    - user: {{ user }}
+    - group: {{ user }}
     - mode: '0755'
 
 wallust_hyprland_defaults:
   file.managed:
-    - name: /home/neg/.cache/wallust/hyprland.conf
-    - user: neg
-    - group: neg
+    - name: {{ home }}/.cache/wallust/hyprland.conf
+    - user: {{ user }}
+    - group: {{ user }}
     - mode: '0644'
     - replace: false
     - contents: |
@@ -235,9 +239,9 @@ set_dconf_themes:
         dconf write /org/gnome/desktop/interface/gtk-theme "'Flight-Dark-GTK'"
         dconf write /org/gnome/desktop/interface/icon-theme "'kora'"
         dconf write /org/gnome/desktop/interface/font-name "'Iosevka 10'"
-    - runas: neg
+    - runas: {{ user }}
     - env:
-      - DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/1000/bus"
+      - DBUS_SESSION_BUS_ADDRESS: "unix:path={{ runtime_dir }}/bus"
     - unless: |
         test "$(dconf read /org/gnome/desktop/interface/gtk-theme)" = "'Flight-Dark-GTK'" &&
         test "$(dconf read /org/gnome/desktop/interface/icon-theme)" = "'kora'" &&
