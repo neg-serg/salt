@@ -78,15 +78,14 @@ include:
   - bind_mounts
   - custom_pkgs
   - dns
-  - fira-code-nerd
   - floorp
+  - fonts
   - greetd
   - hardware
   - hy3
   - installers
   - installers_desktop
   - installers_themes
-  - iosevka
   - kernel_modules
   - kernel_params_limine
   - monitoring

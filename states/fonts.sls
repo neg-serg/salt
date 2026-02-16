@@ -1,9 +1,7 @@
-# Install fonts referenced by dotfiles (rofi, hyprlock, quickshell, mpv)
+# All font installs: pacman, downloaded, custom PKGBUILD builds
 # Run: sudo salt-call --local state.apply fonts
-
-{% from '_macros.jinja' import pacman_install %}
-
 {% from 'host_config.jinja' import host %}
+{% from '_macros.jinja' import pacman_install, pkgbuild_install %}
 {% set user = host.user %}
 {% set home = host.home %}
 {% set fonts_dir = home ~ '/.local/share/fonts' %}
@@ -21,8 +19,49 @@
 {{ pacman_install('inter-font',          'inter-font') }}
 
 # ===================================================================
+# PKGBUILD fonts (custom builds)
+# ===================================================================
+
+# Iosevka with custom glyph variants, patched with Nerd Font icons
+{{ pkgbuild_install('iosevka-neg-fonts', 'salt://build/pkgbuilds/iosevka-neg-fonts', user=user, timeout=7200) }}
+
+# ===================================================================
 # Downloaded fonts (not in repos)
 # ===================================================================
+
+# --- FiraCode Nerd Font ---
+{{ fonts_dir }}/FiraCodeNerd:
+  file.directory:
+    - user: {{ user }}
+    - group: {{ user }}
+    - makedirs: True
+
+download_fira_code_nerd:
+  cmd.run:
+    - name: |
+        curl -L -o /tmp/FiraCode.zip https://github.com/ryanoasis/nerd-fonts/releases/download/v3.3.0/FiraCode.zip
+        unzip -o /tmp/FiraCode.zip -d {{ fonts_dir }}/FiraCodeNerd
+        rm /tmp/FiraCode.zip
+        fc-cache -f
+    - runas: {{ user }}
+    - unless: "ls {{ fonts_dir }}/FiraCodeNerd/FiraCodeNerdFontMono-Regular.ttf"
+    - require:
+      - file: {{ fonts_dir }}/FiraCodeNerd
+
+# --- oldschool PC fonts (bitmap-style OTF) ---
+install_oldschool_pc_fonts:
+  cmd.run:
+    - name: |
+        set -eo pipefail
+        mkdir -p {{ fonts_dir }}/oldschool-pc
+        curl -fsSL https://int10h.org/oldschool-pc-fonts/download/oldschool_pc_font_pack_v2.2_linux.zip -o /tmp/fonts.zip
+        unzip -o /tmp/fonts.zip -d /tmp/oldschool-fonts
+        find /tmp/oldschool-fonts -name '*.otf' -exec cp {} {{ fonts_dir }}/oldschool-pc/ \;
+        fc-cache -f {{ fonts_dir }}/oldschool-pc/
+        rm -rf /tmp/fonts.zip /tmp/oldschool-fonts
+    - runas: {{ user }}
+    - shell: /bin/bash
+    - creates: {{ fonts_dir }}/oldschool-pc
 
 # --- SF Pro Display (Apple) — hyprlock SF_Pro / Arfan_on_Clouds themes ---
 {{ fonts_dir }}/SFProDisplay:
