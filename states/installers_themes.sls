@@ -1,12 +1,12 @@
 {% from 'host_config.jinja' import host %}
 {% from '_macros.jinja' import github_tar %}
+{% import_yaml 'data/versions.yaml' as ver %}
 {% set user = host.user %}
 {% set home = host.home %}
 # Theme and icon installers
-{% set matugen_ver = '3.1.0' %}
 
 # --- matugen (Material You color generation) ---
-{{ github_tar('matugen', 'https://github.com/InioX/matugen/releases/download/v' ~ matugen_ver ~ '/matugen-' ~ matugen_ver ~ '-x86_64.tar.gz') }}
+{{ github_tar('matugen', 'https://github.com/InioX/matugen/releases/download/v' ~ ver.matugen ~ '/matugen-' ~ ver.matugen ~ '-x86_64.tar.gz') }}
 install_matugen_themes:
   cmd.run:
     - name: |
