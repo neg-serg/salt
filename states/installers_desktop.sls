@@ -1,5 +1,5 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import curl_bin %}
+{% from '_macros.jinja' import curl_bin, curl_extract_zip %}
 {% import_yaml 'data/versions.yaml' as ver %}
 {% set user = host.user %}
 {% set home = host.home %}
@@ -56,16 +56,4 @@ install_nyxt:
 {{ curl_bin('opensoundmeter', 'https://github.com/psmokotnin/osm/releases/download/v' ~ ver.opensoundmeter ~ '/Open_Sound_Meter-v' ~ ver.opensoundmeter ~ '-x86_64.AppImage') }}
 # --- DroidCam (phone as webcam via v4l2loopback) ---
 # v4l2loopback-dkms installed via pacman outside Salt
-install_droidcam:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        curl -fsSL https://files.dev47apps.net/linux/droidcam_{{ ver.droidcam }}.zip -o /tmp/droidcam.zip
-        unzip -o /tmp/droidcam.zip -d /tmp/droidcam
-        mv /tmp/droidcam/droidcam ~/.local/bin/
-        mv /tmp/droidcam/droidcam-cli ~/.local/bin/
-        chmod +x ~/.local/bin/droidcam ~/.local/bin/droidcam-cli
-        rm -rf /tmp/droidcam.zip /tmp/droidcam
-    - runas: {{ user }}
-    - shell: /bin/bash
-    - creates: {{ home }}/.local/bin/droidcam
+{{ curl_extract_zip('droidcam', 'https://files.dev47apps.net/linux/droidcam_' ~ ver.droidcam ~ '.zip', '.', binaries=['droidcam', 'droidcam-cli'], chmod=True) }}
