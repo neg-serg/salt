@@ -117,6 +117,35 @@ install_{{ name | replace('-', '_') }}:
 {%- endif %}
 {%- endmacro -%}
 
+{# Build and install a package from a local PKGBUILD via file.recurse + makepkg + pacman -U.
+   source: salt:// path to PKGBUILD directory. check: custom `unless` command (default: pacman -Q name).
+   Usage: {{ pkgbuild_install('raise', 'salt://build/pkgbuilds/raise', user='neg') }}
+          {{ pkgbuild_install('iosevka-neg-fonts', 'salt://build/pkgbuilds/iosevka-neg-fonts', user='neg', timeout=7200) }}
+#}
+{%- macro pkgbuild_install(name, source, user='neg', build_base='/tmp/pkgbuild', timeout=600, check=None) -%}
+{%- set safe = name | replace('-', '_') -%}
+{{ safe }}_pkgbuild:
+  file.recurse:
+    - name: {{ build_base }}/{{ name }}
+    - source: {{ source }}
+    - makedirs: True
+    - user: {{ user }}
+    - group: {{ user }}
+
+build_{{ safe }}:
+  cmd.run:
+    - name: |
+        set -eo pipefail
+        su - {{ user }} -c 'cd {{ build_base }}/{{ name }} && makepkg -sf --noconfirm'
+        pacman -U --noconfirm --needed {{ build_base }}/{{ name }}/*.pkg.tar.zst
+        rm -rf {{ build_base }}/{{ name }}
+    - shell: /bin/bash
+    - timeout: {{ timeout }}
+    - unless: {{ check or 'pacman -Q ' ~ name }}
+    - require:
+      - file: {{ safe }}_pkgbuild
+{%- endmacro -%}
+
 {# Create system daemon user + data directory.
    Consolidates: user.present (system user, nologin shell) + file.directory (homedir/datadir with ownership).
    shell defaults to /usr/sbin/nologin. createhome defaults to False (createhome by file.directory instead).
