@@ -3,6 +3,7 @@
 {% set user = host.user %}
 {% set home = host.home %}
 # Ollama LLM server: systemd service, model pulls
+{% if host.features.ollama %}
 
 ollama_service_unit:
   file.managed:
@@ -81,3 +82,4 @@ install_openclaw:
     - name: npm install -g openclaw
     - runas: {{ user }}
     - creates: {{ home }}/.local/bin/openclaw
+{% endif %}

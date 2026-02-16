@@ -3,6 +3,7 @@
 # Steam + gaming tools (native pacman install)
 # Requires multilib repo for lib32 dependencies;
 # --ask 4 resolves CachyOS lib32-mesa-git vs multilib lib32-mesa conflict.
+{% if host.features.steam %}
 
 enable_multilib:
   file.append:
@@ -39,4 +40,4 @@ steam_library_dir:
     - user: {{ user }}
     - group: {{ user }}
     - makedirs: True
-
+{% endif %}
