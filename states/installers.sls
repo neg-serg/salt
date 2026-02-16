@@ -1,7 +1,7 @@
 {% from 'host_config.jinja' import host %}
 {% set user = host.user %}
 {% set home = host.home %}
-# CLI tool installers: binaries, pip, cargo, scripts, themes
+# CLI tool installers: binaries, pip, cargo, scripts
 {% from '_macros.jinja' import curl_bin, github_tar, github_release, pip_pkg, cargo_pkg, curl_extract_tar, curl_extract_zip, run_with_error_context %}
 
 # --- Neovim Python dependencies (nvr + pynvim) ---
@@ -142,102 +142,6 @@ install_qmk_udev_rules:
     - name: curl -fsSL https://raw.githubusercontent.com/qmk/qmk_firmware/master/util/udev/50-qmk.rules -o /etc/udev/rules.d/50-qmk.rules && udevadm control --reload-rules
     - creates: /etc/udev/rules.d/50-qmk.rules
 
-install_oldschool_pc_fonts:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        mkdir -p ~/.local/share/fonts/oldschool-pc
-        curl -fsSL https://int10h.org/oldschool-pc-fonts/download/oldschool_pc_font_pack_v2.2_linux.zip -o /tmp/fonts.zip
-        unzip -o /tmp/fonts.zip -d /tmp/oldschool-fonts
-        find /tmp/oldschool-fonts -name '*.otf' -exec cp {} ~/.local/share/fonts/oldschool-pc/ \;
-        fc-cache -f ~/.local/share/fonts/oldschool-pc/
-        rm -rf /tmp/fonts.zip /tmp/oldschool-fonts
-    - runas: {{ user }}
-    - shell: /bin/bash
-    - creates: {{ home }}/.local/share/fonts/oldschool-pc
-
-# --- Special: RoomEQ Wizard (Java acoustic measurement) ---
-install_roomeqwizard:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        mkdir -p ~/.local/opt/roomeqwizard
-        curl -fsSL 'https://www.roomeqwizard.com/installers/REW_linux_no_jre_5_33.zip' -o /tmp/rew.zip
-        unzip -o /tmp/rew.zip -d ~/.local/opt/roomeqwizard
-        rm -f /tmp/rew.zip
-    - runas: {{ user }}
-    - shell: /bin/bash
-    - creates: {{ home }}/.local/opt/roomeqwizard
-
-# --- Throne (sing-box GUI proxy frontend, bundled Qt) ---
-install_throne:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        mkdir -p ~/.local/opt/throne
-        curl -fsSL https://github.com/throneproj/Throne/releases/download/1.0.13/Throne-1.0.13-linux-amd64.zip -o /tmp/throne.zip
-        unzip -o /tmp/throne.zip -d ~/.local/opt/throne
-        ln -sf ~/.local/opt/throne/Throne ~/.local/bin/throne
-        rm -f /tmp/throne.zip
-    - runas: {{ user }}
-    - shell: /bin/bash
-    - creates: {{ home }}/.local/opt/throne
-
-# --- Overskride (Bluetooth GTK4 client, AUR) ---
-install_overskride:
-  cmd.run:
-    - name: sudo -u {{ user }} paru -S --noconfirm --needed overskride-bin
-    - unless: pacman -Q overskride-bin &>/dev/null
-
-# --- Nyxt browser (Electron AppImage) ---
-install_nyxt:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        curl -fsSL https://github.com/atlas-engineer/nyxt/releases/download/4.0.0/Linux-Nyxt-x86_64.tar.gz -o /tmp/nyxt.tar.gz
-        tar -xzf /tmp/nyxt.tar.gz -C /tmp
-        mv /tmp/Nyxt-x86_64.AppImage ~/.local/bin/nyxt
-        chmod +x ~/.local/bin/nyxt
-        rm -f /tmp/nyxt.tar.gz
-    - runas: {{ user }}
-    - shell: /bin/bash
-    - creates: {{ home }}/.local/bin/nyxt
-
-# --- Open Sound Meter (FFT acoustic analysis, AppImage) ---
-{{ curl_bin('opensoundmeter', 'https://github.com/psmokotnin/osm/releases/download/v1.5.2/Open_Sound_Meter-v1.5.2-x86_64.AppImage') }}
-
-# --- matugen (Material You color generation) ---
-{{ github_tar('matugen', 'https://github.com/InioX/matugen/releases/download/v3.1.0/matugen-3.1.0-x86_64.tar.gz') }}
-
-install_matugen_themes:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        git clone --depth=1 https://github.com/InioX/matugen-themes.git /tmp/matugen-themes
-        mkdir -p ~/.config/matugen/templates
-        cp -r /tmp/matugen-themes/*/ ~/.config/matugen/templates/
-        rm -rf /tmp/matugen-themes
-    - runas: {{ user }}
-    - shell: /bin/bash
-    - creates: {{ home }}/.config/matugen/templates
-
-# --- DroidCam (phone as webcam via v4l2loopback) ---
-# v4l2loopback-dkms installed via pacman outside Salt
-
-install_droidcam:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        curl -fsSL https://files.dev47apps.net/linux/droidcam_2.1.3.zip -o /tmp/droidcam.zip
-        unzip -o /tmp/droidcam.zip -d /tmp/droidcam
-        mv /tmp/droidcam/droidcam ~/.local/bin/
-        mv /tmp/droidcam/droidcam-cli ~/.local/bin/
-        chmod +x ~/.local/bin/droidcam ~/.local/bin/droidcam-cli
-        rm -rf /tmp/droidcam.zip /tmp/droidcam
-    - runas: {{ user }}
-    - shell: /bin/bash
-    - creates: {{ home }}/.local/bin/droidcam
-
 # --- blesh (Bash Line Editor) ---
 install_blesh:
   cmd.run:
@@ -258,38 +162,6 @@ install_blesh:
 
 # --- rofi-pass (password-store rofi frontend) ---
 {{ curl_bin('rofi-pass', 'https://raw.githubusercontent.com/carnager/rofi-pass/master/rofi-pass') }}
-
-# --- Theme packages ---
-install_kora_icons:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/bikass/kora/releases/latest | grep -oP '[^/]+$')
-        curl -fsSL "https://github.com/bikass/kora/archive/refs/tags/${TAG}.tar.gz" -o /tmp/kora.tar.gz
-        tar -xzf /tmp/kora.tar.gz -C /tmp
-        mkdir -p ~/.local/share/icons
-        cp -r /tmp/kora-*/kora ~/.local/share/icons/
-        cp -r /tmp/kora-*/kora-light ~/.local/share/icons/
-        cp -r /tmp/kora-*/kora-light-panel ~/.local/share/icons/
-        cp -r /tmp/kora-*/kora-pgrey ~/.local/share/icons/
-        gtk-update-icon-cache ~/.local/share/icons/kora 2>/dev/null || true
-        rm -rf /tmp/kora.tar.gz /tmp/kora-*
-    - runas: {{ user }}
-    - shell: /bin/bash
-    - creates: {{ home }}/.local/share/icons/kora
-
-install_flight_gtk_theme:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        git clone --depth=1 https://github.com/neg-serg/Flight-Plasma-Themes.git /tmp/flight-gtk
-        mkdir -p ~/.local/share/themes
-        cp -r /tmp/flight-gtk/Flight-Dark-GTK ~/.local/share/themes/
-        cp -r /tmp/flight-gtk/Flight-light-GTK ~/.local/share/themes/
-        rm -rf /tmp/flight-gtk
-    - runas: {{ user }}
-    - shell: /bin/bash
-    - creates: {{ home }}/.local/share/themes/Flight-Dark-GTK
 
 # --- MPV scripts (installed per-user) ---
 install_mpv_scripts:
