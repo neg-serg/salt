@@ -28,32 +28,10 @@ fancontrol_reapply_script:
     - name: /etc/systemd/system-sleep/99-fancontrol-reapply
     - makedirs: True
     - mode: '0755'
-    - contents: |
-        #!/usr/bin/env bash
-        set -eu
-        case "${1:-}" in
-          post)
-            # Re-enable manual PWM control for motherboard fans (nct6775)
-            for d in /sys/class/hwmon/hwmon*; do
-              if [ -f "$d/name" ] && grep -Eiq '^nct' "$d/name"; then
-                for en in "$d"/pwm[1-9]_enable; do
-                  [ -e "$en" ] || continue
-                  echo 1 > "$en" 2>/dev/null || true
-                done
-              fi
-            done
-            # Re-enable AMDGPU pwm1 manual control
-            {% if host.get('cpu_vendor', '') == 'amd' %}
-            for d in /sys/class/hwmon/hwmon*; do
-              if [ -f "$d/name" ] && grep -Eiq '^amdgpu$' "$d/name"; then
-                [ -w "$d/pwm1_enable" ] && echo 1 > "$d/pwm1_enable" 2>/dev/null || true
-              fi
-            done
-            {% endif %}
-            # Restart fancontrol to pick up refreshed hwmon state
-            systemctl try-restart fancontrol.service >/dev/null 2>&1 || true
-            ;;
-        esac
+    - source: salt://scripts/fancontrol-reapply.sh.j2
+    - template: jinja
+    - context:
+        cpu_vendor: {{ host.get('cpu_vendor', '') }}
 
 fancontrol_setup_service:
   file.managed:
