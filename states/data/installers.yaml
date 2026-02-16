@@ -63,6 +63,8 @@ cargo_pkg:
     bin: pz
   iwmenu:
     git: "https://github.com/e-tho/iwmenu"
+  rsmetrx:
+    git: "https://github.com/neg-serg/rsmetrx"
 
 curl_extract_zip:
   yazi:
