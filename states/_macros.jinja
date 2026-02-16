@@ -373,15 +373,27 @@ install_{{ name }}:
    unit_type: 'service' (default) | 'timer' | 'socket' | etc.
    running: True (default False) to add service.running after enabled for auto-start behavior.
    requires: optional list of state requisites (includes daemon-reload as base requirement).
+   template: 'jinja' (default None) to render the unit file as a Jinja template.
+   context: dict of template variables (default None), used with template='jinja'.
+   onlyif: guard for service.enabled (default None), e.g. 'command -v ollama'.
    Usage: {{ service_with_unit('loki', 'salt://units/loki.service', requires=['cmd: install_loki', 'file: loki_config']) }}
-          {{ service_with_unit('fancontrol', 'salt://units/fancontrol.service', running=True, requires=['file: fancontrol_service', 'cmd: install_fancontrol']) }}
+          {{ service_with_unit('ollama', 'salt://units/ollama.service', template='jinja', context={'user': user, 'home': home}, onlyif='command -v ollama') }}
 #}
-{%- macro service_with_unit(name, source, unit_type='service', running=False, requires=None) -%}
+{%- macro service_with_unit(name, source, unit_type='service', running=False, requires=None, template=None, context=None, onlyif=None) -%}
 {{ name }}_service:
   file.managed:
     - name: /etc/systemd/system/{{ name }}.{{ unit_type }}
     - mode: '0644'
     - source: {{ source }}
+{%- if template %}
+    - template: {{ template }}
+{%- endif %}
+{%- if context %}
+    - context:
+{%- for key, val in context.items() %}
+        {{ key }}: {{ val }}
+{%- endfor %}
+{%- endif %}
 
 {{ name }}_daemon_reload:
   cmd.run:
@@ -392,6 +404,9 @@ install_{{ name }}:
 {{ name }}_enabled:
   service.enabled:
     - name: {{ name }}
+{%- if onlyif %}
+    - onlyif: {{ onlyif }}
+{%- endif %}
     - require:
       - cmd: {{ name }}_daemon_reload
 {%- if requires %}
