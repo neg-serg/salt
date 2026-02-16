@@ -2,7 +2,6 @@
 {% from 'host_config.jinja' import host %}
 {% set user = host.user %}
 {% set home = host.home %}
-{% set runtime_dir = '/run/user/' ~ host.uid|string %}
 
 etckeeper_init:
   cmd.run:
@@ -69,7 +68,7 @@ set_dconf_themes:
         dconf write /org/gnome/desktop/interface/font-name "'Iosevka 10'"
     - runas: {{ user }}
     - env:
-      - DBUS_SESSION_BUS_ADDRESS: "unix:path={{ runtime_dir }}/bus"
+      - DBUS_SESSION_BUS_ADDRESS: "unix:path={{ host.runtime_dir }}/bus"
     - unless: |
         test "$(dconf read /org/gnome/desktop/interface/gtk-theme)" = "'Flight-Dark-GTK'" &&
         test "$(dconf read /org/gnome/desktop/interface/icon-theme)" = "'kora'" &&
