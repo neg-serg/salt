@@ -195,7 +195,7 @@ return function(ctx)
       local function slash_part()
         return { fg = "#367bbf", bg = colors.base_bg }
       end
-      local default_hl = { fg = "#b8c5d9", bg = colors.base_bg }
+      local default_hl = { fg = "#d1d9e6", bg = colors.base_bg }
       local rest = display
       if rest:sub(1, 1) == '~' then
         push('~', { fg = colors.green, bg = colors.base_bg, bold = true })
