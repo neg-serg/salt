@@ -1,0 +1,31 @@
+# Desktop application definitions for installers_desktop.sls — data separated from logic.
+# URLs with ${VER} are interpolated at render time from data/versions.yaml.
+
+curl_extract_zip:
+  roomeqwizard:
+    url: "https://www.roomeqwizard.com/installers/REW_linux_no_jre_${VER}.zip"
+    dest: "~/.local/opt/roomeqwizard"
+  throne:
+    url: "https://github.com/throneproj/Throne/releases/download/${VER}/Throne-${VER}-linux-amd64.zip"
+    dest: "~/.local/opt/throne"
+    symlink: Throne
+  droidcam:
+    url: "https://files.dev47apps.net/linux/droidcam_${VER}.zip"
+    binary_path: "."
+    binaries:
+      - droidcam
+      - droidcam-cli
+    chmod: true
+
+curl_extract_tar:
+  nyxt:
+    url: "https://github.com/atlas-engineer/nyxt/releases/download/${VER}/Linux-Nyxt-x86_64.tar.gz"
+    binary_pattern: Nyxt-x86_64.AppImage
+    bin: nyxt
+    chmod: true
+
+curl_bin:
+  opensoundmeter: "https://github.com/psmokotnin/osm/releases/download/v${VER}/Open_Sound_Meter-v${VER}-x86_64.AppImage"
+
+paru_install:
+  overskride: overskride-bin

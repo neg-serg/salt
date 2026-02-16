@@ -1,5 +1,5 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import curl_bin, github_tar, github_release, pip_pkg, cargo_pkg, curl_extract_tar, curl_extract_zip, run_with_error_context %}
+{% from '_macros.jinja' import curl_bin, github_tar, github_release, pip_pkg, cargo_pkg, curl_extract_tar, curl_extract_zip, git_clone_deploy, run_with_error_context %}
 {% import_yaml 'data/installers.yaml' as tools %}
 {% import_yaml 'data/versions.yaml' as ver %}
 {% set user = host.user %}
@@ -49,15 +49,7 @@
 # ===========================================================================
 
 # --- Shell frameworks ---
-install_zi:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        export ZI_HOME="$HOME/.config/zi"
-        mkdir -p "$ZI_HOME"
-        git clone https://github.com/z-shell/zi.git "$ZI_HOME/bin"
-    - runas: {{ user }}
-    - creates: {{ home }}/.config/zi/bin/zi.zsh
+{{ git_clone_deploy('zi', 'https://github.com/z-shell/zi.git', '~/.config/zi/bin', creates=home ~ '/.config/zi/bin/zi.zsh', user=user, home=home) }}
 
 install_oh_my_posh:
   cmd.run:
@@ -102,17 +94,7 @@ install_tailray:
       - command -v cargo
 
 # --- Script installs ---
-install_dool:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        git clone --depth=1 https://github.com/scottchiefbaker/dool.git /tmp/dool
-        cp /tmp/dool/dool ~/.local/bin/
-        chmod +x ~/.local/bin/dool
-        rm -rf /tmp/dool
-    - runas: {{ user }}
-    - shell: /bin/bash
-    - creates: {{ home }}/.local/bin/dool
+{{ git_clone_deploy('dool', 'https://github.com/scottchiefbaker/dool.git', '~/.local/bin', ['dool'], creates=home ~ '/.local/bin/dool', user=user, home=home) }}
 
 install_qmk_udev_rules:
   cmd.run:
@@ -120,40 +102,64 @@ install_qmk_udev_rules:
     - creates: /etc/udev/rules.d/50-qmk.rules
 
 # --- blesh (Bash Line Editor) ---
-install_blesh:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        curl -fsSL https://github.com/akinomyoga/ble.sh/releases/download/nightly/ble-nightly.tar.xz -o /tmp/blesh.tar.xz
-        tar -xJf /tmp/blesh.tar.xz -C ~/.local/share/ --strip-components=1
-        rm -f /tmp/blesh.tar.xz
-    - runas: {{ user }}
-    - shell: /bin/bash
-    - creates: {{ home }}/.local/share/ble.sh
+{{ curl_extract_tar('blesh', 'https://github.com/akinomyoga/ble.sh/releases/download/nightly/ble-nightly.tar.xz', archive_ext='tar.xz', dest='~/.local/share', strip_components=1, creates=home ~ '/.local/share/ble.sh', user=user, home=home) }}
 
-# --- MPV scripts (installed per-user) ---
-install_mpv_scripts:
+# --- MPV scripts (installed per-user, definitions in data/mpv_scripts.yaml) ---
+{% import_yaml 'data/mpv_scripts.yaml' as mpv %}
+{% set mpv_scripts_dir = home ~ '/.config/mpv/scripts' %}
+
+mpv_scripts_dir:
+  file.directory:
+    - name: {{ mpv_scripts_dir }}
+    - user: {{ user }}
+    - group: {{ user }}
+    - makedirs: True
+
+{% for filename, url in mpv.raw.items() %}
+mpv_script_{{ filename | replace('.', '_') | replace('-', '_') }}:
+  cmd.run:
+    - name: curl -fsSL '{{ url }}' -o '{{ mpv_scripts_dir }}/{{ filename }}'
+    - runas: {{ user }}
+    - creates: {{ mpv_scripts_dir }}/{{ filename }}
+    - require:
+      - file: mpv_scripts_dir
+    - retry:
+        attempts: 3
+        interval: 10
+{% endfor %}
+
+{% for filename, opts in mpv.github_release.items() %}
+mpv_script_{{ filename | replace('.', '_') | replace('-', '_') }}:
   cmd.run:
     - name: |
         set -eo pipefail
-        SCRIPTS_DIR=~/.config/mpv/scripts
-        mkdir -p "$SCRIPTS_DIR"
-        # uosc (modern UI)
-        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/tomasklaen/uosc/releases/latest | grep -oP '[^/]+$')
-        curl -fsSL "https://github.com/tomasklaen/uosc/releases/download/${TAG}/uosc.zip" -o /tmp/uosc.zip
-        unzip -qo /tmp/uosc.zip -d ~/.config/mpv/
-        rm /tmp/uosc.zip
-        # thumbfast
-        curl -fsSL https://raw.githubusercontent.com/po5/thumbfast/master/thumbfast.lua -o "$SCRIPTS_DIR/thumbfast.lua"
-        # sponsorblock
-        curl -fsSL https://raw.githubusercontent.com/po5/mpv_sponsorblock/master/sponsorblock.lua -o "$SCRIPTS_DIR/sponsorblock.lua"
-        # quality-menu
-        curl -fsSL https://raw.githubusercontent.com/christoph-heinrich/mpv-quality-menu/master/quality-menu.lua -o "$SCRIPTS_DIR/quality-menu.lua"
-        # mpris
-        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/hoyon/mpv-mpris/releases/latest | grep -oP '[^/]+$')
-        curl -fsSL "https://github.com/hoyon/mpv-mpris/releases/download/${TAG}/mpris.so" -o "$SCRIPTS_DIR/mpris.so"
-        # cutter
-        curl -fsSL https://raw.githubusercontent.com/rushmj/mpv-video-cutter/master/cutter.lua -o "$SCRIPTS_DIR/cutter.lua"
+        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ opts.repo }}/releases/latest | grep -oP '[^/]+$')
+        curl -fsSL "https://github.com/{{ opts.repo }}/releases/download/${TAG}/{{ opts.asset }}" -o '{{ mpv_scripts_dir }}/{{ filename }}'
     - runas: {{ user }}
     - shell: /bin/bash
-    - creates: {{ home }}/.config/mpv/scripts/thumbfast.lua
+    - creates: {{ mpv_scripts_dir }}/{{ filename }}
+    - require:
+      - file: mpv_scripts_dir
+    - retry:
+        attempts: 3
+        interval: 10
+{% endfor %}
+
+{% for name, opts in mpv.github_release_zip.items() %}
+mpv_plugin_{{ name }}:
+  cmd.run:
+    - name: |
+        set -eo pipefail
+        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ opts.repo }}/releases/latest | grep -oP '[^/]+$')
+        curl -fsSL "https://github.com/{{ opts.repo }}/releases/download/${TAG}/{{ opts.asset }}" -o /tmp/{{ name }}.zip
+        unzip -qo /tmp/{{ name }}.zip -d {{ opts.dest }}
+        rm -f /tmp/{{ name }}.zip
+    - runas: {{ user }}
+    - shell: /bin/bash
+    - creates: {{ mpv_scripts_dir }}/{{ name }}
+    - require:
+      - file: mpv_scripts_dir
+    - retry:
+        attempts: 3
+        interval: 10
+{% endfor %}

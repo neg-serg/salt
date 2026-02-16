@@ -1,5 +1,5 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import service_with_unit %}
+{% from '_macros.jinja' import service_with_unit, npm_pkg %}
 {% set user = host.user %}
 {% set home = host.home %}
 # Ollama LLM server: systemd service, model pulls
@@ -57,9 +57,5 @@ pull_{{ model | replace('.', '_') | replace(':', '_') | replace('-', '_') }}:
 {% endfor %}
 
 # --- openclaw (local AI assistant agent) ---
-install_openclaw:
-  cmd.run:
-    - name: npm install -g openclaw
-    - runas: {{ user }}
-    - creates: {{ home }}/.local/bin/openclaw
+{{ npm_pkg('openclaw', user=user, home=home) }}
 {% endif %}
