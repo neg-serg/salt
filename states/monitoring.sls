@@ -1,5 +1,5 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import daemon_reload, pacman_install, service_with_unit, system_daemon_user %}
+{% from '_macros.jinja' import daemon_reload, pacman_install, service_with_unit, system_daemon_user, github_release_system %}
 {% set mon = host.features.monitoring %}
 
 # --- Simple service enables (packages already in system_description.sls) ---
@@ -42,15 +42,7 @@ netdata_override:
 
 # --- Loki: log aggregation ---
 {% if mon.loki %}
-install_loki:
-  cmd.run:
-    - name: |
-        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/grafana/loki/releases/latest | grep -oP '[^/]+$')
-        curl -sL "https://github.com/grafana/loki/releases/download/${TAG}/loki-linux-amd64.zip" -o /tmp/loki.zip
-        unzip -o /tmp/loki.zip -d /tmp
-        install -m 0755 /tmp/loki-linux-amd64 /usr/local/bin/loki
-        rm -f /tmp/loki.zip /tmp/loki-linux-amd64
-    - creates: /usr/local/bin/loki
+{{ github_release_system('loki', 'grafana/loki', 'loki-linux-amd64.zip', src_bin='loki-linux-amd64') }}
 
 {{ system_daemon_user('loki', '/var/lib/loki') }}
 
@@ -78,15 +70,7 @@ loki_config:
 
 # --- Promtail: log shipper to Loki ---
 {% if mon.promtail %}
-install_promtail:
-  cmd.run:
-    - name: |
-        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/grafana/loki/releases/latest | grep -oP '[^/]+$')
-        curl -sL "https://github.com/grafana/loki/releases/download/${TAG}/promtail-linux-amd64.zip" -o /tmp/promtail.zip
-        unzip -o /tmp/promtail.zip -d /tmp
-        install -m 0755 /tmp/promtail-linux-amd64 /usr/local/bin/promtail
-        rm -f /tmp/promtail.zip /tmp/promtail-linux-amd64
-    - creates: /usr/local/bin/promtail
+{{ github_release_system('promtail', 'grafana/loki', 'promtail-linux-amd64.zip', src_bin='promtail-linux-amd64') }}
 
 promtail_cache_dir:
   file.directory:
