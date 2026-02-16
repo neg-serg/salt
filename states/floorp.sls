@@ -1,4 +1,5 @@
 {% from 'host_config.jinja' import host %}
+{% from '_macros.jinja' import firefox_extension %}
 {% set user = host.user %}
 {% set home = host.home %}
 # Floorp browser: user.js + userChrome.css + userContent.css + extensions
@@ -39,13 +40,7 @@ floorp_extensions_dir:
 
 # --- Floorp extensions (download .xpi into profile) ---
 {% for ext in floorp_extensions %}
-floorp_ext_{{ ext.slug | replace('-', '_') }}:
-  cmd.run:
-    - name: curl -fsSL -o '{{ floorp_profile }}/extensions/{{ ext.id }}.xpi' 'https://addons.mozilla.org/firefox/downloads/latest/{{ ext.slug }}/latest.xpi'
-    - creates: {{ floorp_profile }}/extensions/{{ ext.id }}.xpi
-    - runas: {{ user }}
-    - require:
-      - file: floorp_extensions_dir
+{{ firefox_extension(ext, floorp_profile, require='floorp_extensions_dir', user=user) }}
 {% endfor %}
 
 # Remove extensions no longer wanted (list in packages.jinja).
@@ -60,7 +55,7 @@ floorp_remove_ext_{{ loop.index }}:
 floorp_reset_extensions_json:
   file.absent:
     - name: {{ floorp_profile }}/extensions.json
-    - require:
+    - onchanges:
       - file: floorp_user_js
 {% for ext in floorp_extensions %}
       - cmd: floorp_ext_{{ ext.slug | replace('-', '_') }}
