@@ -66,18 +66,7 @@ install_oh_my_posh:
     - creates: {{ home }}/.local/bin/oh-my-posh
 
 # --- Hyprland tools (multi-binary) ---
-install_hyprevents:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        tmpdir=$(mktemp -d)
-        cd "$tmpdir"
-        curl -fsSL https://github.com/vilari-mickopf/hyprevents/archive/refs/heads/master.tar.gz | tar xz --strip-components=1
-        install -Dm755 hyprevents event_handler event_loader -t ~/.local/bin/
-        rm -rf "$tmpdir"
-    - runas: {{ user }}
-    - shell: /bin/bash
-    - creates: {{ home }}/.local/bin/hyprevents
+{{ curl_extract_tar('hyprevents', 'https://github.com/vilari-mickopf/hyprevents/archive/refs/heads/master.tar.gz', 'hyprevents-master', binaries=['hyprevents', 'event_handler', 'event_loader'], chmod=True) }}
 
 # --- Image upscaling (version-pinned) ---
 {{ curl_extract_zip('realesrgan', 'https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan/releases/download/v' ~ ver.realesrgan ~ '/realesrgan-ncnn-vulkan-v' ~ ver.realesrgan ~ '-ubuntu.zip', 'realesrgan-ncnn-vulkan-v' ~ ver.realesrgan ~ '-ubuntu', binaries=['realesrgan-ncnn-vulkan'], chmod=True) }}
