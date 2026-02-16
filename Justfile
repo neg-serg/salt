@@ -33,3 +33,19 @@ lint:
 # Format Python scripts
 fmt:
     .venv/bin/ruff format .
+
+# Validate all states render without errors (no execution)
+validate:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    failed=0
+    for sls in states/*.sls; do
+        name="${sls#states/}"
+        name="${name%.sls}"
+        if ! sudo salt-call --local --config-dir=.salt_runtime state.show_sls "$name" --out=quiet 2>/dev/null; then
+            echo "FAILED: $name"
+            failed=$((failed + 1))
+        fi
+    done
+    echo "Validated $(ls states/*.sls | wc -l) states, $failed failed"
+    [ "$failed" -eq 0 ]
