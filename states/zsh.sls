@@ -59,12 +59,3 @@ zsh_rc:
     - group: {{ user }}
     - mode: '0644'
 
-force_zsh_neg:
-  cmd.run:
-    - name: usermod -s /usr/bin/zsh {{ user }}
-    - unless: 'test "$(getent passwd {{ user }} | cut -d: -f7)" = "/usr/bin/zsh"'
-
-force_zsh_root:
-  cmd.run:
-    - name: usermod -s /usr/bin/zsh root
-    - unless: 'test "$(getent passwd root | cut -d: -f7)" = "/usr/bin/zsh"'
