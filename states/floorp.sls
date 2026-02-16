@@ -1,7 +1,7 @@
 # Floorp browser: user.js + userChrome.css + userContent.css + extensions
 {% from 'packages.jinja' import floorp_extensions, unwanted_extensions %}
 
-{% set floorp_profile = '/home/neg/.var/app/one.ablaze.floorp/.floorp/ltjcyqj7.default-default' %}
+{% set floorp_profile = '/home/neg/.floorp/c85pjaxk.default-default' %}
 
 floorp_user_js:
   file.managed:
@@ -27,6 +27,12 @@ floorp_usercontent:
     - group: neg
     - makedirs: True
 
+floorp_extensions_dir:
+  file.directory:
+    - name: {{ floorp_profile }}/extensions
+    - user: neg
+    - group: neg
+
 # --- Floorp extensions (download .xpi into profile) ---
 {% for ext in floorp_extensions %}
 floorp_ext_{{ ext.slug | replace('-', '_') }}:
@@ -34,6 +40,8 @@ floorp_ext_{{ ext.slug | replace('-', '_') }}:
     - name: curl -fsSL -o '{{ floorp_profile }}/extensions/{{ ext.id }}.xpi' 'https://addons.mozilla.org/firefox/downloads/latest/{{ ext.slug }}/latest.xpi'
     - creates: {{ floorp_profile }}/extensions/{{ ext.id }}.xpi
     - runas: neg
+    - require:
+      - file: floorp_extensions_dir
 {% endfor %}
 
 # Remove extensions no longer wanted (list in packages.jinja).
