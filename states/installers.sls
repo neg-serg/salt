@@ -3,6 +3,8 @@
 {% set home = host.home %}
 # CLI tool installers: binaries, pip, cargo, scripts
 {% from '_macros.jinja' import curl_bin, github_tar, github_release, pip_pkg, cargo_pkg, curl_extract_tar, curl_extract_zip, run_with_error_context %}
+{% set realesrgan_ver = '0.2.0' %}
+{% set essentia_ver = '2.1_beta2' %}
 
 # --- Neovim Python dependencies (nvr + pynvim) ---
 {{ pip_pkg('neovim_python_deps', pkg='neovim-remote', bin='nvr') }}
@@ -58,11 +60,11 @@ install_hyprevents:
 {{ github_tar('camilladsp', 'https://github.com/HEnquist/camilladsp/releases/latest/download/camilladsp-linux-amd64.tar.gz') }}
 {{ github_tar('opencode', 'https://github.com/opencode-ai/opencode/releases/latest/download/opencode-linux-x86_64.tar.gz') }}
 {{ cargo_pkg('adguardian') }}
-{{ curl_extract_zip('realesrgan', 'https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan/releases/download/v0.2.0/realesrgan-ncnn-vulkan-v0.2.0-ubuntu.zip', 'realesrgan-ncnn-vulkan-v0.2.0-ubuntu', binaries=['realesrgan-ncnn-vulkan'], chmod=True) }}
+{{ curl_extract_zip('realesrgan', 'https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan/releases/download/v' ~ realesrgan_ver ~ '/realesrgan-ncnn-vulkan-v' ~ realesrgan_ver ~ '-ubuntu.zip', 'realesrgan-ncnn-vulkan-v' ~ realesrgan_ver ~ '-ubuntu', binaries=['realesrgan-ncnn-vulkan'], chmod=True) }}
 
 {% call run_with_error_context('install_essentia_extractor', creates=home ~ '/.local/bin/essentia_streaming_extractor_music') %}
 step "Downloading Essentia streaming extractor"
-curl -fsSL https://data.metabrainz.org/pub/musicbrainz/acousticbrainz/extractors/essentia-extractor-v2.1_beta2-linux-x86_64.tar.gz -o /tmp/essentia.tar.gz
+curl -fsSL https://data.metabrainz.org/pub/musicbrainz/acousticbrainz/extractors/essentia-extractor-v{{ essentia_ver }}-linux-x86_64.tar.gz -o /tmp/essentia.tar.gz
 step "Extracting archive"
 tar -xzf /tmp/essentia.tar.gz -C /tmp
 step "Installing to ~/.local/bin/"
