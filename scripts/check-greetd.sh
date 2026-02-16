@@ -1,4 +1,5 @@
 #!/bin/bash
+set -u
 # Preflight check for greetd + quickshell greeter setup
 
 RED='\033[0;31m'
