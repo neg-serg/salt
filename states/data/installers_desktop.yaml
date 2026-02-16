@@ -2,9 +2,6 @@
 # URLs with ${VER} are interpolated at render time from data/versions.yaml.
 
 curl_extract_zip:
-  roomeqwizard:
-    url: "https://www.roomeqwizard.com/installers/REW_linux_no_jre_${VER}.zip"
-    dest: "~/.local/opt/roomeqwizard"
   throne:
     url: "https://github.com/throneproj/Throne/releases/download/${VER}/Throne-${VER}-linux-amd64.zip"
     dest: "~/.local/opt/throne"
@@ -29,3 +26,4 @@ curl_bin:
 
 paru_install:
   overskride: overskride-bin
+  roomeqwizard: roomeqwizard
