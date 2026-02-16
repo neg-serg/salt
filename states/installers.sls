@@ -82,6 +82,9 @@ install_dr14_tmeter:
     - name: GIT_CONFIG_GLOBAL=/dev/null pipx install git+https://github.com/simon-r/dr14_t.meter.git
     - runas: {{ user }}
     - creates: {{ home }}/.local/bin/dr14_tmeter
+    - retry:
+        attempts: 3
+        interval: 10
 
 # --- cargo: tailray (needs dbus headers, has onlyif guards) ---
 install_tailray:
@@ -92,6 +95,9 @@ install_tailray:
     - onlyif:
       - pkg-config --exists dbus-1
       - command -v cargo
+    - retry:
+        attempts: 3
+        interval: 10
 
 # --- Script installs ---
 {{ git_clone_deploy('dool', 'https://github.com/scottchiefbaker/dool.git', '~/.local/bin', ['dool'], creates=home ~ '/.local/bin/dool', user=user, home=home) }}

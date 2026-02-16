@@ -1,5 +1,5 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import daemon_reload, pacman_install, system_daemon_user, github_release_system, service_with_unit %}
+{% from '_macros.jinja' import daemon_reload, pacman_install, system_daemon_user, github_release_system, service_with_unit, ensure_running %}
 {% set dns = host.features.dns %}
 
 # --- Unbound: recursive DNS resolver with DNSSEC + DoT ---
@@ -43,22 +43,7 @@ unbound_enabled:
       - cmd: unbound_daemon_reload
       - cmd: unbound_root_key
 
-unbound_reset_failed:
-  cmd.run:
-    - name: systemctl reset-failed unbound 2>/dev/null; true
-    - onlyif: systemctl is-failed unbound
-    - require:
-      - cmd: unbound_enabled
-
-unbound_running:
-  service.running:
-    - name: unbound
-    - watch:
-      - file: unbound_config
-      - file: unbound_restart_override
-    - require:
-      - cmd: unbound_enabled
-      - cmd: unbound_reset_failed
+{{ ensure_running('unbound', watch=['file: unbound_config', 'file: unbound_restart_override']) }}
 {% endif %}
 
 # --- AdGuardHome: DNS filtering + ad blocking ---
@@ -80,35 +65,15 @@ adguardhome_config:
 
 {{ service_with_unit('adguardhome', 'salt://units/adguardhome.service.j2', template='jinja', context={'dns_unbound': dns.unbound}, requires=['cmd: install_adguardhome', 'file: adguardhome_config']) }}
 
-adguardhome_reset_failed:
-  cmd.run:
-    - name: systemctl reset-failed adguardhome 2>/dev/null; true
-    - onlyif: systemctl is-failed adguardhome
-    - require:
-      - service: adguardhome_enabled
-
-adguardhome_running:
-  service.running:
-    - name: adguardhome
-    - watch:
-      - file: adguardhome_service
-    - require:
-      - service: adguardhome_enabled
-      - cmd: adguardhome_reset_failed
+{{ ensure_running('adguardhome', watch=['file: adguardhome_service']) }}
 
 # Configure systemd-resolved to forward to AdGuardHome
 resolved_adguardhome:
   file.managed:
     - name: /etc/systemd/resolved.conf.d/adguardhome.conf
+    - source: salt://configs/resolved-adguardhome.conf
     - makedirs: True
     - mode: '0644'
-    - contents: |
-        [Resolve]
-        DNS=127.0.0.1
-        FallbackDNS=1.1.1.1 9.9.9.9 8.8.8.8
-        Domains=~.
-        LLMNR=no
-        MulticastDNS=no
     - require:
       - service: adguardhome_running
 {% if dns.unbound %}
