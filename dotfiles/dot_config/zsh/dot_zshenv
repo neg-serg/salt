@@ -43,7 +43,7 @@ export WINEPREFIX="$XDG_DATA_HOME/wineprefixes/default"
 export XAUTHORITY="$XDG_RUNTIME_DIR/Xauthority"
 
 # --- Appearance & UI ---
-export EZA_COLORS="da=03:uu=01:gu=0:ur=0:uw=03:ux=04;38;5;24:gr=0:gx=01;38;5;24:tx=01;38;5;24;ur=00;ue=00:tr=00:tw=00:tx=00"
+export EZA_COLORS="reset:da=03:uu=01:gu=0:ur=0:uw=03:ux=04;38;5;24:gr=0:gx=01;38;5;24:ue=00:tr=00:tw=00:tx=00"
 export GREP_COLOR="37;45"
 export GREP_COLORS="ms=0;32:mc=1;33:sl=:cx=:fn=1;32:ln=1;36:bn=36:se=1;30"
 export GTK2_RC_FILES="$XDG_CONFIG_HOME/gtk-2.0/gtkrc"
@@ -118,11 +118,11 @@ export _JAVA_OPTIONS="-Djava.util.prefs.userRoot=$XDG_CONFIG_HOME/java"
 export LLVM_PROFILE_FILE="$XDG_CACHE_HOME/llvm/%h-%p-%m.profraw"
 export NPM_CONFIG_CACHE="$XDG_CACHE_HOME/npm"
 export NPM_CONFIG_INIT_MODULE="$XDG_CONFIG_HOME/npm/config/npm-init.js"
-export NPM_CONFIG_TMP="$XDG_RUNTIME_DIR/npm"
 export PARALLEL_HOME="$XDG_CONFIG_HOME/parallel"
 export PULSE_COOKIE="$XDG_CONFIG_HOME/pulse/cookie"
 export PYLINTHOME="$XDG_CONFIG_HOME/pylint"
 export TERMINFO_DIRS="$XDG_DATA_HOME/terminfo:/usr/share/terminfo"
+export RANDFILE="$XDG_CACHE_HOME/openssl/rnd"
 export VAGRANT_HOME="$XDG_DATA_HOME/vagrant"
 
 # --- Performance & System ---
