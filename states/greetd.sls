@@ -46,13 +46,7 @@ greetd_hyprland_config:
 greetd_session_wrapper:
   file.managed:
     - name: /etc/greetd/session-wrapper
-    - contents: |
-        #!/bin/sh
-        [ -f /etc/profile ] && . /etc/profile
-        set -a
-        [ -f "$HOME/.config/environment.d/10-user.conf" ] && . "$HOME/.config/environment.d/10-user.conf"
-        set +a
-        exec /usr/bin/start-hyprland
+    - source: salt://scripts/greetd-session-wrapper.sh
     - user: root
     - group: root
     - mode: '0755'

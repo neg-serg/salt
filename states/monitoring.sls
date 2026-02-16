@@ -25,14 +25,7 @@ netdata_override_dir:
 netdata_override:
   file.managed:
     - name: /etc/systemd/system/netdata.service.d/override.conf
-    - contents: |
-        [Service]
-        Nice=19
-        IOSchedulingClass=idle
-        IOSchedulingPriority=7
-        CPUWeight=10
-        IOWeight=10
-        MemoryMax=256M
+    - source: salt://units/netdata-override.conf
     - mode: '0644'
     - require:
       - file: netdata_override_dir

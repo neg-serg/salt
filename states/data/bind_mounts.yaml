@@ -1,0 +1,27 @@
+# Bind mount definitions: name → {device, target_suffix}
+# target_suffix is appended to user's home directory.
+# Used by bind_mounts.sls
+
+mail:
+  device: /mnt/zero/mail
+  target_suffix: .local/mail
+
+music:
+  device: /mnt/one/music
+  target_suffix: music
+
+vid:
+  device: /mnt/one/vid
+  target_suffix: vid
+
+doc:
+  device: /mnt/one/doc
+  target_suffix: doc
+
+torrent:
+  device: /mnt/one/torrent
+  target_suffix: torrent
+
+games:
+  device: /mnt/zero/games
+  target_suffix: games
