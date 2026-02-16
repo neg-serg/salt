@@ -208,7 +208,7 @@ vicinae_service:
         PartOf=graphical-session.target
         [Service]
         Type=simple
-        ExecStart=%h/.local/bin/vicinae-appimage server --replace
+        ExecStart=/usr/bin/vicinae server --replace
         ExecReload=/bin/kill -HUP $MAINPID
         Restart=always
         RestartSec=60

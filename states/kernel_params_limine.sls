@@ -94,3 +94,31 @@ set_kernel_params_limine:
           key="${k%%=*}"
           grep -q "$key" <<< "$current" || exit 1
         done
+
+# --- limine-snapper-sync: fix CachyOS-specific paths and OS name ---
+limine_snapper_sync_config:
+  cmd.run:
+    - name: |
+        CONF="/etc/limine-snapper-sync.conf"
+        [ -f "$CONF" ] || exit 0
+        sed -i \
+          -e 's|^#\?TARGET_OS_NAME=.*|TARGET_OS_NAME="CachyOS"|' \
+          -e 's|^ROOT_SNAPSHOTS_PATH="/@/.snapshots"|ROOT_SNAPSHOTS_PATH="/@snapshots"|' \
+          -e 's|^COMMANDS_BEFORE_SAVE=|#COMMANDS_BEFORE_SAVE=|' \
+          -e 's|^COMMANDS_AFTER_SAVE=|#COMMANDS_AFTER_SAVE=|' \
+          "$CONF"
+    - unless: |
+        CONF="/etc/limine-snapper-sync.conf"
+        [ -f "$CONF" ] || exit 0
+        grep -q '^TARGET_OS_NAME="CachyOS"' "$CONF" &&
+        grep -q '^ROOT_SNAPSHOTS_PATH="/@snapshots"' "$CONF" &&
+        ! grep -q '^COMMANDS_BEFORE_SAVE=' "$CONF" &&
+        ! grep -q '^COMMANDS_AFTER_SAVE=' "$CONF"
+
+# Ensure limine.conf uses multi-profile format (required for snapshot boot entries)
+limine_multiprofile_check:
+  cmd.run:
+    - name: echo "WARNING - limine.conf needs //KernelName sub-entries for snapshot sync"
+    - onlyif: |
+        [ -f /boot/limine.conf ] &&
+        ! grep -q '^    //' /boot/limine.conf
