@@ -14,6 +14,7 @@ user_neg:
     - shell: /usr/bin/zsh
     - uid: {{ uid }}
     - gid: {{ uid }}
+    - failhard: True
 
 plugdev_group:
   group.present:
