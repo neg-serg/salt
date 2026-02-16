@@ -23,7 +23,6 @@ install_oh_my_posh:
     - creates: {{ home }}/.local/bin/oh-my-posh
 
 {{ curl_bin('aliae', 'https://github.com/JanDeDobbeleer/aliae/releases/latest/download/aliae-linux-amd64') }}
-
 {{ curl_bin('grimblast', 'https://raw.githubusercontent.com/hyprwm/contrib/main/grimblast/grimblast') }}
 
 install_hyprevents:
@@ -40,57 +39,36 @@ install_hyprevents:
     - creates: {{ home }}/.local/bin/hyprevents
 
 {{ curl_bin('hyprprop', 'https://raw.githubusercontent.com/vilari-mickopf/hyprprop/master/hyprprop') }}
-
 {{ github_release('sops', 'getsops/sops', 'sops-${TAG}.linux.amd64') }}
-
 {{ curl_bin('xdg-ninja', 'https://github.com/b3nj5m1n/xdg-ninja/releases/latest/download/xdgnj') }}
-
 {{ github_release('rmpc', 'mierak/rmpc', 'rmpc-${TAG}-x86_64-unknown-linux-gnu.tar.gz', format='tar.gz') }}
-
 {{ cargo_pkg('rustmission') }}
-
 {{ pip_pkg('httpstat') }}
-
 {{ curl_bin('ssh-to-age', 'https://github.com/Mic92/ssh-to-age/releases/latest/download/ssh-to-age.linux-amd64') }}
-
 {{ curl_extract_zip('yazi', 'https://github.com/sxyazi/yazi/releases/latest/download/yazi-x86_64-unknown-linux-musl.zip', 'yazi-x86_64-unknown-linux-musl', binaries=['yazi', 'ya']) }}
-
 {{ curl_bin('broot', 'https://dystroy.org/broot/download/x86_64-linux/broot') }}
-
 {{ curl_extract_tar('nushell', 'https://github.com/nushell/nushell/releases/latest/download/nu-${TAG}-x86_64-unknown-linux-musl.tar.gz', 'nu-*-x86_64-unknown-linux-musl/nu*', fetch_tag=True, binaries=['nu', 'nu_plugin_*']) }}
-
 {{ github_tar('eza', 'https://github.com/eza-community/eza/releases/latest/download/eza_x86_64-unknown-linux-musl.tar.gz') }}
-
 {{ github_release('television', 'alexpasmantier/television', 'tv-${TAG}-x86_64-unknown-linux-musl.tar.gz', bin='tv', format='tar.gz') }}
 
 # --- GitHub binary downloads (remaining migration packages) ---
 {{ curl_extract_zip('xray', 'https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip', 'xray', chmod=True) }}
-
 {{ github_release('sing-box', 'SagerNet/sing-box', 'sing-box-${VER}-linux-amd64.tar.gz', format='tar.gz', strip_v=True) }}
-
 {{ github_tar('tdl', 'https://github.com/iyear/tdl/releases/latest/download/tdl_Linux_64bit.tar.gz') }}
-
 {{ github_tar('camilladsp', 'https://github.com/HEnquist/camilladsp/releases/latest/download/camilladsp-linux-amd64.tar.gz') }}
-
 {{ github_tar('opencode', 'https://github.com/opencode-ai/opencode/releases/latest/download/opencode-linux-x86_64.tar.gz') }}
-
 {{ cargo_pkg('adguardian') }}
-
 {{ curl_extract_zip('realesrgan', 'https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan/releases/download/v0.2.0/realesrgan-ncnn-vulkan-v0.2.0-ubuntu.zip', 'realesrgan-ncnn-vulkan-v0.2.0-ubuntu', binaries=['realesrgan-ncnn-vulkan'], chmod=True) }}
 
 {% call run_with_error_context('install_essentia_extractor', creates=home ~ '/.local/bin/essentia_streaming_extractor_music') %}
 step "Downloading Essentia streaming extractor"
 curl -fsSL https://data.metabrainz.org/pub/musicbrainz/acousticbrainz/extractors/essentia-extractor-v2.1_beta2-linux-x86_64.tar.gz -o /tmp/essentia.tar.gz
-
 step "Extracting archive"
 tar -xzf /tmp/essentia.tar.gz -C /tmp
-
 step "Installing to ~/.local/bin/"
 install -m755 /tmp/streaming_extractor_music ~/.local/bin/essentia_streaming_extractor_music
-
 step "Cleaning up"
 rm -f /tmp/essentia.tar.gz
-
 success "Essentia streaming extractor installed"
 {%- endcall %}
 
@@ -154,13 +132,8 @@ install_blesh:
     - shell: /bin/bash
     - creates: {{ home }}/.local/share/ble.sh
 
-# --- hishtory (synced shell history search) ---
 {{ github_release('hishtory', 'ddworken/hishtory', 'hishtory-linux-amd64') }}
-
-# --- iwmenu (interactive Wi-Fi menu for iwd/Wayland) ---
 {{ cargo_pkg('iwmenu', git='https://github.com/e-tho/iwmenu') }}
-
-# --- rofi-pass (password-store rofi frontend) ---
 {{ curl_bin('rofi-pass', 'https://raw.githubusercontent.com/carnager/rofi-pass/master/rofi-pass') }}
 
 # --- MPV scripts (installed per-user) ---

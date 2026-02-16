@@ -25,7 +25,6 @@
 # ===================================================================
 
 # --- SF Pro Display (Apple) — hyprlock SF_Pro / Arfan_on_Clouds themes ---
-
 {{ fonts_dir }}/SFProDisplay:
   file.directory:
     - user: {{ user }}
@@ -47,7 +46,6 @@ install_sf_pro_display:
       - file: {{ fonts_dir }}/SFProDisplay
 
 # --- Anurati — hyprlock Anurati theme ---
-
 {{ fonts_dir }}/Anurati:
   file.directory:
     - user: {{ user }}
@@ -69,7 +67,6 @@ install_anurati:
       - file: {{ fonts_dir }}/Anurati
 
 # --- Alfa Slab One — hyprlock Arfan_on_Clouds theme ---
-
 {{ fonts_dir }}/AlfaSlabOne:
   file.directory:
     - user: {{ user }}

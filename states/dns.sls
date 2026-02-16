@@ -65,7 +65,6 @@ unbound_running:
 # --- AdGuardHome: DNS filtering + ad blocking ---
 {% if dns.adguardhome %}
 {{ github_release_system('adguardhome', 'AdguardTeam/AdGuardHome', 'AdGuardHome_linux_amd64.tar.gz', src_bin='AdGuardHome', format='tar.gz') }}
-
 {{ system_daemon_user('adguardhome', '/var/lib/adguardhome') }}
 
 adguardhome_config:
