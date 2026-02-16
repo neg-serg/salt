@@ -1,4 +1,5 @@
 {% from 'host_config.jinja' import host %}
+{% from '_macros.jinja' import daemon_reload %}
 {% set user = host.user %}
 {% set home = host.home %}
 # Ollama LLM server: systemd service, model pulls
@@ -24,11 +25,14 @@ ollama_models_dir:
     - require:
       - mount: mount_one
 
-ollama_enable:
-  cmd.run:
-    - name: systemctl daemon-reload && systemctl enable ollama
-    - onchanges:
+{{ daemon_reload('ollama', ['file: ollama_service_unit']) }}
+
+ollama_enabled:
+  service.enabled:
+    - name: ollama
+    - require:
       - file: ollama_service_unit
+      - cmd: ollama_daemon_reload
     - onlyif: command -v ollama
 
 ollama_start:
@@ -45,7 +49,7 @@ ollama_start:
     - shell: /bin/bash
     - unless: curl -sf http://127.0.0.1:11434/api/tags >/dev/null 2>&1
     - require:
-      - cmd: ollama_enable
+      - service: ollama_enabled
 
 {% for model in ['deepseek-r1:8b', 'llama3.2:3b', 'qwen2.5-coder:7b'] %}
 pull_{{ model | replace('.', '_') | replace(':', '_') | replace('-', '_') }}:

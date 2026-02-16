@@ -35,9 +35,8 @@ unbound_restart_override:
 {{ daemon_reload('unbound', ['cmd: install_unbound', 'file: unbound_restart_override']) }}
 
 unbound_enabled:
-  cmd.run:
-    - name: systemctl enable unbound
-    - onlyif: systemctl list-unit-files unbound.service | grep -q unbound
+  service.enabled:
+    - name: unbound
     - require:
       - cmd: install_unbound
       - file: unbound_config
