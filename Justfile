@@ -11,7 +11,7 @@ dry-run:
 # Re-bootstrap the salt environment
 bootstrap:
     python3 -m venv .venv
-    .venv/bin/pip install ruff
+    .venv/bin/pip install ruff jinja2 pyyaml
     ./apply_config.sh --dry-run
 
 # Show salt state info
@@ -33,6 +33,18 @@ lint:
 # Format Python scripts
 fmt:
     .venv/bin/ruff format .
+
+# List all tools with install status
+tools:
+    .venv/bin/python3 scripts/update-tools.py
+
+# Check for available GitHub release updates
+check-updates:
+    .venv/bin/python3 scripts/update-tools.py --check
+
+# Update tools (specify names or --all)
+update-tools *ARGS:
+    .venv/bin/python3 scripts/update-tools.py --update {{ARGS}}
 
 # Validate all states render without errors (no execution)
 validate:
