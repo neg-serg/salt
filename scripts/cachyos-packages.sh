@@ -316,9 +316,11 @@ PACMAN_PKGS=(
     corectrl            # AMD GPU/CPU control panel
     hunspell-ru         # Russian spellcheck dictionary
     nuspell             # modern spellchecker
-    kvantum             # SVG-based Qt theme engine
+    kvantum             # SVG-based Qt6 theme engine
+    kvantum-qt5         # SVG-based Qt5 theme engine
     openrgb             # RGB lighting control
     qt5ct               # Qt5 appearance configuration tool
+    qt6ct               # Qt6 appearance configuration tool
     texlive-basic       # TeX Live base distribution
 
     # --- Python ---
