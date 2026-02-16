@@ -1,9 +1,16 @@
+{% from 'host_config.jinja' import host %}
+{% set user = host.user %}
+{% set home = host.home %}
 # Ollama LLM server: systemd service, model pulls
 
 ollama_service_unit:
   file.managed:
     - name: /etc/systemd/system/ollama.service
     - source: salt://units/ollama.service
+    - template: jinja
+    - context:
+        user: {{ user }}
+        home: {{ home }}
     - user: root
     - group: root
     - mode: '0644'
@@ -11,8 +18,8 @@ ollama_service_unit:
 ollama_models_dir:
   file.directory:
     - name: /mnt/one/ollama/models
-    - user: neg
-    - group: neg
+    - user: {{ user }}
+    - group: {{ user }}
     - makedirs: True
     - require:
       - mount: mount_one
@@ -68,5 +75,5 @@ pull_{{ model | replace('.', '_') | replace(':', '_') | replace('-', '_') }}:
 install_openclaw:
   cmd.run:
     - name: npm install -g openclaw
-    - runas: neg
-    - creates: /home/neg/.npm-global/bin/openclaw
+    - runas: {{ user }}
+    - creates: {{ home }}/.npm-global/bin/openclaw

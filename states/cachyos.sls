@@ -1,3 +1,5 @@
+{% from 'host_config.jinja' import host %}
+{% set user = host.user %}
 # CachyOS bootstrap verification state
 # Validates that bootstrap-cachyos.sh + cachyos-packages.sh completed correctly.
 # Run: sudo salt-call --local state.apply cachyos
@@ -9,19 +11,19 @@
 
 cachyos_user_neg:
   user.present:
-    - name: neg
+    - name: {{ user }}
     - shell: /bin/zsh
     - groups:
       - wheel
 
 cachyos_sudo_nopasswd:
   file.exists:
-    - name: /etc/sudoers.d/99-neg-nopasswd
+    - name: /etc/sudoers.d/99-{{ user }}-nopasswd
 
 cachyos_sudo_nopasswd_content:
   cmd.run:
     - name: 'true'
-    - unless: "grep -q 'neg ALL=(ALL) NOPASSWD: ALL' /etc/sudoers.d/99-neg-nopasswd"
+    - unless: "grep -q '{{ user }} ALL=(ALL) NOPASSWD: ALL' /etc/sudoers.d/99-{{ user }}-nopasswd"
 
 cachyos_wheel_sudoers:
   cmd.run:
@@ -255,7 +257,7 @@ cachyos_custom_{{ pkg | replace('-', '_') }}:
 cachyos_zsh_neg:
   cmd.run:
     - name: 'true'
-    - unless: 'test "$(getent passwd neg | cut -d: -f7)" = "/bin/zsh"'
+    - unless: 'test "$(getent passwd {{ user }} | cut -d: -f7)" = "/bin/zsh"'
 
 cachyos_zsh_root:
   cmd.run:
