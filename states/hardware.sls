@@ -33,16 +33,9 @@ fancontrol_reapply_script:
     - context:
         cpu_vendor: {{ host.get('cpu_vendor', '') }}
 
-fancontrol_setup_service:
-  file.managed:
-    - name: /etc/systemd/system/fancontrol-setup.service
-    - source: salt://units/fancontrol-setup.service.j2
-    - template: jinja
-    - context:
-        gpu_enable: {{ 'true' if host.get('cpu_vendor', '') == 'amd' else 'false' }}
-    - mode: '0644'
+{{ service_with_unit('fancontrol-setup', 'salt://units/fancontrol-setup.service.j2', template='jinja', context={'gpu_enable': 'true' if host.get('cpu_vendor', '') == 'amd' else 'false'}, enabled=None) }}
 
-{{ service_with_unit('fancontrol', 'salt://units/fancontrol.service', requires=['file: fancontrol_setup_service', 'file: fancontrol_setup_script']) }}
+{{ service_with_unit('fancontrol', 'salt://units/fancontrol.service', requires=['cmd: fancontrol-setup_daemon_reload', 'file: fancontrol_setup_script']) }}
 
 # Load nct6775 kernel module for motherboard PWM fan control
 nct6775_module:
