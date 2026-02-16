@@ -77,23 +77,23 @@ install_amnezia_vpn:
     - require:
       - cmd: build_amnezia_all
 
-# Verification
+# Verification (only runs when the binary actually changed)
 verify_amneziawg_go:
   cmd.run:
     - name: {{ home }}/.local/bin/amneziawg-go --version
-    - require:
+    - onchanges:
       - file: install_amneziawg_go
 
 verify_awg:
   cmd.run:
     - name: {{ home }}/.local/bin/awg --version
-    - require:
+    - onchanges:
       - file: install_amneziawg_tools
 
 verify_amnezia_vpn:
   cmd.run:
     - name: ldd {{ home }}/.local/bin/AmneziaVPN
-    - require:
+    - onchanges:
       - file: install_amnezia_vpn
 
 {{ home }}/.local/share/applications:

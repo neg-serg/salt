@@ -16,175 +16,78 @@ cachyos_user_neg:
     - groups:
       - wheel
 
-cachyos_sudo_nopasswd:
+# ===================================================================
+# Files that must exist
+# ===================================================================
+
+{% set required_files = {
+    'sudo_nopasswd':  '/etc/sudoers.d/99-' ~ user ~ '-nopasswd',
+    'vconsole':       '/etc/vconsole.conf',
+    'limine_conf':    '/boot/limine.conf',
+    'limine_efi':     '/boot/EFI/BOOT/BOOTX64.EFI',
+    'snapper_config': '/etc/snapper/configs/root',
+    'mirrorlist_v4':  '/etc/pacman.d/cachyos-v4-mirrorlist',
+    'mirrorlist':     '/etc/pacman.d/cachyos-mirrorlist',
+    'nm_iwd_backend': '/etc/NetworkManager/conf.d/wifi-iwd.conf',
+} %}
+
+{% for name, path in required_files.items() %}
+cachyos_{{ name }}:
   file.exists:
-    - name: /etc/sudoers.d/99-{{ user }}-nopasswd
-
-cachyos_sudo_nopasswd_content:
-  cmd.run:
-    - name: 'true'
-    - unless: "grep -q '{{ user }} ALL=(ALL) NOPASSWD: ALL' /etc/sudoers.d/99-{{ user }}-nopasswd"
-
-cachyos_wheel_sudoers:
-  cmd.run:
-    - name: 'true'
-    - unless: grep -q '^%wheel ALL=(ALL:ALL) ALL' /etc/sudoers
+    - name: {{ path }}
+{% endfor %}
 
 # ===================================================================
-# Locale, Timezone, Hostname
+# Configuration & content verification checks
 # ===================================================================
 
-cachyos_timezone:
+{% set verify_checks = {
+    'sudo_nopasswd_content': "grep -q '" ~ user ~ " ALL=(ALL) NOPASSWD: ALL' /etc/sudoers.d/99-" ~ user ~ "-nopasswd",
+    'wheel_sudoers':         "grep -q '^%wheel ALL=(ALL:ALL) ALL' /etc/sudoers",
+    'timezone':              'readlink /etc/localtime | grep -q Europe/Moscow',
+    'locale':                "grep -q '^LANG=en_US.UTF-8' /etc/locale.conf",
+    'hostname':              "grep -q '^cachyos' /etc/hostname",
+    'hosts':                 "grep -q 'cachyos' /etc/hosts",
+    'limine_conf_content':   "grep -q 'vmlinuz-linux-cachyos-lts' /boot/limine.conf",
+    'snapper_registered':    "grep -q 'root' /etc/conf.d/snapper 2>/dev/null",
+    'mkinitcpio_lvm2_hook':  "grep -q 'lvm2' /etc/mkinitcpio.conf",
+    'mkinitcpio_zstd':       "grep -q '^COMPRESSION=\"zstd\"' /etc/mkinitcpio.conf",
+    'initramfs_exists':      'test -f /boot/initramfs-linux-cachyos-lts.img',
+    'pacman_v4_arch':        "grep -q 'x86_64_v4' /etc/pacman.conf",
+    'repo_znver4':           "grep -q '^\\[cachyos-znver4\\]' /etc/pacman.conf",
+    'repo_core_znver4':      "grep -q '^\\[cachyos-core-znver4\\]' /etc/pacman.conf",
+    'repo_extra_znver4':     "grep -q '^\\[cachyos-extra-znver4\\]' /etc/pacman.conf",
+    'repo_cachyos':          "grep -q '^\\[cachyos\\]' /etc/pacman.conf",
+    'nm_iwd_backend_content': "grep -q 'wifi.backend=iwd' /etc/NetworkManager/conf.d/wifi-iwd.conf",
+    'resolv_conf':           'test -s /etc/resolv.conf',
+    'zsh_neg':               'test "$(getent passwd ' ~ user ~ ' | cut -d: -f7)" = "/bin/zsh"',
+    'zsh_root':              'test "$(getent passwd root | cut -d: -f7)" = "/bin/zsh"',
+} %}
+
+{% for name, check in verify_checks.items() %}
+cachyos_{{ name }}:
   cmd.run:
     - name: 'true'
-    - unless: readlink /etc/localtime | grep -q Europe/Moscow
-
-cachyos_locale:
-  cmd.run:
-    - name: 'true'
-    - unless: grep -q '^LANG=en_US.UTF-8' /etc/locale.conf
-
-cachyos_hostname:
-  cmd.run:
-    - name: 'true'
-    - unless: grep -q '^cachyos' /etc/hostname
-
-cachyos_vconsole:
-  file.exists:
-    - name: /etc/vconsole.conf
-
-cachyos_hosts:
-  cmd.run:
-    - name: 'true'
-    - unless: grep -q 'cachyos' /etc/hosts
+    - unless: '{{ check | replace("'", "''") }}'
+{% endfor %}
 
 # ===================================================================
-# Bootloader (Limine)
+# Services that must be enabled
 # ===================================================================
 
-cachyos_limine_conf:
-  file.exists:
-    - name: /boot/limine.conf
+{% set enabled_services = {
+    'networkmanager':    'NetworkManager',
+    'iwd':              'iwd',
+    'sshd':             'sshd',
+    'snapper_timeline': 'snapper-timeline.timer',
+    'snapper_cleanup':  'snapper-cleanup.timer',
+} %}
 
-cachyos_limine_efi:
-  file.exists:
-    - name: /boot/EFI/BOOT/BOOTX64.EFI
-
-cachyos_limine_conf_content:
-  cmd.run:
-    - name: 'true'
-    - unless: grep -q 'vmlinuz-linux-cachyos-lts' /boot/limine.conf
-
-# ===================================================================
-# Btrfs & Snapper
-# ===================================================================
-
-cachyos_snapper_config:
-  file.exists:
-    - name: /etc/snapper/configs/root
-
-cachyos_snapper_registered:
-  cmd.run:
-    - name: 'true'
-    - unless: grep -q 'root' /etc/conf.d/snapper 2>/dev/null
-
-# ===================================================================
-# Initramfs
-# ===================================================================
-
-cachyos_mkinitcpio_lvm2_hook:
-  cmd.run:
-    - name: 'true'
-    - unless: grep -q 'lvm2' /etc/mkinitcpio.conf
-
-cachyos_mkinitcpio_zstd:
-  cmd.run:
-    - name: 'true'
-    - unless: grep -q '^COMPRESSION="zstd"' /etc/mkinitcpio.conf
-
-cachyos_initramfs_exists:
-  cmd.run:
-    - name: 'true'
-    - unless: test -f /boot/initramfs-linux-cachyos-lts.img
-
-# ===================================================================
-# Pacman & Repos
-# ===================================================================
-
-cachyos_pacman_v4_arch:
-  cmd.run:
-    - name: 'true'
-    - unless: grep -q 'x86_64_v4' /etc/pacman.conf
-
-cachyos_repo_znver4:
-  cmd.run:
-    - name: 'true'
-    - unless: grep -q '^\[cachyos-znver4\]' /etc/pacman.conf
-
-cachyos_repo_core_znver4:
-  cmd.run:
-    - name: 'true'
-    - unless: grep -q '^\[cachyos-core-znver4\]' /etc/pacman.conf
-
-cachyos_repo_extra_znver4:
-  cmd.run:
-    - name: 'true'
-    - unless: grep -q '^\[cachyos-extra-znver4\]' /etc/pacman.conf
-
-cachyos_repo_cachyos:
-  cmd.run:
-    - name: 'true'
-    - unless: grep -q '^\[cachyos\]' /etc/pacman.conf
-
-cachyos_mirrorlist_v4:
-  file.exists:
-    - name: /etc/pacman.d/cachyos-v4-mirrorlist
-
-cachyos_mirrorlist:
-  file.exists:
-    - name: /etc/pacman.d/cachyos-mirrorlist
-
-# ===================================================================
-# Services
-# ===================================================================
-
-cachyos_svc_networkmanager:
+{% for id_suffix, svc in enabled_services.items() %}
+cachyos_svc_{{ id_suffix }}:
   service.enabled:
-    - name: NetworkManager
-
-cachyos_svc_iwd:
-  service.enabled:
-    - name: iwd
-
-cachyos_svc_sshd:
-  service.enabled:
-    - name: sshd
-
-cachyos_svc_snapper_timeline:
-  service.enabled:
-    - name: snapper-timeline.timer
-
-cachyos_svc_snapper_cleanup:
-  service.enabled:
-    - name: snapper-cleanup.timer
-
-# ===================================================================
-# Networking
-# ===================================================================
-
-cachyos_nm_iwd_backend:
-  file.exists:
-    - name: /etc/NetworkManager/conf.d/wifi-iwd.conf
-
-cachyos_nm_iwd_backend_content:
-  cmd.run:
-    - name: 'true'
-    - unless: grep -q 'wifi.backend=iwd' /etc/NetworkManager/conf.d/wifi-iwd.conf
-
-cachyos_resolv_conf:
-  cmd.run:
-    - name: 'true'
-    - unless: test -s /etc/resolv.conf
+    - name: {{ svc }}
+{% endfor %}
 
 # ===================================================================
 # Key packages (spot-check representative set from each category)
@@ -249,17 +152,3 @@ cachyos_custom_{{ pkg | replace('-', '_') }}:
     - name: 'true'
     - unless: pacman -Q {{ pkg }} >/dev/null 2>&1
 {% endfor %}
-
-# ===================================================================
-# Zsh configuration
-# ===================================================================
-
-cachyos_zsh_neg:
-  cmd.run:
-    - name: 'true'
-    - unless: 'test "$(getent passwd {{ user }} | cut -d: -f7)" = "/bin/zsh"'
-
-cachyos_zsh_root:
-  cmd.run:
-    - name: 'true'
-    - unless: 'test "$(getent passwd root | cut -d: -f7)" = "/bin/zsh"'
