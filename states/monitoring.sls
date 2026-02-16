@@ -43,7 +43,6 @@ netdata_override:
 # --- Loki: log aggregation ---
 {% if mon.loki %}
 {{ github_release_system('loki', 'grafana/loki', 'loki-linux-amd64.zip', src_bin='loki-linux-amd64') }}
-
 {{ system_daemon_user('loki', '/var/lib/loki') }}
 
 loki_subdirs:
@@ -71,7 +70,6 @@ loki_config:
 # --- Promtail: log shipper to Loki ---
 {% if mon.promtail %}
 {{ github_release_system('promtail', 'grafana/loki', 'promtail-linux-amd64.zip', src_bin='promtail-linux-amd64') }}
-
 promtail_cache_dir:
   file.directory:
     - name: /var/cache/promtail

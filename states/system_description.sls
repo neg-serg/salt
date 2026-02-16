@@ -203,7 +203,6 @@ btrfs_compress_var:
     - name: btrfs property set /var compression zstd:-1
     - unless: btrfs property get /var compression 2>/dev/null | grep -q 'zstd:-1'
 
-
 # --- SSH directory setup ---
 ssh_dir:
   file.directory:

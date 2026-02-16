@@ -21,7 +21,6 @@ install_oldschool_pc_fonts:
 
 # --- matugen (Material You color generation) ---
 {{ github_tar('matugen', 'https://github.com/InioX/matugen/releases/download/v3.1.0/matugen-3.1.0-x86_64.tar.gz') }}
-
 install_matugen_themes:
   cmd.run:
     - name: |

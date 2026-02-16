@@ -53,7 +53,6 @@ install_nyxt:
 
 # --- Open Sound Meter (FFT acoustic analysis, AppImage) ---
 {{ curl_bin('opensoundmeter', 'https://github.com/psmokotnin/osm/releases/download/v1.5.2/Open_Sound_Meter-v1.5.2-x86_64.AppImage') }}
-
 # --- DroidCam (phone as webcam via v4l2loopback) ---
 # v4l2loopback-dkms installed via pacman outside Salt
 install_droidcam:
