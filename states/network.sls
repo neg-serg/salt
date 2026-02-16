@@ -1,5 +1,5 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import daemon_reload %}
+{% from '_macros.jinja' import daemon_reload, service_with_unit %}
 {% set net = host.features.network %}
 
 # --- VM Bridge: br0 for KVM/libvirt VMs ---
@@ -41,23 +41,8 @@ xray_config_dir:
     - mode: '0750'
     - makedirs: True
 
-xray_service:
-  file.managed:
-    - name: /etc/systemd/system/xray.service
-    - mode: '0644'
-    - source: salt://units/xray.service
-    - template: jinja
-    - context:
-        home: {{ host.home }}
-
-{{ daemon_reload('xray', ['file: xray_service']) }}
-
 # Not enabled by default — needs config.json with secrets from gopass
-xray_not_enabled:
-  service.disabled:
-    - name: xray
-    - require:
-      - file: xray_service
+{{ service_with_unit('xray', 'salt://units/xray.service', template='jinja', context={'home': host.home}, enabled=False) }}
 {% endif %}
 
 # --- Sing-box: TUN proxy (manual start) ---
