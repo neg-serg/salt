@@ -1,7 +1,6 @@
 {% from 'host_config.jinja' import host %}
 {% set user = host.user %}
 {% set home = host.home %}
-{% set runtime_dir = '/run/user/' ~ host.uid|string %}
 # MPD Native Deployment
 # Salt state for setting up MPD with systemd user service and pipewire output
 {% if host.features.mpd %}
@@ -74,8 +73,8 @@ mpd_enabled:
     - name: systemctl --user enable --now mpd.service
     - runas: {{ user }}
     - env:
-      - XDG_RUNTIME_DIR: {{ runtime_dir }}
-      - DBUS_SESSION_BUS_ADDRESS: unix:path={{ runtime_dir }}/bus
+      - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
+      - DBUS_SESSION_BUS_ADDRESS: unix:path={{ host.runtime_dir }}/bus
     - require:
       - file: mpd_config
       - file: mpd_directories
@@ -126,8 +125,8 @@ mpd_companion_services:
         {% endraw %}
     - runas: {{ user }}
     - env:
-      - XDG_RUNTIME_DIR: {{ runtime_dir }}
-      - DBUS_SESSION_BUS_ADDRESS: unix:path={{ runtime_dir }}/bus
+      - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
+      - DBUS_SESSION_BUS_ADDRESS: unix:path={{ host.runtime_dir }}/bus
     - shell: /bin/bash
     - require:
       - cmd: mpd_enabled

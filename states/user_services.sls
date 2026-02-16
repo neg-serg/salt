@@ -2,7 +2,6 @@
 {% from '_macros.jinja' import user_service %}
 {% set user = host.user %}
 {% set home = host.home %}
-{% set runtime_dir = '/run/user/' ~ host.uid|string %}
 # Systemd user services: mail, calendar, chezmoi, media, surfingkeys
 
 # --- Systemd user services for media ---
@@ -29,7 +28,7 @@ mpdris2_daemon_reload:
     - name: systemctl --user daemon-reload
     - runas: {{ user }}
     - env:
-      - XDG_RUNTIME_DIR: {{ runtime_dir }}
+      - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
     - onchanges:
       - file: mpdris2_user_service
 
@@ -189,8 +188,8 @@ enable_user_services:
         systemctl --user enable --now mbsync-gmail.timer vdirsyncer.timer
     - runas: {{ user }}
     - env:
-      - XDG_RUNTIME_DIR: {{ runtime_dir }}
-      - DBUS_SESSION_BUS_ADDRESS: unix:path={{ runtime_dir }}/bus
+      - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
+      - DBUS_SESSION_BUS_ADDRESS: unix:path={{ host.runtime_dir }}/bus
     - unless: |
         systemctl --user is-enabled imapnotify-gmail.service 2>/dev/null &&
         systemctl --user is-enabled mbsync-gmail.timer 2>/dev/null &&

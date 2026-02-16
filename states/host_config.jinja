@@ -95,3 +95,5 @@
 {# Build merged host config: host-specific values override defaults (recursive deep merge) #}
 {% set current_host = aliases.get(grains['host'], grains['host']) %}
 {% set host = salt['slsutil.merge'](defaults, hosts.get(current_host, {}), strategy='recurse') %}
+{# Derived fields (depend on merged values, so computed after merge) #}
+{% do host.update({'runtime_dir': '/run/user/' ~ host.uid|string}) %}
