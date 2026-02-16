@@ -1,36 +1,15 @@
 # Salt state to build and install custom packages from local PKGBUILDs
 # These packages are not in official repos or AUR and require local builds
 {% from 'host_config.jinja' import host %}
+{% from '_macros.jinja' import pkgbuild_install %}
 {% set user = host.user %}
 {% set build_base = '/tmp/pkgbuild' %}
 
 # --- Simple PKGBUILDs (self-contained, download source from GitHub) ---
-{% set simple_pkgs = ['raise', 'richcolors', 'albumdetails'] %}
-
-{% for pkg in simple_pkgs %}
-{% set safe = pkg | replace('-', '_') %}
-{{ safe }}_pkgbuild:
-  file.recurse:
-    - name: {{ build_base }}/{{ pkg }}
-    - source: salt://build/pkgbuilds/{{ pkg }}
-    - makedirs: True
-    - user: {{ user }}
-    - group: {{ user }}
-
-build_{{ safe }}:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        su - {{ user }} -c 'cd {{ build_base }}/{{ pkg }} && makepkg -sf --noconfirm'
-        pacman -U --noconfirm --needed {{ build_base }}/{{ pkg }}/*.pkg.tar.zst
-        rm -rf {{ build_base }}/{{ pkg }}
-    - shell: /bin/bash
-    - timeout: 600
-    - unless: pacman -Q {{ pkg }}
-    - require:
-      - file: {{ safe }}_pkgbuild
-
+{% for pkg in ['raise', 'richcolors', 'albumdetails'] %}
+{{ pkgbuild_install(pkg, 'salt://build/pkgbuilds/' ~ pkg, user=user) }}
 {% endfor %}
+
 # --- duf (neg-serg fork with --style plain, replaces stock duf) ---
 duf_pkgbuild:
   file.recurse:
