@@ -408,11 +408,13 @@ install_{{ name }}:
    template: 'jinja' (default None) to render the unit file as a Jinja template.
    context: dict of template variables (default None), used with template='jinja'.
    onlyif: guard for service.enabled (default None), e.g. 'command -v ollama'.
+   companion: optional second unit source for service+timer pairs (daemon-reload watches both).
    Usage: {{ service_with_unit('loki', 'salt://units/loki.service', requires=['cmd: install_loki', 'file: loki_config']) }}
           {{ service_with_unit('ollama', 'salt://units/ollama.service', template='jinja', context={'user': user, 'home': home}, onlyif='command -v ollama') }}
           {{ service_with_unit('xray', 'salt://units/xray.service', enabled=False) }}
+          {{ service_with_unit('duckdns-update', 'salt://units/duckdns-update.timer', unit_type='timer', enabled=False, companion='salt://units/duckdns-update.service') }}
 #}
-{%- macro service_with_unit(name, source, unit_type='service', running=False, enabled=True, requires=None, template=None, context=None, onlyif=None) -%}
+{%- macro service_with_unit(name, source, unit_type='service', running=False, enabled=True, requires=None, template=None, context=None, onlyif=None, companion=None) -%}
 {{ name }}_service:
   file.managed:
     - name: /etc/systemd/system/{{ name }}.{{ unit_type }}
@@ -427,12 +429,32 @@ install_{{ name }}:
         {{ key }}: {{ val }}
 {%- endfor %}
 {%- endif %}
+{%- if companion %}
+
+{{ name }}_companion:
+  file.managed:
+    - name: /etc/systemd/system/{{ name }}.{{ 'service' if unit_type != 'service' else 'timer' }}
+    - mode: '0644'
+    - source: {{ companion }}
+{%- if template %}
+    - template: {{ template }}
+{%- endif %}
+{%- if context %}
+    - context:
+{%- for key, val in context.items() %}
+        {{ key }}: {{ val }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
 
 {{ name }}_daemon_reload:
   cmd.run:
     - name: systemctl daemon-reload
     - onchanges:
       - file: {{ name }}_service
+{%- if companion %}
+      - file: {{ name }}_companion
+{%- endif %}
 {%- if enabled is not none %}
 
 {{ name }}_{{ 'enabled' if enabled else 'disabled' }}:

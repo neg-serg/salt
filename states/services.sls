@@ -75,24 +75,6 @@ duckdns_script:
     - mode: '0755'
     - source: salt://scripts/duckdns-update.sh
 
-duckdns_service:
-  file.managed:
-    - name: /etc/systemd/system/duckdns-update.service
-    - mode: '0644'
-    - source: salt://units/duckdns-update.service
-
-duckdns_timer:
-  file.managed:
-    - name: /etc/systemd/system/duckdns-update.timer
-    - mode: '0644'
-    - source: salt://units/duckdns-update.timer
-
-{{ daemon_reload('duckdns', ['file: duckdns_service', 'file: duckdns_timer']) }}
-
 # Timer disabled by default — enable after creating /etc/duckdns.env
-duckdns_not_enabled:
-  service.disabled:
-    - name: duckdns-update.timer
-    - require:
-      - file: duckdns_timer
+{{ service_with_unit('duckdns-update', 'salt://units/duckdns-update.timer', unit_type='timer', enabled=False, companion='salt://units/duckdns-update.service') }}
 {% endif %}
