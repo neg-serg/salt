@@ -17,18 +17,18 @@
    Usage: {{ curl_bin('aliae', 'https://github.com/.../aliae-linux-amd64') }}
           {{ curl_bin('xdg-ninja', 'https://github.com/.../xdgnj') }}
 #}
-{%- macro curl_bin(name, url) -%}
+{%- macro curl_bin(name, url, user='neg', home='/home/neg') -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: curl -fsSL {{ url }} -o ~/.local/bin/{{ name }} && chmod +x ~/.local/bin/{{ name }}
-    - runas: neg
-    - creates: /home/neg/.local/bin/{{ name }}
+    - runas: {{ user }}
+    - creates: {{ home }}/.local/bin/{{ name }}
 {%- endmacro -%}
 
 {# Download tar.gz, extract single binary to ~/.local/bin/.
    Usage: {{ github_tar('eza', 'https://github.com/.../eza_x86_64.tar.gz') }}
 #}
-{%- macro github_tar(name, url) -%}
+{%- macro github_tar(name, url, user='neg', home='/home/neg') -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: |
@@ -38,9 +38,9 @@ install_{{ name | replace('-', '_') }}:
         tar -xzf "$TMPDIR/archive.tar.gz" -C "$TMPDIR"
         find "$TMPDIR" -name '{{ name }}' -type f -exec install -m755 {} ~/.local/bin/{{ name }} \;
         rm -rf "$TMPDIR"
-    - runas: neg
+    - runas: {{ user }}
     - shell: /bin/bash
-    - creates: /home/neg/.local/bin/{{ name }}
+    - creates: {{ home }}/.local/bin/{{ name }}
 {%- endmacro -%}
 
 {# Download latest GitHub release asset to ~/.local/bin/.
@@ -49,7 +49,7 @@ install_{{ name | replace('-', '_') }}:
           {{ github_release('rmpc', 'mierak/rmpc', 'rmpc-${TAG}-x86_64.tar.gz', format='tar.gz') }}
           {{ github_release('sing-box', 'SagerNet/sing-box', 'sing-box-${VER}.tar.gz', format='tar.gz', strip_v=True) }}
 #}
-{%- macro github_release(name, repo, asset, bin=None, format='bin', strip_v=False) -%}
+{%- macro github_release(name, repo, asset, bin=None, format='bin', strip_v=False, user='neg', home='/home/neg') -%}
 {%- set target = bin or name -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
@@ -69,21 +69,21 @@ install_{{ name | replace('-', '_') }}:
         find "$TMPDIR" -name '{{ target }}' -type f -exec install -m755 {} ~/.local/bin/{{ target }} \;
         rm -rf "$TMPDIR"
 {%- endif %}
-    - runas: neg
+    - runas: {{ user }}
     - shell: /bin/bash
-    - creates: /home/neg/.local/bin/{{ target }}
+    - creates: {{ home }}/.local/bin/{{ target }}
 {%- endmacro -%}
 
 {# pipx install (PEP 668 compatible).
    Usage: {{ pip_pkg('httpstat') }}
           {{ pip_pkg('neovim_python_deps', pkg='neovim-remote', bin='nvr') }}
 #}
-{%- macro pip_pkg(name, pkg=None, bin=None) -%}
+{%- macro pip_pkg(name, pkg=None, bin=None, user='neg', home='/home/neg') -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: pipx install {{ pkg or name }}
-    - runas: neg
-    - creates: /home/neg/.local/bin/{{ bin or name }}
+    - runas: {{ user }}
+    - creates: {{ home }}/.local/bin/{{ bin or name }}
 {%- endmacro -%}
 
 {# cargo install (crates.io or git).
@@ -91,12 +91,12 @@ install_{{ name | replace('-', '_') }}:
           {{ cargo_pkg('agg', git='https://github.com/asciinema/agg') }}
           {{ cargo_pkg('pzip', bin='pz') }}
 #}
-{%- macro cargo_pkg(name, pkg=None, bin=None, git=None) -%}
+{%- macro cargo_pkg(name, pkg=None, bin=None, git=None, user='neg', home='/home/neg') -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: cargo install {{ '--git ' ~ git if git else pkg or name }}
-    - runas: neg
-    - creates: /home/neg/.local/share/cargo/bin/{{ bin or name }}
+    - runas: {{ user }}
+    - creates: {{ home }}/.local/share/cargo/bin/{{ bin or name }}
 {%- endmacro -%}
 
 {# Install packages via pacman (CachyOS/Arch).
@@ -191,7 +191,7 @@ install_{{ name | replace('-', '_') }}:
    Usage: {{ curl_extract_tar('nushell', 'https://github.com/nushell/nushell/releases/latest/download/nu-${TAG}-x86_64-unknown-linux-musl.tar.gz', 'nu-*/nu', fetch_tag=True) }}
           {{ curl_extract_tar('hyprevents', 'https://github.com/vilari-mickopf/hyprevents/archive/refs/heads/master.tar.gz', 'hyprevents/hyprevents', binaries=['hyprevents', 'event_handler', 'event_loader']) }}
 #}
-{%- macro curl_extract_tar(name, url, binary_pattern, archive_ext='tar.gz', fetch_tag=False, binaries=None, chmod=False) -%}
+{%- macro curl_extract_tar(name, url, binary_pattern, archive_ext='tar.gz', fetch_tag=False, binaries=None, chmod=False, user='neg', home='/home/neg') -%}
 {%- set ext_flag = 'J' if archive_ext == 'tar.xz' else 'z' -%}
 {%- if fetch_tag %}
 {%- if '/api.github.com/repos/' in url %}
@@ -220,9 +220,9 @@ install_{{ name | replace('-', '_') }}:
         chmod +x ~/.local/bin/{{ binaries[0] if binaries else binary_pattern.rsplit('/', 1)[-1] }}
 {%- endif %}
         rm -rf /tmp/{{ name }}.{{ archive_ext }} /tmp/{{ name }}-* /tmp/{{ name }}
-    - runas: neg
+    - runas: {{ user }}
     - shell: /bin/bash
-    - creates: /home/neg/.local/bin/{{ binaries[0] if binaries else binary_pattern.rsplit('/', 1)[-1] }}
+    - creates: {{ home }}/.local/bin/{{ binaries[0] if binaries else binary_pattern.rsplit('/', 1)[-1] }}
 
 {%- endmacro -%}
 
@@ -234,7 +234,7 @@ install_{{ name | replace('-', '_') }}:
    Usage: {{ curl_extract_zip('xray', 'https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip', 'xray/xray', chmod=True) }}
           {{ curl_extract_zip('yazi', 'https://github.com/sxyazi/yazi/releases/latest/download/yazi-x86_64-unknown-linux-musl.zip', 'yazi-x86_64-unknown-linux-musl', binaries=['yazi', 'ya']) }}
 #}
-{%- macro curl_extract_zip(name, url, binary_path, binaries=None, chmod=False) -%}
+{%- macro curl_extract_zip(name, url, binary_path, binaries=None, chmod=False, user='neg', home='/home/neg') -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: |
@@ -252,9 +252,9 @@ install_{{ name | replace('-', '_') }}:
         chmod +x ~/.local/bin/{{ binaries[0] if binaries else binary_path.rsplit('/', 1)[-1] }}
 {%- endif %}
         rm -rf /tmp/{{ name }}.zip /tmp/{{ name }}_extracted
-    - runas: neg
+    - runas: {{ user }}
     - shell: /bin/bash
-    - creates: /home/neg/.local/bin/{{ binaries[0] if binaries else binary_path.rsplit('/', 1)[-1] }}
+    - creates: {{ home }}/.local/bin/{{ binaries[0] if binaries else binary_path.rsplit('/', 1)[-1] }}
 
 
 {%- endmacro -%}
