@@ -84,6 +84,8 @@ include:
   - hardware
   - hy3
   - installers
+  - installers_desktop
+  - installers_themes
   - iosevka
   - kernel_modules
   - kernel_params_limine
