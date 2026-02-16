@@ -1,13 +1,9 @@
 {% from 'host_config.jinja' import host %}
 {% from '_macros.jinja' import curl_bin %}
+{% import_yaml 'data/versions.yaml' as ver %}
 {% set user = host.user %}
 {% set home = host.home %}
 # Desktop application installers: GUI apps, AppImages, AUR packages
-{% set rew_ver = '5_33' %}
-{% set throne_ver = '1.0.13' %}
-{% set nyxt_ver = '4.0.0' %}
-{% set osm_ver = '1.5.2' %}
-{% set droidcam_ver = '2.1.3' %}
 
 # --- RoomEQ Wizard (Java acoustic measurement) ---
 install_roomeqwizard:
@@ -15,7 +11,7 @@ install_roomeqwizard:
     - name: |
         set -eo pipefail
         mkdir -p ~/.local/opt/roomeqwizard
-        curl -fsSL 'https://www.roomeqwizard.com/installers/REW_linux_no_jre_{{ rew_ver }}.zip' -o /tmp/rew.zip
+        curl -fsSL 'https://www.roomeqwizard.com/installers/REW_linux_no_jre_{{ ver.roomeqwizard }}.zip' -o /tmp/rew.zip
         unzip -o /tmp/rew.zip -d ~/.local/opt/roomeqwizard
         rm -f /tmp/rew.zip
     - runas: {{ user }}
@@ -28,7 +24,7 @@ install_throne:
     - name: |
         set -eo pipefail
         mkdir -p ~/.local/opt/throne
-        curl -fsSL https://github.com/throneproj/Throne/releases/download/{{ throne_ver }}/Throne-{{ throne_ver }}-linux-amd64.zip -o /tmp/throne.zip
+        curl -fsSL https://github.com/throneproj/Throne/releases/download/{{ ver.throne }}/Throne-{{ ver.throne }}-linux-amd64.zip -o /tmp/throne.zip
         unzip -o /tmp/throne.zip -d ~/.local/opt/throne
         ln -sf ~/.local/opt/throne/Throne ~/.local/bin/throne
         rm -f /tmp/throne.zip
@@ -47,7 +43,7 @@ install_nyxt:
   cmd.run:
     - name: |
         set -eo pipefail
-        curl -fsSL https://github.com/atlas-engineer/nyxt/releases/download/{{ nyxt_ver }}/Linux-Nyxt-x86_64.tar.gz -o /tmp/nyxt.tar.gz
+        curl -fsSL https://github.com/atlas-engineer/nyxt/releases/download/{{ ver.nyxt }}/Linux-Nyxt-x86_64.tar.gz -o /tmp/nyxt.tar.gz
         tar -xzf /tmp/nyxt.tar.gz -C /tmp
         mv /tmp/Nyxt-x86_64.AppImage ~/.local/bin/nyxt
         chmod +x ~/.local/bin/nyxt
@@ -57,14 +53,14 @@ install_nyxt:
     - creates: {{ home }}/.local/bin/nyxt
 
 # --- Open Sound Meter (FFT acoustic analysis, AppImage) ---
-{{ curl_bin('opensoundmeter', 'https://github.com/psmokotnin/osm/releases/download/v' ~ osm_ver ~ '/Open_Sound_Meter-v' ~ osm_ver ~ '-x86_64.AppImage') }}
+{{ curl_bin('opensoundmeter', 'https://github.com/psmokotnin/osm/releases/download/v' ~ ver.opensoundmeter ~ '/Open_Sound_Meter-v' ~ ver.opensoundmeter ~ '-x86_64.AppImage') }}
 # --- DroidCam (phone as webcam via v4l2loopback) ---
 # v4l2loopback-dkms installed via pacman outside Salt
 install_droidcam:
   cmd.run:
     - name: |
         set -eo pipefail
-        curl -fsSL https://files.dev47apps.net/linux/droidcam_{{ droidcam_ver }}.zip -o /tmp/droidcam.zip
+        curl -fsSL https://files.dev47apps.net/linux/droidcam_{{ ver.droidcam }}.zip -o /tmp/droidcam.zip
         unzip -o /tmp/droidcam.zip -d /tmp/droidcam
         mv /tmp/droidcam/droidcam ~/.local/bin/
         mv /tmp/droidcam/droidcam-cli ~/.local/bin/

@@ -1,10 +1,9 @@
 {% from 'host_config.jinja' import host %}
 {% from '_macros.jinja' import curl_bin, github_tar, github_release, pip_pkg, cargo_pkg, curl_extract_tar, curl_extract_zip, run_with_error_context %}
 {% import_yaml 'data/installers.yaml' as tools %}
+{% import_yaml 'data/versions.yaml' as ver %}
 {% set user = host.user %}
 {% set home = host.home %}
-{% set realesrgan_ver = '0.2.0' %}
-{% set essentia_ver = '2.1_beta2' %}
 
 # ===========================================================================
 # Data-driven installs (definitions in data/installers.yaml)
@@ -81,12 +80,12 @@ install_hyprevents:
     - creates: {{ home }}/.local/bin/hyprevents
 
 # --- Image upscaling (version-pinned) ---
-{{ curl_extract_zip('realesrgan', 'https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan/releases/download/v' ~ realesrgan_ver ~ '/realesrgan-ncnn-vulkan-v' ~ realesrgan_ver ~ '-ubuntu.zip', 'realesrgan-ncnn-vulkan-v' ~ realesrgan_ver ~ '-ubuntu', binaries=['realesrgan-ncnn-vulkan'], chmod=True) }}
+{{ curl_extract_zip('realesrgan', 'https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan/releases/download/v' ~ ver.realesrgan ~ '/realesrgan-ncnn-vulkan-v' ~ ver.realesrgan ~ '-ubuntu.zip', 'realesrgan-ncnn-vulkan-v' ~ ver.realesrgan ~ '-ubuntu', binaries=['realesrgan-ncnn-vulkan'], chmod=True) }}
 
 # --- Audio analysis (version-pinned) ---
 {% call run_with_error_context('install_essentia_extractor', creates=home ~ '/.local/bin/essentia_streaming_extractor_music') %}
 step "Downloading Essentia streaming extractor"
-curl -fsSL https://data.metabrainz.org/pub/musicbrainz/acousticbrainz/extractors/essentia-extractor-v{{ essentia_ver }}-linux-x86_64.tar.gz -o /tmp/essentia.tar.gz
+curl -fsSL https://data.metabrainz.org/pub/musicbrainz/acousticbrainz/extractors/essentia-extractor-v{{ ver.essentia }}-linux-x86_64.tar.gz -o /tmp/essentia.tar.gz
 step "Extracting archive"
 tar -xzf /tmp/essentia.tar.gz -C /tmp
 step "Installing to ~/.local/bin/"

@@ -2,11 +2,10 @@
 # Run: sudo salt-call --local state.apply fonts
 {% from 'host_config.jinja' import host %}
 {% from '_macros.jinja' import pacman_install, pkgbuild_install, download_font_zip %}
+{% import_yaml 'data/versions.yaml' as ver %}
 {% set user = host.user %}
 {% set home = host.home %}
 {% set fonts_dir = home ~ '/.local/share/fonts' %}
-{% set firacode_ver = '3.3.0' %}
-{% set oldschool_pc_ver = '2.2' %}
 
 # ===================================================================
 # Pacman fonts
@@ -42,7 +41,7 @@ download_fira_code_nerd:
   cmd.run:
     - name: |
         set -eo pipefail
-        curl -L -o /tmp/FiraCode.zip https://github.com/ryanoasis/nerd-fonts/releases/download/v{{ firacode_ver }}/FiraCode.zip
+        curl -L -o /tmp/FiraCode.zip https://github.com/ryanoasis/nerd-fonts/releases/download/v{{ ver.firacode_nerd }}/FiraCode.zip
         unzip -o /tmp/FiraCode.zip -d {{ fonts_dir }}/FiraCodeNerd
         rm /tmp/FiraCode.zip
         fc-cache -f
@@ -57,7 +56,7 @@ install_oldschool_pc_fonts:
     - name: |
         set -eo pipefail
         mkdir -p {{ fonts_dir }}/oldschool-pc
-        curl -fsSL https://int10h.org/oldschool-pc-fonts/download/oldschool_pc_font_pack_v{{ oldschool_pc_ver }}_linux.zip -o /tmp/fonts.zip
+        curl -fsSL https://int10h.org/oldschool-pc-fonts/download/oldschool_pc_font_pack_v{{ ver.oldschool_pc_fonts }}_linux.zip -o /tmp/fonts.zip
         unzip -o /tmp/fonts.zip -d /tmp/oldschool-fonts
         find /tmp/oldschool-fonts -name '*.otf' -exec cp {} {{ fonts_dir }}/oldschool-pc/ \;
         fc-cache -f {{ fonts_dir }}/oldschool-pc/

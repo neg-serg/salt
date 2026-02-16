@@ -1,7 +1,7 @@
 {% from 'host_config.jinja' import host %}
 {% from '_macros.jinja' import daemon_reload, pacman_install, system_daemon_user, service_with_unit %}
+{% import_yaml 'data/versions.yaml' as ver %}
 {% set svc = host.features.services %}
-{% set bitcoind_ver = '28.1' %}
 
 # --- Samba: SMB file sharing (manual start) ---
 {% if svc.samba %}
@@ -48,11 +48,11 @@ install_bitcoind:
   cmd.run:
     - name: |
         set -eo pipefail
-        curl -sL "https://bitcoincore.org/bin/bitcoin-core-{{ bitcoind_ver }}/bitcoin-{{ bitcoind_ver }}-x86_64-linux-gnu.tar.gz" -o /tmp/bitcoin.tar.gz
+        curl -sL "https://bitcoincore.org/bin/bitcoin-core-{{ ver.bitcoind }}/bitcoin-{{ ver.bitcoind }}-x86_64-linux-gnu.tar.gz" -o /tmp/bitcoin.tar.gz
         tar -xzf /tmp/bitcoin.tar.gz -C /tmp
-        install -m 0755 /tmp/bitcoin-{{ bitcoind_ver }}/bin/bitcoind /usr/local/bin/bitcoind
-        install -m 0755 /tmp/bitcoin-{{ bitcoind_ver }}/bin/bitcoin-cli /usr/local/bin/bitcoin-cli
-        rm -rf /tmp/bitcoin.tar.gz /tmp/bitcoin-{{ bitcoind_ver }}
+        install -m 0755 /tmp/bitcoin-{{ ver.bitcoind }}/bin/bitcoind /usr/local/bin/bitcoind
+        install -m 0755 /tmp/bitcoin-{{ ver.bitcoind }}/bin/bitcoin-cli /usr/local/bin/bitcoin-cli
+        rm -rf /tmp/bitcoin.tar.gz /tmp/bitcoin-{{ ver.bitcoind }}
     - creates: /usr/local/bin/bitcoind
 
 {{ system_daemon_user('bitcoind', '/var/lib/bitcoind') }}
