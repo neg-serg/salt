@@ -44,17 +44,7 @@ install_hyprevents:
 
 {{ github_release('rmpc', 'mierak/rmpc', 'rmpc-${TAG}-x86_64-unknown-linux-gnu.tar.gz', format='tar.gz') }}
 
-install_rustmission:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        curl -fsSL https://github.com/intuis/rustmission/releases/download/v0.5.0/rustmission-x86_64-unknown-linux-gnu.tar.xz -o /tmp/rustmission.tar.xz
-        tar -xJf /tmp/rustmission.tar.xz -C /tmp --strip-components=1 --wildcards '*/rustmission'
-        mv /tmp/rustmission ~/.local/bin/
-        rm -f /tmp/rustmission.tar.xz
-    - runas: neg
-    - shell: /bin/bash
-    - creates: /home/neg/.local/bin/rustmission
+{{ cargo_pkg('rustmission') }}
 
 {{ pip_pkg('httpstat') }}
 
