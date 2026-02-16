@@ -1,5 +1,5 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import daemon_reload, pacman_install, system_daemon_user %}
+{% from '_macros.jinja' import daemon_reload, pacman_install, system_daemon_user, github_release_system %}
 {% set dns = host.features.dns %}
 
 # --- Unbound: recursive DNS resolver with DNSSEC + DoT ---
@@ -64,16 +64,7 @@ unbound_running:
 
 # --- AdGuardHome: DNS filtering + ad blocking ---
 {% if dns.adguardhome %}
-install_adguardhome:
-  cmd.run:
-    - name: |
-        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/AdguardTeam/AdGuardHome/releases/latest | grep -oP '[^/]+$')
-        VER=${TAG#v}
-        curl -sL "https://github.com/AdguardTeam/AdGuardHome/releases/download/${TAG}/AdGuardHome_linux_amd64.tar.gz" -o /tmp/adguardhome.tar.gz
-        tar -xzf /tmp/adguardhome.tar.gz -C /tmp
-        install -m 0755 /tmp/AdGuardHome/AdGuardHome /usr/local/bin/adguardhome
-        rm -rf /tmp/adguardhome.tar.gz /tmp/AdGuardHome
-    - creates: /usr/local/bin/adguardhome
+{{ github_release_system('adguardhome', 'AdguardTeam/AdGuardHome', 'AdGuardHome_linux_amd64.tar.gz', src_bin='AdGuardHome', format='tar.gz') }}
 
 {{ system_daemon_user('adguardhome', '/var/lib/adguardhome') }}
 
