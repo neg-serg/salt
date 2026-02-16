@@ -1,13 +1,13 @@
-# MPD Native Deployment
-# Salt state for setting up MPD with systemd user service and pipewire output
-
-include:
-  - bind_mounts
-
 {% from 'host_config.jinja' import host %}
 {% set user = host.user %}
 {% set home = host.home %}
 {% set runtime_dir = '/run/user/' ~ host.uid|string %}
+# MPD Native Deployment
+# Salt state for setting up MPD with systemd user service and pipewire output
+{% if host.features.mpd %}
+
+include:
+  - bind_mounts
 
 # --- MPD directories ---
 mpd_directories:
@@ -156,3 +156,4 @@ mpd_companion_services:
     - unless: |
         (! pacman -Q mpdris2 >/dev/null 2>&1 || systemctl --user is-enabled mpDris2.service 2>/dev/null) &&
         (! pacman -Q mpdas >/dev/null 2>&1 || systemctl --user is-enabled mpdas.service 2>/dev/null)
+{% endif %}

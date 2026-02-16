@@ -2,6 +2,7 @@
 {% set user = host.user %}
 {% set home = host.home %}
 # Floorp browser: user.js + userChrome.css + userContent.css + extensions
+{% if host.features.floorp %}
 {% from 'packages.jinja' import floorp_extensions, unwanted_extensions %}
 
 {% set floorp_profile = home ~ '/.floorp/c85pjaxk.default-default' %}
@@ -64,3 +65,4 @@ floorp_reset_extensions_json:
 {% for ext in floorp_extensions %}
       - cmd: floorp_ext_{{ ext.slug | replace('-', '_') }}
 {% endfor %}
+{% endif %}

@@ -3,6 +3,7 @@
 {% set home = host.home %}
 # Salt state for Amnezia build and deploy (Local User version)
 # All 3 components build in parallel for faster deployment
+{% if host.features.amnezia %}
 
 {{ home }}/.local/bin:
   file.directory:
@@ -116,3 +117,4 @@ amnezia_desktop_entry:
     - group: {{ user }}
     - require:
       - file: {{ home }}/.local/share/applications
+{% endif %}

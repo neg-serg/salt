@@ -2,6 +2,7 @@
 {% set user = host.user %}
 {% set home = host.home %}
 # hy3 Hyprland plugin (installed via pacman/AUR on CachyOS)
+{% if host.features.hy3 %}
 
 {{ home }}/.local/lib/hyprland:
   file.directory:
@@ -16,3 +17,4 @@ check_hy3:
     - onlyif: pacman -Q hyprland
     - require:
       - file: {{ home }}/.local/lib/hyprland
+{% endif %}
