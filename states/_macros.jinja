@@ -341,6 +341,34 @@ install_{{ name | replace('-', '_') }}:
 {{ caller() | trim | indent(8, first=True) }}
 {%- endmacro -%}
 
+{# Download and install a font from a ZIP archive to ~/.local/share/fonts/<subdir>.
+   Creates the target directory, downloads/unzips, runs fc-cache, cleans up.
+   Usage: {{ download_font_zip('sf_pro_display', 'https://font.download/dl/font/sf-pro-display.zip', 'SFProDisplay') }}
+          {{ download_font_zip('anurati', 'https://font.download/dl/font/anurati.zip', 'Anurati') }}
+#}
+{%- macro download_font_zip(name, url, subdir, user='neg', home='/home/neg') -%}
+{%- set fonts_dir = home ~ '/.local/share/fonts' -%}
+{{ fonts_dir }}/{{ subdir }}:
+  file.directory:
+    - user: {{ user }}
+    - group: {{ user }}
+    - makedirs: True
+
+install_{{ name }}:
+  cmd.run:
+    - name: |
+        set -eo pipefail
+        curl -fsSL '{{ url }}' -o /tmp/{{ name }}.zip
+        unzip -o /tmp/{{ name }}.zip -d {{ fonts_dir }}/{{ subdir }}
+        fc-cache -f {{ fonts_dir }}/{{ subdir }}
+        rm -f /tmp/{{ name }}.zip
+    - runas: {{ user }}
+    - shell: /bin/bash
+    - unless: "ls {{ fonts_dir }}/{{ subdir }}/*.otf 2>/dev/null || ls {{ fonts_dir }}/{{ subdir }}/*.ttf 2>/dev/null"
+    - require:
+      - file: {{ fonts_dir }}/{{ subdir }}
+{%- endmacro -%}
+
 {# Deploy systemd unit file + enable service (file + daemon-reload + service.enabled + optional service.running).
    unit_type: 'service' (default) | 'timer' | 'socket' | etc.
    running: True (default False) to add service.running after enabled for auto-start behavior.
