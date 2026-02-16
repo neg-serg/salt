@@ -1,5 +1,5 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import daemon_reload, pacman_install, system_daemon_user, service_with_unit %}
+{% from '_macros.jinja' import daemon_reload, pacman_install, system_daemon_user, service_with_unit, curl_extract_tar %}
 {% import_yaml 'data/versions.yaml' as ver %}
 {% set svc = host.features.services %}
 
@@ -44,16 +44,7 @@ jellyfin_enabled:
 
 # --- Bitcoind: Bitcoin Core node ---
 {% if svc.bitcoind %}
-install_bitcoind:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        curl -sL "https://bitcoincore.org/bin/bitcoin-core-{{ ver.bitcoind }}/bitcoin-{{ ver.bitcoind }}-x86_64-linux-gnu.tar.gz" -o /tmp/bitcoin.tar.gz
-        tar -xzf /tmp/bitcoin.tar.gz -C /tmp
-        install -m 0755 /tmp/bitcoin-{{ ver.bitcoind }}/bin/bitcoind /usr/local/bin/bitcoind
-        install -m 0755 /tmp/bitcoin-{{ ver.bitcoind }}/bin/bitcoin-cli /usr/local/bin/bitcoin-cli
-        rm -rf /tmp/bitcoin.tar.gz /tmp/bitcoin-{{ ver.bitcoind }}
-    - creates: /usr/local/bin/bitcoind
+{{ curl_extract_tar('bitcoind', 'https://bitcoincore.org/bin/bitcoin-core-' ~ ver.bitcoind ~ '/bitcoin-' ~ ver.bitcoind ~ '-x86_64-linux-gnu.tar.gz', binary_pattern='bitcoin-' ~ ver.bitcoind ~ '/bin', binaries=['bitcoind', 'bitcoin-cli'], bin_dest='/usr/local/bin', user=None) }}
 
 {{ system_daemon_user('bitcoind', '/var/lib/bitcoind') }}
 
