@@ -2,21 +2,21 @@
 
 # Apply the full configuration
 apply:
-    ./apply_config.sh
+    ./apply_cachyos.sh
 
 # Run the configuration in dry-run mode (no changes)
 dry-run:
-    ./apply_config.sh --dry-run
+    ./apply_cachyos.sh --dry-run
 
 # Re-bootstrap the salt environment
 bootstrap:
     python3 -m venv .venv
     .venv/bin/pip install ruff jinja2 pyyaml
-    ./apply_config.sh --dry-run
+    ./apply_cachyos.sh --dry-run
 
 # Show salt state info
 info:
-    ./apply_config.sh --dry-run | grep -A 20 "Summary for local"
+    ./apply_cachyos.sh --dry-run | grep -A 20 "Summary for local"
 
 # Clean temporary files
 clean:
