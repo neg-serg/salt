@@ -76,4 +76,4 @@ install_openclaw:
   cmd.run:
     - name: npm install -g openclaw
     - runas: {{ user }}
-    - creates: {{ home }}/.npm-global/bin/openclaw
+    - creates: {{ home }}/.local/bin/openclaw
