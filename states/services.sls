@@ -1,5 +1,5 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import daemon_reload, pacman_install, system_daemon_user %}
+{% from '_macros.jinja' import daemon_reload, pacman_install, system_daemon_user, service_with_unit %}
 {% set svc = host.features.services %}
 {% set bitcoind_ver = '28.1' %}
 
@@ -56,26 +56,14 @@ install_bitcoind:
 
 {{ system_daemon_user('bitcoind', '/var/lib/bitcoind') }}
 
-bitcoind_service:
-  file.managed:
-    - name: /etc/systemd/system/bitcoind.service
-    - mode: '0644'
-    - source: salt://units/bitcoind.service
+# Don't enable at boot — manual start: systemctl start bitcoind
+{{ service_with_unit('bitcoind', 'salt://units/bitcoind.service', enabled=False) }}
 
 bitcoind_logrotate:
   file.managed:
     - name: /etc/logrotate.d/bitcoind
     - mode: '0644'
     - source: salt://configs/bitcoind-logrotate
-
-{{ daemon_reload('bitcoind', ['file: bitcoind_service']) }}
-
-# Don't enable at boot — manual start: systemctl start bitcoind
-bitcoind_not_enabled:
-  service.disabled:
-    - name: bitcoind
-    - require:
-      - file: bitcoind_service
 {% endif %}
 
 # --- DuckDNS: dynamic DNS updater ---
