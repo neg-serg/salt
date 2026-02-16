@@ -1,5 +1,4 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import cargo_pkg %}
 {% set user = host.user %}
 {% set home = host.home %}
 # MPD Native Deployment
@@ -34,15 +33,15 @@ rmpc_config:
     - user: {{ user }}
     - group: {{ user }}
 
-# --- Install cargo packages ---
-{{ cargo_pkg('rmpc', user=user, home=home) }}
-
 # wiremix needs custom clang args for bindgen
 install_wiremix:
   cmd.run:
     - name: BINDGEN_EXTRA_CLANG_ARGS="-I/usr/lib/clang/21/include" cargo install wiremix
     - runas: {{ user }}
     - creates: {{ home }}/.local/share/cargo/bin/wiremix
+    - retry:
+        attempts: 3
+        interval: 10
 
 # --- MPD FIFO for visualizers (cava, etc.) ---
 mpd_fifo:
