@@ -23,6 +23,9 @@ install_{{ name | replace('-', '_') }}:
     - name: curl -fsSL {{ url }} -o ~/.local/bin/{{ name }} && chmod +x ~/.local/bin/{{ name }}
     - runas: {{ user }}
     - creates: {{ home }}/.local/bin/{{ name }}
+    - retry:
+        attempts: 3
+        interval: 10
 {%- endmacro -%}
 
 {# Download tar.gz, extract single binary to ~/.local/bin/.
@@ -41,6 +44,9 @@ install_{{ name | replace('-', '_') }}:
     - runas: {{ user }}
     - shell: /bin/bash
     - creates: {{ home }}/.local/bin/{{ name }}
+    - retry:
+        attempts: 3
+        interval: 10
 {%- endmacro -%}
 
 {# Download latest GitHub release asset to ~/.local/bin/.
@@ -72,6 +78,9 @@ install_{{ name | replace('-', '_') }}:
     - runas: {{ user }}
     - shell: /bin/bash
     - creates: {{ home }}/.local/bin/{{ target }}
+    - retry:
+        attempts: 3
+        interval: 10
 {%- endmacro -%}
 
 {# Download latest GitHub release asset to /usr/local/bin/ (system-level).
@@ -100,6 +109,9 @@ install_{{ name | replace('-', '_') }}:
 {%- endif %}
     - shell: /bin/bash
     - creates: {{ dest }}/{{ name }}
+    - retry:
+        attempts: 3
+        interval: 10
 {%- endmacro -%}
 
 {# pipx install (PEP 668 compatible).
@@ -112,6 +124,9 @@ install_{{ name | replace('-', '_') }}:
     - name: pipx install {{ pkg or name }}
     - runas: {{ user }}
     - creates: {{ home }}/.local/bin/{{ bin or name }}
+    - retry:
+        attempts: 3
+        interval: 10
 {%- endmacro -%}
 
 {# cargo install (crates.io or git).
@@ -125,6 +140,9 @@ install_{{ name | replace('-', '_') }}:
     - name: cargo install {{ '--git ' ~ git if git else pkg or name }}
     - runas: {{ user }}
     - creates: {{ home }}/.local/share/cargo/bin/{{ bin or name }}
+    - retry:
+        attempts: 3
+        interval: 10
 {%- endmacro -%}
 
 {# Install packages via pacman (CachyOS/Arch).
@@ -280,6 +298,9 @@ install_{{ name | replace('-', '_') }}:
     - runas: {{ user }}
     - shell: /bin/bash
     - creates: {{ home }}/.local/bin/{{ binaries[0] if binaries else binary_pattern.rsplit('/', 1)[-1] }}
+    - retry:
+        attempts: 3
+        interval: 10
 
 {%- endmacro -%}
 
@@ -312,6 +333,9 @@ install_{{ name | replace('-', '_') }}:
     - runas: {{ user }}
     - shell: /bin/bash
     - creates: {{ home }}/.local/bin/{{ binaries[0] if binaries else binary_path.rsplit('/', 1)[-1] }}
+    - retry:
+        attempts: 3
+        interval: 10
 
 
 {%- endmacro -%}
@@ -365,21 +389,26 @@ install_{{ name }}:
     - runas: {{ user }}
     - shell: /bin/bash
     - unless: "ls {{ fonts_dir }}/{{ subdir }}/*.otf 2>/dev/null || ls {{ fonts_dir }}/{{ subdir }}/*.ttf 2>/dev/null"
+    - retry:
+        attempts: 3
+        interval: 10
     - require:
       - file: {{ fonts_dir }}/{{ subdir }}
 {%- endmacro -%}
 
-{# Deploy systemd unit file + enable service (file + daemon-reload + service.enabled + optional service.running).
+{# Deploy systemd unit file + manage service (file + daemon-reload + enable/disable + optional running).
    unit_type: 'service' (default) | 'timer' | 'socket' | etc.
-   running: True (default False) to add service.running after enabled for auto-start behavior.
+   running: True (default False) to add service.running with watch for auto-restart.
+   enabled: True (default) = service.enabled; False = service.disabled; None = skip enable/disable.
    requires: optional list of state requisites (includes daemon-reload as base requirement).
    template: 'jinja' (default None) to render the unit file as a Jinja template.
    context: dict of template variables (default None), used with template='jinja'.
    onlyif: guard for service.enabled (default None), e.g. 'command -v ollama'.
    Usage: {{ service_with_unit('loki', 'salt://units/loki.service', requires=['cmd: install_loki', 'file: loki_config']) }}
           {{ service_with_unit('ollama', 'salt://units/ollama.service', template='jinja', context={'user': user, 'home': home}, onlyif='command -v ollama') }}
+          {{ service_with_unit('xray', 'salt://units/xray.service', enabled=False) }}
 #}
-{%- macro service_with_unit(name, source, unit_type='service', running=False, requires=None, template=None, context=None, onlyif=None) -%}
+{%- macro service_with_unit(name, source, unit_type='service', running=False, enabled=True, requires=None, template=None, context=None, onlyif=None) -%}
 {{ name }}_service:
   file.managed:
     - name: /etc/systemd/system/{{ name }}.{{ unit_type }}
@@ -400,11 +429,12 @@ install_{{ name }}:
     - name: systemctl daemon-reload
     - onchanges:
       - file: {{ name }}_service
+{%- if enabled is not none %}
 
-{{ name }}_enabled:
-  service.enabled:
+{{ name }}_{{ 'enabled' if enabled else 'disabled' }}:
+  service.{{ 'enabled' if enabled else 'disabled' }}:
     - name: {{ name }}
-{%- if onlyif %}
+{%- if onlyif and enabled %}
     - onlyif: {{ onlyif }}
 {%- endif %}
     - require:
@@ -414,8 +444,9 @@ install_{{ name }}:
       - {{ req }}
 {%- endfor %}
 {%- endif %}
-
+{%- endif %}
 {%- if running %}
+
 {{ name }}_running:
   service.running:
     - name: {{ name }}
