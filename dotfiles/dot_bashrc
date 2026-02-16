@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# XDG-compliant bash history
+HISTFILE="${XDG_STATE_HOME:-$HOME/.local/state}/bash/history"
+
 # Aliae integration for bash
 if command -v aliae >/dev/null 2>&1; then
   cfg="${XDG_CONFIG_HOME:-$HOME/.config}/aliae/config.yaml"
