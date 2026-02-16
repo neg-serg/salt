@@ -23,12 +23,14 @@ Packages installed via pacman/paru outside Salt; Salt handles configuration mana
 | `docs/` | Documentation (migration tracking, secrets, setup guides) |
 | `scripts/` | Utility scripts (linting, comparison) |
 
-## Salt State Modules (21 files)
+## Salt State Modules (23 files)
 
 | Module | Purpose |
 |---|---|
 | `system_description.sls` | Core: timezone, locale, users, flatpak, mounts, zsh |
-| `installers.sls` | CLI tools: GitHub releases, pip/cargo installs, scripts, themes |
+| `installers.sls` | CLI tools: GitHub releases, pip/cargo installs, scripts |
+| `installers_desktop.sls` | Desktop apps: RoomEQ, Throne, Overskride, Nyxt, DroidCam |
+| `installers_themes.sls` | Themes/icons/fonts: matugen, kora, Flight GTK, oldschool-pc |
 | `user_services.sls` | User systemd services: chezmoi, mail, vdirsyncer, GPG agent |
 | `dns.sls` | Unbound, AdGuardHome, Avahi |
 | `monitoring.sls` | Sysstat, vnstat, netdata, Loki/Promtail/Grafana stack |
@@ -60,9 +62,12 @@ Packages installed via pacman/paru outside Salt; Salt handles configuration mana
 | `github_release(name, repo, asset, ...)` | GitHub release install (bin/tar.gz, with tag fetch) |
 | `pip_pkg(name, pkg, bin)` | pip install to `~/.local/` |
 | `cargo_pkg(name, pkg, bin, git)` | cargo install |
+| `github_release_system(name, repo, asset)` | GitHub release install to `/usr/local/bin/` (system-level) |
 | `pacman_install(name, pkgs, check, requires)` | pacman install with idempotency guard |
+| `pkgbuild_install(name, source)` | Build + install from local PKGBUILD |
 | `system_daemon_user(name, home_dir)` | Create system daemon user + data directory |
 | `service_with_unit(name, source)` | Deploy systemd unit + enable service |
+| `user_service(name, filename)` | Deploy inline systemd user unit file (callable macro) |
 | `curl_extract_tar(name, url, binary_pattern)` | Download + extract tar/tar.gz to `~/.local/bin/` |
 | `curl_extract_zip(name, url, binary_path)` | Download + extract zip to `~/.local/bin/` |
 | `run_with_error_context(state_id)` | cmd.run with error handling helpers |
