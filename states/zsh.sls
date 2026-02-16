@@ -1,6 +1,7 @@
-# Zsh: system-wide config, ZDOTDIR, force shell for users
+# Zsh: system-wide config, ZDOTDIR, user dotfiles, force shell for users
 {% from 'host_config.jinja' import host %}
 {% set user = host.user %}
+{% set home = host.home %}
 
 zsh_config_dir:
   file.directory:
@@ -33,6 +34,30 @@ zsh_config_dir:
 cleanup_old_etc_zshenv:
   file.absent:
     - name: /etc/zshenv
+
+# --- User zsh dotfiles (deployed from chezmoi source) ---
+user_zsh_config_dir:
+  file.directory:
+    - name: {{ home }}/.config/zsh
+    - user: {{ user }}
+    - group: {{ user }}
+    - makedirs: True
+
+zsh_env:
+  file.managed:
+    - name: {{ home }}/.config/zsh/.zshenv
+    - source: salt://dotfiles/dot_config/zsh/dot_zshenv
+    - user: {{ user }}
+    - group: {{ user }}
+    - mode: '0644'
+
+zsh_rc:
+  file.managed:
+    - name: {{ home }}/.config/zsh/.zshrc
+    - source: salt://dotfiles/dot_config/zsh/dot_zshrc
+    - user: {{ user }}
+    - group: {{ user }}
+    - mode: '0644'
 
 force_zsh_neg:
   cmd.run:

@@ -19,30 +19,6 @@ mpd_directories:
     - group: {{ user }}
     - makedirs: True
 
-# --- Deploy zsh config with MPD variables ---
-mpd_zsh_config_dir:
-  file.directory:
-    - name: {{ home }}/.config/zsh
-    - user: {{ user }}
-    - group: {{ user }}
-    - makedirs: True
-
-zsh_env:
-  file.managed:
-    - name: {{ home }}/.config/zsh/.zshenv
-    - source: salt://dotfiles/dot_config/zsh/dot_zshenv
-    - user: {{ user }}
-    - group: {{ user }}
-    - mode: '0644'
-
-zsh_rc:
-  file.managed:
-    - name: {{ home }}/.config/zsh/.zshrc
-    - source: salt://dotfiles/dot_config/zsh/dot_zshrc
-    - user: {{ user }}
-    - group: {{ user }}
-    - mode: '0644'
-
 # --- Deploy rmpc config ---
 rmpc_config_dir:
   file.directory:
