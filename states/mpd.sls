@@ -4,8 +4,10 @@
 include:
   - bind_mounts
 
-{% set user = 'neg' %}
-{% set home = '/home/' ~ user %}
+{% from 'host_config.jinja' import host %}
+{% set user = host.user %}
+{% set home = host.home %}
+{% set runtime_dir = '/run/user/' ~ host.uid|string %}
 
 # --- MPD directories ---
 mpd_directories:
@@ -95,8 +97,8 @@ mpd_service:
     - name: systemctl --user enable --now mpd.service
     - runas: {{ user }}
     - env:
-      - XDG_RUNTIME_DIR: /run/user/1000
-      - DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
+      - XDG_RUNTIME_DIR: {{ runtime_dir }}
+      - DBUS_SESSION_BUS_ADDRESS: unix:path={{ runtime_dir }}/bus
     - require:
       - file: mpd_config
       - file: mpd_directories
@@ -144,8 +146,8 @@ mpd_companion_services:
         {% endraw %}
     - runas: {{ user }}
     - env:
-      - XDG_RUNTIME_DIR: /run/user/1000
-      - DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
+      - XDG_RUNTIME_DIR: {{ runtime_dir }}
+      - DBUS_SESSION_BUS_ADDRESS: unix:path={{ runtime_dir }}/bus
     - shell: /bin/bash
     - require:
       - cmd: mpd_service

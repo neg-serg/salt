@@ -1,6 +1,7 @@
 # Salt state to build and install custom Iosevka Nerd Font from PKGBUILD
 # Builds Iosevka with custom glyph variants, then patches with Nerd Font icons
-{% set user = 'neg' %}
+{% from 'host_config.jinja' import host %}
+{% set user = host.user %}
 {% set build_dir = '/tmp/pkgbuild/iosevka-neg-fonts' %}
 
 iosevka_pkgbuild:
