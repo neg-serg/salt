@@ -1,5 +1,5 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import daemon_reload, service_with_unit %}
+{% from '_macros.jinja' import service_with_unit %}
 {% set net = host.features.network %}
 
 # --- VM Bridge: br0 for KVM/libvirt VMs ---
@@ -48,15 +48,5 @@ xray_config_dir:
 # --- Sing-box: TUN proxy (manual start) ---
 # Binary already installed by system_description.sls (install_singbox)
 {% if net.singbox %}
-singbox_service:
-  file.managed:
-    - name: /etc/systemd/system/sing-box-tun.service
-    - mode: '0644'
-    - source: salt://units/sing-box-tun.service
-    - template: jinja
-    - context:
-        home: {{ host.home }}
-        uid: {{ host.uid }}
-
-{{ daemon_reload('singbox', ['file: singbox_service']) }}
+{{ service_with_unit('sing-box-tun', 'salt://units/sing-box-tun.service', template='jinja', context={'home': host.home, 'uid': host.uid}, enabled=None) }}
 {% endif %}

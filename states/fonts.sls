@@ -31,39 +31,10 @@
 # ===================================================================
 
 # --- FiraCode Nerd Font ---
-{{ fonts_dir }}/FiraCodeNerd:
-  file.directory:
-    - user: {{ user }}
-    - group: {{ user }}
-    - makedirs: True
-
-download_fira_code_nerd:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        curl -L -o /tmp/FiraCode.zip https://github.com/ryanoasis/nerd-fonts/releases/download/v{{ ver.firacode_nerd }}/FiraCode.zip
-        unzip -o /tmp/FiraCode.zip -d {{ fonts_dir }}/FiraCodeNerd
-        rm /tmp/FiraCode.zip
-        fc-cache -f
-    - runas: {{ user }}
-    - unless: "ls {{ fonts_dir }}/FiraCodeNerd/FiraCodeNerdFontMono-Regular.ttf"
-    - require:
-      - file: {{ fonts_dir }}/FiraCodeNerd
+{{ download_font_zip('fira_code_nerd', 'https://github.com/ryanoasis/nerd-fonts/releases/download/v' ~ ver.firacode_nerd ~ '/FiraCode.zip', 'FiraCodeNerd', user=user, home=home) }}
 
 # --- oldschool PC fonts (bitmap-style OTF) ---
-install_oldschool_pc_fonts:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        mkdir -p {{ fonts_dir }}/oldschool-pc
-        curl -fsSL https://int10h.org/oldschool-pc-fonts/download/oldschool_pc_font_pack_v{{ ver.oldschool_pc_fonts }}_linux.zip -o /tmp/fonts.zip
-        unzip -o /tmp/fonts.zip -d /tmp/oldschool-fonts
-        find /tmp/oldschool-fonts -name '*.otf' -exec cp {} {{ fonts_dir }}/oldschool-pc/ \;
-        fc-cache -f {{ fonts_dir }}/oldschool-pc/
-        rm -rf /tmp/fonts.zip /tmp/oldschool-fonts
-    - runas: {{ user }}
-    - shell: /bin/bash
-    - creates: {{ fonts_dir }}/oldschool-pc
+{{ download_font_zip('oldschool_pc_fonts', 'https://int10h.org/oldschool-pc-fonts/download/oldschool_pc_font_pack_v' ~ ver.oldschool_pc_fonts ~ '_linux.zip', 'oldschool-pc', user=user, home=home) }}
 
 # --- Hyprlock theme fonts (downloaded from font.download) ---
 {{ download_font_zip('sf_pro_display', 'https://font.download/dl/font/sf-pro-display.zip', 'SFProDisplay', user=user, home=home) }}
