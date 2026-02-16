@@ -1,0 +1,75 @@
+# Desktop environment: services, SSH, wallust defaults, dconf themes
+{% from 'host_config.jinja' import host %}
+{% set user = host.user %}
+{% set home = host.home %}
+{% set runtime_dir = '/run/user/' ~ host.uid|string %}
+
+etckeeper_init:
+  cmd.run:
+    - name: etckeeper init && etckeeper commit "Initial commit"
+    - unless: test -d /etc/.git
+    - onlyif: command -v etckeeper
+
+running_services:
+  service.running:
+    - names:
+      - NetworkManager
+      - dbus-broker
+      - libvirtd
+      - openrgb
+      - bluetooth
+      - systemd-timesyncd
+    - enable: True
+
+# Disable tuned: its throughput-performance profile conflicts with custom
+# I/O tuning (sets read_ahead_kb=8192 on NVMe, may override sysctl values).
+# All tuning is managed manually via sysctl.sls, kernel_params_limine.sls, hardware.sls.
+disable_tuned:
+  service.dead:
+    - name: tuned
+    - enable: False
+
+# --- SSH directory setup ---
+ssh_dir:
+  file.directory:
+    - name: {{ home }}/.ssh
+    - user: {{ user }}
+    - group: {{ user }}
+    - mode: '0700'
+
+# --- Wallust cache defaults (prevents hyprland source errors on first boot) ---
+wallust_cache_dir:
+  file.directory:
+    - name: {{ home }}/.cache/wallust
+    - user: {{ user }}
+    - group: {{ user }}
+    - mode: '0755'
+
+wallust_hyprland_defaults:
+  file.managed:
+    - name: {{ home }}/.cache/wallust/hyprland.conf
+    - user: {{ user }}
+    - group: {{ user }}
+    - mode: '0644'
+    - replace: false
+    - contents: |
+        $col_border_active_base = rgba(00285981)
+        $col_border_inactive   = rgba(00000000)
+        $shadow_color          = rgba(005fafaa)
+    - require:
+      - file: wallust_cache_dir
+
+# --- dconf: GTK/icon/font theme for Wayland apps ---
+set_dconf_themes:
+  cmd.run:
+    - name: |
+        dconf write /org/gnome/desktop/interface/gtk-theme "'Flight-Dark-GTK'"
+        dconf write /org/gnome/desktop/interface/icon-theme "'kora'"
+        dconf write /org/gnome/desktop/interface/font-name "'Iosevka 10'"
+    - runas: {{ user }}
+    - env:
+      - DBUS_SESSION_BUS_ADDRESS: "unix:path={{ runtime_dir }}/bus"
+    - unless: |
+        test "$(dconf read /org/gnome/desktop/interface/gtk-theme)" = "'Flight-Dark-GTK'" &&
+        test "$(dconf read /org/gnome/desktop/interface/icon-theme)" = "'kora'" &&
+        test "$(dconf read /org/gnome/desktop/interface/font-name)" = "'Iosevka 10'"
