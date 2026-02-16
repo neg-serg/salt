@@ -154,29 +154,23 @@ WantedBy=graphical-session.target
 {% endcall %}
 
 # --- Vicinae: application launcher daemon ---
-vicinae_service:
-  file.managed:
-    - name: {{ home }}/.config/systemd/user/vicinae.service
-    - user: {{ user }}
-    - group: {{ user }}
-    - mode: '0644'
-    - makedirs: True
-    - contents: |
-        [Unit]
-        Description=Vicinae Launcher Daemon
-        Documentation=https://docs.vicinae.com
-        After=graphical-session.target
-        Requires=dbus.socket
-        PartOf=graphical-session.target
-        [Service]
-        Type=simple
-        ExecStart=/usr/bin/vicinae server --replace
-        ExecReload=/bin/kill -HUP $MAINPID
-        Restart=on-failure
-        RestartSec=60
-        KillMode=process
-        [Install]
-        WantedBy=graphical-session.target
+{% call user_service('vicinae_service', 'vicinae.service', user=user, home=home) %}
+[Unit]
+Description=Vicinae Launcher Daemon
+Documentation=https://docs.vicinae.com
+After=graphical-session.target
+Requires=dbus.socket
+PartOf=graphical-session.target
+[Service]
+Type=simple
+ExecStart=/usr/bin/vicinae server --replace
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=60
+KillMode=process
+[Install]
+WantedBy=graphical-session.target
+{% endcall %}
 
 # --- Enable user services: single daemon-reload + batch enable ---
 enable_user_services:

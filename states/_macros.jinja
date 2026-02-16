@@ -400,6 +400,30 @@ install_{{ name }}:
       - file: {{ fonts_dir }}/{{ subdir }}
 {%- endmacro -%}
 
+{# Git clone a repo to /tmp, copy selected items to dest, clean up.
+   items: list of paths relative to repo root to cp -r (e.g., ['Flight-Dark-GTK', 'Flight-light-GTK'] or ['*/']).
+   creates: idempotency guard (defaults to dest).
+   Usage: {{ git_clone_deploy('flight-gtk', 'https://github.com/neg-serg/Flight-Plasma-Themes.git', '~/.local/share/themes', ['Flight-Dark-GTK', 'Flight-light-GTK']) }}
+#}
+{%- macro git_clone_deploy(name, repo, dest, items, creates=None, user='neg', home='/home/neg') -%}
+install_{{ name | replace('-', '_') }}:
+  cmd.run:
+    - name: |
+        set -eo pipefail
+        git clone --depth=1 {{ repo }} /tmp/{{ name }}
+        mkdir -p {{ dest }}
+{%- for item in items %}
+        cp -r /tmp/{{ name }}/{{ item }} {{ dest }}/
+{%- endfor %}
+        rm -rf /tmp/{{ name }}
+    - runas: {{ user }}
+    - shell: /bin/bash
+    - creates: {{ creates or dest }}
+    - retry:
+        attempts: 3
+        interval: 10
+{%- endmacro -%}
+
 {# Deploy systemd unit file + manage service (file + daemon-reload + enable/disable + optional running).
    unit_type: 'service' (default) | 'timer' | 'socket' | etc.
    running: True (default False) to add service.running with watch for auto-restart.

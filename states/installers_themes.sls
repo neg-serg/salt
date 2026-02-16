@@ -1,5 +1,5 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import github_tar %}
+{% from '_macros.jinja' import github_tar, git_clone_deploy %}
 {% import_yaml 'data/versions.yaml' as ver %}
 {% set user = host.user %}
 {% set home = host.home %}
@@ -7,17 +7,7 @@
 
 # --- matugen (Material You color generation) ---
 {{ github_tar('matugen', 'https://github.com/InioX/matugen/releases/download/v' ~ ver.matugen ~ '/matugen-' ~ ver.matugen ~ '-x86_64.tar.gz') }}
-install_matugen_themes:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        git clone --depth=1 https://github.com/InioX/matugen-themes.git /tmp/matugen-themes
-        mkdir -p ~/.config/matugen/templates
-        cp -r /tmp/matugen-themes/*/ ~/.config/matugen/templates/
-        rm -rf /tmp/matugen-themes
-    - runas: {{ user }}
-    - shell: /bin/bash
-    - creates: {{ home }}/.config/matugen/templates
+{{ git_clone_deploy('matugen-themes', 'https://github.com/InioX/matugen-themes.git', '~/.config/matugen/templates', ['*/']) }}
 
 # --- Kora icon theme ---
 install_kora_icons:
@@ -39,15 +29,4 @@ install_kora_icons:
     - creates: {{ home }}/.local/share/icons/kora
 
 # --- Flight GTK theme (dark + light) ---
-install_flight_gtk_theme:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        git clone --depth=1 https://github.com/neg-serg/Flight-Plasma-Themes.git /tmp/flight-gtk
-        mkdir -p ~/.local/share/themes
-        cp -r /tmp/flight-gtk/Flight-Dark-GTK ~/.local/share/themes/
-        cp -r /tmp/flight-gtk/Flight-light-GTK ~/.local/share/themes/
-        rm -rf /tmp/flight-gtk
-    - runas: {{ user }}
-    - shell: /bin/bash
-    - creates: {{ home }}/.local/share/themes/Flight-Dark-GTK
+{{ git_clone_deploy('flight-gtk', 'https://github.com/neg-serg/Flight-Plasma-Themes.git', '~/.local/share/themes', ['Flight-Dark-GTK', 'Flight-light-GTK'], creates=home ~ '/.local/share/themes/Flight-Dark-GTK') }}
