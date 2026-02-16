@@ -1,6 +1,9 @@
 [Unit]
 Description=Generate /etc/fancontrol from detected hwmon devices
 Before=fancontrol.service
+# Skip if config already exists (hwmon paths are stable on static hardware).
+# To force regeneration: rm /etc/fancontrol && systemctl restart fancontrol-setup
+ConditionPathExists=!/etc/fancontrol
 
 [Service]
 Type=oneshot
