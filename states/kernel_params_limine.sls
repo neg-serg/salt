@@ -99,6 +99,7 @@ set_kernel_params_limine:
 limine_snapper_sync_config:
   cmd.run:
     - name: |
+        set -eo pipefail
         CONF="/etc/limine-snapper-sync.conf"
         [ -f "$CONF" ] || exit 0
         sed -i \

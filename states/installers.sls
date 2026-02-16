@@ -53,6 +53,7 @@
 install_zi:
   cmd.run:
     - name: |
+        set -eo pipefail
         export ZI_HOME="$HOME/.config/zi"
         mkdir -p "$ZI_HOME"
         git clone https://github.com/z-shell/zi.git "$ZI_HOME/bin"

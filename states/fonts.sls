@@ -41,6 +41,7 @@
 download_fira_code_nerd:
   cmd.run:
     - name: |
+        set -eo pipefail
         curl -L -o /tmp/FiraCode.zip https://github.com/ryanoasis/nerd-fonts/releases/download/v{{ firacode_ver }}/FiraCode.zip
         unzip -o /tmp/FiraCode.zip -d {{ fonts_dir }}/FiraCodeNerd
         rm /tmp/FiraCode.zip

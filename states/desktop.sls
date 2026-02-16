@@ -63,6 +63,7 @@ wallust_hyprland_defaults:
 set_dconf_themes:
   cmd.run:
     - name: |
+        set -eo pipefail
         dconf write /org/gnome/desktop/interface/gtk-theme "'Flight-Dark-GTK'"
         dconf write /org/gnome/desktop/interface/icon-theme "'kora'"
         dconf write /org/gnome/desktop/interface/font-name "'Iosevka 10'"

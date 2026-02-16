@@ -47,6 +47,7 @@ jellyfin_enabled:
 install_bitcoind:
   cmd.run:
     - name: |
+        set -eo pipefail
         curl -sL "https://bitcoincore.org/bin/bitcoin-core-{{ bitcoind_ver }}/bitcoin-{{ bitcoind_ver }}-x86_64-linux-gnu.tar.gz" -o /tmp/bitcoin.tar.gz
         tar -xzf /tmp/bitcoin.tar.gz -C /tmp
         install -m 0755 /tmp/bitcoin-{{ bitcoind_ver }}/bin/bitcoind /usr/local/bin/bitcoind

@@ -38,9 +38,10 @@ rmpc_config:
 cargo_packages:
   cmd.run:
     - name: |
+        set -eo pipefail
         export PATH="{{ home }}/.local/share/cargo/bin:$PATH"
-        cargo install rmpc 2>/dev/null || true
-        BINDGEN_EXTRA_CLANG_ARGS="-I/usr/lib/clang/21/include" cargo install wiremix 2>/dev/null || true
+        cargo install rmpc
+        BINDGEN_EXTRA_CLANG_ARGS="-I/usr/lib/clang/21/include" cargo install wiremix
     - runas: {{ user }}
     - env:
       - HOME: {{ home }}
@@ -87,6 +88,7 @@ mpd_enabled:
 mpdas_config:
   cmd.run:
     - name: |
+        set -eo pipefail
         USER=$(gopass show -o lastfm/username)
         PASS=$(gopass show -o lastfm/password)
         cat > {{ home }}/.config/mpdasrc << EOF
@@ -118,7 +120,9 @@ mpd_companion_services:
         services=()
         pacman -Q mpdris2 >/dev/null 2>&1 && ! systemctl --user is-enabled mpDris2.service 2>/dev/null && services+=(mpDris2.service)
         pacman -Q mpdas >/dev/null 2>&1 && ! systemctl --user is-enabled mpdas.service 2>/dev/null && services+=(mpdas.service)
-        [ ${#services[@]} -gt 0 ] && systemctl --user enable --now "${services[@]}" || true
+        if [ ${#services[@]} -gt 0 ]; then
+          systemctl --user enable --now "${services[@]}"
+        fi
         {% endraw %}
     - runas: {{ user }}
     - env:

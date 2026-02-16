@@ -9,6 +9,7 @@ system_timezone:
 system_locale_keymap:
   cmd.run:
     - name: |
+        set -eo pipefail
         localectl set-locale LANG=en_US.UTF-8
         localectl set-x11-keymap ru,us
     - unless: |
