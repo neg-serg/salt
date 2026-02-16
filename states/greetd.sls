@@ -1,3 +1,6 @@
+{% from 'host_config.jinja' import host %}
+{% set user = host.user %}
+{% set home = host.home %}
 # greetd display manager: replace sddm with quickshell greeter
 
 disable_sddm:
@@ -22,7 +25,7 @@ greetd_config:
 
         [default_session]
         command = "Hyprland -c /etc/greetd/hyprland-greeter.conf"
-        user = "neg"
+        user = "{{ user }}"
     - user: root
     - group: root
     - mode: '0644'
@@ -59,12 +62,12 @@ greetd_session_wrapper:
 greetd_wallpaper:
   cmd.run:
     - name: |
-        wallpaper=$(tr '\0' '\n' < /home/neg/.cache/swww/DP-2 2>/dev/null | grep '^/')
+        wallpaper=$(tr '\0' '\n' < {{ home }}/.cache/swww/DP-2 2>/dev/null | grep '^/')
         if [ -n "$wallpaper" ] && [ -f "$wallpaper" ]; then
-          cp -f "$wallpaper" /home/neg/.cache/greeter-wallpaper
+          cp -f "$wallpaper" {{ home }}/.cache/greeter-wallpaper
         fi
-    - runas: neg
-    - unless: test -f /home/neg/.cache/greeter-wallpaper
+    - runas: {{ user }}
+    - unless: test -f {{ home }}/.cache/greeter-wallpaper
     - require:
       - file: greetd_config_dir
 

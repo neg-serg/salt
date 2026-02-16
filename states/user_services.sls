@@ -1,17 +1,21 @@
+{% from 'host_config.jinja' import host %}
+{% set user = host.user %}
+{% set home = host.home %}
+{% set runtime_dir = '/run/user/' ~ host.uid|string %}
 # Systemd user services: mail, calendar, chezmoi, media, surfingkeys
 
 # --- Systemd user services for media ---
 # Remove legacy custom mpdris2.service (replaced by drop-in for RPM unit)
 mpdris2_legacy_cleanup:
   file.absent:
-    - name: /home/neg/.config/systemd/user/mpdris2.service
+    - name: {{ home }}/.config/systemd/user/mpdris2.service
 
 # Drop-in override for RPM-shipped mpDris2.service: adds MPD ordering
 mpdris2_user_service:
   file.managed:
-    - name: /home/neg/.config/systemd/user/mpDris2.service.d/override.conf
-    - user: neg
-    - group: neg
+    - name: {{ home }}/.config/systemd/user/mpDris2.service.d/override.conf
+    - user: {{ user }}
+    - group: {{ user }}
     - mode: '0644'
     - makedirs: True
     - contents: |
@@ -22,27 +26,27 @@ mpdris2_user_service:
 mpdris2_daemon_reload:
   cmd.run:
     - name: systemctl --user daemon-reload
-    - runas: neg
+    - runas: {{ user }}
     - env:
-      - XDG_RUNTIME_DIR: /run/user/1000
+      - XDG_RUNTIME_DIR: {{ runtime_dir }}
     - onchanges:
       - file: mpdris2_user_service
 
 chezmoi_config:
   file.managed:
-    - name: /home/neg/.config/chezmoi/chezmoi.toml
+    - name: {{ home }}/.config/chezmoi/chezmoi.toml
     - source: salt://dotfiles/dot_config/chezmoi/chezmoi.toml
-    - user: neg
-    - group: neg
+    - user: {{ user }}
+    - group: {{ user }}
     - mode: '0644'
     - makedirs: True
 
 chezmoi_source_symlink:
   file.symlink:
-    - name: /home/neg/.local/share/chezmoi
-    - target: /home/neg/src/salt/dotfiles
-    - user: neg
-    - group: neg
+    - name: {{ home }}/.local/share/chezmoi
+    - target: {{ home }}/src/salt/dotfiles
+    - user: {{ user }}
+    - group: {{ user }}
     - force: True
     - makedirs: True
     - require:
@@ -53,22 +57,22 @@ chezmoi_source_symlink:
 mail_directories:
   file.directory:
     - names:
-      - /home/neg/.local/mail/gmail/INBOX
-      - /home/neg/.local/mail/gmail/[Gmail]/Sent Mail
-      - /home/neg/.local/mail/gmail/[Gmail]/Drafts
-      - /home/neg/.local/mail/gmail/[Gmail]/All Mail
-      - /home/neg/.local/mail/gmail/[Gmail]/Trash
-      - /home/neg/.local/mail/gmail/[Gmail]/Spam
-    - user: neg
-    - group: neg
+      - {{ home }}/.local/mail/gmail/INBOX
+      - {{ home }}/.local/mail/gmail/[Gmail]/Sent Mail
+      - {{ home }}/.local/mail/gmail/[Gmail]/Drafts
+      - {{ home }}/.local/mail/gmail/[Gmail]/All Mail
+      - {{ home }}/.local/mail/gmail/[Gmail]/Trash
+      - {{ home }}/.local/mail/gmail/[Gmail]/Spam
+    - user: {{ user }}
+    - group: {{ user }}
     - makedirs: True
 
 # --- Systemd user services for mail ---
 mbsync_gmail_service:
   file.managed:
-    - name: /home/neg/.config/systemd/user/mbsync-gmail.service
-    - user: neg
-    - group: neg
+    - name: {{ home }}/.config/systemd/user/mbsync-gmail.service
+    - user: {{ user }}
+    - group: {{ user }}
     - mode: '0644'
     - makedirs: True
     - contents: |
@@ -84,9 +88,9 @@ mbsync_gmail_service:
 
 mbsync_gmail_timer:
   file.managed:
-    - name: /home/neg/.config/systemd/user/mbsync-gmail.timer
-    - user: neg
-    - group: neg
+    - name: {{ home }}/.config/systemd/user/mbsync-gmail.timer
+    - user: {{ user }}
+    - group: {{ user }}
     - mode: '0644'
     - makedirs: True
     - contents: |
@@ -100,9 +104,9 @@ mbsync_gmail_timer:
 
 imapnotify_gmail_service:
   file.managed:
-    - name: /home/neg/.config/systemd/user/imapnotify-gmail.service
-    - user: neg
-    - group: neg
+    - name: {{ home }}/.config/systemd/user/imapnotify-gmail.service
+    - user: {{ user }}
+    - group: {{ user }}
     - mode: '0644'
     - makedirs: True
     - contents: |
@@ -120,9 +124,9 @@ imapnotify_gmail_service:
 # --- Systemd user services for calendar ---
 vdirsyncer_service:
   file.managed:
-    - name: /home/neg/.config/systemd/user/vdirsyncer.service
-    - user: neg
-    - group: neg
+    - name: {{ home }}/.config/systemd/user/vdirsyncer.service
+    - user: {{ user }}
+    - group: {{ user }}
     - mode: '0644'
     - makedirs: True
     - contents: |
@@ -136,9 +140,9 @@ vdirsyncer_service:
 
 vdirsyncer_timer:
   file.managed:
-    - name: /home/neg/.config/systemd/user/vdirsyncer.timer
-    - user: neg
-    - group: neg
+    - name: {{ home }}/.config/systemd/user/vdirsyncer.timer
+    - user: {{ user }}
+    - group: {{ user }}
     - mode: '0644'
     - makedirs: True
     - contents: |
@@ -153,9 +157,9 @@ vdirsyncer_timer:
 # --- Surfingkeys HTTP server (browser extension helper) ---
 surfingkeys_server_service:
   file.managed:
-    - name: /home/neg/.config/systemd/user/surfingkeys-server.service
-    - user: neg
-    - group: neg
+    - name: {{ home }}/.config/systemd/user/surfingkeys-server.service
+    - user: {{ user }}
+    - group: {{ user }}
     - mode: '0644'
     - makedirs: True
     - contents: |
@@ -173,9 +177,9 @@ surfingkeys_server_service:
 # --- Pic dirs indexer (inotifywait + zoxide) ---
 pic_dirs_list_service:
   file.managed:
-    - name: /home/neg/.config/systemd/user/pic-dirs-list.service
-    - user: neg
-    - group: neg
+    - name: {{ home }}/.config/systemd/user/pic-dirs-list.service
+    - user: {{ user }}
+    - group: {{ user }}
     - mode: '0644'
     - makedirs: True
     - contents: |
@@ -194,9 +198,9 @@ pic_dirs_list_service:
 # --- Vicinae: application launcher daemon ---
 vicinae_service:
   file.managed:
-    - name: /home/neg/.config/systemd/user/vicinae.service
-    - user: neg
-    - group: neg
+    - name: {{ home }}/.config/systemd/user/vicinae.service
+    - user: {{ user }}
+    - group: {{ user }}
     - mode: '0644'
     - makedirs: True
     - contents: |
@@ -223,10 +227,10 @@ enable_user_services:
         systemctl --user daemon-reload
         systemctl --user enable imapnotify-gmail.service surfingkeys-server.service pic-dirs-list.service gpg-agent.socket gpg-agent-ssh.socket
         systemctl --user enable --now mbsync-gmail.timer vdirsyncer.timer
-    - runas: neg
+    - runas: {{ user }}
     - env:
-      - XDG_RUNTIME_DIR: /run/user/1000
-      - DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
+      - XDG_RUNTIME_DIR: {{ runtime_dir }}
+      - DBUS_SESSION_BUS_ADDRESS: unix:path={{ runtime_dir }}/bus
     - unless: |
         systemctl --user is-enabled imapnotify-gmail.service 2>/dev/null &&
         systemctl --user is-enabled mbsync-gmail.timer 2>/dev/null &&

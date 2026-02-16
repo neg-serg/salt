@@ -5,7 +5,7 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-ExecStart=/home/neg/.local/bin/xray run -config /etc/xray/config.json
+ExecStart={{ home }}/.local/bin/xray run -config /etc/xray/config.json
 Restart=on-failure
 RestartSec=5
 LimitNOFILE=65535

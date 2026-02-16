@@ -1,37 +1,40 @@
+{% from 'host_config.jinja' import host %}
+{% set user = host.user %}
+{% set home = host.home %}
 # Floorp browser: user.js + userChrome.css + userContent.css + extensions
 {% from 'packages.jinja' import floorp_extensions, unwanted_extensions %}
 
-{% set floorp_profile = '/home/neg/.floorp/c85pjaxk.default-default' %}
+{% set floorp_profile = home ~ '/.floorp/c85pjaxk.default-default' %}
 
 floorp_user_js:
   file.managed:
     - name: {{ floorp_profile }}/user.js
     - source: salt://dotfiles/dot_config/floorp/user.js
-    - user: neg
-    - group: neg
+    - user: {{ user }}
+    - group: {{ user }}
     - makedirs: True
 
 floorp_userchrome:
   file.managed:
     - name: {{ floorp_profile }}/chrome/userChrome.css
     - source: salt://dotfiles/dot_config/floorp/userChrome.css
-    - user: neg
-    - group: neg
+    - user: {{ user }}
+    - group: {{ user }}
     - makedirs: True
 
 floorp_usercontent:
   file.managed:
     - name: {{ floorp_profile }}/chrome/userContent.css
     - source: salt://dotfiles/dot_config/floorp/userContent.css
-    - user: neg
-    - group: neg
+    - user: {{ user }}
+    - group: {{ user }}
     - makedirs: True
 
 floorp_extensions_dir:
   file.directory:
     - name: {{ floorp_profile }}/extensions
-    - user: neg
-    - group: neg
+    - user: {{ user }}
+    - group: {{ user }}
 
 # --- Floorp extensions (download .xpi into profile) ---
 {% for ext in floorp_extensions %}
@@ -39,7 +42,7 @@ floorp_ext_{{ ext.slug | replace('-', '_') }}:
   cmd.run:
     - name: curl -fsSL -o '{{ floorp_profile }}/extensions/{{ ext.id }}.xpi' 'https://addons.mozilla.org/firefox/downloads/latest/{{ ext.slug }}/latest.xpi'
     - creates: {{ floorp_profile }}/extensions/{{ ext.id }}.xpi
-    - runas: neg
+    - runas: {{ user }}
     - require:
       - file: floorp_extensions_dir
 {% endfor %}

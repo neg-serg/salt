@@ -1,3 +1,5 @@
+{% from 'host_config.jinja' import host %}
+{% set user = host.user %}
 # Steam + gaming tools (native pacman install)
 # Requires multilib repo for lib32 dependencies;
 # --ask 4 resolves CachyOS lib32-mesa-git vs multilib lib32-mesa conflict.
@@ -34,7 +36,7 @@ install_steam:
 steam_library_dir:
   file.directory:
     - name: /mnt/zero/steam/steamapps
-    - user: neg
-    - group: neg
+    - user: {{ user }}
+    - group: {{ user }}
     - makedirs: True
 

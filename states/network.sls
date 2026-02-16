@@ -46,6 +46,9 @@ xray_service:
     - name: /etc/systemd/system/xray.service
     - mode: '0644'
     - source: salt://units/xray.service
+    - template: jinja
+    - context:
+        home: {{ host.home }}
 
 {{ daemon_reload('xray', ['file: xray_service']) }}
 
@@ -65,6 +68,10 @@ singbox_service:
     - name: /etc/systemd/system/sing-box-tun.service
     - mode: '0644'
     - source: salt://units/sing-box-tun.service
+    - template: jinja
+    - context:
+        home: {{ host.home }}
+        uid: {{ host.uid }}
 
 {{ daemon_reload('singbox', ['file: singbox_service']) }}
 {% endif %}
