@@ -99,27 +99,30 @@ zsh_config_dir:
     - group: root
     - mode: '0755'
 
-/etc/zshenv:
+/etc/zsh/zshenv:
   file.managed:
     - contents: |
-        # System-wide Zsh environment
+        # System-wide Zsh environment (zsh reads /etc/zsh/ on Arch)
         export ZDOTDIR="${XDG_CONFIG_HOME:-$HOME/.config}/zsh"
-    - user: root
-    - group: root
-    - mode: '0644'
-
-/etc/zsh/zshrc:
-  file.managed:
-    - contents: |
-        # System-wide zshrc
-        # If ZDOTDIR is set, zsh will source it from there.
-        # This ensures ZDOTDIR is respected even if set in /etc/zshenv
-        [[ -f "$ZDOTDIR/.zshrc" ]] && source "$ZDOTDIR/.zshrc"
     - user: root
     - group: root
     - mode: '0644'
     - require:
       - file: zsh_config_dir
+
+/etc/zsh/zshrc:
+  file.managed:
+    - contents: |
+        # System-wide zshrc (ZDOTDIR set in /etc/zsh/zshenv)
+    - user: root
+    - group: root
+    - mode: '0644'
+    - require:
+      - file: zsh_config_dir
+
+cleanup_old_etc_zshenv:
+  file.absent:
+    - name: /etc/zshenv
 
 # Force shell update for users
 force_zsh_neg:
