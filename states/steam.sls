@@ -12,7 +12,7 @@ enable_multilib:
 
         [multilib]
         Include = /etc/pacman.d/mirrorlist
-    - unless: grep -q '^\[multilib\]' /etc/pacman.conf
+    - unless: rg -q '^\[multilib\]' /etc/pacman.conf
 
 sync_multilib:
   cmd.run:
@@ -23,14 +23,14 @@ sync_multilib:
 install_vulkan_radeon:
   cmd.run:
     - name: pacman -S --noconfirm --needed --ask 4 vulkan-radeon lib32-vulkan-radeon
-    - unless: grep -qx 'vulkan-radeon' /var/cache/salt/pacman_installed.txt
+    - unless: rg -qx 'vulkan-radeon' /var/cache/salt/pacman_installed.txt
     - require:
       - cmd: sync_multilib
 
 install_steam:
   cmd.run:
     - name: pacman -S --noconfirm --needed --ask 4 steam gamescope mangohud gamemode protontricks
-    - unless: grep -qx 'steam' /var/cache/salt/pacman_installed.txt
+    - unless: rg -qx 'steam' /var/cache/salt/pacman_installed.txt
     - require:
       - cmd: install_vulkan_radeon
 

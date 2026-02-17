@@ -51,7 +51,7 @@ pull_{{ model | replace('.', '_') | replace(':', '_') | replace('-', '_') }}:
     - shell: /bin/bash
     - unless: >-
         curl -sf http://127.0.0.1:11434/api/tags |
-        grep -q '"{{ model }}"'
+        rg -q '"{{ model }}"'
     - timeout: 660
     - require:
       - cmd: ollama_start

@@ -30,5 +30,5 @@
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: sudo -u {{ user }} paru -S --noconfirm --needed {{ pkg }}
-    - unless: grep -qx '{{ pkg }}' /var/cache/salt/pacman_installed.txt
+    - unless: rg -qx '{{ pkg }}' /var/cache/salt/pacman_installed.txt
 {% endfor %}

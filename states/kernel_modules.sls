@@ -33,7 +33,7 @@ kernel_modules_blacklist:
 load_{{ mod | replace('-', '_') }}:
   cmd.run:
     - name: modprobe {{ mod }}
-    - unless: lsmod | grep -q '^{{ mod | replace('-', '_') }}'
+    - unless: lsmod | rg -q '^{{ mod | replace('-', '_') }}'
     - require:
       - file: kernel_modules_load
 {% endfor %}

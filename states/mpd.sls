@@ -77,7 +77,7 @@ mpd_enabled:
       - file: mpd_directories
       - cmd: music_mount
       - cmd: mpd_fifo
-    - onlyif: grep -qx 'mpd' /var/cache/salt/pacman_installed.txt
+    - onlyif: rg -qx 'mpd' /var/cache/salt/pacman_installed.txt
     - unless: systemctl --user is-active mpd.service
 
 # --- Deploy mpdas config via gopass ---
@@ -114,8 +114,8 @@ mpd_companion_services:
     - name: |
         {% raw %}
         services=()
-        grep -qx 'mpdris2' /var/cache/salt/pacman_installed.txt && ! systemctl --user is-enabled mpDris2.service 2>/dev/null && services+=(mpDris2.service)
-        grep -qx 'mpdas' /var/cache/salt/pacman_installed.txt && ! systemctl --user is-enabled mpdas.service 2>/dev/null && services+=(mpdas.service)
+        rg -qx 'mpdris2' /var/cache/salt/pacman_installed.txt && ! systemctl --user is-enabled mpDris2.service 2>/dev/null && services+=(mpDris2.service)
+        rg -qx 'mpdas' /var/cache/salt/pacman_installed.txt && ! systemctl --user is-enabled mpdas.service 2>/dev/null && services+=(mpdas.service)
         if [ ${#services[@]} -gt 0 ]; then
           systemctl --user enable --now "${services[@]}"
         fi
@@ -130,6 +130,6 @@ mpd_companion_services:
       - cmd: mpdas_config
       - file: mpdas_service_file
     - unless: |
-        (! grep -qx 'mpdris2' /var/cache/salt/pacman_installed.txt || systemctl --user is-enabled mpDris2.service 2>/dev/null) &&
-        (! grep -qx 'mpdas' /var/cache/salt/pacman_installed.txt || systemctl --user is-enabled mpdas.service 2>/dev/null)
+        (! rg -qx 'mpdris2' /var/cache/salt/pacman_installed.txt || systemctl --user is-enabled mpDris2.service 2>/dev/null) &&
+        (! rg -qx 'mpdas' /var/cache/salt/pacman_installed.txt || systemctl --user is-enabled mpdas.service 2>/dev/null)
 {% endif %}

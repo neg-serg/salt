@@ -332,7 +332,7 @@ install_{{ name }}:
     - unless: |
         S="{{ fonts_dir }}/{{ subdir }}/.salt-installed"
         [ -f "$S" ] && exit 0
-        find {{ fonts_dir }}/{{ subdir }} -maxdepth 1 \( -name '*.otf' -o -name '*.ttf' \) -print -quit 2>/dev/null | grep -q .
+        find {{ fonts_dir }}/{{ subdir }} -maxdepth 1 \( -name '*.otf' -o -name '*.ttf' \) -print -quit 2>/dev/null | rg -q .
     - retry:
         attempts: 3
         interval: 10

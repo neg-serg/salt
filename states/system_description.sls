@@ -18,13 +18,13 @@ system_locale_keymap:
         localectl set-locale LANG=en_US.UTF-8
         localectl set-x11-keymap ru,us
     - unless: |
-        grep -q 'LANG=en_US.UTF-8' /etc/locale.conf 2>/dev/null &&
-        grep -q 'ru' /etc/X11/xorg.conf.d/00-keyboard.conf 2>/dev/null
+        rg -q 'LANG=en_US.UTF-8' /etc/locale.conf 2>/dev/null &&
+        rg -q 'ru' /etc/X11/xorg.conf.d/00-keyboard.conf 2>/dev/null
 
 system_hostname:
   cmd.run:
     - name: hostnamectl set-hostname {{ host.hostname }}
-    - unless: grep -qx '{{ host.hostname }}' /etc/hostname
+    - unless: rg -qx '{{ host.hostname }}' /etc/hostname
 
 include:
   - audio
