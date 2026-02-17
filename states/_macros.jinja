@@ -199,7 +199,7 @@ install_{{ name | replace('-', '_') }}:
     - unless: |
         C=/var/cache/salt/pacman_installed.txt
         [ -f "$C" ] || pacman -Qq > "$C"
-        grep -qx '{{ check or pkgs.split()[0] }}' "$C"
+        rg -qx '{{ check or pkgs.split()[0] }}' "$C"
     - require:
       - cmd: pacman_db_warmup
 {%- if requires %}
@@ -236,7 +236,7 @@ build_{{ safe }}:
     - unless: |
         C=/var/cache/salt/pacman_installed.txt
         [ -f "$C" ] || pacman -Qq > "$C"
-        grep -qx '{{ check or name }}' "$C"
+        rg -qx '{{ check or name }}' "$C"
     - require:
       - file: {{ safe }}_pkgbuild
       - cmd: pacman_db_warmup
@@ -493,7 +493,7 @@ install_{{ name }}:
     - unless: |
         S="{{ fonts_dir }}/{{ subdir }}/.salt-installed"
         [ -f "$S" ] && exit 0
-        find {{ fonts_dir }}/{{ subdir }} -maxdepth 1 \( -name '*.otf' -o -name '*.ttf' \) -print -quit 2>/dev/null | grep -q .
+        find {{ fonts_dir }}/{{ subdir }} -maxdepth 1 \( -name '*.otf' -o -name '*.ttf' \) -print -quit 2>/dev/null | rg -q .
     - retry:
         attempts: 3
         interval: 10

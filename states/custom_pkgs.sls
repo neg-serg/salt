@@ -23,7 +23,7 @@ build_duf:
   cmd.run:
     - name: |
         set -eo pipefail
-        if pacman -Q duf &>/dev/null && ! pacman -Qi duf 2>/dev/null | grep -q 'neg-serg'; then
+        if pacman -Q duf &>/dev/null && ! pacman -Qi duf 2>/dev/null | rg -q 'neg-serg'; then
             pacman -Rdd --noconfirm duf
         fi
         su - {{ user }} -c 'cd {{ build_base }}/duf && makepkg -sf --noconfirm'
@@ -31,7 +31,7 @@ build_duf:
         rm -rf {{ build_base }}/duf
     - shell: /bin/bash
     - timeout: 600
-    - unless: grep -qx 'duf' /var/cache/salt/pacman_installed.txt && pacman -Qi duf 2>/dev/null | grep -q neg-serg
+    - unless: rg -qx 'duf' /var/cache/salt/pacman_installed.txt && pacman -Qi duf 2>/dev/null | rg -q neg-serg
     - require:
       - file: duf_pkgbuild
 
@@ -61,7 +61,7 @@ build_neg_pretty_printer:
         rm -rf {{ build_base }}/neg-pretty-printer /tmp/pretty-printer
     - shell: /bin/bash
     - timeout: 600
-    - unless: grep -qx 'neg-pretty-printer' /var/cache/salt/pacman_installed.txt
+    - unless: rg -qx 'neg-pretty-printer' /var/cache/salt/pacman_installed.txt
     - require:
       - file: neg_pretty_printer_pkgbuild
       - file: neg_pretty_printer_source

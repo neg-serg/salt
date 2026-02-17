@@ -14,7 +14,7 @@ check_hy3:
   cmd.run:
     - name: echo "hy3 plugin present"
     - unless: test -f {{ home }}/.local/lib/hyprland/libhy3.so
-    - onlyif: grep -qx 'hyprland' /var/cache/salt/pacman_installed.txt
+    - onlyif: rg -qx 'hyprland' /var/cache/salt/pacman_installed.txt
     - require:
       - file: {{ home }}/.local/lib/hyprland
 {% endif %}
