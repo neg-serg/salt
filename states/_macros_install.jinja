@@ -104,13 +104,16 @@ install_{{ name | replace('-', '_') }}:
 {%- endmacro -%}
 
 {# pipx install (PEP 668 compatible).
+   Handles broken symlinks (Python upgrades) by reinstalling if binary is missing despite being in pipx.
    Usage: {{ pip_pkg('httpstat') }}
           {{ pip_pkg('neovim_python_deps', pkg='neovim-remote', bin='nvr') }}
 #}
 {%- macro pip_pkg(name, pkg=None, bin=None, user='neg', home='/home/neg') -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
-    - name: pipx install {{ pkg or name }}
+    - name: |
+        pipx install {{ pkg or name }} 2>/dev/null || true
+        test -x {{ home }}/.local/bin/{{ bin or name }} || pipx reinstall {{ pkg or name }}
     - runas: {{ user }}
     - creates: {{ home }}/.local/bin/{{ bin or name }}
     - retry:

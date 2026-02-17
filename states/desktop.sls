@@ -44,11 +44,16 @@ running_services:
     - names:
       - NetworkManager
       - dbus-broker
-      - libvirtd
       - openrgb
       - bluetooth
       - systemd-timesyncd
     - enable: True
+
+# libvirtd is socket-activated: systemd starts it on demand and stops it when no VMs run.
+# Keeping it in service.running would re-start it on every Salt apply.
+libvirtd_enabled:
+  service.enabled:
+    - name: libvirtd
 
 # Disable tuned: its throughput-performance profile conflicts with custom
 # I/O tuning (sets read_ahead_kb=8192 on NVMe, may override sysctl values).
