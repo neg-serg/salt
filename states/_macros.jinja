@@ -196,7 +196,10 @@ install_{{ name | replace('-', '_') }}:
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: pacman -S --noconfirm --needed {{ pkgs }}
-    - unless: pacman -Q {{ check or pkgs.split()[0] }}
+    - unless: |
+        C=/var/cache/salt/pacman_installed.txt
+        [ -f "$C" ] || pacman -Qq > "$C"
+        grep -qx '{{ check or pkgs.split()[0] }}' "$C"
 {%- if requires %}
     - require:
 {%- for req in requires %}
@@ -206,7 +209,7 @@ install_{{ name | replace('-', '_') }}:
 {%- endmacro -%}
 
 {# Build and install a package from a local PKGBUILD via file.recurse + makepkg + pacman -U.
-   source: salt:// path to PKGBUILD directory. check: custom `unless` command (default: pacman -Q name).
+   source: salt:// path to PKGBUILD directory. check: package name for idempotency guard (default: name).
    Usage: {{ pkgbuild_install('raise', 'salt://build/pkgbuilds/raise', user='neg') }}
           {{ pkgbuild_install('iosevka-neg-fonts', 'salt://build/pkgbuilds/iosevka-neg-fonts', user='neg', timeout=7200) }}
 #}
@@ -229,7 +232,10 @@ build_{{ safe }}:
         rm -rf {{ build_base }}/{{ name }}
     - shell: /bin/bash
     - timeout: {{ timeout }}
-    - unless: {{ check or 'pacman -Q ' ~ name }}
+    - unless: |
+        C=/var/cache/salt/pacman_installed.txt
+        [ -f "$C" ] || pacman -Qq > "$C"
+        grep -qx '{{ check or name }}' "$C"
     - require:
       - file: {{ safe }}_pkgbuild
 {%- endmacro -%}
@@ -479,9 +485,13 @@ install_{{ name }}:
         unzip -o /tmp/{{ name }}.zip -d {{ fonts_dir }}/{{ subdir }}
         fc-cache -f {{ fonts_dir }}/{{ subdir }}
         rm -f /tmp/{{ name }}.zip
+        touch {{ fonts_dir }}/{{ subdir }}/.salt-installed
     - runas: {{ user }}
     - shell: /bin/bash
-    - unless: "find {{ fonts_dir }}/{{ subdir }} -name '*.otf' -o -name '*.ttf' 2>/dev/null | head -1 | grep -q ."
+    - unless: |
+        S="{{ fonts_dir }}/{{ subdir }}/.salt-installed"
+        [ -f "$S" ] && exit 0
+        find {{ fonts_dir }}/{{ subdir }} -maxdepth 1 \( -name '*.otf' -o -name '*.ttf' \) -print -quit 2>/dev/null | grep -q .
     - retry:
         attempts: 3
         interval: 10
