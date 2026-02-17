@@ -40,4 +40,31 @@ steam_library_dir:
     - user: {{ user }}
     - group: {{ user }}
     - makedirs: True
+
+steam_skins_dir:
+  file.directory:
+    - name: ~/.local/share/Steam/skins
+    - user: {{ user }}
+    - group: {{ user }}
+    - makedirs: True
+
+ensure_7z:
+  cmd.run:
+    - name: pacman -S --noconfirm --needed p7zip
+    - unless: rg -qx 'p7zip' /var/cache/salt/pacman_installed.txt
+
+download_modern_steam:
+  cmd.run:
+    - name: |
+        set -eo pipefail
+        TMPDIR=$(mktemp -d)
+        curl -fsSL https://github.com/SleepDaemon/Modern-Steam/releases/download/v0.2.7/SteamDarkMode.7z -o "$TMPDIR/SteamDarkMode.7z"
+        7z x "$TMPDIR/SteamDarkMode.7z" -o~/.local/share/Steam/skins/
+        rm -rf "$TMPDIR"
+    - runas: {{ user }}
+    - shell: /bin/bash
+    - creates: ~/.local/share/Steam/skins/SteamDarkMode
+    - require:
+      - cmd: ensure_7z
+      - file: steam_skins_dir
 {% endif %}
