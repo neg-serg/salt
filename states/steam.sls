@@ -23,14 +23,14 @@ sync_multilib:
 install_vulkan_radeon:
   cmd.run:
     - name: pacman -S --noconfirm --needed --ask 4 vulkan-radeon lib32-vulkan-radeon
-    - unless: pacman -Q vulkan-radeon
+    - unless: grep -qx 'vulkan-radeon' /var/cache/salt/pacman_installed.txt
     - require:
       - cmd: sync_multilib
 
 install_steam:
   cmd.run:
     - name: pacman -S --noconfirm --needed --ask 4 steam gamescope mangohud gamemode protontricks
-    - unless: pacman -Q steam
+    - unless: grep -qx 'steam' /var/cache/salt/pacman_installed.txt
     - require:
       - cmd: install_vulkan_radeon
 
