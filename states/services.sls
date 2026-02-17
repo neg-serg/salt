@@ -60,6 +60,17 @@ bitcoind_logrotate:
     - source: salt://configs/bitcoind-logrotate
 {% endif %}
 
+# --- Transmission: BitTorrent daemon (rustmission TUI frontend) ---
+{% if svc.transmission %}
+{{ pacman_install('transmission', 'transmission-cli') }}
+
+transmission_enabled:
+  service.enabled:
+    - name: transmission
+    - require:
+      - cmd: install_transmission
+{% endif %}
+
 # --- DuckDNS: dynamic DNS updater ---
 {% if svc.duckdns %}
 duckdns_script:
