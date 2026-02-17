@@ -2,6 +2,11 @@
 # Salt state for CachyOS workstation — top-level orchestrator
 # Packages installed via pacman/paru outside Salt; Salt handles configuration
 
+pacman_db_warmup:
+  cmd.run:
+    - name: pacman -Qq > /var/cache/salt/pacman_installed.txt
+    - onlyif: "true"
+
 system_timezone:
   timezone.system:
     - name: Europe/Moscow
