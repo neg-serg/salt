@@ -1,5 +1,5 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import github_tar, git_clone_deploy %}
+{% from '_macros_install.jinja' import github_tar, git_clone_deploy %}
 {% import_yaml 'data/versions.yaml' as ver %}
 {% set user = host.user %}
 {% set home = host.home %}

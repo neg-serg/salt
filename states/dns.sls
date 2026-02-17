@@ -1,5 +1,7 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import daemon_reload, pacman_install, system_daemon_user, github_release_system, service_with_unit, ensure_running %}
+{% from '_macros_service.jinja' import daemon_reload, system_daemon_user, service_with_unit, ensure_running %}
+{% from '_macros_install.jinja' import github_release_system %}
+{% from '_macros_pkg.jinja' import pacman_install %}
 {% set dns = host.features.dns %}
 
 # --- Unbound: recursive DNS resolver with DNSSEC + DoT ---

@@ -1,5 +1,5 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import user_service %}
+{% from '_macros_service.jinja' import user_service %}
 {% set user = host.user %}
 {% set home = host.home %}
 # Systemd user services: mail, calendar, chezmoi, media, surfingkeys

@@ -1,0 +1,71 @@
+{# Package manager macros: pacman_install, pkgbuild_install, npm_pkg #}
+
+{# Install packages via pacman (CachyOS/Arch).
+   check defaults to first package. requires is an optional list of requisites.
+   Usage: {{ pacman_install('unbound', 'unbound') }}
+          {{ pacman_install('jellyfin', 'jellyfin-server jellyfin-web') }}
+#}
+{%- macro pacman_install(name, pkgs, check=None, requires=None) -%}
+install_{{ name | replace('-', '_') }}:
+  cmd.run:
+    - name: pacman -S --noconfirm --needed {{ pkgs }}
+    - unless: |
+        C=/var/cache/salt/pacman_installed.txt
+        [ -f "$C" ] || pacman -Qq > "$C"
+        grep -qx '{{ check or pkgs.split()[0] }}' "$C"
+    - require:
+      - cmd: pacman_db_warmup
+{%- if requires %}
+{%- for req in requires %}
+      - {{ req }}
+{%- endfor %}
+{%- endif %}
+{%- endmacro -%}
+
+{# Build and install a package from a local PKGBUILD via file.recurse + makepkg + pacman -U.
+   source: salt:// path to PKGBUILD directory. check: package name for idempotency guard (default: name).
+   Usage: {{ pkgbuild_install('raise', 'salt://build/pkgbuilds/raise', user='neg') }}
+          {{ pkgbuild_install('iosevka-neg-fonts', 'salt://build/pkgbuilds/iosevka-neg-fonts', user='neg', timeout=7200) }}
+#}
+{%- macro pkgbuild_install(name, source, user='neg', build_base='/tmp/pkgbuild', timeout=600, check=None) -%}
+{%- set safe = name | replace('-', '_') -%}
+{{ safe }}_pkgbuild:
+  file.recurse:
+    - name: {{ build_base }}/{{ name }}
+    - source: {{ source }}
+    - makedirs: True
+    - user: {{ user }}
+    - group: {{ user }}
+
+build_{{ safe }}:
+  cmd.run:
+    - name: |
+        set -eo pipefail
+        su - {{ user }} -c 'cd {{ build_base }}/{{ name }} && makepkg -sf --noconfirm'
+        pacman -U --noconfirm --needed {{ build_base }}/{{ name }}/*.pkg.tar.zst
+        rm -rf {{ build_base }}/{{ name }}
+    - shell: /bin/bash
+    - timeout: {{ timeout }}
+    - unless: |
+        C=/var/cache/salt/pacman_installed.txt
+        [ -f "$C" ] || pacman -Qq > "$C"
+        grep -qx '{{ check or name }}' "$C"
+    - require:
+      - file: {{ safe }}_pkgbuild
+      - cmd: pacman_db_warmup
+{%- endmacro -%}
+
+{# npm install -g (global npm package).
+   Usage: {{ npm_pkg('openclaw') }}
+          {{ npm_pkg('prettier', bin='prettier') }}
+#}
+{%- macro npm_pkg(name, pkg=None, bin=None, user='neg', home='/home/neg') -%}
+install_{{ name | replace('-', '_') }}:
+  cmd.run:
+    - name: npm install -g {{ pkg or name }}
+    - runas: {{ user }}
+    - creates: {{ home }}/.local/bin/{{ bin or name }}
+    - retry:
+        attempts: 3
+        interval: 10
+{%- endmacro -%}
