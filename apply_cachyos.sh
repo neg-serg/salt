@@ -52,6 +52,22 @@ file_roots:
   base:
     - ${SCRIPT_DIR}/states/
     - ${SCRIPT_DIR}/
+
+# --- Performance optimizations ---
+# Grains: skip expensive DNS reverse-lookup and hardware probes
+enable_fqdns_grains: False
+enable_gpu_grains: False
+# Cache grain collection to disk; avoids full rebuild on every run
+grains_cache: True
+grains_cache_expiration: 3600
+# Salt 3007+: skip expensive module fallback file scan
+lazy_loader_strict_matching: True
+# No custom _modules/ in this repo — skip saltutil.sync_all before each run
+autoload_dynamic_modules: False
+# Don't traverse non-SLS dirs (configs/, scripts/, units/, data/, build/)
+fileserver_limit_traversal: True
+# Limit parallel state processes (parallel: True in states)
+process_count_max: 8
 EOF
 }
 
