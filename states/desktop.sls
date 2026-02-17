@@ -1,5 +1,6 @@
 # Desktop environment: services, SSH, wallust defaults, dconf themes
 {% from 'host_config.jinja' import host %}
+{% from '_macros_pkg.jinja' import pacman_install %}
 {% set user = host.user %}
 {% set home = host.home %}
 
@@ -62,6 +63,17 @@ disable_tuned:
   service.dead:
     - name: tuned
     - enable: False
+
+# --- Hyprland ecosystem packages ---
+{{ pacman_install('hyprland_desktop',
+    'hyprpaper hypridle hyprlock hyprpolkitagent xdg-desktop-portal-hyprland') }}
+
+install_xdg_termfilechooser:
+  cmd.run:
+    - name: sudo -u {{ user }} paru -S --noconfirm --needed xdg-desktop-portal-termfilechooser-git
+    - unless: rg -qx 'xdg-desktop-portal-termfilechooser-git' /var/cache/salt/pacman_installed.txt
+    - require:
+      - cmd: pacman_db_warmup
 
 # --- SSH directory setup ---
 ssh_dir:
