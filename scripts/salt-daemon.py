@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/home/neg/src/salt/.venv/bin/python3
 """
 salt-daemon.py — pre-loaded Salt Caller daemon for faster state.apply
 
