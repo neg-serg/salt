@@ -200,8 +200,9 @@ install_{{ name | replace('-', '_') }}:
         C=/var/cache/salt/pacman_installed.txt
         [ -f "$C" ] || pacman -Qq > "$C"
         grep -qx '{{ check or pkgs.split()[0] }}' "$C"
-{%- if requires %}
     - require:
+      - cmd: pacman_db_warmup
+{%- if requires %}
 {%- for req in requires %}
       - {{ req }}
 {%- endfor %}
@@ -238,6 +239,7 @@ build_{{ safe }}:
         grep -qx '{{ check or name }}' "$C"
     - require:
       - file: {{ safe }}_pkgbuild
+      - cmd: pacman_db_warmup
 {%- endmacro -%}
 
 {# Create system daemon user + data directory.
