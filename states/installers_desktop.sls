@@ -1,5 +1,5 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import curl_bin, curl_extract_zip, curl_extract_tar %}
+{% from '_macros_install.jinja' import curl_bin, curl_extract_zip, curl_extract_tar %}
 {% import_yaml 'data/installers_desktop.yaml' as apps %}
 {% import_yaml 'data/versions.yaml' as ver %}
 {% set user = host.user %}

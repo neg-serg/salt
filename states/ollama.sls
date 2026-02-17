@@ -1,5 +1,6 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import service_with_unit, npm_pkg %}
+{% from '_macros_service.jinja' import service_with_unit %}
+{% from '_macros_pkg.jinja' import npm_pkg %}
 {% set user = host.user %}
 {% set home = host.home %}
 # Ollama LLM server: systemd service, model pulls

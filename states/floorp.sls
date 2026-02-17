@@ -1,5 +1,5 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import firefox_extension %}
+{% from '_macros_install.jinja' import firefox_extension %}
 {% set user = host.user %}
 {% set home = host.home %}
 # Floorp browser: user.js + userChrome.css + userContent.css + extensions

@@ -1,0 +1,180 @@
+{# Service-related macros: ensure_running, daemon_reload, service_with_unit, user_service, system_daemon_user #}
+
+{# Clear failed state + ensure service is running with config watches.
+   Emits two states: {{ name }}_reset_failed and {{ name }}_running.
+   Usage: {{ ensure_running('unbound', watch=['file: unbound_config']) }}
+          {{ ensure_running('adguardhome', watch=['file: adguardhome_service']) }}
+#}
+{%- macro ensure_running(name, watch=None) -%}
+{{ name }}_reset_failed:
+  cmd.run:
+    - name: systemctl reset-failed {{ name }} 2>/dev/null; true
+    - onlyif: systemctl is-failed {{ name }}
+    - require:
+      - service: {{ name }}_enabled
+
+{{ name }}_running:
+  service.running:
+    - name: {{ name }}
+{%- if watch %}
+    - watch:
+{%- for w in watch %}
+      - {{ w }}
+{%- endfor %}
+{%- endif %}
+    - require:
+      - service: {{ name }}_enabled
+      - cmd: {{ name }}_reset_failed
+{%- endmacro -%}
+
+{# Trigger systemd daemon-reload when listed states change.
+   Usage: {{ daemon_reload('unbound', ['cmd: install_unbound', 'file: unbound_override']) }}
+#}
+{%- macro daemon_reload(name, onchanges) -%}
+{{ name }}_daemon_reload:
+  cmd.run:
+    - name: systemctl daemon-reload
+    - onchanges:
+{%- for item in onchanges %}
+      - {{ item }}
+{%- endfor %}
+{%- endmacro -%}
+
+{# Create system daemon user + data directory.
+   Consolidates: user.present (system user, nologin shell) + file.directory (homedir/datadir with ownership).
+   shell defaults to /usr/sbin/nologin. createhome defaults to False (createhome by file.directory instead).
+   Usage: {{ system_daemon_user('loki', '/var/lib/loki') }}
+          {{ system_daemon_user('adguardhome', '/var/lib/adguardhome') }}
+          {{ system_daemon_user('bitcoind', '/var/lib/bitcoind', requires=['cmd: install_bitcoind']) }}
+#}
+{%- macro system_daemon_user(name, home_dir, shell='/usr/sbin/nologin', requires=None) -%}
+{{ name }}_user:
+  user.present:
+    - name: {{ name }}
+    - system: True
+    - shell: {{ shell }}
+    - home: {{ home_dir }}
+    - createhome: False
+
+{{ name }}_data_dir:
+  file.directory:
+    - name: {{ home_dir }}
+    - user: {{ name }}
+    - group: {{ name }}
+    - makedirs: True
+    - require:
+      - user: {{ name }}_user
+{%- if requires %}
+{%- for req in requires %}
+      - {{ req }}
+{%- endfor %}
+{%- endif %}
+{%- endmacro -%}
+
+{# Deploy inline systemd user unit file (~/.config/systemd/user/).
+   Callable macro: unit content goes inside {% call %} block.
+   Usage:
+   {% call user_service('mbsync_gmail_service', 'mbsync-gmail.service', user=user, home=home) %}
+   [Unit]
+   Description=Mailbox synchronization (Gmail)
+   [Service]
+   Type=oneshot
+   ExecStart=/usr/bin/mbsync -c %h/.config/mbsync/mbsyncrc gmail
+   [Install]
+   WantedBy=default.target
+   {% endcall %}
+#}
+{%- macro user_service(name, filename, user='neg', home='/home/neg') -%}
+{{ name }}:
+  file.managed:
+    - name: {{ home }}/.config/systemd/user/{{ filename }}
+    - user: {{ user }}
+    - group: {{ user }}
+    - mode: '0644'
+    - makedirs: True
+    - contents: |
+{{ caller() | trim | indent(8, first=True) }}
+{%- endmacro -%}
+
+{# Deploy systemd unit file + manage service (file + daemon-reload + enable/disable + optional running).
+   unit_type: 'service' (default) | 'timer' | 'socket' | etc.
+   running: True (default False) to add service.running with watch for auto-restart.
+   enabled: True (default) = service.enabled; False = service.disabled; None = skip enable/disable.
+   requires: optional list of state requisites (includes daemon-reload as base requirement).
+   template: 'jinja' (default None) to render the unit file as a Jinja template.
+   context: dict of template variables (default None), used with template='jinja'.
+   onlyif: guard for service.enabled (default None), e.g. 'command -v ollama'.
+   companion: optional second unit source for service+timer pairs (daemon-reload watches both).
+   Usage: {{ service_with_unit('loki', 'salt://units/loki.service', requires=['cmd: install_loki', 'file: loki_config']) }}
+          {{ service_with_unit('ollama', 'salt://units/ollama.service', template='jinja', context={'user': user, 'home': home}, onlyif='command -v ollama') }}
+          {{ service_with_unit('xray', 'salt://units/xray.service', enabled=False) }}
+          {{ service_with_unit('duckdns-update', 'salt://units/duckdns-update.timer', unit_type='timer', enabled=False, companion='salt://units/duckdns-update.service') }}
+#}
+{%- macro service_with_unit(name, source, unit_type='service', running=False, enabled=True, requires=None, template=None, context=None, onlyif=None, companion=None) -%}
+{{ name }}_service:
+  file.managed:
+    - name: /etc/systemd/system/{{ name }}.{{ unit_type }}
+    - mode: '0644'
+    - source: {{ source }}
+{%- if template %}
+    - template: {{ template }}
+{%- endif %}
+{%- if context %}
+    - context:
+{%- for key, val in context.items() %}
+        {{ key }}: {{ val }}
+{%- endfor %}
+{%- endif %}
+{%- if companion %}
+
+{{ name }}_companion:
+  file.managed:
+    - name: /etc/systemd/system/{{ name }}.{{ 'service' if unit_type != 'service' else 'timer' }}
+    - mode: '0644'
+    - source: {{ companion }}
+{%- if template %}
+    - template: {{ template }}
+{%- endif %}
+{%- if context %}
+    - context:
+{%- for key, val in context.items() %}
+        {{ key }}: {{ val }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+
+{{ name }}_daemon_reload:
+  cmd.run:
+    - name: systemctl daemon-reload
+    - onchanges:
+      - file: {{ name }}_service
+{%- if companion %}
+      - file: {{ name }}_companion
+{%- endif %}
+{%- if enabled is not none %}
+
+{{ name }}_{{ 'enabled' if enabled else 'disabled' }}:
+  service.{{ 'enabled' if enabled else 'disabled' }}:
+    - name: {{ name }}
+{%- if onlyif and enabled %}
+    - onlyif: {{ onlyif }}
+{%- endif %}
+    - require:
+      - cmd: {{ name }}_daemon_reload
+{%- if requires %}
+{%- for req in requires %}
+      - {{ req }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- if running %}
+
+{{ name }}_running:
+  service.running:
+    - name: {{ name }}
+    - watch:
+      - file: {{ name }}_service
+    - require:
+      - service: {{ name }}_enabled
+{%- endif %}
+{%- endmacro -%}

@@ -1,7 +1,7 @@
 # Salt state to build and install custom packages from local PKGBUILDs
 # These packages are not in official repos or AUR and require local builds
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import pkgbuild_install %}
+{% from '_macros_pkg.jinja' import pkgbuild_install %}
 {% set user = host.user %}
 {% set build_base = '/tmp/pkgbuild' %}
 

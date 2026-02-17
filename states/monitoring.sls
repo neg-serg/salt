@@ -1,5 +1,7 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros.jinja' import daemon_reload, pacman_install, service_with_unit, system_daemon_user, github_release_system %}
+{% from '_macros_service.jinja' import daemon_reload, service_with_unit, system_daemon_user %}
+{% from '_macros_install.jinja' import github_release_system %}
+{% from '_macros_pkg.jinja' import pacman_install %}
 {% set mon = host.features.monitoring %}
 
 # --- Simple service enables (packages already in system_description.sls) ---
