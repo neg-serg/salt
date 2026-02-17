@@ -4,7 +4,6 @@
 return {
   "mikavilpas/yazi.nvim",
   keys = {
-    -- 👇 in this section, choose your own keymappings!
     {
       "<leader>-",
       function()
@@ -13,7 +12,6 @@ return {
       desc = "Open yazi at the current file",
     },
     {
-      -- Open in the current working directory
       "<leader>cw",
       function()
         require("yazi").yazi(nil, vim.fn.getcwd())
@@ -22,9 +20,18 @@ return {
     },
   },
   init = function()
-    -- must be early, so nothing intercepts directories
     vim.g.loaded_netrw = 1
     vim.g.loaded_netrwPlugin = 1
+    -- Lazy-load yazi when a directory buffer is entered,
+    -- so open_for_directories works even before a keymap fires
+    vim.api.nvim_create_autocmd("BufEnter", {
+      callback = function(args)
+        if vim.fn.isdirectory(vim.api.nvim_buf_get_name(args.buf)) == 1 then
+          require("lazy").load({ plugins = { "yazi.nvim" } })
+          return true -- remove this autocmd after first trigger
+        end
+      end,
+    })
   end,
   opts = {
     open_for_directories = true,
