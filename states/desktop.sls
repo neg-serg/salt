@@ -3,6 +3,36 @@
 {% set user = host.user %}
 {% set home = host.home %}
 
+# --- Pacman hook: regenerate installed-package cache after every transaction ---
+pacman_hooks_dir:
+  file.directory:
+    - name: /etc/pacman.d/hooks
+    - mode: '0755'
+
+pacman_salt_pkglist_hook:
+  file.managed:
+    - name: /etc/pacman.d/hooks/salt-pkglist.hook
+    - mode: '0644'
+    - require:
+      - file: pacman_hooks_dir
+    - contents: |
+        [Trigger]
+        Type = Package
+        Operation = Install
+        Operation = Upgrade
+        Operation = Remove
+        Target = *
+
+        [Action]
+        When = PostTransaction
+        Exec = /bin/sh -c 'pacman -Qq > /var/cache/salt/pacman_installed.txt'
+        Description = Refresh Salt package cache
+
+pacman_salt_cache_dir:
+  file.directory:
+    - name: /var/cache/salt
+    - mode: '0755'
+
 etckeeper_init:
   cmd.run:
     - name: etckeeper init && etckeeper commit "Initial commit"
