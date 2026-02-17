@@ -33,6 +33,8 @@ LOG_FILE="${LOG_DIR}/${STATE}-${TIMESTAMP}.log"
 
 # Runtime salt config (paths derived from SCRIPT_DIR)
 RUNTIME_CONFIG_DIR="${SCRIPT_DIR}/.salt_runtime"
+DAEMON_SOCK="/tmp/salt-daemon.sock"
+DAEMON_SCRIPT="${SCRIPT_DIR}/scripts/salt-daemon.py"
 
 mkdir -p "${LOG_DIR}"
 
@@ -105,6 +107,36 @@ get_sudo() {
   fi
 }
 
+daemon_running() {
+  [[ -S "$DAEMON_SOCK" ]] || return 1
+  python3 -c "
+import socket, sys
+try:
+    s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    s.settimeout(1)
+    s.connect('$DAEMON_SOCK')
+    s.close()
+except Exception:
+    sys.exit(1)
+" 2>/dev/null
+}
+
+ensure_daemon() {
+  daemon_running && return 0
+  [[ -x "$DAEMON_SCRIPT" ]] || return 1
+  echo "(starting salt-daemon in background...)"
+  $SUDO_CMD "$DAEMON_SCRIPT" \
+    --config-dir "$RUNTIME_CONFIG_DIR" \
+    --socket "$DAEMON_SOCK" \
+    --log-level warning &>/dev/null &
+  # Wait up to 5s for daemon to be ready
+  for _ in $(seq 1 10); do
+    sleep 0.5
+    daemon_running && return 0
+  done
+  return 1  # timeout — fall back to direct
+}
+
 # Inline Salt runner: patches removed stdlib modules for Python 3.13+
 # (crypt, spwd) and suppresses Salt's internal DeprecationWarnings.
 SALT_RUNNER='
@@ -168,17 +200,12 @@ salt.scripts.salt_call()
 
 run_salt() {
   local extra_args="${1:-}"
+
+  # ── Start display (same for both daemon and direct paths) ─────────────────
   echo "=== Applying ${STATE} ($(date)) ==="
   echo "Log: ${LOG_FILE}"
-
-  # Show state progress from the debug log in real-time.
-  # Debug log has "Executing state X for [name]" (real-time) but only shows the
-  # 'name' param (e.g. "true") not the state ID.  The stdout summary has
-  # "Name: state_id - Function: ... - Result: ... - Duration: ..." with proper IDs.
-  # Strategy: real-time spinner from debug, completion lines from stdout summary.
   touch "${LOG_FILE}"
   tail -f "${LOG_FILE}" | awk -v maxlen=100 '
-    # Real-time progress from debug log
     match($0, /Executing state ([^ ]+) for \[([^]]+)\]/, m) {
       state_n++
       line = "▶ [" state_n "] " m[1] " " m[2]
@@ -186,57 +213,77 @@ run_salt() {
       printf "\r\033[K%s", line
       fflush()
     }
-    # Clear spinner when summary section begins
-    /^local:/ {
-      printf "\r\033[K"
-      fflush()
-    }
-    # Completion from stdout summary (shows state ID, not command name)
+    /^local:/ { printf "\r\033[K"; fflush() }
     match($0, /^  Name: ([^ ]+) - Function: ([^ ]+) - Result: ([^ ]+) - Started: [^ ]+ - Duration: ([0-9.]+ ms)/, m) {
       dur = " (" m[4] ")"
       if (m[3] == "Changed") mark = "\033[33m✦\033[0m"
       else if (m[3] ~ /^Fail/) mark = "\033[31m✗\033[0m"
       else mark = "✓"
-      name = mark " " m[1]
-      cut = maxlen - length(dur) + 9  # +9 for ANSI escape chars in mark
-      printf "%s%s\n", name, dur
+      printf "%s%s\n", mark " " m[1], dur
       fflush()
     }
-    # Pass through summary stats
     /^Summary for / { in_summary=1 }
     in_summary && /^[-]+$/ { print; fflush() }
     in_summary && /^(Succeeded|Failed|Total)/ { print; fflush() }
   ' &
   local tail_pid=$!
 
-  # Run salt-call; stdout goes to log only (awk handles terminal display).
-  # Use python -u for unbuffered output so summary lines reach the log immediately.
-  if [[ -n "${SUDO_PASS:-}" ]]; then
-    echo "$SUDO_PASS" | $SUDO_CMD "$VENV_DIR/bin/python3" -u -c "$SALT_RUNNER" \
-      --config-dir="${RUNTIME_CONFIG_DIR}" \
-      --local \
-      --log-level=warning \
-      --log-file="${LOG_FILE}" \
-      --log-file-level=debug \
-      --state-output=mixed_id \
-      ${ACTION} ${STATE} ${extra_args} 2>&1 | tee -a "${LOG_FILE}" > /dev/null
+  local rc
+  if ensure_daemon; then
+    # ── Daemon path: send JSON request, daemon writes to LOG_FILE ────────────
+    local kwargs='{"state_output":"mixed_id"}'
+    [[ "$extra_args" == *"test=True"* ]] && kwargs='{"state_output":"mixed_id","test":true}'
+    rc=$(python3 - <<PYEOF
+import json, socket, sys
+req = json.dumps({'state': '${STATE}', 'kwargs': json.loads('${kwargs}'), 'log_file': '${LOG_FILE}'}) + '\n'
+s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+s.connect('${DAEMON_SOCK}')
+s.sendall(req.encode())
+buf = b''
+rc = 1
+while True:
+    chunk = s.recv(4096)
+    if not chunk:
+        break
+    buf += chunk
+    while b'\n' in buf:
+        line, buf = buf.split(b'\n', 1)
+        if not line:
+            continue
+        try:
+            msg = json.loads(line.decode())
+        except json.JSONDecodeError:
+            continue
+        if msg.get('type') == 'exit':
+            rc = msg.get('code', 0)
+s.close()
+print(rc)
+PYEOF
+    )
   else
-    $SUDO_CMD "$VENV_DIR/bin/python3" -u -c "$SALT_RUNNER" \
-      --config-dir="${RUNTIME_CONFIG_DIR}" \
-      --local \
-      --log-level=warning \
-      --log-file="${LOG_FILE}" \
-      --log-file-level=debug \
-      --state-output=mixed_id \
-      ${ACTION} ${STATE} ${extra_args} 2>&1 | tee -a "${LOG_FILE}" > /dev/null
+    # ── Direct path: inline salt-call (no daemon) ─────────────────────────────
+    if [[ -n "${SUDO_PASS:-}" ]]; then
+      echo "$SUDO_PASS" | $SUDO_CMD "$VENV_DIR/bin/python3" -u -c "$SALT_RUNNER" \
+        --config-dir="${RUNTIME_CONFIG_DIR}" \
+        --local --log-level=warning \
+        --log-file="${LOG_FILE}" --log-file-level=debug \
+        --state-output=mixed_id \
+        ${ACTION} ${STATE} ${extra_args} 2>&1 | tee -a "${LOG_FILE}" > /dev/null
+    else
+      $SUDO_CMD "$VENV_DIR/bin/python3" -u -c "$SALT_RUNNER" \
+        --config-dir="${RUNTIME_CONFIG_DIR}" \
+        --local --log-level=warning \
+        --log-file="${LOG_FILE}" --log-file-level=debug \
+        --state-output=mixed_id \
+        ${ACTION} ${STATE} ${extra_args} 2>&1 | tee -a "${LOG_FILE}" > /dev/null
+    fi
+    rc="${PIPESTATUS[0]}"
   fi
-  local rc="${PIPESTATUS[0]}"
 
-  # Give awk time to process final lines from the log
   sleep 0.3
   kill "$tail_pid" 2>/dev/null
   wait "$tail_pid" 2>/dev/null
-  return "$rc"
+  return "${rc:-1}"
 }
 
 # Ensure Salt is ready
