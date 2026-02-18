@@ -351,6 +351,58 @@ install_{{ name }}:
       - file: {{ fonts_dir }}/{{ subdir }}
 {%- endmacro -%}
 
+{# Download a single file from the latest GitHub release to an arbitrary directory.
+   Unlike github_release, does not assume ~/.local/bin/ — suitable for scripts, plugins, etc.
+   state_id: explicit Salt state ID (caller must ensure uniqueness).
+   require: optional file state ID to depend on.
+   Usage: {{ github_release_file('mpv_script_mpris_so', 'mpris.so', 'hoyon/mpv-mpris', 'mpris.so', mpv_scripts_dir, require='mpv_scripts_dir') }}
+#}
+{%- macro github_release_file(state_id, filename, repo, asset, dest_dir, require=None, user=_user) -%}
+{{ state_id }}:
+  cmd.run:
+    - name: |
+        set -eo pipefail
+        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ repo }}/releases/latest | grep -oP '[^/]+$')
+        curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o '{{ dest_dir }}/{{ filename }}'
+    - runas: {{ user }}
+    - shell: /bin/bash
+    - creates: {{ dest_dir }}/{{ filename }}
+{%- if require %}
+    - require:
+      - file: {{ require }}
+{%- endif %}
+    - retry:
+        attempts: 3
+        interval: 10
+{%- endmacro -%}
+
+{# Download and extract a ZIP from the latest GitHub release to an arbitrary directory.
+   Unlike curl_extract_zip, fetches the tag dynamically from GitHub's redirect URL.
+   creates: explicit creates guard (required — dest may differ from the idempotency check path).
+   require: optional file state ID to depend on.
+   Usage: {{ github_release_zip_to('mpv_plugin_uosc', 'uosc', 'tomasklaen/uosc', 'uosc.zip', '~/.config/mpv', creates=mpv_scripts_dir ~ '/uosc', require='mpv_scripts_dir') }}
+#}
+{%- macro github_release_zip_to(state_id, name, repo, asset, dest, creates, require=None, user=_user) -%}
+{{ state_id }}:
+  cmd.run:
+    - name: |
+        set -eo pipefail
+        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ repo }}/releases/latest | grep -oP '[^/]+$')
+        curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o /tmp/{{ name }}.zip
+        unzip -qo /tmp/{{ name }}.zip -d {{ dest }}
+        rm -f /tmp/{{ name }}.zip
+    - runas: {{ user }}
+    - shell: /bin/bash
+    - creates: {{ creates }}
+{%- if require %}
+    - require:
+      - file: {{ require }}
+{%- endif %}
+    - retry:
+        attempts: 3
+        interval: 10
+{%- endmacro -%}
+
 {# Git clone a repo to /tmp, copy selected items to dest, clean up.
    items: list of paths relative to repo root to cp -r (e.g., ['Flight-Dark-GTK', 'Flight-light-GTK'] or ['*/']).
           If omitted, clones directly to dest (repo itself IS the install).
