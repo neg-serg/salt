@@ -29,9 +29,11 @@ yazi "$YAZI_STARTDIR" --chooser-file="$YAZI_OUT"
 if [ -s "$YAZI_OUT" ]; then
     selected=$(cat "$YAZI_OUT")
     if [ -d "$selected" ]; then
-        printf '\nSave as [%s]: ' "$YAZI_SUGGESTED"
+        clipboard=$(wl-paste --no-newline 2>/dev/null | head -1)
+        default="${clipboard:-$YAZI_SUGGESTED}"
+        printf '\nSave as [%s]: ' "$default"
         read -r fname
-        fname="${fname:-$YAZI_SUGGESTED}"
+        fname="${fname:-$default}"
         printf '%s/%s' "$selected" "$fname" > "$YAZI_OUT"
     fi
 fi
