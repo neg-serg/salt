@@ -19,14 +19,30 @@ termcmd="${TERMCMD:-kitty}"
 if [ "$save" = "1" ]; then
     startdir=$(dirname "$path")
     [ -d "$startdir" ] || startdir="$HOME"
-    "$termcmd" -- sh -c "yazi '$startdir' --chooser-file='$out'"
-    # If user selected a directory, append the suggested filename
-    if [ -s "$out" ]; then
-        selected=$(cat "$out")
-        if [ -d "$selected" ]; then
-            printf '%s/%s' "$selected" "$(basename "$path")" > "$out"
-        fi
+    suggested=$(basename "$path")
+
+    # Write inner script to a temp file to avoid quoting hell
+    tmp=$(mktemp /tmp/yazi-chooser-XXXXXX.sh)
+    cat > "$tmp" << 'INNER'
+#!/bin/sh
+yazi "$YAZI_STARTDIR" --chooser-file="$YAZI_OUT"
+if [ -s "$YAZI_OUT" ]; then
+    selected=$(cat "$YAZI_OUT")
+    if [ -d "$selected" ]; then
+        printf '\nSave as [%s]: ' "$YAZI_SUGGESTED"
+        read -r fname
+        fname="${fname:-$YAZI_SUGGESTED}"
+        printf '%s/%s' "$selected" "$fname" > "$YAZI_OUT"
     fi
+fi
+INNER
+    chmod +x "$tmp"
+
+    export YAZI_STARTDIR="$startdir"
+    export YAZI_OUT="$out"
+    export YAZI_SUGGESTED="$suggested"
+    "$termcmd" -- sh "$tmp"
+    rm -f "$tmp"
 else
     "$termcmd" -- sh -c "yazi --chooser-file='$out'"
 fi
