@@ -102,7 +102,7 @@
 
 {# Deploy systemd unit file + manage service (file + daemon-reload + enable/disable + optional running).
    unit_type: 'service' (default) | 'timer' | 'socket' | etc.
-   running: True (default False) to add service.running with watch for auto-restart.
+   running: True (default False) to add reset_failed + service.running with watch for auto-restart.
    enabled: True (default) = service.enabled; False = service.disabled; None = skip enable/disable.
    requires: optional list of state requisites (includes daemon-reload as base requirement).
    template: 'jinja' (default None) to render the unit file as a Jinja template.
@@ -173,6 +173,13 @@
 {%- endif %}
 {%- if running %}
 
+{{ name }}_reset_failed:
+  cmd.run:
+    - name: systemctl reset-failed {{ name }} 2>/dev/null; true
+    - onlyif: systemctl is-failed {{ name }}
+    - require:
+      - service: {{ name }}_enabled
+
 {{ name }}_running:
   service.running:
     - name: {{ name }}
@@ -180,5 +187,6 @@
       - file: {{ name }}_service
     - require:
       - service: {{ name }}_enabled
+      - cmd: {{ name }}_reset_failed
 {%- endif %}
 {%- endmacro -%}

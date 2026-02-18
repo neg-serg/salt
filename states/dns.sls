@@ -65,9 +65,7 @@ adguardhome_config:
     - require:
       - file: adguardhome_data_dir
 
-{{ service_with_unit('adguardhome', 'salt://units/adguardhome.service.j2', template='jinja', context={'dns_unbound': dns.unbound}, requires=['cmd: install_adguardhome', 'file: adguardhome_config']) }}
-
-{{ ensure_running('adguardhome', watch=['file: adguardhome_service']) }}
+{{ service_with_unit('adguardhome', 'salt://units/adguardhome.service.j2', template='jinja', context={'dns_unbound': dns.unbound}, requires=['cmd: install_adguardhome', 'file: adguardhome_config'], running=True) }}
 
 # Configure systemd-resolved to forward to AdGuardHome
 resolved_adguardhome:
