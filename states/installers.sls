@@ -1,5 +1,5 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros_install.jinja' import curl_bin, github_tar, github_release, pip_pkg, cargo_pkg, curl_extract_tar, curl_extract_zip, git_clone_deploy, run_with_error_context %}
+{% from '_macros_install.jinja' import curl_bin, github_tar, github_release, pip_pkg, cargo_pkg, curl_extract_tar, curl_extract_zip, git_clone_deploy, run_with_error_context, github_release_file, github_release_zip_to %}
 {% import_yaml 'data/installers.yaml' as tools %}
 {% import_yaml 'data/versions.yaml' as ver %}
 {% set user = host.user %}
@@ -135,37 +135,9 @@ mpv_script_{{ filename | replace('.', '_') | replace('-', '_') }}:
 {% endfor %}
 
 {% for filename, opts in mpv.github_release.items() %}
-mpv_script_{{ filename | replace('.', '_') | replace('-', '_') }}:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ opts.repo }}/releases/latest | grep -oP '[^/]+$')
-        curl -fsSL "https://github.com/{{ opts.repo }}/releases/download/${TAG}/{{ opts.asset }}" -o '{{ mpv_scripts_dir }}/{{ filename }}'
-    - runas: {{ user }}
-    - shell: /bin/bash
-    - creates: {{ mpv_scripts_dir }}/{{ filename }}
-    - require:
-      - file: mpv_scripts_dir
-    - retry:
-        attempts: 3
-        interval: 10
+{{ github_release_file('mpv_script_' ~ (filename | replace('.', '_') | replace('-', '_')), filename, opts.repo, opts.asset, mpv_scripts_dir, require='mpv_scripts_dir', user=user) }}
 {% endfor %}
 
 {% for name, opts in mpv.github_release_zip.items() %}
-mpv_plugin_{{ name }}:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ opts.repo }}/releases/latest | grep -oP '[^/]+$')
-        curl -fsSL "https://github.com/{{ opts.repo }}/releases/download/${TAG}/{{ opts.asset }}" -o /tmp/{{ name }}.zip
-        unzip -qo /tmp/{{ name }}.zip -d {{ opts.dest }}
-        rm -f /tmp/{{ name }}.zip
-    - runas: {{ user }}
-    - shell: /bin/bash
-    - creates: {{ mpv_scripts_dir }}/{{ name }}
-    - require:
-      - file: mpv_scripts_dir
-    - retry:
-        attempts: 3
-        interval: 10
+{{ github_release_zip_to('mpv_plugin_' ~ name, name, opts.repo, opts.asset, opts.dest, creates=mpv_scripts_dir ~ '/' ~ name, require='mpv_scripts_dir', user=user) }}
 {% endfor %}
