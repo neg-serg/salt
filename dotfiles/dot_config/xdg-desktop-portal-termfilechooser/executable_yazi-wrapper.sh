@@ -14,6 +14,9 @@ save="$3"
 path="$4"
 out="$5"
 
+# Portal environment has minimal PATH — ensure user binaries are reachable
+export PATH="$HOME/.local/bin:$PATH"
+
 termcmd="${TERMCMD:-kitty}"
 
 if [ "$save" = "1" ]; then
