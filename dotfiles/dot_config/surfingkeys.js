@@ -318,6 +318,22 @@ Object.entries(quickmarks).forEach(([key, site]) => {
 
 settings.blocklistPattern = /mail\.google\.com|docs\.google\.com|discord\.com|app\.slack\.com/i;
 
+// ========== Clipboard Navigation ==========
+// Open URL from system clipboard in current tab
+api.mapkey('p', 'Open clipboard URL in current tab', function() {
+  navigator.clipboard.readText().then(text => {
+    const url = text.trim();
+    if (url) window.location.href = url;
+  });
+});
+// Open URL from system clipboard in new tab
+api.mapkey('P', 'Open clipboard URL in new tab', function() {
+  navigator.clipboard.readText().then(text => {
+    const url = text.trim();
+    if (url) api.tabOpenLink(url);
+  });
+});
+
 // ========== Image Download ==========
 api.mapkey('zi', 'Download image without dialog', function() {
     api.Hints.create('img', function(element) {
