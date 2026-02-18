@@ -1,0 +1,74 @@
+#!/bin/bash
+# Audio sink switcher for PipeWire/WirePlumber
+# Based on hyprland-sink-switcher, adapted for rofi + notify-send
+
+get_sinks() { pactl list sinks short | awk '{print $2}'; }
+
+get_default_sink() { pactl info | awk '/Default Sink:/{print $3}'; }
+
+friendly_name() {
+    pactl list sinks | awk -v sink="$1" '
+        $1=="Name:" && $2==sink {found=1}
+        found && /Description:/ {sub(/.*Description: /,""); print; exit}
+    '
+}
+
+set_sink() {
+    local sink="$1"
+    pactl set-default-sink "$sink"
+    # Move all playing streams to the new sink
+    pactl list sink-inputs short | awk '{print $1}' | while read -r input; do
+        pactl move-sink-input "$input" "$sink"
+    done
+    notify-send -t 2000 -h string:x-canonical-private-synchronous:sink-switch \
+        "Audio Output" "$(friendly_name "$sink")"
+}
+
+cycle() {
+    local direction="$1"
+    local -a sinks
+    mapfile -t sinks < <(get_sinks)
+    local current idx=-1
+    current=$(get_default_sink)
+    for i in "${!sinks[@]}"; do
+        [[ "${sinks[$i]}" == "$current" ]] && idx=$i && break
+    done
+    (( idx < 0 )) && return 1
+    local count=${#sinks[@]}
+    local new_idx
+    if [[ "$direction" == "next" ]]; then
+        new_idx=$(( (idx + 1) % count ))
+    else
+        new_idx=$(( (idx - 1 + count) % count ))
+    fi
+    set_sink "${sinks[$new_idx]}"
+}
+
+select_sink() {
+    local current menu=""
+    current=$(get_default_sink)
+    declare -A name_to_sink
+    while read -r sink; do
+        local name
+        name=$(friendly_name "$sink")
+        [[ -z "$name" ]] && name="$sink"
+        name_to_sink["$name"]="$sink"
+        if [[ "$sink" == "$current" ]]; then
+            menu+="* ${name}\n"
+        else
+            menu+="  ${name}\n"
+        fi
+    done < <(get_sinks)
+    local chosen
+    chosen=$(printf '%b' "$menu" | rofi -dmenu -p "Audio Sink" | sed 's/^[* ] //')
+    [[ -z "$chosen" ]] && return
+    local target="${name_to_sink[$chosen]}"
+    [[ -n "$target" ]] && set_sink "$target"
+}
+
+case "${1:-}" in
+    next)   cycle next ;;
+    prev)   cycle prev ;;
+    select) select_sink ;;
+    *)      echo "Usage: ${0##*/} {next|prev|select}" >&2; exit 1 ;;
+esac
