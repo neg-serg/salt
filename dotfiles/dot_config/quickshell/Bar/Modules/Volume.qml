@@ -20,6 +20,7 @@ LocalMods.AudioEndpointTile {
         "Scroll up/down to change volume."
     ]
     enableAdvancedToggle: true
+    autoHideWhenMuted: true
 
     Item { id: ioSelector; visible: false }
     advancedSelector: ioSelector

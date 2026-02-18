@@ -21,6 +21,8 @@ LocalComponents.WidgetCapsule {
     property string labelSuffix: "%"
     property bool autoHideAtFull: true
     property int fullHideValue: 100
+    property bool autoHideWhenMuted: false
+    property bool panelHovering: false
     property bool collapseWhenHidden: true
 
     property int level: 0
@@ -55,6 +57,33 @@ LocalComponents.WidgetCapsule {
         repeat: false
         onTriggered: {
             if (root.autoHideAtFull && root.level === root.fullHideValue) {
+                root.visible = false;
+                pillIndicator.hide();
+            }
+        }
+    }
+
+    Timer {
+        id: mutedHideTimer
+        interval: Theme.panelVolumeMutedHideMs
+        repeat: false
+        onTriggered: {
+            if (root.autoHideWhenMuted && root.muted && !root.panelHovering) {
+                root.visible = false;
+                pillIndicator.hide();
+            }
+        }
+    }
+
+    onPanelHoveringChanged: {
+        if (!autoHideWhenMuted || !muted) return;
+        if (panelHovering) {
+            if (!root.visible) {
+                root.visible = true;
+                pillIndicator.show();
+            }
+        } else {
+            if (!mutedHideTimer.running) {
                 root.visible = false;
                 pillIndicator.hide();
             }
@@ -104,6 +133,23 @@ LocalComponents.WidgetCapsule {
         const levelColor = levelColorFor(clamped);
         pillIndicator.iconCircleColor = levelColor;
         pillIndicator.collapsedIconColor = levelColor;
+
+        // Muted auto-hide: show for a timeout, then hide
+        if (autoHideWhenMuted && mutedValue) {
+            if (!root.visible)
+                root.visible = true;
+            mutedHideTimer.restart();
+            if (!firstChange)
+                pillIndicator.show();
+            firstChange = false;
+            if (fullHideTimer.running)
+                fullHideTimer.stop();
+            return;
+        }
+
+        // Unmuted: cancel muted timer
+        if (mutedHideTimer.running)
+            mutedHideTimer.stop();
 
         if (!root.visible && (!autoHideAtFull || clamped !== fullHideValue)) {
             root.visible = true;

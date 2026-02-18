@@ -564,6 +564,7 @@ Singleton {
                             'panel.rowSpacing': 'panelRowSpacing',
                             'panel.rowSpacingSmall': 'panelRowSpacingSmall',
                             'panel.volume.fullHideMs': 'panelVolumeFullHideMs',
+                            'panel.volume.mutedHideMs': 'panelVolumeMutedHideMs',
                             'panel.volume.lowColor': 'panelVolumeLowColor',
                             'panel.volume.highColor': 'panelVolumeHighColor',
                             'timers.timeTickMs': 'timeTickMs',
@@ -809,6 +810,7 @@ Singleton {
     property int panelNetClusterSpacing: val('panel.netCluster.spacing', 6)
     // Volume behavior
     property int panelVolumeFullHideMs: val('panel.volume.fullHideMs', 800)
+    property int panelVolumeMutedHideMs: val('panel.volume.mutedHideMs', 180000)
     property color panelVolumeLowColor: val('panel.volume.lowColor', "#D62E6E")
     property color panelVolumeHighColor: val('panel.volume.highColor', "#0E6B4D")
     // Volume icon thresholds
