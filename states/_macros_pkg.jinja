@@ -1,5 +1,9 @@
 {# Package manager macros: pacman_install, pkgbuild_install, npm_pkg #}
 
+{% from 'host_config.jinja' import host %}
+{% set _user = host.user %}
+{% set _home = host.home %}
+
 {# Install packages via pacman (CachyOS/Arch).
    check defaults to first package. requires is an optional list of requisites.
    Usage: {{ pacman_install('unbound', 'unbound') }}
@@ -24,10 +28,10 @@ install_{{ name | replace('-', '_') }}:
 
 {# Build and install a package from a local PKGBUILD via file.recurse + makepkg + pacman -U.
    source: salt:// path to PKGBUILD directory. check: package name for idempotency guard (default: name).
-   Usage: {{ pkgbuild_install('raise', 'salt://build/pkgbuilds/raise', user='neg') }}
-          {{ pkgbuild_install('iosevka-neg-fonts', 'salt://build/pkgbuilds/iosevka-neg-fonts', user='neg', timeout=7200) }}
+   Usage: {{ pkgbuild_install('raise', 'salt://build/pkgbuilds/raise', user=_user) }}
+          {{ pkgbuild_install('iosevka-neg-fonts', 'salt://build/pkgbuilds/iosevka-neg-fonts', user=_user, timeout=7200) }}
 #}
-{%- macro pkgbuild_install(name, source, user='neg', build_base='/tmp/pkgbuild', timeout=600, check=None) -%}
+{%- macro pkgbuild_install(name, source, user=_user, build_base='/tmp/pkgbuild', timeout=600, check=None) -%}
 {%- set safe = name | replace('-', '_') -%}
 {{ safe }}_pkgbuild:
   file.recurse:
@@ -59,7 +63,7 @@ build_{{ safe }}:
    Usage: {{ npm_pkg('openclaw') }}
           {{ npm_pkg('prettier', bin='prettier') }}
 #}
-{%- macro npm_pkg(name, pkg=None, bin=None, user='neg', home='/home/neg') -%}
+{%- macro npm_pkg(name, pkg=None, bin=None, user=_user, home=_home) -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: npm install -g {{ pkg or name }}

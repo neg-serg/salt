@@ -1,5 +1,9 @@
 {# Service-related macros: ensure_running, daemon_reload, service_with_unit, user_service, system_daemon_user #}
 
+{% from 'host_config.jinja' import host %}
+{% set _user = host.user %}
+{% set _home = host.home %}
+
 {# Clear failed state + ensure service is running with config watches.
    Emits two states: {{ name }}_reset_failed and {{ name }}_running.
    Usage: {{ ensure_running('unbound', watch=['file: unbound_config']) }}
@@ -84,7 +88,7 @@
    WantedBy=default.target
    {% endcall %}
 #}
-{%- macro user_service(name, filename, user='neg', home='/home/neg') -%}
+{%- macro user_service(name, filename, user=_user, home=_home) -%}
 {{ name }}:
   file.managed:
     - name: {{ home }}/.config/systemd/user/{{ filename }}
