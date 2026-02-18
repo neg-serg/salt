@@ -37,6 +37,7 @@ if command -v oh-my-posh >/dev/null 2>&1; then
       echo "$config_hash" > "$cache_hash_file"
     fi
     source "$omp_cache"
+    _omp_enable_streaming=1  # workaround: streaming: N in config not yet propagated by init (omp beta)
   fi
 fi
 
