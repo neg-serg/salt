@@ -1,28 +1,26 @@
-# Justfile for salt configuration management
+# Salt configuration management
+#
+# Usage:
+#   just          # apply system_description
+#   just apply    # same
+#   just apply hardware
+#   just test     # dry-run system_description
+#   just test kernel_modules
 
-# Apply the full configuration
-apply:
-    ./apply_cachyos.sh
+# Apply a state (default: system_description)
+apply STATE="system_description":
+    scripts/salt-apply.sh {{STATE}}
 
-# Run the configuration in dry-run mode (no changes)
-dry-run:
-    ./apply_cachyos.sh --dry-run
+# Dry-run a state — no changes applied
+test STATE="system_description":
+    scripts/salt-apply.sh {{STATE}} --test
 
-# Re-bootstrap the salt environment
-bootstrap:
-    python3 -m venv .venv
-    .venv/bin/pip install ruff jinja2 pyyaml
-    ./apply_cachyos.sh --dry-run
-
-# Show salt state info
-info:
-    ./apply_cachyos.sh --dry-run | grep -A 20 "Summary for local"
-
-# Clean temporary files
-clean:
-    rm -rf __pycache__
-    rm -rf .venv
-    rm -rf /home/neg/.gemini/tmp/salt_config
+# Start the salt daemon (keeps running, speeds up subsequent applies)
+daemon:
+    sudo scripts/salt-daemon.py \
+        --config-dir .salt_runtime \
+        --socket /tmp/salt-daemon.sock \
+        --log-level warning
 
 # Lint Salt states and Python scripts
 lint:
@@ -42,16 +40,16 @@ tools:
 check-updates:
     .venv/bin/python3 scripts/update-tools.py --check
 
-# Update tools (specify names or --all)
+# Update tools (specify tool names or --all)
 update-tools *ARGS:
     .venv/bin/python3 scripts/update-tools.py --update {{ARGS}}
 
-# Test idempotency: verify applying states would make no changes (needs prior apply)
-test-idempotency STATE="system_description":
+# Verify a state would make no changes (idempotency check)
+idempotency STATE="system_description":
     #!/usr/bin/env bash
     set -uo pipefail
-    echo "--- Idempotency check: {{STATE}} (test=True) ---"
-    ./apply_cachyos.sh {{STATE}} --dry-run
+    echo "--- Idempotency check: {{STATE}} ---"
+    scripts/salt-apply.sh {{STATE}} --test
     log=$(ls -t logs/{{STATE}}-*.log 2>/dev/null | head -1)
     if [ -z "$log" ]; then
         echo "ERROR: no log file found"
@@ -65,7 +63,7 @@ test-idempotency STATE="system_description":
     fi
     echo "PASS: all states idempotent"
 
-# Validate all states render without errors (no execution)
+# Check all state files render without errors (no execution)
 validate:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -73,10 +71,15 @@ validate:
     for sls in states/*.sls; do
         name="${sls#states/}"
         name="${name%.sls}"
-        if ! sudo salt-call --local --config-dir=.salt_runtime state.show_sls "$name" --out=quiet 2>/dev/null; then
+        if ! sudo .venv/bin/salt-call --local --config-dir=.salt_runtime \
+                state.show_sls "$name" --out=quiet 2>/dev/null; then
             echo "FAILED: $name"
             failed=$((failed + 1))
         fi
     done
     echo "Validated $(ls states/*.sls | wc -l) states, $failed failed"
     [ "$failed" -eq 0 ]
+
+# Remove generated runtime files (venv and salt runtime config)
+clean:
+    rm -rf __pycache__ .salt_runtime .venv
