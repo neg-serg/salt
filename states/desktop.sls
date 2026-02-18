@@ -68,12 +68,18 @@ disable_tuned:
 {{ pacman_install('hyprland_desktop',
     'hyprpaper hypridle hyprlock hyprpolkitagent xdg-desktop-portal-hyprland') }}
 
+remove_old_termfilechooser:
+  cmd.run:
+    - name: pacman -Rns --noconfirm xdg-desktop-portal-termfilechooser-git
+    - onlyif: rg -qx 'xdg-desktop-portal-termfilechooser-git' /var/cache/salt/pacman_installed.txt
+
 install_xdg_termfilechooser:
   cmd.run:
-    - name: sudo -u {{ user }} paru -S --noconfirm --needed xdg-desktop-portal-termfilechooser-git
-    - unless: rg -qx 'xdg-desktop-portal-termfilechooser-git' /var/cache/salt/pacman_installed.txt
+    - name: sudo -u {{ user }} paru -S --noconfirm --needed xdg-desktop-portal-termfilechooser-boydaihungst-git
+    - unless: rg -qx 'xdg-desktop-portal-termfilechooser-boydaihungst-git' /var/cache/salt/pacman_installed.txt
     - require:
       - cmd: pacman_db_warmup
+      - cmd: remove_old_termfilechooser
 
 # --- SSH directory setup ---
 ssh_dir:
