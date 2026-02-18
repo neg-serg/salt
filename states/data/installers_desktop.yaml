@@ -27,3 +27,6 @@ curl_bin:
 paru_install:
   overskride: overskride-bin
   roomeqwizard: roomeqwizard
+  bottles: bottles
+  proton-ge: proton-ge-custom-bin
+  xwaylandvideobridge: xwaylandvideobridge
