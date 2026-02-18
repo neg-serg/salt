@@ -83,7 +83,7 @@ gpg --card-status
 gopass clone <store-url>
 
 # Apply config + dotfiles
-cd ~/src/salt && ./apply_cachyos.sh
+cd ~/src/salt && scripts/salt-apply.sh
 
 # Persist XFS mounts
 echo '/dev/mapper/xenon-one  /mnt/one  xfs  noatime  0  0' | sudo tee -a /etc/fstab
@@ -100,7 +100,7 @@ After bootstrap, everything needed for deploy lives on XFS:
 | `/mnt/one/salt/` | Full salt repo (states, dotfiles, scripts, build) |
 | `/mnt/one/salt/scripts/deploy-cachyos.sh` | Deploy script |
 | `/mnt/one/salt/scripts/cachyos-packages.sh` | Package installer |
-| `/mnt/one/salt/apply_cachyos.sh` | Post-boot Salt + chezmoi apply |
+| `/mnt/one/salt/scripts/salt-apply.sh` | Post-boot Salt + chezmoi apply |
 
 ## Troubleshooting
 
@@ -122,4 +122,4 @@ After bootstrap, everything needed for deploy lives on XFS:
 - 5 packages built from PKGBUILDs in `build/pkgbuilds/` via Salt states:
   raise, neg-pretty-printer, richcolors, albumdetails (custom_pkgs.sls),
   iosevka-neg-fonts (iosevka.sls)
-- Built automatically during `apply_cachyos.sh`
+- Built automatically during `scripts/salt-apply.sh`

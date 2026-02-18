@@ -1,8 +1,8 @@
 # CachyOS: apply all system configuration states in one run.
 # Single entry point for full system setup after bootstrap.
 #
-# Run:   ./apply_cachyos.sh cachyos_all
-# Test:  ./apply_cachyos.sh cachyos_all --dry-run
+# Run:   scripts/salt-apply.sh cachyos_all
+# Test:  scripts/salt-apply.sh cachyos_all --test
 
 include:
   - cachyos

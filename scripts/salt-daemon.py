@@ -17,7 +17,7 @@ Protocol (line-oriented over Unix socket):
 Log file handling:
   - The daemon adds a FileHandler to the root logger writing to the given
     log_file path. This captures "Executing state X for [name]" debug lines
-    that apply_cachyos.sh's awk watcher expects to read via `tail -f`.
+    that salt-apply.sh's awk watcher expects to read via `tail -f`.
   - The formatted salt output summary is written to the log file AND sent
     to the client.
 
@@ -68,6 +68,7 @@ class _MockCrypt:
     def __init__(self):
         try:
             import passlib.hash as _hash
+
             self._hash = _hash
         except ImportError:
             self._hash = None
@@ -103,9 +104,7 @@ sys.modules["crypt"] = _MockCrypt()
 
 class _MockSpwd:
     def getspnam(self, name):
-        raise KeyError(
-            f"spwd.getspnam emulation: user {name} lookup failed or not implemented"
-        )
+        raise KeyError(f"spwd.getspnam emulation: user {name} lookup failed or not implemented")
 
 
 sys.modules["spwd"] = _MockSpwd()
@@ -157,7 +156,7 @@ def run_state(
     Execute state.sls on the pre-loaded minion and stream output to the client.
 
     - Adds a FileHandler to the root logger so "Executing state X for [name]"
-      debug lines go to log_file (for apply_cachyos.sh's awk/tail watcher).
+      debug lines go to log_file (for salt-apply.sh's awk/tail watcher).
     - Captures stdout so salt.output.display_output writes are caught.
     - Appends formatted stdout to log_file (for the awk summary watcher).
     - Sends all output lines to client as {"type": "stdout", "line": "..."}.
@@ -199,7 +198,8 @@ def run_state(
     exit_code = 0
     result = None
     try:
-        result = minion.functions["state.sls"](state, **{k: v for k, v in kwargs.items() if k != "state_output"})
+        filtered = {k: v for k, v in kwargs.items() if k != "state_output"}
+        result = minion.functions["state.sls"](state, **filtered)
     except Exception as exc:
         err_msg = f"salt-daemon: error running state.sls({state!r}): {exc}"
         log.exception(err_msg)
@@ -310,6 +310,7 @@ class DaemonServer:
         # The daemon itself still runs as root and executes privileged state ops.
         try:
             import grp
+
             wheel_gid = grp.getgrnam("wheel").gr_gid
             os.chown(socket_path, 0, wheel_gid)
             os.chmod(socket_path, 0o660)
@@ -339,9 +340,7 @@ class DaemonServer:
                 conn, _ = server.accept()
             except OSError:
                 break
-            t = threading.Thread(
-                target=self.handle_client, args=(conn,), daemon=True
-            )
+            t = threading.Thread(target=self.handle_client, args=(conn,), daemon=True)
             t.start()
 
 
@@ -380,9 +379,7 @@ def main() -> None:
     )
 
     if os.geteuid() != 0:
-        log.warning(
-            "salt-daemon is not running as root — system state changes may fail"
-        )
+        log.warning("salt-daemon is not running as root — system state changes may fail")
 
     try:
         opts, minion = load_salt(args.config_dir)

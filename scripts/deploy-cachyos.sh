@@ -333,7 +333,7 @@ Secrets needed by chezmoi templates:
 ## 7. Apply Salt + chezmoi
 
     cd ~/src/salt
-    ./apply_cachyos.sh
+    scripts/salt-apply.sh
 
 This runs:
   - Salt verification state (cachyos.sls) — checks packages, services, configs
@@ -387,7 +387,7 @@ echo "                       sudo mount /dev/mapper/xenon-one /mnt/one"
 echo "                       sudo mount /dev/mapper/argon-zero /mnt/zero"
 echo "  5. Copy salt repo:   cp -a /mnt/one/salt ~/src/salt"
 echo "  6. Yubikey + gopass:  gpg --card-status && gopass clone <store-url>"
-echo "  7. Apply config:     cd ~/src/salt && ./apply_cachyos.sh"
+echo "  7. Apply config:     cd ~/src/salt && scripts/salt-apply.sh"
 echo "  8. Add to fstab:     see /root/POST-BOOT.md (step 9)"
 echo ""
 echo "Full guide saved to: $MNT/root/POST-BOOT.md"
