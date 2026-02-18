@@ -29,7 +29,8 @@ kernel_modules_blacklist:
         cpu_vendor: {{ host.cpu_vendor }}
 
 # Load modules that aren't already loaded (no reboot needed for most)
-{% for mod in [host.kvm_module, 'tcp_bbr'] %}
+{% set modules_to_load = [host.kvm_module, 'tcp_bbr'] %}
+{% for mod in modules_to_load %}
 load_{{ mod | replace('-', '_') }}:
   cmd.run:
     - name: modprobe {{ mod }}
