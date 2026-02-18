@@ -42,23 +42,23 @@ cachyos_{{ name }}:
 # ===================================================================
 
 {% set verify_checks = {
-    'sudo_nopasswd_content': "grep -q '" ~ user ~ " ALL=(ALL) NOPASSWD: ALL' /etc/sudoers.d/99-" ~ user ~ "-nopasswd",
-    'wheel_sudoers':         "grep -q '^%wheel ALL=(ALL:ALL) ALL' /etc/sudoers",
-    'timezone':              'readlink /etc/localtime | grep -q Europe/Moscow',
-    'locale':                "grep -q '^LANG=en_US.UTF-8' /etc/locale.conf",
-    'hostname':              "grep -q '^cachyos' /etc/hostname",
-    'hosts':                 "grep -q 'cachyos' /etc/hosts",
-    'limine_conf_content':   "grep -q 'vmlinuz-linux-cachyos-lts' /boot/limine.conf",
-    'snapper_registered':    "grep -q 'root' /etc/conf.d/snapper 2>/dev/null",
-    'mkinitcpio_lvm2_hook':  "grep -q 'lvm2' /etc/mkinitcpio.conf",
-    'mkinitcpio_zstd':       "grep -q '^COMPRESSION=\"zstd\"' /etc/mkinitcpio.conf",
+    'sudo_nopasswd_content': "rg -q '" ~ user ~ " ALL=\\(ALL\\) NOPASSWD: ALL' /etc/sudoers.d/99-" ~ user ~ "-nopasswd",
+    'wheel_sudoers':         "rg -q '^%wheel ALL=\\(ALL:ALL\\) ALL' /etc/sudoers",
+    'timezone':              'readlink /etc/localtime | rg -q Europe/Moscow',
+    'locale':                "rg -q '^LANG=en_US.UTF-8' /etc/locale.conf",
+    'hostname':              "rg -q '^cachyos' /etc/hostname",
+    'hosts':                 "rg -q 'cachyos' /etc/hosts",
+    'limine_conf_content':   "rg -q 'vmlinuz-linux-cachyos-lts' /boot/limine.conf",
+    'snapper_registered':    "rg -q 'root' /etc/conf.d/snapper 2>/dev/null",
+    'mkinitcpio_lvm2_hook':  "rg -q 'lvm2' /etc/mkinitcpio.conf",
+    'mkinitcpio_zstd':       "rg -q '^COMPRESSION=\"zstd\"' /etc/mkinitcpio.conf",
     'initramfs_exists':      'test -f /boot/initramfs-linux-cachyos-lts.img',
-    'pacman_v4_arch':        "grep -q 'x86_64_v4' /etc/pacman.conf",
-    'repo_znver4':           "grep -q '^\\[cachyos-znver4\\]' /etc/pacman.conf",
-    'repo_core_znver4':      "grep -q '^\\[cachyos-core-znver4\\]' /etc/pacman.conf",
-    'repo_extra_znver4':     "grep -q '^\\[cachyos-extra-znver4\\]' /etc/pacman.conf",
-    'repo_cachyos':          "grep -q '^\\[cachyos\\]' /etc/pacman.conf",
-    'nm_iwd_backend_content': "grep -q 'wifi.backend=iwd' /etc/NetworkManager/conf.d/wifi-iwd.conf",
+    'pacman_v4_arch':        "rg -q 'x86_64_v4' /etc/pacman.conf",
+    'repo_znver4':           "rg -q '^\\[cachyos-znver4\\]' /etc/pacman.conf",
+    'repo_core_znver4':      "rg -q '^\\[cachyos-core-znver4\\]' /etc/pacman.conf",
+    'repo_extra_znver4':     "rg -q '^\\[cachyos-extra-znver4\\]' /etc/pacman.conf",
+    'repo_cachyos':          "rg -q '^\\[cachyos\\]' /etc/pacman.conf",
+    'nm_iwd_backend_content': "rg -q 'wifi.backend=iwd' /etc/NetworkManager/conf.d/wifi-iwd.conf",
     'resolv_conf':           'test -s /etc/resolv.conf',
     'zsh_neg':               'test "$(getent passwd ' ~ user ~ ' | cut -d: -f7)" = "/bin/zsh"',
     'zsh_root':              'test "$(getent passwd root | cut -d: -f7)" = "/bin/zsh"',
@@ -90,65 +90,45 @@ cachyos_svc_{{ id_suffix }}:
 {% endfor %}
 
 # ===================================================================
-# Key packages (spot-check representative set from each category)
+# Package spot-checks (representative set from each category)
 # ===================================================================
 
-{% set check_packages = [
-    'base', 'linux-cachyos-lts', 'linux-firmware',
-    'limine', 'btrfs-progs', 'snapper', 'snap-pac',
-    'networkmanager', 'openssh', 'paru', 'sudo', 'zsh', 'git',
-    'hyprland', 'kitty', 'podman', 'pipewire',
-    'rust', 'clang', 'cmake', 'nodejs',
-    'bat', 'fd', 'fzf', 'ripgrep', 'zoxide',
-    'mpd', 'mpv', 'ffmpegthumbnailer',
-    'btop', 'fastfetch', 'smartmontools',
-    'nmap', 'socat', 'ollama', 'telegram-desktop',
-    'tmux', 'gopass', 'chezmoi', 'git-delta',
-    'libvirt', 'qemu-desktop',
-    'rofi', 'dunst', 'swappy', 'quickshell', 'swayosd', 'wl-clip-persist', 'ttf-material-symbols-variable',
-    'ttf-jetbrains-mono-nerd', 'ttf-icomoon-feather', 'otf-font-awesome',
-    'noto-fonts', 'noto-fonts-emoji', 'ttf-ibm-plex', 'inter-font',
-    'imagemagick', 'yt-dlp',
-    'unbound', 'avahi', 'samba', 'grafana',
-] %}
+{% set package_checks = {
+    'pkg': [
+        'base', 'linux-cachyos-lts', 'linux-firmware',
+        'limine', 'btrfs-progs', 'snapper', 'snap-pac',
+        'networkmanager', 'openssh', 'paru', 'sudo', 'zsh', 'git',
+        'hyprland', 'kitty', 'podman', 'pipewire',
+        'rust', 'clang', 'cmake', 'nodejs',
+        'bat', 'fd', 'fzf', 'ripgrep', 'zoxide',
+        'mpd', 'mpv', 'ffmpegthumbnailer',
+        'btop', 'fastfetch', 'smartmontools',
+        'nmap', 'socat', 'ollama', 'telegram-desktop',
+        'tmux', 'gopass', 'chezmoi', 'git-delta',
+        'libvirt', 'qemu-desktop',
+        'rofi', 'dunst', 'swappy', 'quickshell', 'swayosd', 'wl-clip-persist', 'ttf-material-symbols-variable',
+        'ttf-jetbrains-mono-nerd', 'ttf-icomoon-feather', 'otf-font-awesome',
+        'noto-fonts', 'noto-fonts-emoji', 'ttf-ibm-plex', 'inter-font',
+        'imagemagick', 'yt-dlp',
+        'unbound', 'avahi', 'samba', 'grafana',
+    ],
+    'aur': [
+        'pyprland', 'wlogout',
+        'carapace-bin', 'doggo', 'wallust',
+        'pipemixer', 'newsraft', 'salt',
+        'amneziawg-tools', 'amneziawg-dkms',
+    ],
+    'custom': [
+        'raise', 'neg-pretty-printer', 'richcolors',
+        'albumdetails', 'taoup', 'iosevka-neg-fonts',
+    ],
+} %}
 
-{% for pkg in check_packages %}
-cachyos_pkg_{{ pkg | replace('-', '_') }}:
+{% for category, packages in package_checks.items() %}
+{% for pkg in packages %}
+cachyos_{{ category }}_{{ pkg | replace('-', '_') }}:
   cmd.run:
     - name: 'true'
     - unless: pacman -Q {{ pkg }} >/dev/null 2>&1
 {% endfor %}
-
-# ===================================================================
-# AUR packages (spot-check)
-# ===================================================================
-
-{% set check_aur = [
-    'pyprland', 'wlogout',
-    'carapace-bin', 'doggo', 'wallust',
-    'pipemixer', 'newsraft', 'salt',
-    'amneziawg-tools', 'amneziawg-dkms',
-] %}
-
-{% for pkg in check_aur %}
-cachyos_aur_{{ pkg | replace('-', '_') }}:
-  cmd.run:
-    - name: 'true'
-    - unless: pacman -Q {{ pkg }} >/dev/null 2>&1
-{% endfor %}
-
-# ===================================================================
-# Custom PKGBUILD packages (spot-check)
-# ===================================================================
-
-{% set check_custom = [
-    'raise', 'neg-pretty-printer', 'richcolors',
-    'albumdetails', 'taoup', 'iosevka-neg-fonts',
-] %}
-
-{% for pkg in check_custom %}
-cachyos_custom_{{ pkg | replace('-', '_') }}:
-  cmd.run:
-    - name: 'true'
-    - unless: pacman -Q {{ pkg }} >/dev/null 2>&1
 {% endfor %}
