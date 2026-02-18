@@ -118,7 +118,7 @@ get_sudo() {
 # ── Daemon helpers ─────────────────────────────────────────────────────────────
 daemon_running() {
     [[ -S "$DAEMON_SOCK" ]] || return 1
-    python3 -c "
+    if python3 -c "
 import socket, sys
 try:
     s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -127,7 +127,13 @@ try:
     s.close()
 except Exception:
     sys.exit(1)
-" 2>/dev/null
+" 2>/dev/null; then
+        return 0
+    fi
+    # Socket exists but daemon is dead — remove stale socket so ensure_daemon
+    # can start a fresh daemon without bind() failing on the existing path.
+    $SUDO_CMD rm -f "$DAEMON_SOCK"
+    return 1
 }
 
 ensure_daemon() {
