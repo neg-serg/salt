@@ -83,15 +83,15 @@ dxvk_resolution_fix:
 
             # Create DXVK config if not present
             if [ ! -f "$prefix/dxvk.conf" ]; then
-              cat > "$prefix/dxvk.conf" << 'DXVK_EOF'
-# DXVK Configuration for proper display mode enumeration
-# Fixes issue where games only see subset of available resolutions
-# This is especially important for high-resolution displays (4K, ultrawide)
-
-d3d11.allowDiscard = True
-d3d11.enumerateDisplayModes = 1
-dxgi.deferSurfaceCreation = 0
-DXVK_EOF
+              printf '%s\n' \
+                '# DXVK Configuration for proper display mode enumeration' \
+                '# Fixes issue where games only see subset of available resolutions' \
+                '# This is especially important for high-resolution displays (4K, ultrawide)' \
+                '' \
+                'd3d11.allowDiscard = True' \
+                'd3d11.enumerateDisplayModes = 1' \
+                'dxgi.deferSurfaceCreation = 0' \
+                > "$prefix/dxvk.conf"
             fi
           fi
         done
