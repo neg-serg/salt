@@ -1,5 +1,6 @@
 {% from 'host_config.jinja' import host %}
 {% set user = host.user %}
+{% set home = host.home %}
 # Steam + gaming tools (native pacman install)
 # Requires multilib repo for lib32 dependencies;
 # --ask 4 resolves CachyOS lib32-mesa-git vs multilib lib32-mesa conflict.
@@ -29,7 +30,7 @@ install_vulkan_radeon:
 
 install_steam:
   cmd.run:
-    - name: pacman -S --noconfirm --needed --ask 4 steam gamescope mangohud gamemode protontricks
+    - name: pacman -S --noconfirm --needed --ask 4 steam gamescope mangohud goverlay gamemode protontricks
     - unless: rg -qx 'steam' /var/cache/salt/pacman_installed.txt
     - require:
       - cmd: install_vulkan_radeon
@@ -43,7 +44,7 @@ steam_library_dir:
 
 steam_skins_dir:
   file.directory:
-    - name: ~/.local/share/Steam/skins
+    - name: {{ home }}/.local/share/Steam/skins
     - user: {{ user }}
     - group: {{ user }}
     - makedirs: True
@@ -59,12 +60,43 @@ download_modern_steam:
         set -eo pipefail
         TMPDIR=$(mktemp -d)
         curl -fsSL https://github.com/SleepDaemon/Modern-Steam/releases/download/v0.2.7/SteamDarkMode.7z -o "$TMPDIR/SteamDarkMode.7z"
-        7z x "$TMPDIR/SteamDarkMode.7z" -o~/.local/share/Steam/skins/
+        7z x "$TMPDIR/SteamDarkMode.7z" -o{{ home }}/.local/share/Steam/skins/
         rm -rf "$TMPDIR"
     - runas: {{ user }}
     - shell: /bin/bash
-    - creates: ~/.local/share/Steam/skins/SteamDarkMode
+    - creates: {{ home }}/.local/share/Steam/skins/SteamDarkMode
     - require:
       - cmd: ensure_7z
       - file: steam_skins_dir
+
+# Fix DXVK resolution detection for all Proton prefixes
+# This ensures games properly enumerate all available display modes
+# Issue: DXVK sometimes reports only a subset of resolutions to games
+dxvk_resolution_fix:
+  cmd.run:
+    - name: |
+        set -eo pipefail
+        for prefix in ~/.steam/root/steamapps/compatdata/*/pfx; do
+          if [ -d "$prefix" ]; then
+            # Register correct desktop resolution in wine registry
+            WINEPREFIX="$prefix" wine reg add "HKEY_CURRENT_USER\Software\Wine\Explorer\Desktops" /v Default /d "3840x2160" /f 2>/dev/null || true
+
+            # Create DXVK config if not present
+            if [ ! -f "$prefix/dxvk.conf" ]; then
+              cat > "$prefix/dxvk.conf" << 'DXVK_EOF'
+# DXVK Configuration for proper display mode enumeration
+# Fixes issue where games only see subset of available resolutions
+# This is especially important for high-resolution displays (4K, ultrawide)
+
+d3d11.allowDiscard = True
+d3d11.enumerateDisplayModes = 1
+dxgi.deferSurfaceCreation = 0
+DXVK_EOF
+            fi
+          fi
+        done
+    - shell: /bin/bash
+    - runas: {{ user }}
+    - require:
+      - cmd: install_steam
 {% endif %}
