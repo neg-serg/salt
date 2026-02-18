@@ -52,7 +52,7 @@ steam_skins_dir:
 ensure_7z:
   cmd.run:
     - name: pacman -S --noconfirm --needed p7zip
-    - unless: rg -qx 'p7zip' /var/cache/salt/pacman_installed.txt
+    - unless: command -v 7z
 
 download_modern_steam:
   cmd.run:
@@ -64,7 +64,7 @@ download_modern_steam:
         rm -rf "$TMPDIR"
     - runas: {{ user }}
     - shell: /bin/bash
-    - creates: {{ home }}/.local/share/Steam/skins/SteamDarkMode
+    - creates: {{ home }}/.local/share/Steam/skins/steamui
     - require:
       - cmd: ensure_7z
       - file: steam_skins_dir
@@ -76,27 +76,27 @@ dxvk_resolution_fix:
   cmd.run:
     - name: |
         set -eo pipefail
+        changed=0
         for prefix in ~/.steam/root/steamapps/compatdata/*/pfx; do
-          if [ -d "$prefix" ]; then
-            # Register correct desktop resolution in wine registry
+          [ -d "$prefix" ] || continue
+          if [ ! -f "$prefix/dxvk.conf" ]; then
             WINEPREFIX="$prefix" wine reg add "HKEY_CURRENT_USER\Software\Wine\Explorer\Desktops" /v Default /d "3840x2160" /f 2>/dev/null || true
-
-            # Create DXVK config if not present
-            if [ ! -f "$prefix/dxvk.conf" ]; then
-              printf '%s\n' \
-                '# DXVK Configuration for proper display mode enumeration' \
-                '# Fixes issue where games only see subset of available resolutions' \
-                '# This is especially important for high-resolution displays (4K, ultrawide)' \
-                '' \
-                'd3d11.allowDiscard = True' \
-                'd3d11.enumerateDisplayModes = 1' \
-                'dxgi.deferSurfaceCreation = 0' \
-                > "$prefix/dxvk.conf"
-            fi
+            printf '%s\n' \
+              'd3d11.allowDiscard = True' \
+              'd3d11.enumerateDisplayModes = 1' \
+              'dxgi.deferSurfaceCreation = 0' \
+              > "$prefix/dxvk.conf"
+            changed=$((changed + 1))
           fi
         done
+        [ "$changed" -gt 0 ] && echo "Configured $changed prefix(es)" || echo "All prefixes already configured"
     - shell: /bin/bash
     - runas: {{ user }}
+    - unless: |
+        for prefix in ~/.steam/root/steamapps/compatdata/*/pfx; do
+          [ -d "$prefix" ] && [ ! -f "$prefix/dxvk.conf" ] && exit 1
+        done
+        exit 0
     - require:
       - cmd: install_steam
 {% endif %}
