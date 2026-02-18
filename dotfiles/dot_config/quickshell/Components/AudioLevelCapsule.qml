@@ -68,7 +68,9 @@ LocalComponents.WidgetCapsule {
         interval: Theme.panelVolumeMutedHideMs
         repeat: false
         onTriggered: {
-            if (root.autoHideWhenMuted && root.muted && !root.panelHovering) {
+            if (root.autoHideWhenMuted
+                    && root.resolveIconCategory(root.level, root.muted) === "off"
+                    && !root.panelHovering) {
                 root.visible = false;
                 pillIndicator.hide();
             }
@@ -76,7 +78,8 @@ LocalComponents.WidgetCapsule {
     }
 
     onPanelHoveringChanged: {
-        if (!autoHideWhenMuted || !muted) return;
+        if (!autoHideWhenMuted) return;
+        if (resolveIconCategory(level, muted) !== "off") return;
         if (panelHovering) {
             if (!root.visible) {
                 root.visible = true;
@@ -134,8 +137,8 @@ LocalComponents.WidgetCapsule {
         pillIndicator.iconCircleColor = levelColor;
         pillIndicator.collapsedIconColor = levelColor;
 
-        // Muted auto-hide: show for a timeout, then hide
-        if (autoHideWhenMuted && mutedValue) {
+        // Auto-hide when icon is "off" (muted or volume at zero)
+        if (autoHideWhenMuted && category === "off") {
             if (!root.visible)
                 root.visible = true;
             mutedHideTimer.restart();
@@ -147,7 +150,7 @@ LocalComponents.WidgetCapsule {
             return;
         }
 
-        // Unmuted: cancel muted timer
+        // No longer "off": cancel the hide timer
         if (mutedHideTimer.running)
             mutedHideTimer.stop();
 
