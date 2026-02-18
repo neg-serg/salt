@@ -1159,10 +1159,12 @@ Scope {
                             Microphone {
                                 id: widgetsMicrophone
                                 Layout.alignment: Qt.AlignVCenter
+                                panelHovering: rightPanel.panelHovering
                             }
                             Volume {
                                 id: widgetsVolume
                                 Layout.alignment: Qt.AlignVCenter
+                                panelHovering: rightPanel.panelHovering
                             }
                         }
 
