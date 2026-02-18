@@ -60,7 +60,7 @@ download_modern_steam:
         set -eo pipefail
         TMPDIR=$(mktemp -d)
         curl -fsSL https://github.com/SleepDaemon/Modern-Steam/releases/download/v0.2.7/SteamDarkMode.7z -o "$TMPDIR/SteamDarkMode.7z"
-        7z x "$TMPDIR/SteamDarkMode.7z" -o{{ home }}/.local/share/Steam/skins/
+        7z x -aoa "$TMPDIR/SteamDarkMode.7z" -o{{ home }}/.local/share/Steam/skins/
         rm -rf "$TMPDIR"
     - runas: {{ user }}
     - shell: /bin/bash
