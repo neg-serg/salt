@@ -2,11 +2,15 @@
    pip_pkg, cargo_pkg, curl_extract_tar, curl_extract_zip, firefox_extension,
    download_font_zip, git_clone_deploy, run_with_error_context #}
 
+{% from 'host_config.jinja' import host %}
+{% set _user = host.user %}
+{% set _home = host.home %}
+
 {# Download binary directly to ~/.local/bin/ and chmod +x.
    Usage: {{ curl_bin('aliae', 'https://github.com/.../aliae-linux-amd64') }}
           {{ curl_bin('xdg-ninja', 'https://github.com/.../xdgnj') }}
 #}
-{%- macro curl_bin(name, url, user='neg', home='/home/neg') -%}
+{%- macro curl_bin(name, url, user=_user, home=_home) -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: curl -fsSL {{ url }} -o ~/.local/bin/{{ name }} && chmod +x ~/.local/bin/{{ name }}
@@ -21,7 +25,7 @@ install_{{ name | replace('-', '_') }}:
 {# Download tar.gz, extract single binary to ~/.local/bin/.
    Usage: {{ github_tar('eza', 'https://github.com/.../eza_x86_64.tar.gz') }}
 #}
-{%- macro github_tar(name, url, user='neg', home='/home/neg') -%}
+{%- macro github_tar(name, url, user=_user, home=_home) -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: |
@@ -46,7 +50,7 @@ install_{{ name | replace('-', '_') }}:
           {{ github_release('rmpc', 'mierak/rmpc', 'rmpc-${TAG}-x86_64.tar.gz', format='tar.gz') }}
           {{ github_release('sing-box', 'SagerNet/sing-box', 'sing-box-${VER}.tar.gz', format='tar.gz', strip_v=True) }}
 #}
-{%- macro github_release(name, repo, asset, bin=None, format='bin', strip_v=False, user='neg', home='/home/neg') -%}
+{%- macro github_release(name, repo, asset, bin=None, format='bin', strip_v=False, user=_user, home=_home) -%}
 {%- set target = bin or name -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
@@ -112,7 +116,7 @@ install_{{ name | replace('-', '_') }}:
    Usage: {{ pip_pkg('httpstat') }}
           {{ pip_pkg('neovim_python_deps', pkg='neovim-remote', bin='nvr') }}
 #}
-{%- macro pip_pkg(name, pkg=None, bin=None, user='neg', home='/home/neg') -%}
+{%- macro pip_pkg(name, pkg=None, bin=None, user=_user, home=_home) -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: |
@@ -130,7 +134,7 @@ install_{{ name | replace('-', '_') }}:
           {{ cargo_pkg('agg', git='https://github.com/asciinema/agg') }}
           {{ cargo_pkg('pzip', bin='pz') }}
 #}
-{%- macro cargo_pkg(name, pkg=None, bin=None, git=None, user='neg', home='/home/neg') -%}
+{%- macro cargo_pkg(name, pkg=None, bin=None, git=None, user=_user, home=_home) -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: cargo install {{ '--git ' ~ git if git else pkg or name }}
@@ -190,7 +194,7 @@ install_{{ name | replace('-', '_') }}:
           {{ curl_extract_tar('blesh', 'https://github.com/.../ble-nightly.tar.xz', archive_ext='tar.xz', dest='~/.local/share', strip_components=1, creates=home ~ '/.local/share/ble.sh') }}
           {{ curl_extract_tar('nyxt', '...', 'Nyxt-x86_64.AppImage', bin='nyxt', chmod=True) }}
 #}
-{%- macro curl_extract_tar(name, url, binary_pattern=None, archive_ext='tar.gz', fetch_tag=False, binaries=None, bin=None, chmod=False, dest=None, strip_components=None, creates=None, bin_dest=None, user='neg', home='/home/neg') -%}
+{%- macro curl_extract_tar(name, url, binary_pattern=None, archive_ext='tar.gz', fetch_tag=False, binaries=None, bin=None, chmod=False, dest=None, strip_components=None, creates=None, bin_dest=None, user=_user, home=_home) -%}
 {%- set ext_flag = 'J' if archive_ext == 'tar.xz' else 'z' -%}
 {%- set target_dir = bin_dest or '~/.local/bin' -%}
 {%- if fetch_tag %}
@@ -252,7 +256,7 @@ install_{{ name | replace('-', '_') }}:
           {{ curl_extract_zip('roomeqwizard', '...', dest='~/.local/opt/roomeqwizard') }}
           {{ curl_extract_zip('throne', '...', dest='~/.local/opt/throne', symlink='Throne') }}
 #}
-{%- macro curl_extract_zip(name, url, binary_path=None, binaries=None, chmod=False, dest=None, symlink=None, creates=None, user='neg', home='/home/neg') -%}
+{%- macro curl_extract_zip(name, url, binary_path=None, binaries=None, chmod=False, dest=None, symlink=None, creates=None, user=_user, home=_home) -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: |
@@ -296,7 +300,7 @@ install_{{ name | replace('-', '_') }}:
    profile: path to browser profile directory.
    Usage: {{ firefox_extension(ext, floorp_profile, require='floorp_extensions_dir') }}
 #}
-{%- macro firefox_extension(ext, profile, require=None, user='neg') -%}
+{%- macro firefox_extension(ext, profile, require=None, user=_user) -%}
 floorp_ext_{{ ext.slug | replace('-', '_') }}:
   cmd.run:
     - name: curl -fsSL -o '{{ profile }}/extensions/{{ ext.id }}.xpi' 'https://addons.mozilla.org/firefox/downloads/latest/{{ ext.slug }}/latest.xpi'
@@ -316,7 +320,7 @@ floorp_ext_{{ ext.slug | replace('-', '_') }}:
    Usage: {{ download_font_zip('sf_pro_display', 'https://font.download/dl/font/sf-pro-display.zip', 'SFProDisplay') }}
           {{ download_font_zip('anurati', 'https://font.download/dl/font/anurati.zip', 'Anurati') }}
 #}
-{%- macro download_font_zip(name, url, subdir, user='neg', home='/home/neg') -%}
+{%- macro download_font_zip(name, url, subdir, user=_user, home=_home) -%}
 {%- set fonts_dir = home ~ '/.local/share/fonts' -%}
 {{ fonts_dir }}/{{ subdir }}:
   file.directory:
@@ -354,7 +358,7 @@ install_{{ name }}:
    Usage: {{ git_clone_deploy('flight-gtk', 'https://github.com/neg-serg/Flight-Plasma-Themes.git', '~/.local/share/themes', ['Flight-Dark-GTK', 'Flight-light-GTK']) }}
           {{ git_clone_deploy('zi', 'https://github.com/z-shell/zi.git', '~/.config/zi/bin', creates=home ~ '/.config/zi/bin/zi.zsh') }}
 #}
-{%- macro git_clone_deploy(name, repo, dest, items=None, creates=None, user='neg', home='/home/neg') -%}
+{%- macro git_clone_deploy(name, repo, dest, items=None, creates=None, user=_user, home=_home) -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: |
