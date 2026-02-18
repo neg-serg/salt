@@ -7,3 +7,5 @@
 {{ pacman_install('pipewire-pulse', 'pipewire-pulse') }}
 {{ pacman_install('pipewire-alsa', 'pipewire-alsa') }}
 {{ pacman_install('pipewire-jack', 'pipewire-jack') }}
+{{ pacman_install('alsa-utils', 'alsa-utils') }}
+{{ pacman_install('playerctl', 'playerctl') }}

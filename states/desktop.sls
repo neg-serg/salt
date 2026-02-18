@@ -66,7 +66,8 @@ disable_tuned:
 
 # --- Hyprland ecosystem packages ---
 {{ pacman_install('hyprland_desktop',
-    'hyprpaper hypridle hyprlock hyprpolkitagent xdg-desktop-portal-hyprland') }}
+    'hyprpaper hypridle hyprlock hyprpolkitagent xdg-desktop-portal-hyprland grim slurp hyprpicker wlr-randr') }}
+{{ pacman_install('rsync', 'rsync') }}
 
 remove_old_termfilechooser:
   cmd.run:
