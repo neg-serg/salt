@@ -1,13 +1,15 @@
 #!/bin/bash
-# salt-apply.sh — client for salt-daemon.py
+# salt-apply.sh — apply Salt states (daemon-aware)
 #
-# Sends a state.apply request to the running salt-daemon and streams
-# the output. Falls back to direct salt-call if the daemon is not running.
+# Bootstraps venv + runtime config on first run, then uses the running
+# salt-daemon if available, otherwise falls back to direct salt-call.
+# Runs chezmoi apply after a successful state run.
 #
 # Usage:
-#   scripts/salt-apply.sh [state] [--test] [--dry-run]
-#   scripts/salt-apply.sh system_description
-#   scripts/salt-apply.sh hardware --test
+#   scripts/salt-apply.sh                        # apply system_description
+#   scripts/salt-apply.sh cachyos                # smoke-test bootstrap
+#   scripts/salt-apply.sh hardware --test        # dry-run a specific state
+#   scripts/salt-apply.sh kernel_modules
 #
 # Environment:
 #   SALT_DAEMON_SOCK  Unix socket path (default: /tmp/salt-daemon.sock)
@@ -20,15 +22,15 @@ PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 VENV_DIR="${PROJECT_DIR}/.venv"
 RUNTIME_CONFIG_DIR="${PROJECT_DIR}/.salt_runtime"
 DAEMON_SOCK="${SALT_DAEMON_SOCK:-/tmp/salt-daemon.sock}"
+DAEMON_SCRIPT="${SCRIPT_DIR}/salt-daemon.py"
 
 STATE="system_description"
 TEST_MODE=false
-EXTRA_ARGS=()
 
 for arg in "$@"; do
     case "$arg" in
         --test|--dry-run) TEST_MODE=true ;;
-        -*) EXTRA_ARGS+=("$arg") ;;
+        -*) echo "Unknown flag: $arg" >&2; exit 1 ;;
         *) STATE="$arg" ;;
     esac
 done
@@ -39,10 +41,83 @@ LOG_FILE="${SALT_LOG_FILE:-${LOG_DIR}/${STATE}-${TIMESTAMP}.log}"
 mkdir -p "${LOG_DIR}"
 touch "${LOG_FILE}"
 
-# ── Check if daemon is running ────────────────────────────────────────────────
+# ── Bootstrap: venv + Salt install ────────────────────────────────────────────
+bootstrap_salt() {
+    if [[ ! -d "$VENV_DIR" ]]; then
+        echo "--- Bootstrapping Salt (creating venv) ---"
+        python3 -m venv "$VENV_DIR"
+    fi
+
+    if [[ ! -f "$VENV_DIR/bin/salt-call" ]]; then
+        echo "--- Installing Salt and dependencies ---"
+        "$VENV_DIR/bin/pip" install salt passlib tornado jinja2 msgpack pyyaml psutil requests distro looseversion packaging pycryptodomex
+
+        # Patch Salt for Python 3.14+ urlunparse behavior
+        PYVER=$("$VENV_DIR/bin/python3" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
+        URL_PY="$VENV_DIR/lib/python${PYVER}/site-packages/salt/utils/url.py"
+        if [[ -f "$URL_PY" ]]; then
+            echo "--- Patching Salt for Python 3.14 compatibility ---"
+            sed -i 's/return "salt:\/\/{}".format(url\[len("file:\/\/\/") :\])/return "salt:\/\/{}".format(url.split("file:", 1)[1].lstrip("\/"))/' "$URL_PY"
+        fi
+    fi
+}
+
+# ── Runtime config: generate .salt_runtime/minion ─────────────────────────────
+setup_config() {
+    mkdir -p "${RUNTIME_CONFIG_DIR}/pki/minion" \
+             "${RUNTIME_CONFIG_DIR}/var/cache/salt/pillar_cache" \
+             "${RUNTIME_CONFIG_DIR}/var/log/salt"
+    cat > "${RUNTIME_CONFIG_DIR}/minion" <<EOF
+pki_dir: ${RUNTIME_CONFIG_DIR}/pki/minion
+log_file: ${RUNTIME_CONFIG_DIR}/var/log/salt/minion
+cachedir: ${RUNTIME_CONFIG_DIR}/var/cache/salt
+minion_pillar_cache: True
+pillar_cache: True
+pillar_cache_backend: disk
+pillar_cache_ttl: 3600
+state_output: changes
+file_client: local
+file_roots:
+  base:
+    - ${PROJECT_DIR}/states/
+    - ${PROJECT_DIR}/
+
+# --- Performance optimizations ---
+# Grains: skip expensive DNS reverse-lookup and hardware probes
+enable_fqdns_grains: False
+enable_gpu_grains: False
+# Cache grain collection to disk; avoids full rebuild on every run
+grains_cache: True
+grains_cache_expiration: 3600
+# Salt 3007+: skip expensive module fallback file scan
+lazy_loader_strict_matching: True
+# No custom _modules/ in this repo — skip saltutil.sync_all before each run
+autoload_dynamic_modules: False
+# Don't traverse non-SLS dirs (configs/, scripts/, units/, data/, build/)
+fileserver_limit_traversal: True
+# Limit parallel state processes (parallel: True in states)
+process_count_max: 8
+EOF
+}
+
+# ── Sudo: prefer NOPASSWD, fall back to .password file ────────────────────────
+get_sudo() {
+    if sudo -n true 2>/dev/null; then
+        SUDO_CMD="sudo -E"
+        SUDO_PASS=""
+    elif [[ -f "${PROJECT_DIR}/.password" ]]; then
+        SUDO_CMD="sudo -S -E"
+        SUDO_PASS=$(cat "${PROJECT_DIR}/.password")
+    else
+        echo "error: no NOPASSWD sudo and no .password file found" >&2
+        echo "  either configure NOPASSWD or create .password" >&2
+        exit 1
+    fi
+}
+
+# ── Daemon helpers ─────────────────────────────────────────────────────────────
 daemon_running() {
     [[ -S "$DAEMON_SOCK" ]] || return 1
-    # Try a quick connection test (bare 'except:' would catch sys.exit(0), use Exception)
     python3 -c "
 import socket, sys
 try:
@@ -55,51 +130,53 @@ except Exception:
 " 2>/dev/null
 }
 
-# ── Run via daemon ────────────────────────────────────────────────────────────
+ensure_daemon() {
+    daemon_running && return 0
+    [[ -x "$DAEMON_SCRIPT" ]] || return 1
+    echo "(starting salt-daemon in background...)"
+    $SUDO_CMD "$DAEMON_SCRIPT" \
+        --config-dir "$RUNTIME_CONFIG_DIR" \
+        --socket "$DAEMON_SOCK" \
+        --log-level warning &>/dev/null &
+    for _ in $(seq 1 10); do
+        sleep 0.5
+        daemon_running && return 0
+    done
+    return 1  # timeout — fall back to direct
+}
+
+# ── AWK formatter (shared by both run paths) ──────────────────────────────────
+AWK_FORMATTER='
+    match($0, /Executing state ([^ ]+) for \[([^]]+)\]/, m) {
+        state_n++
+        line = "▶ [" state_n "] " m[1] " " m[2]
+        if (length(line) > maxlen) line = substr(line, 1, maxlen) "…"
+        printf "\r\033[K%s", line; fflush()
+    }
+    /^local:/ { printf "\r\033[K"; fflush() }
+    match($0, /^  Name: ([^ ]+) - Function: ([^ ]+) - Result: ([^ ]+) - Started: [^ ]+ - Duration: ([0-9.]+ ms)/, m) {
+        dur = " (" m[4] ")"
+        if (m[3] == "Changed") mark = "\033[33m✦\033[0m"
+        else if (m[3] ~ /^Fail/) mark = "\033[31m✗\033[0m"
+        else mark = "✓"
+        printf "%s%s\n", mark " " m[1], dur; fflush()
+    }
+    /^Summary for / { in_summary=1 }
+    in_summary && /^[-]+$/ { print; fflush() }
+    in_summary && /^(Succeeded|Failed|Total)/ { print; fflush() }
+'
+
+# ── Run via daemon ─────────────────────────────────────────────────────────────
 run_via_daemon() {
     echo "=== Applying ${STATE} via daemon ($(date)) ==="
     echo "Log: ${LOG_FILE}"
 
-    # The daemon writes both debug logs and the formatted summary directly to
-    # LOG_FILE.  The awk watcher reads from LOG_FILE via tail -f — same as the
-    # direct (non-daemon) path.  The client only needs to send the request and
-    # capture the exit code; no tee-ing needed (would duplicate summary lines).
-    tail -f "${LOG_FILE}" | awk -v maxlen=100 '
-        match($0, /Executing state ([^ ]+) for \[([^]]+)\]/, m) {
-            state_n++
-            line = "▶ [" state_n "] " m[1] " " m[2]
-            if (length(line) > maxlen) line = substr(line, 1, maxlen) "…"
-            printf "\r\033[K%s", line
-            fflush()
-        }
-        /^local:/ {
-            printf "\r\033[K"
-            fflush()
-        }
-        match($0, /^  Name: ([^ ]+) - Function: ([^ ]+) - Result: ([^ ]+) - Started: [^ ]+ - Duration: ([0-9.]+ ms)/, m) {
-            dur = " (" m[4] ")"
-            if (m[3] == "Changed") mark = "\033[33m✦\033[0m"
-            else if (m[3] ~ /^Fail/) mark = "\033[31m✗\033[0m"
-            else mark = "✓"
-            name = mark " " m[1]
-            cut = maxlen - length(dur) + 9
-            printf "%s%s\n", name, dur
-            fflush()
-        }
-        /^Summary for / { in_summary=1 }
-        in_summary && /^[-]+$/ { print; fflush() }
-        in_summary && /^(Succeeded|Failed|Total)/ { print; fflush() }
-    ' &
+    tail -f "${LOG_FILE}" | awk -v maxlen=100 "$AWK_FORMATTER" &
     local tail_pid=$!
 
-    # Build kwargs JSON
     local kwargs='{"state_output":"mixed_id"}'
     $TEST_MODE && kwargs='{"state_output":"mixed_id","test":true}'
 
-    # Talk to daemon: send JSON request, wait for {"type":"exit","code":N}.
-    # The daemon writes all output to LOG_FILE directly; we only capture the
-    # exit code here so the shell can propagate it.
-    # Note: kwargs is a JSON string; parse it so Python gets proper booleans.
     local exit_code
     exit_code=$(python3 - <<PYEOF
 import json, socket, sys
@@ -136,17 +213,11 @@ PYEOF
     sleep 0.3
     kill "$tail_pid" 2>/dev/null
     wait "$tail_pid" 2>/dev/null
-
     return "${exit_code:-1}"
 }
 
-# ── Fallback: direct salt-call ────────────────────────────────────────────────
-run_direct() {
-    echo "=== Applying ${STATE} directly (daemon not running) ($(date)) ==="
-    echo "Log: ${LOG_FILE}"
-    echo "(Start salt-daemon for faster subsequent runs)"
-
-    SALT_RUNNER='
+# ── Fallback: direct salt-call ─────────────────────────────────────────────────
+SALT_RUNNER='
 import sys, warnings
 _orig = warnings.showwarning
 def _w(msg, cat, filename, lineno, file=None, line=None):
@@ -177,39 +248,32 @@ sys.modules["spwd"] = MockSpwd()
 import salt.scripts; salt.scripts.salt_call()
 '
 
-    touch "${LOG_FILE}"
-    tail -f "${LOG_FILE}" | awk -v maxlen=100 '
-        match($0, /Executing state ([^ ]+) for \[([^]]+)\]/, m) {
-            state_n++
-            line = "▶ [" state_n "] " m[1] " " m[2]
-            if (length(line) > maxlen) line = substr(line, 1, maxlen) "…"
-            printf "\r\033[K%s", line; fflush()
-        }
-        /^local:/ { printf "\r\033[K"; fflush() }
-        match($0, /^  Name: ([^ ]+) - Function: ([^ ]+) - Result: ([^ ]+) - Started: [^ ]+ - Duration: ([0-9.]+ ms)/, m) {
-            dur = " (" m[4] ")"
-            if (m[3] == "Changed") mark = "\033[33m✦\033[0m"
-            else if (m[3] ~ /^Fail/) mark = "\033[31m✗\033[0m"
-            else mark = "✓"
-            printf "%s%s\n", mark " " m[1], dur; fflush()
-        }
-        /^Summary for / { in_summary=1 }
-        in_summary && /^[-]+$/ { print; fflush() }
-        in_summary && /^(Succeeded|Failed|Total)/ { print; fflush() }
-    ' &
+run_direct() {
+    echo "=== Applying ${STATE} directly (daemon not running) ($(date)) ==="
+    echo "Log: ${LOG_FILE}"
+    echo "(Start salt-daemon for faster subsequent runs)"
+
+    tail -f "${LOG_FILE}" | awk -v maxlen=100 "$AWK_FORMATTER" &
     local tail_pid=$!
 
     local test_arg=""
     $TEST_MODE && test_arg="test=True"
 
-    sudo -E "${VENV_DIR}/bin/python3" -u -c "$SALT_RUNNER" \
-        --config-dir="${RUNTIME_CONFIG_DIR}" \
-        --local \
-        --log-level=warning \
-        --log-file="${LOG_FILE}" \
-        --log-file-level=debug \
-        --state-output=mixed_id \
-        state.sls "${STATE}" ${test_arg} 2>&1 | tee -a "${LOG_FILE}" > /dev/null
+    if [[ -n "${SUDO_PASS:-}" ]]; then
+        echo "$SUDO_PASS" | $SUDO_CMD "$VENV_DIR/bin/python3" -u -c "$SALT_RUNNER" \
+            --config-dir="${RUNTIME_CONFIG_DIR}" \
+            --local --log-level=warning \
+            --log-file="${LOG_FILE}" --log-file-level=debug \
+            --state-output=mixed_id \
+            state.sls "${STATE}" ${test_arg} 2>&1 | tee -a "${LOG_FILE}" > /dev/null
+    else
+        $SUDO_CMD "$VENV_DIR/bin/python3" -u -c "$SALT_RUNNER" \
+            --config-dir="${RUNTIME_CONFIG_DIR}" \
+            --local --log-level=warning \
+            --log-file="${LOG_FILE}" --log-file-level=debug \
+            --state-output=mixed_id \
+            state.sls "${STATE}" ${test_arg} 2>&1 | tee -a "${LOG_FILE}" > /dev/null
+    fi
     local rc="${PIPESTATUS[0]}"
 
     sleep 0.3
@@ -218,8 +282,12 @@ import salt.scripts; salt.scripts.salt_call()
     return "$rc"
 }
 
-# ── Main ──────────────────────────────────────────────────────────────────────
-if daemon_running; then
+# ── Main ───────────────────────────────────────────────────────────────────────
+bootstrap_salt
+setup_config
+get_sudo
+
+if ensure_daemon; then
     run_via_daemon
     RC=$?
 else
@@ -233,6 +301,8 @@ echo "Full log: ${LOG_FILE}"
 
 if [[ $RC -eq 0 ]]; then
     echo "--- ${STATE}: all states passed ---"
+    echo "--- Applying dotfiles (chezmoi) ---"
+    chezmoi apply --force --source "${PROJECT_DIR}/dotfiles"
 else
     echo "--- ${STATE}: some states failed (see log above) ---"
     exit $RC
