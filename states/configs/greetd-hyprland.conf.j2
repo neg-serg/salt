@@ -13,9 +13,6 @@ monitorv2 {
     output = DP-1
     disabled = true
 }
-experimental {
-    xx_color_management_v4 = true
-}
 {% endif %}
 
 misc {
@@ -28,9 +25,4 @@ env = XCURSOR_THEME,Alkano-aio
 env = XCURSOR_SIZE,23
 env = HYPRCURSOR_THEME,Alkano-aio
 env = HYPRCURSOR_SIZE,23
-cursor {
-    sync_gsettings_theme = true
-}
-
-exec-once = sh -c 'echo "=== greeter-debug $(date) ===" >> /tmp/greeter-debug.log; ls -laZ ~/.cache/greeter-wallpaper >> /tmp/greeter-debug.log 2>&1; file ~/.cache/greeter-wallpaper >> /tmp/greeter-debug.log 2>&1; id >> /tmp/greeter-debug.log 2>&1'
 exec-once = qs -p ~/.config/quickshell/greeter/greeter.qml
