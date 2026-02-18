@@ -5,7 +5,6 @@
 pacman_db_warmup:
   cmd.run:
     - name: pacman -Qq > /var/cache/salt/pacman_installed.txt
-    - creates: /var/cache/salt/pacman_installed.txt
 
 system_timezone:
   timezone.system:
