@@ -421,7 +421,7 @@ AUR_PKGS=(
     # zfxtop              # TUI process/system monitor (Go) — FTBFS on CachyOS
     zk                  # Zettelkasten CLI note manager
     pipemixer           # TUI PipeWire mixer (C)
-    xdg-desktop-portal-termfilechooser-git  # terminal file chooser portal
+    xdg-desktop-portal-termfilechooser-boydaihungst-git  # terminal file chooser portal (yazi)
     epr-git             # terminal EPUB reader
     python-rapidgzip    # fast parallel gzip decompressor
     # xxh-git             # bring your shell through SSH — FTBFS on CachyOS
