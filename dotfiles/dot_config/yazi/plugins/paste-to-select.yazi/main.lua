@@ -1,16 +1,17 @@
-local function entry()
-local output_file = "/tmp/yazi_clip_content"
-os.execute("wl-paste > " .. output_file)
-local file = io.open(output_file, "r")
-if not file then return end
-local path = file:read("*all")
-file:close()
-if path then
-  path = path:gsub("[\n\r]", "")
-  if path ~= "" then
-    ya.emit("reveal", { path })
-    ya.emit("open", { hovered = true })
-  end
-end
-end
-return { entry = entry }
+--- @since 25.5.31
+--- Read a file path from system clipboard, reveal it, and open (select) it.
+--- Useful with --chooser-file (termfilechooser) to quickly pick a known file.
+return {
+	entry = function()
+		local content = ya.clipboard()
+		if not content or content == "" then
+			return ya.notify { title = "Clipboard", content = "Clipboard is empty", level = "warn", timeout = 2 }
+		end
+
+		local path = content:gsub("[\n\r]", "")
+		if path == "" then return end
+
+		ya.emit("reveal", { Url(path) })
+		ya.emit("open", { hovered = true })
+	end,
+}
