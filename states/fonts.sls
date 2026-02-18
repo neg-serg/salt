@@ -17,8 +17,17 @@
 {{ pacman_install('font-awesome',        'otf-font-awesome') }}
 {{ pacman_install('noto-fonts',          'noto-fonts') }}
 {{ pacman_install('noto-fonts-emoji',    'noto-fonts-emoji') }}
+{{ pacman_install('noto-fonts-extra',    'noto-fonts-extra') }}
+{{ pacman_install('liberation-fonts',    'ttf-liberation') }}
 {{ pacman_install('ibm-plex',            'ttf-ibm-plex') }}
 {{ pacman_install('inter-font',          'inter-font') }}
+{{ pacman_install('material-symbols',    'ttf-material-symbols-variable') }}
+
+# AUR: material-design-icons (MDI icon font, used in UI widgets/bars)
+install_material_design_icons:
+  cmd.run:
+    - name: sudo -u {{ user }} paru -S --noconfirm --needed ttf-material-design-icons-git
+    - unless: rg -qx 'ttf-material-design-icons-git' /var/cache/salt/pacman_installed.txt
 
 # ===================================================================
 # PKGBUILD fonts (custom builds)
