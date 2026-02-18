@@ -8,8 +8,8 @@ file:close()
 if path then
   path = path:gsub("[\n\r]", "")
   if path ~= "" then
-    ya.manager_emit("reveal", { path })
-    ya.manager_emit("open", { hovered = true })
+    ya.emit("reveal", { path })
+    ya.emit("open", { hovered = true })
   end
 end
 end
