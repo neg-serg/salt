@@ -1,0 +1,12 @@
+# gitleaks config — secret detection for pre-commit hook
+# Docs: https://github.com/gitleaks/gitleaks
+
+[extend]
+# Use default rules (500+ secret patterns)
+
+[allowlist]
+paths = [
+    '''\.salt_runtime/''',
+    '''\.venv/''',
+    '''logs/''',
+]
