@@ -6,25 +6,23 @@
 {% if host.features.steam %}
 
 enable_multilib:
-  file.blockreplace:
-    - name: /etc/pacman.conf
-    - source: salt://configs/pacman-multilib.conf
-    - marker_start: '# SALT managed: multilib {'
-    - marker_end: '# SALT managed: multilib }'
-    - append_if_not_found: True
-
-sync_multilib:
   cmd.run:
-    - name: pacman -Sy
-    - onchanges:
-      - file: enable_multilib
+    - name: |
+        set -eo pipefail
+        cat >> /etc/pacman.conf << 'EOF'
+
+        [multilib]
+        Include = /etc/pacman.d/mirrorlist
+        EOF
+        pacman -Sy
+    - unless: rg -q '^\[multilib\]' /etc/pacman.conf
 
 install_vulkan_radeon:
   cmd.run:
     - name: pacman -S --noconfirm --needed --ask 4 vulkan-radeon lib32-vulkan-radeon
     - unless: rg -qx 'vulkan-radeon' {{ pkg_list }}
     - require:
-      - cmd: sync_multilib
+      - cmd: enable_multilib
 
 install_steam:
   cmd.run:
