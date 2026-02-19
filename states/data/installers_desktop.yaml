@@ -30,3 +30,4 @@ paru_install:
   bottles: bottles
   proton-ge: proton-ge-custom-bin
   xwaylandvideobridge: xwaylandvideobridge
+  rofi-file-browser-extended: rofi-file-browser-extended-git
