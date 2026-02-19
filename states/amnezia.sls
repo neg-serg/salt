@@ -1,4 +1,5 @@
 {% from 'host_config.jinja' import host %}
+{% from '_macros_service.jinja' import ensure_dir %}
 {% set user = host.user %}
 {% set home = host.home %}
 {% set cache = '/mnt/one/pkg/cache/amnezia' %}
@@ -6,17 +7,9 @@
 # All 3 components build in parallel for faster deployment
 {% if host.features.amnezia %}
 
-{{ home }}/.local/bin:
-  file.directory:
-    - user: {{ user }}
-    - group: {{ user }}
-    - makedirs: True
+{{ ensure_dir('amnezia_bin_dir', home ~ '/.local/bin') }}
 
-{{ cache }}:
-  file.directory:
-    - user: {{ user }}
-    - group: {{ user }}
-    - makedirs: True
+{{ ensure_dir('amnezia_cache_dir', cache) }}
 
 # Build all Amnezia components in parallel
 build_amnezia_all:
@@ -30,7 +23,7 @@ build_amnezia_all:
         test -f {{ cache }}/awg-bin &&
         test -f {{ cache }}/AmneziaVPN-bin
     - require:
-      - file: {{ cache }}
+      - file: amnezia_cache_dir
 
 install_amneziawg_go:
   file.managed:
@@ -96,11 +89,7 @@ verify_amnezia_vpn:
     - onchanges:
       - file: install_amnezia_vpn
 
-{{ home }}/.local/share/applications:
-  file.directory:
-    - user: {{ user }}
-    - group: {{ user }}
-    - makedirs: True
+{{ ensure_dir('amnezia_apps_dir', home ~ '/.local/share/applications') }}
 
 amnezia_desktop_entry:
   file.managed:
@@ -117,5 +106,5 @@ amnezia_desktop_entry:
     - user: {{ user }}
     - group: {{ user }}
     - require:
-      - file: {{ home }}/.local/share/applications
+      - file: amnezia_apps_dir
 {% endif %}

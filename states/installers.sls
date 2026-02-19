@@ -1,4 +1,5 @@
 {% from 'host_config.jinja' import host %}
+{% from '_macros_service.jinja' import ensure_dir %}
 {% from '_macros_install.jinja' import curl_bin, github_tar, github_release, pip_pkg, cargo_pkg, curl_extract_tar, curl_extract_zip, git_clone_deploy, run_with_error_context, github_release_file, github_release_zip_to %}
 {% import_yaml 'data/installers.yaml' as tools %}
 {% import_yaml 'data/versions.yaml' as ver %}
@@ -114,12 +115,7 @@ install_qmk_udev_rules:
 {% import_yaml 'data/mpv_scripts.yaml' as mpv %}
 {% set mpv_scripts_dir = home ~ '/.config/mpv/scripts' %}
 
-mpv_scripts_dir:
-  file.directory:
-    - name: {{ mpv_scripts_dir }}
-    - user: {{ user }}
-    - group: {{ user }}
-    - makedirs: True
+{{ ensure_dir('mpv_scripts_dir', mpv_scripts_dir) }}
 
 {% for filename, url in mpv.raw.items() %}
 mpv_script_{{ filename | replace('.', '_') | replace('-', '_') }}:

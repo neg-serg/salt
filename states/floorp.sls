@@ -1,4 +1,5 @@
 {% from 'host_config.jinja' import host %}
+{% from '_macros_service.jinja' import ensure_dir %}
 {% from '_macros_install.jinja' import firefox_extension %}
 {% set user = host.user %}
 {% set home = host.home %}
@@ -32,11 +33,7 @@ floorp_usercontent:
     - group: {{ user }}
     - makedirs: True
 
-floorp_extensions_dir:
-  file.directory:
-    - name: {{ floorp_profile }}/extensions
-    - user: {{ user }}
-    - group: {{ user }}
+{{ ensure_dir('floorp_extensions_dir', floorp_profile ~ '/extensions') }}
 
 # --- Floorp extensions (download .xpi into profile) ---
 {% for ext in floorp.extensions %}

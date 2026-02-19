@@ -1,4 +1,5 @@
 {% from 'host_config.jinja' import host %}
+{% from '_macros_service.jinja' import ensure_dir %}
 {% set user = host.user %}
 {% set home = host.home %}
 # Steam + gaming tools (native pacman install)
@@ -34,19 +35,9 @@ install_steam:
     - require:
       - cmd: install_vulkan_radeon
 
-steam_library_dir:
-  file.directory:
-    - name: /mnt/zero/steam/steamapps
-    - user: {{ user }}
-    - group: {{ user }}
-    - makedirs: True
+{{ ensure_dir('steam_library_dir', '/mnt/zero/steam/steamapps') }}
 
-steam_skins_dir:
-  file.directory:
-    - name: {{ home }}/.local/share/Steam/skins
-    - user: {{ user }}
-    - group: {{ user }}
-    - makedirs: True
+{{ ensure_dir('steam_skins_dir', home ~ '/.local/share/Steam/skins') }}
 
 ensure_7z:
   cmd.run:
