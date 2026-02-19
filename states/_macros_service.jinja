@@ -1,4 +1,4 @@
-{# Service-related macros: ensure_running, daemon_reload, service_with_unit, user_service, system_daemon_user #}
+{# Service-related macros: ensure_running, service_stopped, daemon_reload, service_with_unit, user_service, system_daemon_user #}
 
 {% from 'host_config.jinja' import host %}
 {% set _user = host.user %}
@@ -29,6 +29,30 @@
     - require:
       - service: {{ name }}_enabled
       - cmd: {{ name }}_reset_failed
+{%- endmacro -%}
+
+{# Stop and disable a service (service.dead + enable: False), or just disable (service.disabled).
+   stop: True (default) = stop + disable; False = disable only (leave running until reboot).
+   Usage: {{ service_stopped('disable_tuned', 'tuned') }}
+          {{ service_stopped('disable_sddm', 'sddm') }}
+          {{ service_stopped('samba_not_enabled', 'smb', stop=False, requires=['file: samba_config']) }}
+#}
+{%- macro service_stopped(name, svc, stop=True, requires=None) -%}
+{{ name }}:
+{%- if stop %}
+  service.dead:
+    - name: {{ svc }}
+    - enable: False
+{%- else %}
+  service.disabled:
+    - name: {{ svc }}
+{%- endif %}
+{%- if requires %}
+    - require:
+{%- for req in requires %}
+      - {{ req }}
+{%- endfor %}
+{%- endif %}
 {%- endmacro -%}
 
 {# Trigger systemd daemon-reload when listed states change.
