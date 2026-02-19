@@ -1,0 +1,26 @@
+# User systemd services (consumed by user_services.sls)
+
+# Custom unit files to deploy to ~/.config/systemd/user/
+unit_files:
+  - {id: mbsync_gmail_service, filename: mbsync-gmail.service}
+  - {id: mbsync_gmail_timer, filename: mbsync-gmail.timer}
+  - {id: imapnotify_gmail_service, filename: imapnotify-gmail.service}
+  - {id: vdirsyncer_service, filename: vdirsyncer.service}
+  - {id: vdirsyncer_timer, filename: vdirsyncer.timer}
+  - {id: surfingkeys_server_service, filename: surfingkeys-server.service}
+  - {id: pic_dirs_list_service, filename: pic-dirs-list.service}
+  - {id: vicinae_service, filename: vicinae.service}
+
+# Services/sockets to enable (systemctl --user enable)
+enable_services:
+  - imapnotify-gmail.service
+  - surfingkeys-server.service
+  - pic-dirs-list.service
+  - vicinae.service
+  - gpg-agent.socket
+  - gpg-agent-ssh.socket
+
+# Timers to enable and start immediately (systemctl --user enable --now)
+enable_now_timers:
+  - mbsync-gmail.timer
+  - vdirsyncer.timer
