@@ -5,6 +5,8 @@
 {% from 'host_config.jinja' import host %}
 {% set _user = host.user %}
 {% set _home = host.home %}
+{% set _retry_attempts = 3 %}
+{% set _retry_interval = 10 %}
 
 {# Download binary directly to ~/.local/bin/ and chmod +x.
    Usage: {{ curl_bin('aliae', 'https://github.com/.../aliae-linux-amd64') }}
@@ -18,8 +20,8 @@ install_{{ name | replace('-', '_') }}:
     - creates: {{ home }}/.local/bin/{{ name }}
     - parallel: True
     - retry:
-        attempts: 3
-        interval: 10
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
 {%- endmacro -%}
 
 {# Download tar.gz, extract single binary to ~/.local/bin/.
@@ -40,8 +42,8 @@ install_{{ name | replace('-', '_') }}:
     - creates: {{ home }}/.local/bin/{{ name }}
     - parallel: True
     - retry:
-        attempts: 3
-        interval: 10
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
 {%- endmacro -%}
 
 {# Download latest GitHub release binary to ~/.local/bin/.
@@ -67,8 +69,8 @@ install_{{ name | replace('-', '_') }}:
     - creates: {{ home }}/.local/bin/{{ target }}
     - parallel: True
     - retry:
-        attempts: 3
-        interval: 10
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
 {%- endmacro -%}
 
 {# Download latest GitHub release asset to /usr/local/bin/ (system-level).
@@ -99,8 +101,8 @@ install_{{ name | replace('-', '_') }}:
     - creates: {{ dest }}/{{ name }}
     - parallel: True
     - retry:
-        attempts: 3
-        interval: 10
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
 {%- endmacro -%}
 
 {# pipx install (PEP 668 compatible).
@@ -117,8 +119,8 @@ install_{{ name | replace('-', '_') }}:
     - runas: {{ user }}
     - creates: {{ home }}/.local/bin/{{ bin or name }}
     - retry:
-        attempts: 3
-        interval: 10
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
 {%- endmacro -%}
 
 {# cargo install (crates.io or git).
@@ -133,8 +135,8 @@ install_{{ name | replace('-', '_') }}:
     - runas: {{ user }}
     - creates: {{ home }}/.local/share/cargo/bin/{{ bin or name }}
     - retry:
-        attempts: 3
-        interval: 10
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
 {%- endmacro -%}
 
 {# Wrap cmd.run with standardized error handling. Provides shell helper functions for
@@ -234,8 +236,8 @@ install_{{ name | replace('-', '_') }}:
     - creates: {{ creates or ((dest | replace('~', home)) if dest else (bin_dest or home ~ '/.local/bin') ~ '/' ~ (bin or (binaries[0] if binaries else binary_pattern.rsplit('/', 1)[-1]))) }}
     - parallel: True
     - retry:
-        attempts: 3
-        interval: 10
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
 
 {%- endmacro -%}
 
@@ -285,8 +287,8 @@ install_{{ name | replace('-', '_') }}:
     - creates: {{ creates or ((dest | replace('~', home)) if dest else home ~ '/.local/bin/' ~ (binaries[0] if binaries else binary_path.rsplit('/', 1)[-1])) }}
     - parallel: True
     - retry:
-        attempts: 3
-        interval: 10
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
 
 
 {%- endmacro -%}
@@ -307,8 +309,8 @@ floorp_ext_{{ ext.slug | replace('-', '_') }}:
       - file: {{ require }}
 {%- endif %}
     - retry:
-        attempts: 3
-        interval: 10
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
 {%- endmacro -%}
 
 {# Download and install a font from a ZIP archive to ~/.local/share/fonts/<subdir>.
@@ -341,8 +343,8 @@ install_{{ name }}:
         find {{ fonts_dir }}/{{ subdir }} -maxdepth 1 \( -name '*.otf' -o -name '*.ttf' \) -print -quit 2>/dev/null | rg -q .
     - parallel: True
     - retry:
-        attempts: 3
-        interval: 10
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
     - require:
       - file: {{ fonts_dir }}/{{ subdir }}
 {%- endmacro -%}
@@ -368,8 +370,8 @@ install_{{ name }}:
       - file: {{ require }}
 {%- endif %}
     - retry:
-        attempts: 3
-        interval: 10
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
 {%- endmacro -%}
 
 {# Download and extract a ZIP from the latest GitHub release to an arbitrary directory.
@@ -395,8 +397,8 @@ install_{{ name }}:
       - file: {{ require }}
 {%- endif %}
     - retry:
-        attempts: 3
-        interval: 10
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
 {%- endmacro -%}
 
 {# Git clone a repo to /tmp, copy selected items to dest, clean up.
@@ -426,6 +428,6 @@ install_{{ name | replace('-', '_') }}:
     - creates: {{ creates or (dest | replace('~', home)) }}
     - parallel: True
     - retry:
-        attempts: 3
-        interval: 10
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
 {%- endmacro -%}

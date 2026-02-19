@@ -3,6 +3,8 @@
 {% from 'host_config.jinja' import host %}
 {% set _user = host.user %}
 {% set _home = host.home %}
+{% set _retry_attempts = 3 %}
+{% set _retry_interval = 10 %}
 
 {# Install packages via pacman (CachyOS/Arch).
    check defaults to first package. requires is an optional list of requisites.
@@ -93,6 +95,6 @@ install_{{ name | replace('-', '_') }}:
     - runas: {{ user }}
     - creates: {{ home }}/.local/bin/{{ bin or name }}
     - retry:
-        attempts: 3
-        interval: 10
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
 {%- endmacro -%}
