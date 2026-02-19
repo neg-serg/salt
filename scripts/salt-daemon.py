@@ -36,7 +36,6 @@ import os
 import signal
 import socket
 import sys
-import threading
 
 # ── Salt venv path setup ─────────────────────────────────────────────────────
 # Ensure the venv site-packages is on the path when run with system python3.
@@ -74,6 +73,14 @@ def load_salt(config_dir: str):
     opts["file_client"] = "local"
     opts["local"] = True
     opts["caller"] = True
+
+    # Initialize Salt's logging options dict so forked child processes
+    # (parallel: True states) inherit a valid __logging_config__.
+    # Without this, Process.__new__ stores None, and the child crashes in
+    # set_logging_options_dict(None) → NoneType.get("log_level").
+    import salt._logging
+
+    salt._logging.set_logging_options_dict(opts)
 
     log.info("Loading grains...")
     opts["grains"] = salt.loader.grains(opts)
@@ -201,8 +208,6 @@ class DaemonServer:
         self.socket_path = socket_path
         self.opts = opts
         self.minion = minion
-        # Serialize state runs to avoid shared-state corruption
-        self._lock = threading.Lock()
 
     def handle_client(self, conn: socket.socket) -> None:
         try:
@@ -233,15 +238,14 @@ class DaemonServer:
 
         log.info("Request: state=%r kwargs=%s log_file=%r", state, kwargs, log_file)
 
-        with self._lock:
+        try:
+            run_state(self.opts, self.minion, state, kwargs, log_file, conn)
+        except Exception as exc:
+            log.exception("Unhandled error in run_state: %s", exc)
             try:
-                run_state(self.opts, self.minion, state, kwargs, log_file, conn)
-            except Exception as exc:
-                log.exception("Unhandled error in run_state: %s", exc)
-                try:
-                    conn.sendall((json.dumps({"type": "exit", "code": 1}) + "\n").encode())
-                except OSError:
-                    pass
+                conn.sendall((json.dumps({"type": "exit", "code": 1}) + "\n").encode())
+            except OSError:
+                pass
 
         conn.close()
 
@@ -285,8 +289,9 @@ class DaemonServer:
                 conn, _ = server.accept()
             except OSError:
                 break
-            t = threading.Thread(target=self.handle_client, args=(conn,), daemon=True)
-            t.start()
+            # Handle synchronously — no threads, so parallel: True in Salt
+            # states can safely fork() without inheriting locked mutexes.
+            self.handle_client(conn)
 
 
 # ── Entry point ───────────────────────────────────────────────────────────────
