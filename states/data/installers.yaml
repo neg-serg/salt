@@ -23,20 +23,6 @@ github_release:
   sops:
     repo: getsops/sops
     asset: "sops-${TAG}.linux.amd64"
-  rmpc:
-    repo: mierak/rmpc
-    asset: "rmpc-${TAG}-x86_64-unknown-linux-gnu.tar.gz"
-    format: tar.gz
-  television:
-    repo: alexpasmantier/television
-    asset: "tv-${TAG}-x86_64-unknown-linux-musl.tar.gz"
-    bin: tv
-    format: tar.gz
-  sing-box:
-    repo: SagerNet/sing-box
-    asset: "sing-box-${VER}-linux-amd64.tar.gz"
-    format: tar.gz
-    strip_v: true
   hishtory:
     repo: ddworken/hishtory
     asset: hishtory-linux-amd64
@@ -86,3 +72,17 @@ curl_extract_tar:
     binaries:
       - "nu"
       - "nu_plugin_*"
+  rmpc:
+    url: "https://github.com/mierak/rmpc/releases/download/${TAG}/rmpc-${TAG}-x86_64-unknown-linux-gnu.tar.gz"
+    binary_pattern: rmpc
+    fetch_tag: true
+  television:
+    url: "https://github.com/alexpasmantier/television/releases/download/${TAG}/tv-${TAG}-x86_64-unknown-linux-musl.tar.gz"
+    binary_pattern: tv
+    bin: tv
+    fetch_tag: true
+  sing-box:
+    url: "https://github.com/SagerNet/sing-box/releases/download/${TAG}/sing-box-${VER}-linux-amd64.tar.gz"
+    binary_pattern: sing-box
+    fetch_tag: true
+    strip_v: true

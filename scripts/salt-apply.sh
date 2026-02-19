@@ -152,48 +152,14 @@ ensure_daemon() {
 }
 
 # ── AWK formatter (shared by both run paths) ──────────────────────────────────
-AWK_FORMATTER='
-    # Catch critical errors (SLS rendering failures, import errors, etc.)
-    /\[CRITICAL\]/ {
-        msg = $0
-        sub(/.*\[CRITICAL\]\[[0-9]+\] /, "", msg)
-        printf "\r\033[K\033[31m✗ %s\033[0m\n", msg; fflush()
-        errors++
-        next
-    }
-    # Catch error lines from state output (e.g. "    - Rendering SLS ... failed:")
-    /^[[:space:]]+- .*[Ff]ailed:/ {
-        msg = $0
-        sub(/^[[:space:]]+- /, "", msg)
-        printf "\033[31m  ✗ %s\033[0m\n", msg; fflush()
-        errors++
-        next
-    }
-    match($0, /Executing state ([^ ]+) for \[([^]]+)\]/, m) {
-        state_n++
-        line = "▶ [" state_n "] " m[1] " " m[2]
-        if (length(line) > maxlen) line = substr(line, 1, maxlen) "…"
-        printf "\r\033[K%s", line; fflush()
-    }
-    /^local:/ { printf "\r\033[K"; fflush() }
-    match($0, /^  Name: ([^ ]+) - Function: ([^ ]+) - Result: ([^ ]+) - Started: [^ ]+ - Duration: ([0-9.]+ ms)/, m) {
-        dur = " (" m[4] ")"
-        if (m[3] == "Changed") mark = "\033[33m✦\033[0m"
-        else if (m[3] ~ /^Fail/) mark = "\033[31m✗\033[0m"
-        else mark = "✓"
-        printf "%s%s\n", mark " " m[1], dur; fflush()
-    }
-    /^Summary for / { in_summary=1 }
-    in_summary && /^[-]+$/ { print; fflush() }
-    in_summary && /^(Succeeded|Failed|Total)/ { print; fflush() }
-'
+AWK_FORMATTER="${SCRIPT_DIR}/salt-formatter.awk"
 
 # ── Run via daemon ─────────────────────────────────────────────────────────────
 run_via_daemon() {
     echo "=== Applying ${STATE} via daemon ($(date)) ==="
     echo "Log: ${LOG_FILE}"
 
-    tail -f "${LOG_FILE}" | awk -v maxlen=100 "$AWK_FORMATTER" &
+    tail -f "${LOG_FILE}" | awk -v maxlen=100 -f "$AWK_FORMATTER" &
     local tail_pid=$!
 
     local kwargs='{"state_output":"mixed_id"}'
@@ -239,57 +205,28 @@ PYEOF
 }
 
 # ── Fallback: direct salt-call ─────────────────────────────────────────────────
-SALT_RUNNER='
-import sys, warnings
-_orig = warnings.showwarning
-def _w(msg, cat, filename, lineno, file=None, line=None):
-    if cat is DeprecationWarning and "/salt/" in (filename or ""): return
-    _orig(msg, cat, filename, lineno, file, line)
-warnings.showwarning = _w
-
-class MockCrypt:
-    def __init__(self):
-        try:
-            import passlib.hash as hash; self.hash = hash
-        except ImportError:
-            self.hash = None
-        class Method:
-            def __init__(self, n, i): self.name = n; self.ident = i
-        self.methods = [Method("sha512","6"),Method("sha256","5"),Method("md5","1"),Method("crypt","")]
-    def crypt(self, word, salt):
-        if not self.hash: raise ImportError("passlib required")
-        from passlib.hash import des_crypt, md5_crypt, sha256_crypt, sha512_crypt
-        if salt.startswith("$6$"): return sha512_crypt.hash(word, salt=salt.split("$")[2])
-        if salt.startswith("$5$"): return sha256_crypt.hash(word, salt=salt.split("$")[2])
-        if salt.startswith("$1$"): return md5_crypt.hash(word, salt=salt.split("$")[2])
-        return des_crypt.hash(word, salt=salt)
-sys.modules["crypt"] = MockCrypt()
-class MockSpwd:
-    def getspnam(self, name): raise KeyError(f"spwd: {name}")
-sys.modules["spwd"] = MockSpwd()
-import salt.scripts; salt.scripts.salt_call()
-'
+SALT_RUNNER="${SCRIPT_DIR}/salt-runner.py"
 
 run_direct() {
     echo "=== Applying ${STATE} directly (daemon not running) ($(date)) ==="
     echo "Log: ${LOG_FILE}"
     echo "(Start salt-daemon for faster subsequent runs)"
 
-    tail -f "${LOG_FILE}" | awk -v maxlen=100 "$AWK_FORMATTER" &
+    tail -f "${LOG_FILE}" | awk -v maxlen=100 -f "$AWK_FORMATTER" &
     local tail_pid=$!
 
     local test_arg=""
     $TEST_MODE && test_arg="test=True"
 
     if [[ -n "${SUDO_PASS:-}" ]]; then
-        echo "$SUDO_PASS" | $SUDO_CMD "$VENV_DIR/bin/python3" -u -c "$SALT_RUNNER" \
+        echo "$SUDO_PASS" | $SUDO_CMD "$VENV_DIR/bin/python3" -u "$SALT_RUNNER" \
             --config-dir="${RUNTIME_CONFIG_DIR}" \
             --local --log-level=warning \
             --log-file="${LOG_FILE}" --log-file-level=debug \
             --state-output=mixed_id \
             state.sls "${STATE}" ${test_arg} 2>&1 | tee -a "${LOG_FILE}" > /dev/null
     else
-        $SUDO_CMD "$VENV_DIR/bin/python3" -u -c "$SALT_RUNNER" \
+        $SUDO_CMD "$VENV_DIR/bin/python3" -u "$SALT_RUNNER" \
             --config-dir="${RUNTIME_CONFIG_DIR}" \
             --local --log-level=warning \
             --log-file="${LOG_FILE}" --log-file-level=debug \

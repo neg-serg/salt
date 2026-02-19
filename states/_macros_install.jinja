@@ -44,32 +44,24 @@ install_{{ name | replace('-', '_') }}:
         interval: 10
 {%- endmacro -%}
 
-{# Download latest GitHub release asset to ~/.local/bin/.
-   Fetches TAG via GitHub API, supports direct binary or tar.gz.
+{# Download latest GitHub release binary to ~/.local/bin/.
+   Fetches TAG via GitHub API, downloads asset directly (no archive extraction).
+   For tar.gz/zip archives, use curl_extract_tar or curl_extract_zip instead.
    Usage: {{ github_release('sops', 'getsops/sops', 'sops-${TAG}.linux.amd64') }}
-          {{ github_release('rmpc', 'mierak/rmpc', 'rmpc-${TAG}-x86_64.tar.gz', format='tar.gz') }}
-          {{ github_release('sing-box', 'SagerNet/sing-box', 'sing-box-${VER}.tar.gz', format='tar.gz', strip_v=True) }}
+          {{ github_release('hishtory', 'ddworken/hishtory', 'hishtory-linux-amd64') }}
 #}
-{%- macro github_release(name, repo, asset, bin=None, format='bin', strip_v=False, user=_user, home=_home) -%}
+{%- macro github_release(name, repo, asset, bin=None, strip_v=False, user=_user, home=_home) -%}
 {%- set target = bin or name -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: |
         set -eo pipefail
-        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ repo }}/releases/latest | grep -oP '[^/]+$')
+        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ repo }}/releases/latest | rg -oP '[^/]+$')
 {%- if strip_v %}
         VER=${TAG#v}
 {%- endif %}
-{%- if format == 'bin' %}
         curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o ~/.local/bin/{{ target }}
         chmod +x ~/.local/bin/{{ target }}
-{%- elif format == 'tar.gz' %}
-        TMPDIR=$(mktemp -d)
-        curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o "$TMPDIR/archive.tar.gz"
-        tar -xzf "$TMPDIR/archive.tar.gz" -C "$TMPDIR"
-        find "$TMPDIR" -name '{{ target }}' -type f -exec install -m755 {} ~/.local/bin/{{ target }} \;
-        rm -rf "$TMPDIR"
-{%- endif %}
     - runas: {{ user }}
     - shell: /bin/bash
     - creates: {{ home }}/.local/bin/{{ target }}
@@ -91,7 +83,7 @@ install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: |
         set -eo pipefail
-        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ repo }}/releases/latest | grep -oP '[^/]+$')
+        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ repo }}/releases/latest | rg -oP '[^/]+$')
 {%- if format == 'zip' %}
         curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o /tmp/{{ name }}.zip
         unzip -o /tmp/{{ name }}.zip -d /tmp
@@ -182,6 +174,7 @@ install_{{ name | replace('-', '_') }}:
 {# Download and extract tar.gz/tar.xz archive, move binary(ies) to ~/.local/bin/.
    Supports: TAG fetching, nested directories, multiple binaries, optional chmod.
    archive_ext: tar.gz (default) | tar.xz. fetch_tag: True (default False) to fetch latest ${TAG} from GitHub API.
+   strip_v: True (default False) to set VER=${TAG#v} for URLs using ${VER} (version without v prefix).
    binary_pattern: path pattern for finding binaries after extraction (e.g., "nu-*/nu" or "streaming_extractor_music").
    binaries: optional list of binary names to move. If None, uses basename of binary_pattern.
    chmod: True (default False) to chmod +x extracted binaries.
@@ -194,7 +187,7 @@ install_{{ name | replace('-', '_') }}:
           {{ curl_extract_tar('blesh', 'https://github.com/.../ble-nightly.tar.xz', archive_ext='tar.xz', dest='~/.local/share', strip_components=1, creates=home ~ '/.local/share/ble.sh') }}
           {{ curl_extract_tar('nyxt', '...', 'Nyxt-x86_64.AppImage', bin='nyxt', chmod=True) }}
 #}
-{%- macro curl_extract_tar(name, url, binary_pattern=None, archive_ext='tar.gz', fetch_tag=False, binaries=None, bin=None, chmod=False, dest=None, strip_components=None, creates=None, bin_dest=None, user=_user, home=_home) -%}
+{%- macro curl_extract_tar(name, url, binary_pattern=None, archive_ext='tar.gz', fetch_tag=False, strip_v=False, binaries=None, bin=None, chmod=False, dest=None, strip_components=None, creates=None, bin_dest=None, user=_user, home=_home) -%}
 {%- set ext_flag = 'J' if archive_ext == 'tar.xz' else 'z' -%}
 {%- set target_dir = bin_dest or '~/.local/bin' -%}
 {%- if fetch_tag %}
@@ -209,7 +202,10 @@ install_{{ name | replace('-', '_') }}:
     - name: |
         set -eo pipefail
 {%- if fetch_tag %}
-        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ repo_path }}/releases/latest | grep -oP '[^/]+$')
+        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ repo_path }}/releases/latest | rg -oP '[^/]+$')
+{%- if strip_v %}
+        VER=${TAG#v}
+{%- endif %}
 {%- endif %}
         curl -fsSL "{{ url }}" -o /tmp/{{ name }}.{{ archive_ext }}
 {%- if dest %}
@@ -362,7 +358,7 @@ install_{{ name }}:
   cmd.run:
     - name: |
         set -eo pipefail
-        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ repo }}/releases/latest | grep -oP '[^/]+$')
+        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ repo }}/releases/latest | rg -oP '[^/]+$')
         curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o '{{ dest_dir }}/{{ filename }}'
     - runas: {{ user }}
     - shell: /bin/bash
@@ -387,7 +383,7 @@ install_{{ name }}:
   cmd.run:
     - name: |
         set -eo pipefail
-        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ repo }}/releases/latest | grep -oP '[^/]+$')
+        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ repo }}/releases/latest | rg -oP '[^/]+$')
         curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o /tmp/{{ name }}.zip
         unzip -qo /tmp/{{ name }}.zip -d {{ dest }}
         rm -f /tmp/{{ name }}.zip

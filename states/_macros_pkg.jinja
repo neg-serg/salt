@@ -1,4 +1,4 @@
-{# Package manager macros: pacman_install, pkgbuild_install, npm_pkg #}
+{# Package manager macros: pacman_install, paru_install, pkgbuild_install, npm_pkg #}
 
 {% from 'host_config.jinja' import host %}
 {% set _user = host.user %}
@@ -17,6 +17,29 @@ install_{{ name | replace('-', '_') }}:
         C=/var/cache/salt/pacman_installed.txt
         [ -f "$C" ] || pacman -Qq > "$C"
         rg -qx '{{ check or pkgs.split()[0] }}' "$C"
+    - require:
+      - cmd: pacman_db_warmup
+{%- if requires %}
+{%- for req in requires %}
+      - {{ req }}
+{%- endfor %}
+{%- endif %}
+{%- endmacro -%}
+
+{# Install AUR packages via paru (CachyOS/Arch).
+   Runs as user (paru handles sudo internally for makepkg).
+   check defaults to pkg. requires is an optional list of requisites.
+   Usage: {{ paru_install('wlr-which-key', 'wlr-which-key') }}
+          {{ paru_install('material-design-icons', 'ttf-material-design-icons-git') }}
+#}
+{%- macro paru_install(name, pkg, check=None, requires=None) -%}
+install_{{ name | replace('-', '_') }}:
+  cmd.run:
+    - name: sudo -u {{ _user }} paru -S --noconfirm --needed {{ pkg }}
+    - unless: |
+        C=/var/cache/salt/pacman_installed.txt
+        [ -f "$C" ] || pacman -Qq > "$C"
+        rg -qx '{{ check or pkg }}' "$C"
     - require:
       - cmd: pacman_db_warmup
 {%- if requires %}

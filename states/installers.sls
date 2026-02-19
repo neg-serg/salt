@@ -19,9 +19,9 @@
 {{ github_tar(name, url) }}
 {% endfor %}
 
-# --- GitHub releases (with tag fetching) ---
+# --- GitHub releases (binary downloads with tag fetching) ---
 {% for name, opts in tools.github_release.items() %}
-{{ github_release(name, opts.repo, opts.asset, bin=opts.get('bin'), format=opts.get('format', 'bin'), strip_v=opts.get('strip_v', False)) }}
+{{ github_release(name, opts.repo, opts.asset, bin=opts.get('bin'), strip_v=opts.get('strip_v', False)) }}
 {% endfor %}
 
 # --- pip installs (pipx) ---
@@ -41,7 +41,7 @@
 
 # --- tar.gz archive extractions ---
 {% for name, opts in tools.curl_extract_tar.items() %}
-{{ curl_extract_tar(name, opts.url, opts.binary_pattern, fetch_tag=opts.get('fetch_tag', False), binaries=opts.get('binaries')) }}
+{{ curl_extract_tar(name, opts.url, opts.binary_pattern, fetch_tag=opts.get('fetch_tag', False), strip_v=opts.get('strip_v', False), binaries=opts.get('binaries'), bin=opts.get('bin')) }}
 {% endfor %}
 
 # ===========================================================================

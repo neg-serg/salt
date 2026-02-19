@@ -3,7 +3,28 @@
 {% from '_macros_install.jinja' import curl_extract_tar %}
 {% from '_macros_pkg.jinja' import pacman_install %}
 {% import_yaml 'data/versions.yaml' as ver %}
+{% import_yaml 'data/services.yaml' as services %}
 {% set svc = host.features.services %}
+
+# ===================================================================
+# Simple services (data-driven: pacman install + service enable)
+# ===================================================================
+
+{% for name, opts in services.simple.items() %}
+{% if svc.get(name, False) %}
+{{ pacman_install(name, opts.packages) }}
+
+{{ name }}_enabled:
+  service.enabled:
+    - name: {{ opts.service }}
+    - require:
+      - cmd: install_{{ name | replace('-', '_') }}
+{% endif %}
+{% endfor %}
+
+# ===================================================================
+# Complex services (custom logic, not data-driven)
+# ===================================================================
 
 # --- Samba: SMB file sharing (manual start) ---
 {% if svc.samba %}
@@ -33,17 +54,6 @@ samba_not_enabled:
       - file: samba_config
 {% endif %}
 
-# --- Jellyfin: media server ---
-{% if svc.jellyfin %}
-{{ pacman_install('jellyfin', 'jellyfin-server jellyfin-web') }}
-
-jellyfin_enabled:
-  service.enabled:
-    - name: jellyfin
-    - require:
-      - cmd: install_jellyfin
-{% endif %}
-
 # --- Bitcoind: Bitcoin Core node ---
 {% if svc.bitcoind %}
 {{ curl_extract_tar('bitcoind', 'https://bitcoincore.org/bin/bitcoin-core-' ~ ver.bitcoind ~ '/bitcoin-' ~ ver.bitcoind ~ '-x86_64-linux-gnu.tar.gz', binary_pattern='bitcoin-' ~ ver.bitcoind ~ '/bin', binaries=['bitcoind', 'bitcoin-cli'], bin_dest='/usr/local/bin', user=None) }}
@@ -58,17 +68,6 @@ bitcoind_logrotate:
     - name: /etc/logrotate.d/bitcoind
     - mode: '0644'
     - source: salt://configs/bitcoind-logrotate
-{% endif %}
-
-# --- Transmission: BitTorrent daemon (rustmission TUI frontend) ---
-{% if svc.transmission %}
-{{ pacman_install('transmission', 'transmission-cli') }}
-
-transmission_enabled:
-  service.enabled:
-    - name: transmission
-    - require:
-      - cmd: install_transmission
 {% endif %}
 
 # --- DuckDNS: dynamic DNS updater ---
