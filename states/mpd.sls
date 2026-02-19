@@ -45,7 +45,7 @@ mpd_fifo:
     - name: |
         if [ ! -p /tmp/mpd.fifo ]; then
             mkfifo /tmp/mpd.fifo
-            chmod 666 /tmp/mpd.fifo
+            chmod 0666 /tmp/mpd.fifo
         fi
     - runas: {{ user }}
     - unless: test -p /tmp/mpd.fifo
@@ -90,7 +90,7 @@ mpdas_config:
         username = ${USER}
         password = ${PASS}
         EOF
-        chmod 600 {{ home }}/.config/mpdasrc
+        chmod 0600 {{ home }}/.config/mpdasrc
     - runas: {{ user }}
     - creates: {{ home }}/.config/mpdasrc
 
