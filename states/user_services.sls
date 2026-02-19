@@ -1,5 +1,6 @@
 {% from 'host_config.jinja' import host %}
 {% from '_macros_service.jinja' import user_service_file %}
+{% import_yaml 'data/user_services.yaml' as us %}
 {% set user = host.user %}
 {% set home = host.home %}
 # Systemd user services: mail, calendar, chezmoi, media, surfingkeys
@@ -68,14 +69,9 @@ mail_directories:
     - makedirs: True
 
 # --- Systemd user services (unit files in units/user/) ---
-{{ user_service_file('mbsync_gmail_service', 'mbsync-gmail.service') }}
-{{ user_service_file('mbsync_gmail_timer', 'mbsync-gmail.timer') }}
-{{ user_service_file('imapnotify_gmail_service', 'imapnotify-gmail.service') }}
-{{ user_service_file('vdirsyncer_service', 'vdirsyncer.service') }}
-{{ user_service_file('vdirsyncer_timer', 'vdirsyncer.timer') }}
-{{ user_service_file('surfingkeys_server_service', 'surfingkeys-server.service') }}
-{{ user_service_file('pic_dirs_list_service', 'pic-dirs-list.service') }}
-{{ user_service_file('vicinae_service', 'vicinae.service') }}
+{% for unit in us.unit_files %}
+{{ user_service_file(unit.id, unit.filename) }}
+{% endfor %}
 
 # --- Enable user services: single daemon-reload + batch enable ---
 enable_user_services:
@@ -83,24 +79,17 @@ enable_user_services:
     - name: |
         set -eo pipefail
         systemctl --user daemon-reload
-        systemctl --user enable imapnotify-gmail.service surfingkeys-server.service pic-dirs-list.service vicinae.service gpg-agent.socket gpg-agent-ssh.socket
-        systemctl --user enable --now mbsync-gmail.timer vdirsyncer.timer
+        systemctl --user enable {{ us.enable_services | join(' ') }}
+        systemctl --user enable --now {{ us.enable_now_timers | join(' ') }}
     - runas: {{ user }}
     - env:
       - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
       - DBUS_SESSION_BUS_ADDRESS: unix:path={{ host.runtime_dir }}/bus
     - unless: |
-        systemctl --user is-enabled imapnotify-gmail.service 2>/dev/null &&
-        systemctl --user is-enabled mbsync-gmail.timer 2>/dev/null &&
-        systemctl --user is-enabled vdirsyncer.timer 2>/dev/null &&
-        systemctl --user is-enabled surfingkeys-server.service 2>/dev/null &&
-        systemctl --user is-enabled pic-dirs-list.service 2>/dev/null &&
-        systemctl --user is-enabled vicinae.service 2>/dev/null &&
-        systemctl --user is-enabled gpg-agent-ssh.socket 2>/dev/null
+{% for svc in us.enable_services + us.enable_now_timers %}
+        systemctl --user is-enabled {{ svc }} 2>/dev/null{{ ' &&' if not loop.last else '' }}
+{% endfor %}
     - require:
-      - file: imapnotify_gmail_service
-      - file: mbsync_gmail_timer
-      - file: vdirsyncer_timer
-      - file: surfingkeys_server_service
-      - file: pic_dirs_list_service
-      - file: vicinae_service
+{% for unit in us.unit_files %}
+      - file: {{ unit.id }}
+{% endfor %}
