@@ -7,13 +7,12 @@
 {% if host.features.steam %}
 
 enable_multilib:
-  file.append:
+  file.blockreplace:
     - name: /etc/pacman.conf
-    - text: |
-
-        [multilib]
-        Include = /etc/pacman.d/mirrorlist
-    - unless: rg -q '^\[multilib\]' /etc/pacman.conf
+    - source: salt://configs/pacman-multilib.conf
+    - marker_start: '# SALT managed: multilib {'
+    - marker_end: '# SALT managed: multilib }'
+    - append_if_not_found: True
 
 sync_multilib:
   cmd.run:
