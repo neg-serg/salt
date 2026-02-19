@@ -71,7 +71,7 @@ curl -fsSL https://data.metabrainz.org/pub/musicbrainz/acousticbrainz/extractors
 step "Extracting archive"
 tar -xzf /tmp/essentia.tar.gz -C /tmp
 step "Installing to ~/.local/bin/"
-install -m755 /tmp/streaming_extractor_music ~/.local/bin/essentia_streaming_extractor_music
+install -m 0755 /tmp/streaming_extractor_music ~/.local/bin/essentia_streaming_extractor_music
 step "Cleaning up"
 rm -f /tmp/essentia.tar.gz
 success "Essentia streaming extractor installed"

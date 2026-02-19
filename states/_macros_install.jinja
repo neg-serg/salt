@@ -35,7 +35,7 @@ install_{{ name | replace('-', '_') }}:
         TMPDIR=$(mktemp -d)
         curl -fsSL {{ url }} -o "$TMPDIR/archive.tar.gz"
         tar -xzf "$TMPDIR/archive.tar.gz" -C "$TMPDIR"
-        find "$TMPDIR" -name '{{ name }}' -type f -exec install -m755 {} ~/.local/bin/{{ name }} \;
+        find "$TMPDIR" -name '{{ name }}' -type f -exec install -m 0755 {} ~/.local/bin/{{ name }} \;
         rm -rf "$TMPDIR"
     - runas: {{ user }}
     - shell: /bin/bash
@@ -147,7 +147,7 @@ install_{{ name | replace('-', '_') }}:
    source /build/salt/error-helpers.sh
    step "Downloading foo"
    curl -fsSL https://example.com/foo -o /tmp/foo
-   run_step "Installing foo" install -m755 /tmp/foo ~/.local/bin/
+   run_step "Installing foo" install -m 0755 /tmp/foo ~/.local/bin/
    success "Foo installed"
    {% endcall %}
 #}
@@ -220,7 +220,7 @@ install_{{ name | replace('-', '_') }}:
         install -m 0755 /tmp/{{ binary_pattern.replace('*', b) if '*' in binary_pattern else binary_pattern }}/{{ b }} {{ target_dir }}/ 2>/dev/null || install -m 0755 /tmp/{{ binary_pattern.rsplit('/', 1)[0] }}/{{ b }} {{ target_dir }}/
 {%- endfor %}
 {%- else %}
-        find /tmp -maxdepth 3 -path "*{{ binary_pattern }}*" -type f ! -name "*.tar*" -exec install -m755 {} {{ target_dir }}/{{ bin or binary_pattern.rsplit('/', 1)[-1] }} \;
+        find /tmp -maxdepth 3 -path "*{{ binary_pattern }}*" -type f ! -name "*.tar*" -exec install -m 0755 {} {{ target_dir }}/{{ bin or binary_pattern.rsplit('/', 1)[-1] }} \;
 {%- endif %}
 {%- if chmod %}
 {%- for b in (binaries or [bin or binary_pattern.rsplit('/', 1)[-1]]) %}
