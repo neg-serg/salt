@@ -1,5 +1,6 @@
 {% from 'host_config.jinja' import host %}
 {% from '_macros_install.jinja' import curl_bin, curl_extract_zip, curl_extract_tar %}
+{% from '_macros_pkg.jinja' import paru_install %}
 {% import_yaml 'data/installers_desktop.yaml' as apps %}
 {% import_yaml 'data/versions.yaml' as ver %}
 {% set user = host.user %}
@@ -27,8 +28,5 @@
 
 # --- AUR packages (v4l2loopback-dkms for droidcam installed via pacman outside Salt) ---
 {% for name, pkg in apps.paru_install.items() %}
-install_{{ name | replace('-', '_') }}:
-  cmd.run:
-    - name: sudo -u {{ user }} paru -S --noconfirm --needed {{ pkg }}
-    - unless: rg -qx '{{ pkg }}' /var/cache/salt/pacman_installed.txt
+{{ paru_install(name, pkg) }}
 {% endfor %}

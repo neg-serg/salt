@@ -1,0 +1,11 @@
+# Service definitions for services.sls — simple pacman-install + service-enable pattern.
+# Each entry is gated by host_config.jinja features.services.<key>.
+# Complex services (samba, bitcoind, duckdns) have custom logic and stay inline in .sls.
+
+simple:
+  jellyfin:
+    packages: jellyfin-server jellyfin-web
+    service: jellyfin
+  transmission:
+    packages: transmission-cli
+    service: transmission

@@ -1,6 +1,6 @@
 # Desktop environment: services, SSH, wallust defaults, dconf themes
 {% from 'host_config.jinja' import host %}
-{% from '_macros_pkg.jinja' import pacman_install %}
+{% from '_macros_pkg.jinja' import pacman_install, paru_install %}
 {% set user = host.user %}
 {% set home = host.home %}
 
@@ -75,20 +75,9 @@ remove_old_termfilechooser:
     - name: pacman -Rns --noconfirm xdg-desktop-portal-termfilechooser-git
     - onlyif: rg -qx 'xdg-desktop-portal-termfilechooser-git' /var/cache/salt/pacman_installed.txt
 
-install_xdg_termfilechooser:
-  cmd.run:
-    - name: sudo -u {{ user }} paru -S --noconfirm --needed xdg-desktop-portal-termfilechooser-boydaihungst-git
-    - unless: rg -qx 'xdg-desktop-portal-termfilechooser-boydaihungst-git' /var/cache/salt/pacman_installed.txt
-    - require:
-      - cmd: pacman_db_warmup
-      - cmd: remove_old_termfilechooser
+{{ paru_install('xdg-termfilechooser', 'xdg-desktop-portal-termfilechooser-boydaihungst-git', requires=['cmd: remove_old_termfilechooser']) }}
 
-install_wlr_which_key:
-  cmd.run:
-    - name: sudo -u {{ user }} paru -S --noconfirm --needed wlr-which-key
-    - unless: rg -qx 'wlr-which-key' /var/cache/salt/pacman_installed.txt
-    - require:
-      - cmd: pacman_db_warmup
+{{ paru_install('wlr-which-key', 'wlr-which-key') }}
 
 # --- SSH directory setup ---
 ssh_dir:

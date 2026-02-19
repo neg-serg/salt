@@ -1,0 +1,35 @@
+# Font definitions for fonts.sls — data separated from logic.
+# URLs with ${VER} are interpolated at render time from data/versions.yaml.
+# Grouped by install method.
+
+pacman:
+  jetbrains-mono-nerd: ttf-jetbrains-mono-nerd
+  icomoon-feather: ttf-icomoon-feather
+  font-awesome: otf-font-awesome
+  noto-fonts: noto-fonts
+  noto-fonts-emoji: noto-fonts-emoji
+  noto-fonts-extra: noto-fonts-extra
+  liberation-fonts: ttf-liberation
+  ibm-plex: ttf-ibm-plex
+  inter-font: inter-font
+  material-symbols: ttf-material-symbols-variable
+
+paru:
+  material-design-icons: ttf-material-design-icons-git
+
+download_zip:
+  fira_code_nerd:
+    url: "https://github.com/ryanoasis/nerd-fonts/releases/download/v${VER}/FiraCode.zip"
+    subdir: FiraCodeNerd
+  oldschool_pc_fonts:
+    url: "https://int10h.org/oldschool-pc-fonts/download/oldschool_pc_font_pack_v${VER}_linux.zip"
+    subdir: oldschool-pc
+  sf_pro_display:
+    url: "https://font.download/dl/font/sf-pro-display.zip"
+    subdir: SFProDisplay
+  anurati:
+    url: "https://font.download/dl/font/anurati.zip"
+    subdir: Anurati
+  alfa_slab_one:
+    url: "https://font.download/dl/font/alfa-slab-one.zip"
+    subdir: AlfaSlabOne
