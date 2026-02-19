@@ -1,20 +1,3 @@
-{% from 'host_config.jinja' import host %}
-{% set user = host.user %}
-{% set home = host.home %}
-# hy3 Hyprland plugin (installed via pacman/AUR on CachyOS)
-{% if host.features.hy3 %}
-
-{{ home }}/.local/lib/hyprland:
-  file.directory:
-    - user: {{ user }}
-    - group: {{ user }}
-    - makedirs: True
-
-check_hy3:
-  cmd.run:
-    - name: echo "hy3 plugin present"
-    - unless: test -f {{ home }}/.local/lib/hyprland/libhy3.so
-    - onlyif: rg -qx 'hyprland' /var/cache/salt/pacman_installed.txt
-    - require:
-      - file: {{ home }}/.local/lib/hyprland
-{% endif %}
+# hy3 Hyprland plugin — installed via pacman/AUR on CachyOS
+# No Salt management needed; package handles installation and updates.
+# Kept as include target for feature gating in system_description.sls.
