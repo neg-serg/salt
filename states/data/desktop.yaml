@@ -1,0 +1,13 @@
+# Desktop environment configuration (consumed by desktop.sls)
+
+running_services:
+  - NetworkManager
+  - dbus-broker
+  - openrgb
+  - bluetooth
+  - systemd-timesyncd
+
+dconf_settings:
+  /org/gnome/desktop/interface/gtk-theme: Flight-Dark-GTK
+  /org/gnome/desktop/interface/icon-theme: kora
+  /org/gnome/desktop/interface/font-name: "Iosevka 10"

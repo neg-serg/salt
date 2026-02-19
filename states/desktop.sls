@@ -2,6 +2,7 @@
 {% from 'host_config.jinja' import host %}
 {% from '_macros_pkg.jinja' import pacman_install, paru_install %}
 {% from '_macros_service.jinja' import ensure_dir, service_stopped %}
+{% import_yaml 'data/desktop.yaml' as desktop %}
 {% set user = host.user %}
 {% set home = host.home %}
 
@@ -33,11 +34,9 @@ etckeeper_init:
 running_services:
   service.running:
     - names:
-      - NetworkManager
-      - dbus-broker
-      - openrgb
-      - bluetooth
-      - systemd-timesyncd
+{% for svc in desktop.running_services %}
+      - {{ svc }}
+{% endfor %}
     - enable: True
 
 # libvirtd is socket-activated: systemd starts it on demand and stops it when no VMs run.
@@ -91,13 +90,13 @@ set_dconf_themes:
   cmd.run:
     - name: |
         set -eo pipefail
-        dconf write /org/gnome/desktop/interface/gtk-theme "'Flight-Dark-GTK'"
-        dconf write /org/gnome/desktop/interface/icon-theme "'kora'"
-        dconf write /org/gnome/desktop/interface/font-name "'Iosevka 10'"
+{% for key, val in desktop.dconf_settings.items() %}
+        dconf write {{ key }} "'{{ val }}'"
+{% endfor %}
     - runas: {{ user }}
     - env:
       - DBUS_SESSION_BUS_ADDRESS: "unix:path={{ host.runtime_dir }}/bus"
     - unless: |
-        test "$(dconf read /org/gnome/desktop/interface/gtk-theme)" = "'Flight-Dark-GTK'" &&
-        test "$(dconf read /org/gnome/desktop/interface/icon-theme)" = "'kora'" &&
-        test "$(dconf read /org/gnome/desktop/interface/font-name)" = "'Iosevka 10'"
+{% for key, val in desktop.dconf_settings.items() %}
+        test "$(dconf read {{ key }})" = "'{{ val }}'"{{ ' &&' if not loop.last else '' }}
+{% endfor %}
