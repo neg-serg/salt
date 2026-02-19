@@ -1,5 +1,5 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros_service.jinja' import daemon_reload, service_with_unit, system_daemon_user %}
+{% from '_macros_service.jinja' import daemon_reload, unit_override, service_with_unit, system_daemon_user %}
 {% from '_macros_install.jinja' import github_release_system %}
 {% from '_macros_pkg.jinja' import pacman_install %}
 {% set mon = host.features.monitoring %}
@@ -19,20 +19,7 @@ vnstat_enabled:
 
 # --- Netdata: systemd override for conservative resource limits ---
 {% if mon.netdata %}
-netdata_override_dir:
-  file.directory:
-    - name: /etc/systemd/system/netdata.service.d
-    - makedirs: True
-
-netdata_override:
-  file.managed:
-    - name: /etc/systemd/system/netdata.service.d/override.conf
-    - source: salt://units/netdata-override.conf
-    - mode: '0644'
-    - require:
-      - file: netdata_override_dir
-
-{{ daemon_reload('netdata', ['file: netdata_override']) }}
+{{ unit_override('netdata_override', 'netdata.service', 'salt://units/netdata-override.conf') }}
 {% endif %}
 
 # --- Loki: log aggregation ---

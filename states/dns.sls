@@ -1,5 +1,5 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros_service.jinja' import daemon_reload, system_daemon_user, service_with_unit, ensure_running %}
+{% from '_macros_service.jinja' import daemon_reload, unit_override, system_daemon_user, service_with_unit, ensure_running %}
 {% from '_macros_install.jinja' import github_release_system %}
 {% from '_macros_pkg.jinja' import pacman_install %}
 {% set dns = host.features.dns %}
@@ -22,19 +22,7 @@ unbound_root_key:
     - require:
       - cmd: install_unbound
 
-unbound_restart_override:
-  file.managed:
-    - name: /etc/systemd/system/unbound.service.d/restart.conf
-    - makedirs: True
-    - mode: '0644'
-    - contents: |
-        [Service]
-        Restart=on-failure
-        RestartSec=5
-    - require:
-      - cmd: install_unbound
-
-{{ daemon_reload('unbound', ['cmd: install_unbound', 'file: unbound_restart_override']) }}
+{{ unit_override('unbound_restart_override', 'unbound.service', 'salt://units/unbound-restart-override.conf', filename='restart.conf', requires=['cmd: install_unbound']) }}
 
 unbound_enabled:
   service.enabled:
@@ -42,7 +30,7 @@ unbound_enabled:
     - require:
       - cmd: install_unbound
       - file: unbound_config
-      - cmd: unbound_daemon_reload
+      - cmd: unbound_restart_override_reload
       - cmd: unbound_root_key
 
 {{ ensure_running('unbound', watch=['file: unbound_config', 'file: unbound_restart_override']) }}
