@@ -1,4 +1,4 @@
-{# Service-related macros: ensure_dir, ensure_running, service_stopped, service_with_healthcheck, unit_override, service_with_unit, user_service_file, system_daemon_user #}
+{# Service-related macros: ensure_dir, ensure_running, service_stopped, service_with_healthcheck, unit_override, service_with_unit, user_service_file, user_service_enable, system_daemon_user #}
 
 {% from 'host_config.jinja' import host %}
 {% set _user = host.user %}
@@ -179,6 +179,54 @@
     - group: {{ user }}
     - mode: '0644'
     - makedirs: True
+{%- endmacro -%}
+
+{# Enable systemd user service(s) with proper D-Bus/XDG environment.
+   Handles daemon-reload, enable, enable --now, and idempotency guards.
+   services: list of units to `enable` (default []). start_now: list of units to `enable --now` (default []).
+   daemon_reload: prepend daemon-reload (default False). check: 'enabled' (default) or 'active' for unless guard.
+   onlyif: extra guard (e.g. package installed check). requires: list of state requisites.
+   Usage: {{ user_service_enable('kanata_enabled', ['kanata.service'], daemon_reload=True, requires=['cmd: install_kanata', 'file: kanata_service']) }}
+          {{ user_service_enable('mpd_enabled', start_now=['mpd.service'], check='active', onlyif='rg -qx mpd ' ~ pkg_list) }}
+          {{ user_service_enable('enable_user_services', svc_list, start_now=timer_list, daemon_reload=True, requires=req_list) }}
+#}
+{%- macro user_service_enable(name, services=None, start_now=None, daemon_reload=False, check='enabled', onlyif=None, requires=None, user=_user) -%}
+{%- set svc_list = services if services else [] -%}
+{%- set now_list = start_now if start_now else [] -%}
+{%- set all_units = svc_list + now_list -%}
+{%- set multi_cmd = daemon_reload or (svc_list and now_list) -%}
+{{ name }}:
+  cmd.run:
+    - name: |
+{%- if multi_cmd %}
+        set -eo pipefail
+{%- endif %}
+{%- if daemon_reload %}
+        systemctl --user daemon-reload
+{%- endif %}
+{%- if svc_list %}
+        systemctl --user enable {{ svc_list | join(' ') }}
+{%- endif %}
+{%- if now_list %}
+        systemctl --user enable --now {{ now_list | join(' ') }}
+{%- endif %}
+    - runas: {{ user }}
+    - env:
+      - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
+      - DBUS_SESSION_BUS_ADDRESS: unix:path={{ host.runtime_dir }}/bus
+{%- if onlyif %}
+    - onlyif: {{ onlyif }}
+{%- endif %}
+    - unless: |
+{%- for unit in all_units %}
+        systemctl --user is-{{ check }} {{ unit }} 2>/dev/null{{ ' &&' if not loop.last else '' }}
+{%- endfor %}
+{%- if requires %}
+    - require:
+{%- for req in requires %}
+      - {{ req }}
+{%- endfor %}
+{%- endif %}
 {%- endmacro -%}
 
 {# Deploy systemd unit file + manage service (file + daemon-reload + enable/disable + optional running).
