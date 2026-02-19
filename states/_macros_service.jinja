@@ -1,4 +1,4 @@
-{# Service-related macros: ensure_running, service_stopped, daemon_reload, unit_override, service_with_unit, user_service_file, system_daemon_user #}
+{# Service-related macros: ensure_running, service_stopped, service_with_healthcheck, daemon_reload, unit_override, service_with_unit, user_service_file, system_daemon_user #}
 
 {% from 'host_config.jinja' import host %}
 {% set _user = host.user %}
@@ -47,6 +47,34 @@
   service.disabled:
     - name: {{ svc }}
 {%- endif %}
+{%- if requires %}
+    - require:
+{%- for req in requires %}
+      - {{ req }}
+{%- endfor %}
+{%- endif %}
+{%- endmacro -%}
+
+{# Restart service and poll a health-check command until it succeeds.
+   Skips entirely if the check already passes (unless guard).
+   check_cmd: shell command that returns 0 when service is ready (e.g. curl probe).
+   timeout: seconds to poll before failing (default 30).
+   Usage: {{ service_with_healthcheck('ollama_start', 'ollama', 'curl -sf http://127.0.0.1:11434/api/tags >/dev/null 2>&1', requires=['service: ollama_enabled']) }}
+#}
+{%- macro service_with_healthcheck(name, service, check_cmd, timeout=30, requires=None) -%}
+{{ name }}:
+  cmd.run:
+    - name: |
+        systemctl daemon-reload
+        systemctl restart {{ service }}
+        for i in $(seq 1 {{ timeout }}); do
+          {{ check_cmd }} && exit 0
+          sleep 1
+        done
+        echo "{{ service }} failed to start within {{ timeout }}s" >&2
+        exit 1
+    - shell: /bin/bash
+    - unless: {{ check_cmd }}
 {%- if requires %}
     - require:
 {%- for req in requires %}
