@@ -1,4 +1,4 @@
-{# Service-related macros: ensure_dir, ensure_running, service_stopped, service_with_healthcheck, unit_override, service_with_unit, user_service_file, user_service_enable, system_daemon_user #}
+{# Service-related macros: ensure_dir, ensure_running, service_stopped, service_with_healthcheck, unit_override, service_with_unit, user_service_file, user_unit_override, user_service_enable, system_daemon_user #}
 
 {% from 'host_config.jinja' import host %}
 {% set _user = host.user %}
@@ -167,18 +167,57 @@
 {%- endmacro -%}
 
 {# Deploy systemd user unit file (~/.config/systemd/user/) from units/user/.
+   source: override default salt://units/user/ path for units stored elsewhere.
    Usage: {{ user_service_file('mbsync_gmail_service', 'mbsync-gmail.service') }}
-          {{ user_service_file('vicinae_service', 'vicinae.service') }}
+          {{ user_service_file('mpdas_service_file', 'mpdas.service', source='salt://dotfiles/dot_config/systemd/user/mpdas.service') }}
 #}
-{%- macro user_service_file(name, filename, user=_user, home=_home) -%}
+{%- macro user_service_file(name, filename, source=None, user=_user, home=_home) -%}
 {{ name }}:
   file.managed:
     - name: {{ home }}/.config/systemd/user/{{ filename }}
-    - source: salt://units/user/{{ filename }}
+    - source: {{ source or ('salt://units/user/' ~ filename) }}
     - user: {{ user }}
     - group: {{ user }}
     - mode: '0644'
     - makedirs: True
+{%- endmacro -%}
+
+{# Deploy systemd user unit drop-in override + trigger daemon-reload on change.
+   Analogous to unit_override (system) but for user services (~/.config/systemd/user/).
+   Emits two states: {{ name }} (file.managed) and {{ name }}_daemon_reload (cmd.run).
+   Usage: {{ user_unit_override('mpdris2_user_service', 'mpDris2.service', contents=override_text) }}
+          {{ user_unit_override('foo_override', 'foo.service', source='salt://units/user/foo-override.conf') }}
+#}
+{%- macro user_unit_override(name, service, source=None, contents=None, filename='override.conf', requires=None, user=_user, home=_home) -%}
+{{ name }}:
+  file.managed:
+    - name: {{ home }}/.config/systemd/user/{{ service }}.d/{{ filename }}
+    - user: {{ user }}
+    - group: {{ user }}
+    - mode: '0644'
+    - makedirs: True
+{%- if contents is not none %}
+    - contents: |
+{{ contents | trim | indent(8, first=True) }}
+{%- elif source %}
+    - source: {{ source }}
+{%- endif %}
+{%- if requires %}
+    - require:
+{%- for req in requires %}
+      - {{ req }}
+{%- endfor %}
+{%- endif %}
+
+{{ name }}_daemon_reload:
+  cmd.run:
+    - name: systemctl --user daemon-reload
+    - runas: {{ user }}
+    - env:
+      - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
+      - DBUS_SESSION_BUS_ADDRESS: unix:path={{ host.runtime_dir }}/bus
+    - onchanges:
+      - file: {{ name }}
 {%- endmacro -%}
 
 {# Enable systemd user service(s) with proper D-Bus/XDG environment.

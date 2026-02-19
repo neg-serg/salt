@@ -1,5 +1,5 @@
 {% from '_imports.jinja' import host, user, home, pkg_list %}
-{% from '_macros_service.jinja' import ensure_dir, user_service_enable %}
+{% from '_macros_service.jinja' import ensure_dir, user_service_file, user_service_enable %}
 # MPD Native Deployment
 # Salt state for setting up MPD with systemd user service and pipewire output
 {% if host.features.mpd %}
@@ -80,14 +80,7 @@ mpdas_config:
     - creates: {{ home }}/.config/mpdasrc
 
 # --- Deploy mpdas systemd user service ---
-mpdas_service_file:
-  file.managed:
-    - name: {{ home }}/.config/systemd/user/mpdas.service
-    - source: salt://dotfiles/dot_config/systemd/user/mpdas.service
-    - user: {{ user }}
-    - group: {{ user }}
-    - mode: '0644'
-    - makedirs: True
+{{ user_service_file('mpdas_service_file', 'mpdas.service', source='salt://dotfiles/dot_config/systemd/user/mpdas.service') }}
 
 # --- Enable mpd companion services (mpdris2 + mpdas) in a single systemctl call ---
 mpd_companion_services:
