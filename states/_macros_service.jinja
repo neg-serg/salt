@@ -1,4 +1,4 @@
-{# Service-related macros: ensure_running, service_stopped, daemon_reload, service_with_unit, user_service, system_daemon_user #}
+{# Service-related macros: ensure_running, service_stopped, daemon_reload, unit_override, service_with_unit, user_service_file, system_daemon_user #}
 
 {% from 'host_config.jinja' import host %}
 {% set _user = host.user %}
@@ -97,6 +97,33 @@
       - {{ req }}
 {%- endfor %}
 {%- endif %}
+{%- endmacro -%}
+
+{# Deploy systemd unit drop-in override + trigger daemon-reload on change.
+   Creates parent .d/ directory automatically via makedirs.
+   Emits two states: {{ name }} (file.managed) and {{ name }}_reload (daemon-reload).
+   Usage: {{ unit_override('netdata_override', 'netdata.service', 'salt://units/netdata-override.conf') }}
+          {{ unit_override('unbound_restart_override', 'unbound.service', 'salt://units/unbound-restart-override.conf', filename='restart.conf', requires=['cmd: install_unbound']) }}
+#}
+{%- macro unit_override(name, service, source, filename='override.conf', requires=None) -%}
+{{ name }}:
+  file.managed:
+    - name: /etc/systemd/system/{{ service }}.d/{{ filename }}
+    - source: {{ source }}
+    - makedirs: True
+    - mode: '0644'
+{%- if requires %}
+    - require:
+{%- for req in requires %}
+      - {{ req }}
+{%- endfor %}
+{%- endif %}
+
+{{ name }}_reload:
+  cmd.run:
+    - name: systemctl daemon-reload
+    - onchanges:
+      - file: {{ name }}
 {%- endmacro -%}
 
 {# Deploy systemd user unit file (~/.config/systemd/user/) from units/user/.
