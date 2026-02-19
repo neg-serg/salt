@@ -38,6 +38,7 @@ include:
   - hardware
   - installers
   - installers_desktop
+  - kanata
   - installers_themes
   - kernel_modules
   - kernel_params_limine
