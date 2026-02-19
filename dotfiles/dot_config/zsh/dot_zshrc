@@ -24,7 +24,7 @@ typeset -f zsh-defer >/dev/null || zsh-defer() { "$@"; }
 if command -v oh-my-posh >/dev/null 2>&1; then
   omp_config="${XDG_CONFIG_HOME:-$HOME/.config}/zsh/neg.omp.json"
   omp_cache="${XDG_CACHE_HOME:-$HOME/.cache}/oh-my-posh-init.zsh"
-  
+
   if [[ -r "$omp_config" ]]; then
     local config_hash
     config_hash=$(md5sum "$omp_config" 2>/dev/null | awk '{print $1}')
