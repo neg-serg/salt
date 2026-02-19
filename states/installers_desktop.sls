@@ -29,11 +29,23 @@
 {{ paru_install(name, pkg) }}
 {% endfor %}
 
-# rofi-file-browser-extended: needs workarounds for CMake 4.0 (cmake_minimum_required < 3.5)
-# and GCC 15 (incompatible-pointer-types is now an error due to rofi API signature change)
+# rofi-file-browser-extended: needs PKGBUILD patching for CMake 4.0 + GCC 15 compat.
+# - CMake 4.0 removed cmake_minimum_required < 3.5 support
+# - GCC 15 made -Wincompatible-pointer-types a hard error (rofi API signature mismatch)
+# Can't use env vars — makepkg.conf overwrites CFLAGS. Patch build() directly.
 install_rofi_file_browser_extended:
   cmd.run:
-    - name: sudo -u {{ user }} env CMAKE_POLICY_VERSION_MINIMUM=3.5 CFLAGS="-Wno-error=incompatible-pointer-types" paru -S --noconfirm --needed rofi-file-browser-extended-git
+    - name: |
+        set -eo pipefail
+        BUILDDIR=$(sudo -u {{ user }} mktemp -d)
+        cd "$BUILDDIR"
+        sudo -u {{ user }} paru -G rofi-file-browser-extended-git 2>/dev/null
+        cd rofi-file-browser-extended-git
+        sed -i '/^build()/a\  export CMAKE_POLICY_VERSION_MINIMUM=3.5\n  export CFLAGS="${CFLAGS} -Wno-error=incompatible-pointer-types"' PKGBUILD
+        sudo -u {{ user }} makepkg -sf --noconfirm
+        pacman -U --noconfirm --needed *.pkg.tar.zst
+        rm -rf "$BUILDDIR"
+    - shell: /bin/bash
     - unless: |
         C=/var/cache/salt/pacman_installed.txt
         [ -f "$C" ] || pacman -Qq > "$C"
