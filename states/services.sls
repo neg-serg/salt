@@ -1,5 +1,5 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros_service.jinja' import daemon_reload, system_daemon_user, service_with_unit, service_stopped %}
+{% from '_macros_service.jinja' import system_daemon_user, service_with_unit, service_stopped %}
 {% from '_macros_install.jinja' import curl_extract_tar %}
 {% from '_macros_pkg.jinja' import pacman_install %}
 {% import_yaml 'data/versions.yaml' as ver %}
