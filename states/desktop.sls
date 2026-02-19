@@ -53,6 +53,7 @@ libvirtd_enabled:
     'hyprpaper hypridle hyprlock hyprpolkitagent xdg-desktop-portal-hyprland hyprpicker wlr-randr') }}
 {{ pacman_install('screenshot_tools', 'grim slurp') }}
 {{ pacman_install('rsync', 'rsync') }}
+{{ pacman_install('localsend', 'localsend') }}
 
 {{ paru_install('xdg-termfilechooser', 'xdg-desktop-portal-termfilechooser-boydaihungst-git') }}
 
