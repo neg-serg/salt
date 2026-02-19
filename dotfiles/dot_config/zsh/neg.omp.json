@@ -6,6 +6,16 @@
             "overflow": "hide",
             "segments": [
                 {
+                    "type": "git",
+                    "style": "plain",
+                    "properties": {
+                        "branch_icon": "",
+                        "fetch_status": true
+                    },
+                    "template": "<#005faf>⟮</><#6C7E96>{{ if .HEAD }}<b>{{ .HEAD }}</b>{{ end }}{{ if gt .Ahead 0 }}<#367CB0>←{{ .Ahead }}</>{{ end }}{{ if gt .Behind 0 }}<#367CB0>→{{ .Behind }}</>{{ end }}{{ if and .Working (gt .Working.Changed 0) }} <#914E89>●W{{ .Working.String }}</>{{ end }}{{ if and .Staging (gt .Staging.Changed 0) }} <#5E468C>●S{{ .Staging.String }}</>{{ end }}<#005faf>⟯</> ",
+                    "placeholder": "<#6C7E96>⟮…⟯</> "
+                },
+                {
                     "type": "executiontime",
                     "style": "plain",
                     "foreground": "#45bf17",
@@ -122,16 +132,6 @@
                         "folder_separator_icon": "<#005faf>/</>",
                         "home_icon": "<#287373>~</>"
                     }
-                },
-                {
-                    "type": "git",
-                    "style": "plain",
-                    "properties": {
-                        "branch_icon": "",
-                        "fetch_status": true
-                    },
-                    "template": " <#005faf>⟮</><#6C7E96>{{ if .HEAD }}<b>{{ .HEAD }}</b>{{ end }}{{ if gt .Ahead 0 }}<#367CB0>←{{ .Ahead }}</>{{ end }}{{ if gt .Behind 0 }}<#367CB0>→{{ .Behind }}</>{{ end }}{{ if and .Working (gt .Working.Changed 0) }} <#914E89>●W{{ .Working.String }}</>{{ end }}{{ if and .Staging (gt .Staging.Changed 0) }} <#5E468C>●S{{ .Staging.String }}</>{{ end }}<#005faf>⟯</>",
-                    "placeholder": " <#6C7E96>⟮…⟯</>"
                 },
                 {
                     "foreground": "#ce162b",
