@@ -28,3 +28,15 @@
 {% for name, pkg in apps.paru_install.items() %}
 {{ paru_install(name, pkg) }}
 {% endfor %}
+
+# rofi-file-browser-extended: upstream CMakeLists.txt needs cmake_minimum_required >= 3.5
+# but specifies an older version — CMake 4.0 rejects it without this env var workaround
+install_rofi_file_browser_extended:
+  cmd.run:
+    - name: sudo -u {{ user }} env CMAKE_POLICY_VERSION_MINIMUM=3.5 paru -S --noconfirm --needed rofi-file-browser-extended-git
+    - unless: |
+        C=/var/cache/salt/pacman_installed.txt
+        [ -f "$C" ] || pacman -Qq > "$C"
+        rg -qx 'rofi-file-browser-extended-git' "$C"
+    - require:
+      - cmd: pacman_db_warmup
