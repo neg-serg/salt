@@ -83,6 +83,13 @@ install_xdg_termfilechooser:
       - cmd: pacman_db_warmup
       - cmd: remove_old_termfilechooser
 
+install_wlr_which_key:
+  cmd.run:
+    - name: sudo -u {{ user }} paru -S --noconfirm --needed wlr-which-key
+    - unless: rg -qx 'wlr-which-key' /var/cache/salt/pacman_installed.txt
+    - require:
+      - cmd: pacman_db_warmup
+
 # --- SSH directory setup ---
 ssh_dir:
   file.directory:
