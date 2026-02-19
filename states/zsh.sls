@@ -1,8 +1,6 @@
 # Zsh: system-wide config, ZDOTDIR, user dotfiles, force shell for users
-{% from 'host_config.jinja' import host %}
+{% from '_imports.jinja' import host, user, home %}
 {% from '_macros_service.jinja' import ensure_dir %}
-{% set user = host.user %}
-{% set home = host.home %}
 
 zsh_config_dir:
   file.directory:
@@ -31,10 +29,6 @@ zsh_config_dir:
     - mode: '0644'
     - require:
       - file: zsh_config_dir
-
-cleanup_old_etc_zshenv:
-  file.absent:
-    - name: /etc/zshenv
 
 # --- User zsh dotfiles (deployed from chezmoi source) ---
 {{ ensure_dir('user_zsh_config_dir', home ~ '/.config/zsh') }}

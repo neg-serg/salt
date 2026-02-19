@@ -1,4 +1,4 @@
-{% from 'host_config.jinja' import host %}
+{% from '_imports.jinja' import host, user, home %}
 {% from '_macros_service.jinja' import unit_override, service_with_unit, system_daemon_user %}
 {% from '_macros_install.jinja' import github_release_system %}
 {% from '_macros_pkg.jinja' import pacman_install %}

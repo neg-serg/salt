@@ -1,8 +1,6 @@
-{% from 'host_config.jinja' import host %}
+{% from '_imports.jinja' import host, user, home %}
 {% from '_macros_service.jinja' import ensure_dir %}
-{% set user = host.user %}
-{% set home = host.home %}
-{% set cache = '/mnt/one/pkg/cache/amnezia' %}
+{% set cache = host.mnt_one ~ '/pkg/cache/amnezia' %}
 # Salt state for Amnezia build and deploy (Local User version)
 # All 3 components build in parallel for faster deployment
 {% if host.features.amnezia %}

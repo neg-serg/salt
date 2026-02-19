@@ -1,8 +1,6 @@
-{% from 'host_config.jinja' import host %}
-{% from '_macros_service.jinja' import ensure_dir, user_service_file %}
+{% from '_imports.jinja' import host, user, home %}
+{% from '_macros_service.jinja' import ensure_dir, user_service_file, user_service_enable %}
 {% from '_macros_install.jinja' import curl_extract_zip %}
-{% set user = host.user %}
-{% set home = host.home %}
 # Kanata: software keyboard remapper (uinput-based)
 {% if host.features.kanata %}
 
@@ -66,20 +64,5 @@ kanata_config:
 # --- Systemd user service ---
 {{ user_service_file('kanata_service', 'kanata.service') }}
 
-kanata_enabled:
-  cmd.run:
-    - name: |
-        systemctl --user daemon-reload
-        systemctl --user enable kanata.service
-    - runas: {{ user }}
-    - env:
-      - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
-      - DBUS_SESSION_BUS_ADDRESS: unix:path={{ host.runtime_dir }}/bus
-    - require:
-      - cmd: install_kanata
-      - file: kanata_config
-      - file: kanata_service
-      - cmd: kanata_user_groups
-      - kmod: kanata_load_uinput
-    - unless: systemctl --user is-enabled kanata.service
+{{ user_service_enable('kanata_enabled', ['kanata.service'], daemon_reload=True, requires=['cmd: install_kanata', 'file: kanata_config', 'file: kanata_service', 'cmd: kanata_user_groups', 'kmod: kanata_load_uinput']) }}
 {% endif %}

@@ -1,10 +1,8 @@
-{% from 'host_config.jinja' import host %}
+{% from '_imports.jinja' import host, user, home %}
 {% from '_macros_install.jinja' import curl_bin, curl_extract_zip, curl_extract_tar %}
 {% from '_macros_pkg.jinja' import paru_install %}
 {% import_yaml 'data/installers_desktop.yaml' as apps %}
 {% import_yaml 'data/versions.yaml' as ver %}
-{% set user = host.user %}
-{% set home = host.home %}
 # Desktop application installers: GUI apps, AppImages, AUR packages
 # Definitions in data/installers_desktop.yaml; adding/updating is a YAML-only edit.
 

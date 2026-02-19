@@ -1,10 +1,8 @@
 # Desktop environment: services, SSH, wallust defaults, dconf themes
-{% from 'host_config.jinja' import host %}
+{% from '_imports.jinja' import host, user, home, pkg_list %}
 {% from '_macros_pkg.jinja' import pacman_install, paru_install %}
 {% from '_macros_service.jinja' import ensure_dir, service_stopped %}
 {% import_yaml 'data/desktop.yaml' as desktop %}
-{% set user = host.user %}
-{% set home = host.home %}
 
 # --- Pacman hook: regenerate installed-package cache after every transaction ---
 pacman_hooks_dir:
@@ -56,12 +54,7 @@ libvirtd_enabled:
 {{ pacman_install('screenshot_tools', 'grim slurp') }}
 {{ pacman_install('rsync', 'rsync') }}
 
-remove_old_termfilechooser:
-  cmd.run:
-    - name: pacman -Rns --noconfirm xdg-desktop-portal-termfilechooser-git
-    - onlyif: rg -qx 'xdg-desktop-portal-termfilechooser-git' /var/cache/salt/pacman_installed.txt
-
-{{ paru_install('xdg-termfilechooser', 'xdg-desktop-portal-termfilechooser-boydaihungst-git', requires=['cmd: remove_old_termfilechooser']) }}
+{{ paru_install('xdg-termfilechooser', 'xdg-desktop-portal-termfilechooser-boydaihungst-git') }}
 
 {{ paru_install('wlr-which-key', 'wlr-which-key') }}
 

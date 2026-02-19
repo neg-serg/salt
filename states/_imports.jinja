@@ -1,0 +1,9 @@
+{#- Common preamble: host config + convenience variables.
+    Usage: {% from '_imports.jinja' import host, user, home %}
+    With pkg_list: {% from '_imports.jinja' import host, user, home, pkg_list %}
+-#}
+{%- import 'host_config.jinja' as _hc -%}
+{%- set host = _hc.host -%}
+{%- set user = host.user -%}
+{%- set home = host.home -%}
+{%- set pkg_list = '/var/cache/salt/pacman_installed.txt' -%}

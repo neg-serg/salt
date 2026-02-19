@@ -1,5 +1,4 @@
-{% from 'host_config.jinja' import host %}
-{% set user = host.user %}
+{% from '_imports.jinja' import host, user, home %}
 # CachyOS bootstrap verification state
 # Validates that bootstrap-cachyos.sh + cachyos-packages.sh completed correctly.
 # Run: sudo salt-call --local state.apply cachyos

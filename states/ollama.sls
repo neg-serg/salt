@@ -1,15 +1,13 @@
-{% from 'host_config.jinja' import host %}
+{% from '_imports.jinja' import host, user, home %}
 {% from '_macros_service.jinja' import ensure_dir, service_with_unit, service_with_healthcheck %}
 {% from '_macros_pkg.jinja' import npm_pkg %}
 {% import_yaml 'data/ollama.yaml' as ollama %}
-{% set user = host.user %}
-{% set home = host.home %}
 # Ollama LLM server: systemd service, model pulls
 {% if host.features.ollama %}
 
 {{ service_with_unit('ollama', 'salt://units/ollama.service', template='jinja', context={'user': user, 'home': home}, onlyif='command -v ollama') }}
 
-{{ ensure_dir('ollama_models_dir', '/mnt/one/ollama/models', require=['mount: mount_one']) }}
+{{ ensure_dir('ollama_models_dir', host.mnt_one ~ '/ollama/models', require=['mount: mount_one']) }}
 
 {{ service_with_healthcheck('ollama_start', 'ollama', 'curl -sf http://127.0.0.1:11434/api/tags >/dev/null 2>&1', requires=['service: ollama_enabled']) }}
 

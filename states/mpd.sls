@@ -1,7 +1,5 @@
-{% from 'host_config.jinja' import host %}
-{% from '_macros_service.jinja' import ensure_dir %}
-{% set user = host.user %}
-{% set home = host.home %}
+{% from '_imports.jinja' import host, user, home, pkg_list %}
+{% from '_macros_service.jinja' import ensure_dir, user_service_enable %}
 # MPD Native Deployment
 # Salt state for setting up MPD with systemd user service and pipewire output
 {% if host.features.mpd %}
@@ -61,20 +59,7 @@ mpd_config:
     - makedirs: True
 
 # --- Enable native MPD systemd user service ---
-mpd_enabled:
-  cmd.run:
-    - name: systemctl --user enable --now mpd.service
-    - runas: {{ user }}
-    - env:
-      - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
-      - DBUS_SESSION_BUS_ADDRESS: unix:path={{ host.runtime_dir }}/bus
-    - require:
-      - file: mpd_config
-      - file: mpd_directories
-      - cmd: music_mount
-      - cmd: mpd_fifo
-    - onlyif: rg -qx 'mpd' /var/cache/salt/pacman_installed.txt
-    - unless: systemctl --user is-active mpd.service
+{{ user_service_enable('mpd_enabled', start_now=['mpd.service'], check='active', onlyif='rg -qx mpd ' ~ pkg_list, requires=['file: mpd_config', 'file: mpd_directories', 'cmd: music_mount', 'cmd: mpd_fifo']) }}
 
 # --- Deploy mpdas config via gopass ---
 mpdas_config:
@@ -108,10 +93,11 @@ mpdas_service_file:
 mpd_companion_services:
   cmd.run:
     - name: |
+        C={{ pkg_list }}
         {% raw %}
         services=()
-        rg -qx 'mpdris2' /var/cache/salt/pacman_installed.txt && ! systemctl --user is-enabled mpDris2.service 2>/dev/null && services+=(mpDris2.service)
-        rg -qx 'mpdas' /var/cache/salt/pacman_installed.txt && ! systemctl --user is-enabled mpdas.service 2>/dev/null && services+=(mpdas.service)
+        rg -qx 'mpdris2' "$C" && ! systemctl --user is-enabled mpDris2.service 2>/dev/null && services+=(mpDris2.service)
+        rg -qx 'mpdas' "$C" && ! systemctl --user is-enabled mpdas.service 2>/dev/null && services+=(mpdas.service)
         if [ ${#services[@]} -gt 0 ]; then
           systemctl --user enable --now "${services[@]}"
         fi
@@ -126,6 +112,6 @@ mpd_companion_services:
       - cmd: mpdas_config
       - file: mpdas_service_file
     - unless: |
-        (! rg -qx 'mpdris2' /var/cache/salt/pacman_installed.txt || systemctl --user is-enabled mpDris2.service 2>/dev/null) &&
-        (! rg -qx 'mpdas' /var/cache/salt/pacman_installed.txt || systemctl --user is-enabled mpdas.service 2>/dev/null)
+        (! rg -qx 'mpdris2' {{ pkg_list }} || systemctl --user is-enabled mpDris2.service 2>/dev/null) &&
+        (! rg -qx 'mpdas' {{ pkg_list }} || systemctl --user is-enabled mpdas.service 2>/dev/null)
 {% endif %}

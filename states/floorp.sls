@@ -1,8 +1,6 @@
-{% from 'host_config.jinja' import host %}
+{% from '_imports.jinja' import host, user, home %}
 {% from '_macros_service.jinja' import ensure_dir %}
 {% from '_macros_install.jinja' import firefox_extension %}
-{% set user = host.user %}
-{% set home = host.home %}
 # Floorp browser: user.js + userChrome.css + userContent.css + extensions
 {% if host.features.floorp %}
 {% import_yaml 'data/floorp.yaml' as floorp %}

@@ -1,10 +1,10 @@
-{% from 'host_config.jinja' import host %}
+{% from '_imports.jinja' import host, user, home, pkg_list %}
 # Salt state for CachyOS workstation — top-level orchestrator
 # Packages installed via pacman/paru outside Salt; Salt handles configuration
 
 pacman_db_warmup:
   cmd.run:
-    - name: pacman -Qq > /var/cache/salt/pacman_installed.txt
+    - name: pacman -Qq > {{ pkg_list }}
 
 system_timezone:
   timezone.system:

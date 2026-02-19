@@ -1,12 +1,10 @@
 # All font installs: pacman, AUR, downloaded, custom PKGBUILD builds
 # Run: sudo salt-call --local state.apply fonts
-{% from 'host_config.jinja' import host %}
+{% from '_imports.jinja' import host, user, home %}
 {% from '_macros_pkg.jinja' import pacman_install, paru_install, pkgbuild_install %}
 {% from '_macros_install.jinja' import download_font_zip %}
 {% import_yaml 'data/versions.yaml' as ver %}
 {% import_yaml 'data/fonts.yaml' as fonts %}
-{% set user = host.user %}
-{% set home = host.home %}
 
 # ===================================================================
 # Pacman fonts

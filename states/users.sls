@@ -1,6 +1,5 @@
 # User accounts, groups, and sudo configuration
-{% from 'host_config.jinja' import host %}
-{% set user = host.user %}
+{% from '_imports.jinja' import host, user, home %}
 {% set uid = host.uid %}
 
 user_root:
