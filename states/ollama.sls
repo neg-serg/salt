@@ -1,6 +1,7 @@
 {% from 'host_config.jinja' import host %}
 {% from '_macros_service.jinja' import service_with_unit %}
 {% from '_macros_pkg.jinja' import npm_pkg %}
+{% import_yaml 'data/ollama.yaml' as ollama %}
 {% set user = host.user %}
 {% set home = host.home %}
 # Ollama LLM server: systemd service, model pulls
@@ -33,7 +34,7 @@ ollama_start:
     - require:
       - service: ollama_enabled
 
-{% for model in ['deepseek-r1:8b', 'llama3.2:3b', 'qwen2.5-coder:7b'] %}
+{% for model in ollama.models %}
 pull_{{ model | replace('.', '_') | replace(':', '_') | replace('-', '_') }}:
   cmd.run:
     - name: |

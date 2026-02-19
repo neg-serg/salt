@@ -64,27 +64,11 @@
 
 {% set hosts = {
     'telfir': {
-        'is_laptop':      False,
-        'cpu_vendor':     'amd',
-        'kvm_module':     'kvm-amd',
         'display':        '3840x2160@240',
         'hostname':       'telfir',
         'extra_modules':  ['ec_sys', 'asus_ec_sensors'],
         'features': {
-            'monitoring': {
-                'sysstat':  True,
-                'vnstat':   True,
-                'netdata':  True,
-                'loki':     False,
-                'promtail': False,
-                'grafana':  False,
-            },
             'fancontrol':   True,
-            'dns': {
-                'unbound':      False,
-                'adguardhome':  False,
-                'avahi':        True,
-            },
             'services': {
                 'transmission': True,
             },

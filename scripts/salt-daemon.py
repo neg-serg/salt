@@ -37,7 +37,6 @@ import signal
 import socket
 import sys
 import threading
-import warnings
 
 # ── Salt venv path setup ─────────────────────────────────────────────────────
 # Ensure the venv site-packages is on the path when run with system python3.
@@ -50,64 +49,10 @@ if os.path.isdir(_VENV_SITE):
             sys.path.insert(0, _candidate)
             break
 
-# ── Suppress Salt deprecation warnings ──────────────────────────────────────
-_orig_showwarning = warnings.showwarning
+# ── Python 3.13+ compatibility shims (PEP 594 removals) ─────────────────────
+import salt_compat
 
-
-def _showwarning(msg, cat, filename, lineno, file=None, line=None):
-    if cat is DeprecationWarning and "/salt/" in (filename or ""):
-        return
-    _orig_showwarning(msg, cat, filename, lineno, file, line)
-
-
-warnings.showwarning = _showwarning
-
-
-# ── Patch removed stdlib modules for Python 3.13+ ───────────────────────────
-class _MockCrypt:
-    def __init__(self):
-        try:
-            import passlib.hash as _hash
-
-            self._hash = _hash
-        except ImportError:
-            self._hash = None
-
-        class Method:
-            def __init__(self, name, ident):
-                self.name = name
-                self.ident = ident
-
-        self.methods = [
-            Method("sha512", "6"),
-            Method("sha256", "5"),
-            Method("md5", "1"),
-            Method("crypt", ""),
-        ]
-
-    def crypt(self, word, salt):
-        if not self._hash:
-            raise ImportError("passlib is required for crypt emulation")
-        from passlib.hash import des_crypt, md5_crypt, sha256_crypt, sha512_crypt
-
-        if salt.startswith("$6$"):
-            return sha512_crypt.hash(word, salt=salt.split("$")[2])
-        if salt.startswith("$5$"):
-            return sha256_crypt.hash(word, salt=salt.split("$")[2])
-        if salt.startswith("$1$"):
-            return md5_crypt.hash(word, salt=salt.split("$")[2])
-        return des_crypt.hash(word, salt=salt)
-
-
-sys.modules["crypt"] = _MockCrypt()
-
-
-class _MockSpwd:
-    def getspnam(self, name):
-        raise KeyError(f"spwd.getspnam emulation: user {name} lookup failed or not implemented")
-
-
-sys.modules["spwd"] = _MockSpwd()
+salt_compat.patch()
 
 # ── Defaults ─────────────────────────────────────────────────────────────────
 _DEFAULT_SOCKET = "/tmp/salt-daemon.sock"

@@ -1,0 +1,11 @@
+[Unit]
+Description=Index picture directories into zoxide on changes
+After=graphical-session.target
+PartOf=graphical-session.target
+[Service]
+ExecStart=%h/.local/bin/pic-dirs-list
+Restart=on-failure
+RestartSec=5
+Environment=XDG_PICTURES_DIR=%h/pic
+[Install]
+WantedBy=graphical-session.target

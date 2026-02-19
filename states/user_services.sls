@@ -1,5 +1,5 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros_service.jinja' import user_service %}
+{% from '_macros_service.jinja' import user_service_file %}
 {% set user = host.user %}
 {% set home = host.home %}
 # Systemd user services: mail, calendar, chezmoi, media, surfingkeys
@@ -67,110 +67,15 @@ mail_directories:
     - group: {{ user }}
     - makedirs: True
 
-# --- Systemd user services for mail ---
-{% call user_service('mbsync_gmail_service', 'mbsync-gmail.service', user=user, home=home) %}
-[Unit]
-Description=Mailbox synchronization (Gmail)
-After=network-online.target
-Wants=network-online.target
-[Service]
-Type=oneshot
-ExecStart=/usr/bin/mbsync -c %h/.config/mbsync/mbsyncrc gmail
-[Install]
-WantedBy=default.target
-{% endcall %}
-
-{% call user_service('mbsync_gmail_timer', 'mbsync-gmail.timer', user=user, home=home) %}
-[Unit]
-Description=Mailbox synchronization timer (Gmail)
-[Timer]
-OnBootSec=2min
-OnUnitActiveSec=10min
-[Install]
-WantedBy=timers.target
-{% endcall %}
-
-{% call user_service('imapnotify_gmail_service', 'imapnotify-gmail.service', user=user, home=home) %}
-[Unit]
-Description=IMAP IDLE notifications (Gmail)
-After=network-online.target
-Wants=network-online.target
-[Service]
-ExecStart=/usr/bin/goimapnotify -conf %h/.config/imapnotify/gmail.json
-Restart=on-failure
-RestartSec=30
-[Install]
-WantedBy=default.target
-{% endcall %}
-
-# --- Systemd user services for calendar ---
-{% call user_service('vdirsyncer_service', 'vdirsyncer.service', user=user, home=home) %}
-[Unit]
-Description=Synchronize calendars and contacts (vdirsyncer)
-After=network-online.target
-Wants=network-online.target
-[Service]
-Type=oneshot
-ExecStart=/usr/bin/vdirsyncer sync
-{% endcall %}
-
-{% call user_service('vdirsyncer_timer', 'vdirsyncer.timer', user=user, home=home) %}
-[Unit]
-Description=Synchronize calendars and contacts timer
-[Timer]
-OnBootSec=2min
-OnUnitActiveSec=5min
-[Install]
-WantedBy=timers.target
-{% endcall %}
-
-# --- Surfingkeys HTTP server (browser extension helper) ---
-{% call user_service('surfingkeys_server_service', 'surfingkeys-server.service', user=user, home=home) %}
-[Unit]
-Description=Surfingkeys HTTP server (browser extension helper)
-After=graphical-session.target
-PartOf=graphical-session.target
-[Service]
-ExecStart=%h/.local/bin/surfingkeys-server
-Restart=on-failure
-RestartSec=5
-[Install]
-WantedBy=graphical-session.target
-{% endcall %}
-
-# --- Pic dirs indexer (inotifywait + zoxide) ---
-{% call user_service('pic_dirs_list_service', 'pic-dirs-list.service', user=user, home=home) %}
-[Unit]
-Description=Index picture directories into zoxide on changes
-After=graphical-session.target
-PartOf=graphical-session.target
-[Service]
-ExecStart=%h/.local/bin/pic-dirs-list
-Restart=on-failure
-RestartSec=5
-Environment=XDG_PICTURES_DIR=%h/pic
-[Install]
-WantedBy=graphical-session.target
-{% endcall %}
-
-# --- Vicinae: application launcher daemon ---
-{% call user_service('vicinae_service', 'vicinae.service', user=user, home=home) %}
-[Unit]
-Description=Vicinae Launcher Daemon
-Documentation=https://docs.vicinae.com
-After=graphical-session.target
-Requires=dbus.socket
-PartOf=graphical-session.target
-[Service]
-Type=simple
-ExecStart=/usr/bin/vicinae server --replace
-ExecReload=/bin/kill -HUP $MAINPID
-Restart=on-failure
-RestartSec=60
-KillMode=process
-[Install]
-WantedBy=graphical-session.target
-{% endcall %}
+# --- Systemd user services (unit files in units/user/) ---
+{{ user_service_file('mbsync_gmail_service', 'mbsync-gmail.service') }}
+{{ user_service_file('mbsync_gmail_timer', 'mbsync-gmail.timer') }}
+{{ user_service_file('imapnotify_gmail_service', 'imapnotify-gmail.service') }}
+{{ user_service_file('vdirsyncer_service', 'vdirsyncer.service') }}
+{{ user_service_file('vdirsyncer_timer', 'vdirsyncer.timer') }}
+{{ user_service_file('surfingkeys_server_service', 'surfingkeys-server.service') }}
+{{ user_service_file('pic_dirs_list_service', 'pic-dirs-list.service') }}
+{{ user_service_file('vicinae_service', 'vicinae.service') }}
 
 # --- Enable user services: single daemon-reload + batch enable ---
 enable_user_services:

@@ -1,0 +1,7 @@
+# Ollama model definitions for ollama.sls
+# Adding/removing a model is a YAML-only edit.
+
+models:
+  - deepseek-r1:8b
+  - llama3.2:3b
+  - qwen2.5-coder:7b
