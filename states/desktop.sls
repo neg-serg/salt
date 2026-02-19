@@ -1,6 +1,7 @@
 # Desktop environment: services, SSH, wallust defaults, dconf themes
 {% from 'host_config.jinja' import host %}
 {% from '_macros_pkg.jinja' import pacman_install, paru_install %}
+{% from '_macros_service.jinja' import service_stopped %}
 {% set user = host.user %}
 {% set home = host.home %}
 
@@ -48,10 +49,7 @@ libvirtd_enabled:
 # Disable tuned: its throughput-performance profile conflicts with custom
 # I/O tuning (sets read_ahead_kb=8192 on NVMe, may override sysctl values).
 # All tuning is managed manually via sysctl.sls, kernel_params_limine.sls, hardware.sls.
-disable_tuned:
-  service.dead:
-    - name: tuned
-    - enable: False
+{{ service_stopped('disable_tuned', 'tuned') }}
 
 # --- Hyprland ecosystem packages ---
 {{ pacman_install('hyprland_desktop',

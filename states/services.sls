@@ -1,5 +1,5 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros_service.jinja' import daemon_reload, system_daemon_user, service_with_unit %}
+{% from '_macros_service.jinja' import daemon_reload, system_daemon_user, service_with_unit, service_stopped %}
 {% from '_macros_install.jinja' import curl_extract_tar %}
 {% from '_macros_pkg.jinja' import pacman_install %}
 {% import_yaml 'data/versions.yaml' as ver %}
@@ -47,11 +47,7 @@ samba_config:
         hostname: {{ host.hostname }}
 
 # Don't enable at boot — manual start only: systemctl start smb
-samba_not_enabled:
-  service.disabled:
-    - name: smb
-    - require:
-      - file: samba_config
+{{ service_stopped('samba_not_enabled', 'smb', stop=False, requires=['file: samba_config']) }}
 {% endif %}
 
 # --- Bitcoind: Bitcoin Core node ---

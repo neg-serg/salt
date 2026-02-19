@@ -1,15 +1,13 @@
 {% from 'host_config.jinja' import host %}
 {% from '_macros_pkg.jinja' import pacman_install %}
+{% from '_macros_service.jinja' import service_stopped %}
 {% set user = host.user %}
 {% set home = host.home %}
 # greetd display manager: replace sddm with quickshell greeter
 
 {{ pacman_install('greetd', 'greetd greetd-regreet') }}
 
-disable_sddm:
-  service.dead:
-    - name: sddm
-    - enable: False
+{{ service_stopped('disable_sddm', 'sddm') }}
 
 greetd_config_dir:
   file.directory:
