@@ -48,6 +48,7 @@ include:
   - network
   - ollama
   - services
+  - snapshots
   - steam
   - sysctl
   - users
