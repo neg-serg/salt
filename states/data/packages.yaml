@@ -1,0 +1,357 @@
+# Package reference for CachyOS workstation
+# NOT consumed by Salt states — serves as documentation/reference
+# Packages installed via pacman/paru outside Salt
+
+Archives & Compression:
+  lbzip2: Parallel bzip2 compression utility
+  patool: Portable archive file manager
+  pbzip2: Parallel bzip2 implementation
+  pigz: Parallel gzip implementation
+  unar: Universal archive unpacker
+
+Development:
+  act: Run GitHub Actions locally
+  android-tools: Android platform tools (adb, fastboot)
+  ansible: IT automation and configuration management
+  bpftrace: High-level eBPF tracing language
+  cargo: Rust package manager
+  clang-libs: Clang runtime libraries
+  cmake: Cross-platform build system
+  difftastic: Structural diff tool
+  dbus-devel: D-Bus development headers (for building Rust crates like libdbus-sys)
+  direnv: Per-directory shell configuration tool
+  dkms: Dynamic Kernel Module Support Framework
+  elfutils: ELF binary analysis tools
+  gcc: Various compilers (C, C++, ...)
+  gdb: GNU Debugger
+  graphviz: Graph visualization tools
+  helix: Post-modern modal text editor
+  hexyl: Hex viewer with colored output
+  hxtools: Misc CLI utilities and git helpers
+  hyperfine: Command-line benchmarking tool
+  just: Just a command runner
+  kernel-devel: Development package for building kernel modules
+  lldb: LLVM debugger
+  openocd: On-chip debugger for embedded systems
+  nodejs: JavaScript runtime (for npm global installs)
+  nginx-language-server: Nginx config LSP server (AUR)
+  npm: Node.js package manager
+  perf: Performance analysis tools for Linux
+  pgcli: PostgreSQL CLI with autocomplete
+  pipewire-devel: PipeWire development files
+  ruff: Fast Python linter and formatter
+  ShellCheck: Shell script analysis tool
+  shfmt: Shell script formatter
+  strace: System call tracer
+  systemd-language-server: Systemd unit file LSP server (AUR)
+  valgrind: Memory debugging and profiling
+  yamllint: YAML linter
+
+File Management:
+  bat: A cat(1) clone with wings
+  borgbackup: Deduplicating archiver with compression and encryption
+  convmv: Convert filename encodings
+  ddrescue: Data recovery tool for failing drives
+  dos2unix: Text file format converters
+  du-dust: More intuitive version of du
+  enca: Character set analyzer and converter
+  fd-find: Fd is a simple, fast and user-friendly alternative to find
+  jdupes: Duplicate file finder and remover
+  ncdu: Text-based disk usage viewer
+  plocate: Fast file locate
+  ripgrep: Fast regex search tool
+  rclone: Cloud storage sync tool
+  rsync: Fast incremental file transfer
+  rmlint: Find space waste and other broken things on your filesystem
+  testdisk: Data recovery and partition repair tool
+  gvfs-mtp: GVFS MTP backend (Android/media devices)
+  gvfs-smb: GVFS SMB/CIFS backend (Windows shares)
+  tumbler: D-Bus thumbnailing service (file managers)
+
+Fonts:
+  inter-font: Inter UI typeface
+  iosevka-neg-fonts: Custom Iosevka + Nerd Font (PKGBUILD)
+  material-icons-fonts: Material Design icons fonts
+  noto-fonts: Google Noto TTF fonts
+  noto-fonts-cjk: Google Noto CJK fonts (Chinese, Japanese, Korean)
+  noto-fonts-emoji: Google Noto Color Emoji
+  otf-font-awesome: Font Awesome 6 icon font
+  ttf-ibm-plex: IBM Plex Sans/Mono/Serif
+  ttf-icomoon-feather: Feather icons font
+  ttf-jetbrains-mono-nerd: JetBrains Mono Nerd Font
+
+Audio:
+  pipewire: Low-latency audio/video router and processor
+  pipewire-audio: PipeWire audio modules (loopback, filter-chain, Bluetooth codecs)
+  pipewire-pulse: PulseAudio replacement via PipeWire
+  pipewire-alsa: ALSA configuration for PipeWire
+  pipewire-jack: JACK replacement via PipeWire
+  wireplumber: PipeWire session/policy manager
+  alsa-utils: ALSA utilities (amixer, aplay — used by powermenu mute)
+
+Media:
+  gst-plugins-bad: "GStreamer bad plugins (codecs: AAC, HEVC, VP9, etc.)"
+  gst-plugins-ugly: "GStreamer ugly plugins (codecs: x264, libmpeg2, a52dec)"
+  gst-libav: GStreamer FFmpeg/libav codec plugin
+  advancecomp: "Recompression utilities for .png, .mng, .zip, .gz"
+  Carla: "Audio plugin host (LADSPA, DSSI, LV2, VST2/3)"
+  beets: Music library manager and tagger
+  cava: Console audio visualizer
+  cdparanoia: Secure CD ripper
+  chafa: Image-to-text converter for terminal
+  darktable: Utility to organize and develop raw images
+  ffmpegthumbnailer: Lightweight video thumbnailer
+  helvum: GTK patchbay for PipeWire
+  id3v2: Command-line ID3v2 tag editor
+  jpegoptim: Utility to optimize JPEG files
+  lsp-plugins: Linux Studio Plugins for audio production
+  mediainfo: Media file information utility
+  mpd: Music Player Daemon
+  mpc: Command-line MPD client
+  mpdas: Last.fm scrobbler for MPD
+  mpdris2: MPRIS2 bridge for MPD
+  mpv: A free, open source, and cross-platform media player
+  optipng: PNG optimizer
+  perl-Image-ExifTool: Utility for reading and writing image meta info
+  playerctl: MPRIS media player command-line controller
+  chromaprint-tools: AcoustID audio fingerprint calculator (fpcalc)
+  picard: MusicBrainz GUI music tagger
+  pngquant: PNG quantization tool for lossy compression
+  qpwgraph: Qt PipeWire patchbay
+  rawtherapee: Raw image processing application
+  raysession: Session manager for audio production
+  sonic-visualiser: Audio analysis and visualization
+  wiremix: PipeWire terminal volume mixer
+  supercollider: Audio synthesis engine and programming IDE
+  sox: A general purpose sound file conversion tool
+  swayimg: Image viewer for Sway/Wayland
+  tesseract: OCR engine
+  zbar: Bar code reader
+  media-player-info: udev data for media players
+  yabridge: Windows VST bridge for Linux audio
+  yabridgectl: yabridge configuration tool
+
+Monitoring & System:
+  atop: Advanced system and process monitor
+  blktrace: Block layer I/O tracing tools
+  btop: A monitor of resources (CPU, Memory, Network)
+  device-mapper-multipath: Tools for managing multipath devices
+  fastfetch: Fast neofetch-like system information tool
+  fio: Flexible I/O tester and benchmark
+  gdisk: GPT partition tools (sgdisk, fixparts)
+  goaccess: Real-time web log analyzer and interactive viewer
+  hw-probe: Hardware probe and diagnostics
+  hwinfo: Detailed hardware information tool
+  inxi: System information script
+  ioping: Simple disk I/O latency monitor
+  iotop-c: I/O monitoring tool
+  kexec-tools: Directly boot into a new kernel
+  liquidctl: Fan/pump/LED controller for AIO and peripherals
+  lm_sensors: "Hardware sensor monitoring (temps, fans, voltages)"
+  lnav: Curses-based tool for viewing and analyzing log files
+  lshw: Hardware lister
+  memtester: User-space memory stress test
+  nvtop: GPU process monitor
+  parted: GNU Partition Editor
+  procdump: Linux process core dump generator
+  progress: Coreutils Viewer
+  pv: A tool for monitoring the progress of data through a pipeline
+  s-tui: Stress terminal UI for CPU monitoring
+  schedtool: CPU scheduling policy control
+  smartmontools: S.M.A.R.T. disk monitoring tools
+  sysstat: Performance monitoring tools
+  vmtouch: Virtual memory touch / file paging tool
+  vnstat: Network traffic monitor
+  below: BPF time-traveling system monitor
+  kernel-tools: "Kernel utilities (turbostat, cpupower)"
+  # Laptop-only (added conditionally):
+  # acpi: ACPI battery and thermal info
+  # powertop: Power consumption analyzer
+
+Network:
+  aria2: High speed download utility with resuming and segmented downloading
+  fping: Fast ping utility
+  freerdp: Remote Desktop Protocol client
+  fuse-sshfs: Mount remote directories over SSH
+  GeoIP: IP-to-location lookup library and tools
+  httpie: Modern command-line HTTP client
+  iftop: Display bandwidth usage on an interface
+  iperf: Network bandwidth measurement tool
+  iwd: Wireless daemon for Linux
+  nicotine+: Soulseek P2P file sharing client
+  nmap-ncat: Netcat from nmap project
+  ollama: Local LLM runner
+  prettyping: Wrapper around ping to make output prettier
+  sshpass: Non-interactive SSH password auth
+  streamlink: CLI for extracting streams from websites
+  telegram-desktop: Telegram Desktop messaging app
+  traceroute: Trace packet route to host
+  ttyd: Share terminal over the web
+  whois: Domain registration information lookup
+  vdirsyncer: CalDAV/CardDAV synchronization tool
+  transmission-gtk: BitTorrent client
+  w3m: Text-mode web browser
+  waypipe: Network transparency for Wayland
+  wayvnc: VNC server for Wayland
+  croc: P2P file transfer tool
+  speedtest-go: CLI internet speed test
+  zmap: Fast internet-wide scanner
+
+Shell & Tools:
+  abduco: Session management in a clean and simple way
+  age: Modern file encryption tool
+  asciinema: "Terminal session recorder, streamer and player"
+  cowsay: Talking cow ASCII art
+  libnotify: Desktop notification library (notify-send)
+  cpufetch: Simple yet fancy CPU architecture fetching tool
+  dash: Small and fast POSIX-compliant shell
+  dcfldd: Enhanced dd with hashing and status output
+  entr: Run arbitrary commands when files change
+  expect: Tool for automating interactive applications
+  faker: CLI fake data generator (Python)
+  figlet: ASCII art text banners
+  fortune-mod: Random quotes and aphorisms
+  freeze: Generate images of code and terminal output
+  gh: GitHub CLI
+  git-lfs: Git Large File Storage
+  glow: Render markdown on the CLI
+  gopass: Password store with extensions
+  jc: CLI tool to convert command output to JSON
+  lolcat: Rainbow-colored cat output
+  lowdown: Markdown translator
+  miller: "Like awk, sed, cut, join, and sort for name-indexed data"
+  minicom: Serial console and communication program
+  moreutils: Additional unix utilities
+  mtools: MS-DOS disk utilities
+  neo: Matrix digital rain effect
+  neomutt: Terminal email client
+  netmask: IP address and netmask manipulation
+  no-more-secrets: Recreate the data decryption effect from Sneakers
+  par: "Paragraph reformatter, vaguely like fmt, but more elaborate"
+  parallel: Shell tool for executing jobs in parallel
+  pastel: "CLI tool to generate, analyze, convert and manipulate colors"
+  pwgen: Automatic password generation
+  recoll: Desktop full-text search tool
+  reptyr: Attach a running process to a new terminal
+  rlwrap: Readline wrapper for interactive commands
+  rustnet: "Network monitoring tool (Rust, cargo install)"
+  sad: CLI search and replace
+  salt: A parallel remote execution system
+  sqlite: SQLite database CLI
+  tealdeer: A fast tldr client in Rust
+  tmux: Terminal multiplexer
+  toilet: Color ASCII art text banners
+  translate-shell: Command-line online translator
+  udiskie: Automounter for removable media
+  ugrep: Ultra fast grep with interactive query UI
+  urlscan: Extract and browse URLs from email messages
+  urlwatch: Web page change monitor and notifier
+  yq: YAML/XML/TOML processor
+  zathura: Minimal document viewer
+  zathura-pdf-poppler: PDF plugin for zathura
+  zoxide: Smarter cd command for your terminal
+  taoup: The Art of Unix Programming quotes (Ruby)
+  zsh: Powerful interactive shell
+
+Wayland:
+  cliphist: Clipboard history for Wayland
+  dunst: Lightweight notification daemon
+  grim: Wayland screenshot tool (required by grimblast)
+  hyprpicker: Hyprland color picker (used by grimblast)
+  pyprland: Hyprland plugin system and scratchpads
+  rofi: "Window switcher, application launcher and dmenu replacement"
+  screenkey: Show keystrokes on screen
+  slurp: Wayland region selector (required by grimblast)
+  swappy: Screenshot annotation tool for Wayland
+  swaybg: Wayland background setter
+  swww: Animated wallpaper daemon for Wayland
+  wev: Wayland event viewer for debugging
+  wf-recorder: Wayland screen recorder
+  wlogout: Wayland logout menu
+  wtype: xdotool type for Wayland
+  xdg-desktop-portal-gtk: GTK file picker and portal for Wayland (needed for file dialogs)
+  qt5-wayland: Qt5 Wayland platform plugin
+  qt6-wayland: Qt6 Wayland platform plugin
+  wlr-randr: Wayland output config tool (rofi-wrapper fallback)
+  ydotool: Generic command-line automation tool for Wayland
+
+Gaming & Emulation:
+  0ad: Ancient warfare real-time strategy game
+  abuse: Action platformer game
+  angband: Classic Tolkien-themed roguelike
+  crawl-tiles: Dungeon Crawl Stone Soup with tiles
+  dosbox-staging: Modernized DOSBox fork
+  endless-sky: Space exploration and trading game
+  fheroes2: Free Heroes of Might and Magic II engine
+  flare: Free Libre Action Roleplaying Engine
+  gnuchess: GNU Chess engine
+  nethack: Classic roguelike adventure game
+  openmw: Open-source Morrowind engine reimplementation
+  retroarch: Multi-platform emulator frontend
+  supertux: 2D platformer inspired by Super Mario
+  wesnoth: Turn-based strategy game
+  xaos: Interactive fractal zoomer
+  xonotic: Fast-paced FPS game
+
+Security:
+  hashcat: Advanced password recovery tool
+  pcsc-tools: Smartcard reader debugging tools
+  tcpdump: Network packet analyzer
+  wireshark-cli: Network protocol analyzer CLI (tshark)
+
+Virtualization:
+  bottles: Wine/Proton application manager
+  libvirt-daemon-config-network: Libvirt default NAT network config
+  qemu-kvm: QEMU/KVM virtual machine emulator
+  virt-manager: Virtual machine manager GUI
+
+Desktop:
+  bluez-utils: "Bluetooth utilities (bluetoothctl, btmon)"
+  corectrl: AMD GPU power and fan control
+  ddccontrol: DDC monitor control
+  hunspell-ru: Russian dictionary for spellchecking
+  nuspell: Modern spellchecker library and CLI
+  kvantum: SVG-based Qt6 theme engine
+  kvantum-qt5: SVG-based Qt5 theme engine
+  openrgb: Peripheral RGB LED controller
+  qt5ct: Qt5 configuration tool
+  qt6ct: Qt6 configuration tool
+  nm-connection-editor: NetworkManager connection editor GUI
+  texlive-scheme-basic: TeX Live basic scheme
+  fwupd: Firmware update daemon (LVFS)
+  upower: Power management abstraction daemon
+
+Version Control:
+  chezmoi: Manage your dotfiles across multiple diverse machines
+  diff-so-fancy: Good-looking diffs with diff-highlight and more
+  etckeeper: Store /etc in a git repository
+  git: Fast Version Control System
+  git-crypt: Transparent file encryption in git
+  git-delta: Syntax-highlighting pager for git
+  git-extras: Extra git commands for everyday use
+  onefetch: Git repository summary on your terminal
+  tig: Text-mode interface for the git revision control system
+
+# --- Flatpak applications (installed per-user from Flathub) ---
+flatpak:
+  net.pcsx2.PCSX2: PlayStation 2 emulator
+  net.davidotek.pupgui2: ProtonUp-Qt — Proton/Wine-GE version manager
+  io.github.dimtpap.coppwr: PipeWire graph inspector
+  com.github.tmewett.BrogueCE: Community edition of Brogue roguelike
+  org.zdoom.GZDoom: Advanced Doom source port
+  tk.deat.Jazz2Resurrection: Jazz Jackrabbit 2 reimplementation
+  net.veloren.airshipper: Veloren voxel RPG launcher
+  com.shatteredpixel.shatteredpixeldungeon: Roguelike dungeon crawler
+  me.timschneeberger.jdsp4linux: JamesDSP audio effects for Linux
+  com.vysp3r.ProtonPlus: Proton/Wine compatibility tool manager
+  com.obsproject.Studio: OBS Studio — streaming and recording
+  net.sapples.LiveCaptions: Real-time speech-to-text captions
+  md.obsidian.Obsidian: Markdown knowledge base
+  org.chromium.Chromium: Open-source Chromium browser
+  org.gimp.GIMP: GNU Image Manipulation Program
+  com.google.Chrome: Google Chrome browser
+  org.libreoffice.LibreOffice: Office suite
+  net.lutris.Lutris: Gaming platform for Linux
+  com.github.qarmin.czkawka: Duplicate file and image finder
+  com.google.AndroidStudio: Android IDE
+  io.github.woelper.Oculante: Fast image viewer with editing

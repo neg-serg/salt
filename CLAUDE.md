@@ -14,7 +14,8 @@ Packages installed via pacman/paru outside Salt; Salt handles configuration mana
 | `states/system_description.sls` | Top-level orchestrator: locale, timezone, hostname, include list |
 | `states/_macros.jinja` | Reusable Jinja macros (see below) |
 | `states/host_config.jinja` | Per-host config map keyed by `grains['host']` |
-| `states/packages.jinja` | Package reference lists, flatpak apps |
+| `states/data/packages.yaml` | Package reference lists (not consumed by states) |
+| `states/data/floorp.yaml` | Floorp browser extensions (consumed by floorp.sls) |
 | `states/configs/` | External config files served via `salt://configs/` |
 | `states/units/` | Systemd unit files served via `salt://units/` |
 | `states/scripts/` | Shell scripts served via `salt://scripts/` |

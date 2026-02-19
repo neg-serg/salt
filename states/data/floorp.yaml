@@ -1,0 +1,57 @@
+# Floorp browser extensions — consumed by floorp.sls
+# Each entry needs 'id' (extension UUID) and 'slug' (AMO download slug)
+
+extensions:
+  - id: "{a8332c60-5b6d-41ee-bfc8-e9bb331d34ad}"
+    slug: surfingkeys_ff
+  - id: uBlock0@raymondhill.net
+    slug: ublock-origin
+  - id: addon@darkreader.org
+    slug: darkreader
+  - id: sponsorBlocker@ajay.app
+    slug: sponsorblock
+  - id: "{7a7a4a92-a2a0-41d1-9fd7-1e92480d612d}"
+    slug: styl-us
+  - id: "{aecec67f-0d10-4fa7-b7c7-609a2db280cf}"
+    slug: violentmonkey
+  - id: "{531906d3-e22f-4a6c-a102-8057b88a1a63}"
+    slug: single-file
+  - id: addon@fastforward.team
+    slug: fastforwardteam
+  - id: hide-scrollbars@qashto
+    slug: hide-scrollbars
+  - id: kellyc-show-youtube-dislikes@nradiowave
+    slug: return-youtube-dislikes
+  - id: "{4a311e5c-1ccc-49b7-9c23-3e2b47b6c6d5}"
+    slug: "\u0441\u043A\u0430\u0447\u0430\u0442\u044C-\u043C\u0443\u0437\u044B\u043A\u0443-\u0441-\u0432\u043A-vkd"
+  - id: BetterDark@neopolitan.uk
+    slug: betterdark
+  - id: chrome-mask@overengineer.dev
+    slug: chrome-mask
+  - id: "{036a55b4-5e72-4d05-a06c-cba2dfcc134a}"
+    slug: traduzir-paginas-web
+  - id: firefox-extension@steamdb.info
+    slug: steam-database
+  - id: "{a8cf72f7-09b7-4cd4-9aaa-7a023bf09916}"
+    slug: besttimetracker
+  - id: "{52bda3fd-dc48-4b3d-a7b9-58af57879f1e}"
+    slug: stylebot-web
+  - id: "{1be309c5-3e4f-4b99-927d-bb500eb4fa88}"
+    slug: augmented-steam
+  - id: "{d07ccf11-c0cd-4938-a265-2a4d6ad01189}"
+    slug: view-page-archive
+  - id: extension@tabliss.io
+    slug: tabliss
+  - id: firefox@ghostery.com
+    slug: ghostery
+  - id: "{74145f27-f039-47ce-a470-a662b129930a}"
+    slug: clearurls
+  - id: jid1-93WyvpgvxzGATw@jetpack
+    slug: to-google-translate
+  - id: BeautifulPurpleSky@Godie
+    slug: beautiful-purple-sky
+
+# Extensions to remove (no longer wanted)
+unwanted:
+  - "{3c078156-979c-498b-8990-85f7987dd929}"
+  - ATBC@EasonWong
