@@ -1,8 +1,33 @@
-{# Service-related macros: ensure_running, service_stopped, service_with_healthcheck, unit_override, service_with_unit, user_service_file, system_daemon_user #}
+{# Service-related macros: ensure_dir, ensure_running, service_stopped, service_with_healthcheck, unit_override, service_with_unit, user_service_file, system_daemon_user #}
 
 {% from 'host_config.jinja' import host %}
 {% set _user = host.user %}
 {% set _home = host.home %}
+
+{# Create directory with user ownership and makedirs.
+   Covers the common pattern of user-owned directories (user/group/makedirs: True).
+   mode: optional file mode (e.g. '0700'); require: optional list of state requisites.
+   Usage: {{ ensure_dir('steam_library_dir', '/mnt/zero/steam/steamapps') }}
+          {{ ensure_dir('ssh_dir', home ~ '/.ssh', mode='0700') }}
+          {{ ensure_dir('ollama_models_dir', '/mnt/one/ollama/models', require=['mount: mount_one']) }}
+#}
+{%- macro ensure_dir(name, path, mode=None, require=None, user=_user) -%}
+{{ name }}:
+  file.directory:
+    - name: {{ path }}
+    - user: {{ user }}
+    - group: {{ user }}
+    - makedirs: True
+{%- if mode %}
+    - mode: '{{ mode }}'
+{%- endif %}
+{%- if require %}
+    - require:
+{%- for req in require %}
+      - {{ req }}
+{%- endfor %}
+{%- endif %}
+{%- endmacro -%}
 
 {# Clear failed state + ensure service is running with config watches.
    Emits two states: {{ name }}_reset_failed and {{ name }}_running.

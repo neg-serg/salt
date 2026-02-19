@@ -1,4 +1,5 @@
 {% from 'host_config.jinja' import host %}
+{% from '_macros_service.jinja' import ensure_dir %}
 {% set user = host.user %}
 {% set home = host.home %}
 # MPD Native Deployment
@@ -19,12 +20,7 @@ mpd_directories:
     - makedirs: True
 
 # --- Deploy rmpc config ---
-rmpc_config_dir:
-  file.directory:
-    - name: {{ home }}/.config/rmpc
-    - user: {{ user }}
-    - group: {{ user }}
-    - makedirs: True
+{{ ensure_dir('rmpc_config_dir', home ~ '/.config/rmpc') }}
 
 rmpc_config:
   file.recurse:

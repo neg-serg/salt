@@ -6,18 +6,14 @@
 # bind mounts (kernel reports the underlying block device, not bind source).
 
 {% from 'host_config.jinja' import host %}
+{% from '_macros_service.jinja' import ensure_dir %}
 {% import_yaml 'data/bind_mounts.yaml' as mounts %}
 {% set user = host.user %}
 {% set home = host.home %}
 
 {% for name, m in mounts.items() %}
 {% set target = home ~ '/' ~ m.target_suffix %}
-{{ name }}_mount_point:
-  file.directory:
-    - name: {{ target }}
-    - user: {{ user }}
-    - group: {{ user }}
-    - makedirs: True
+{{ ensure_dir(name ~ '_mount_point', target) }}
 
 {{ name }}_mount_fstab:
   mount.fstab_present:

@@ -1,7 +1,7 @@
 # Desktop environment: services, SSH, wallust defaults, dconf themes
 {% from 'host_config.jinja' import host %}
 {% from '_macros_pkg.jinja' import pacman_install, paru_install %}
-{% from '_macros_service.jinja' import service_stopped %}
+{% from '_macros_service.jinja' import ensure_dir, service_stopped %}
 {% set user = host.user %}
 {% set home = host.home %}
 
@@ -67,20 +67,10 @@ remove_old_termfilechooser:
 {{ paru_install('wlr-which-key', 'wlr-which-key') }}
 
 # --- SSH directory setup ---
-ssh_dir:
-  file.directory:
-    - name: {{ home }}/.ssh
-    - user: {{ user }}
-    - group: {{ user }}
-    - mode: '0700'
+{{ ensure_dir('ssh_dir', home ~ '/.ssh', mode='0700') }}
 
 # --- Wallust cache defaults (prevents hyprland source errors on first boot) ---
-wallust_cache_dir:
-  file.directory:
-    - name: {{ home }}/.cache/wallust
-    - user: {{ user }}
-    - group: {{ user }}
-    - mode: '0755'
+{{ ensure_dir('wallust_cache_dir', home ~ '/.cache/wallust', mode='0755') }}
 
 wallust_hyprland_defaults:
   file.managed:
