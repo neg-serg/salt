@@ -75,29 +75,19 @@
 {%- endif %}
 {%- endmacro -%}
 
-{# Deploy inline systemd user unit file (~/.config/systemd/user/).
-   Callable macro: unit content goes inside {% call %} block.
-   Usage:
-   {% call user_service('mbsync_gmail_service', 'mbsync-gmail.service', user=user, home=home) %}
-   [Unit]
-   Description=Mailbox synchronization (Gmail)
-   [Service]
-   Type=oneshot
-   ExecStart=/usr/bin/mbsync -c %h/.config/mbsync/mbsyncrc gmail
-   [Install]
-   WantedBy=default.target
-   {% endcall %}
+{# Deploy systemd user unit file (~/.config/systemd/user/) from units/user/.
+   Usage: {{ user_service_file('mbsync_gmail_service', 'mbsync-gmail.service') }}
+          {{ user_service_file('vicinae_service', 'vicinae.service') }}
 #}
-{%- macro user_service(name, filename, user=_user, home=_home) -%}
+{%- macro user_service_file(name, filename, user=_user, home=_home) -%}
 {{ name }}:
   file.managed:
     - name: {{ home }}/.config/systemd/user/{{ filename }}
+    - source: salt://units/user/{{ filename }}
     - user: {{ user }}
     - group: {{ user }}
     - mode: '0644'
     - makedirs: True
-    - contents: |
-{{ caller() | trim | indent(8, first=True) }}
 {%- endmacro -%}
 
 {# Deploy systemd unit file + manage service (file + daemon-reload + enable/disable + optional running).

@@ -1,0 +1,10 @@
+[Unit]
+Description=IMAP IDLE notifications (Gmail)
+After=network-online.target
+Wants=network-online.target
+[Service]
+ExecStart=/usr/bin/goimapnotify -conf %h/.config/imapnotify/gmail.json
+Restart=on-failure
+RestartSec=30
+[Install]
+WantedBy=default.target

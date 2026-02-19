@@ -1,0 +1,9 @@
+[Unit]
+Description=Mailbox synchronization (Gmail)
+After=network-online.target
+Wants=network-online.target
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/mbsync -c %h/.config/mbsync/mbsyncrc gmail
+[Install]
+WantedBy=default.target
