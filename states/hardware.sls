@@ -1,5 +1,5 @@
 {% from 'host_config.jinja' import host %}
-{% from '_macros_service.jinja' import daemon_reload, service_with_unit %}
+{% from '_macros_service.jinja' import service_with_unit %}
 
 # --- Custom udev rules: I/O schedulers, audio devices, SATA ALPM ---
 custom_udev_rules:

@@ -1,4 +1,4 @@
-{# Service-related macros: ensure_running, service_stopped, service_with_healthcheck, daemon_reload, unit_override, service_with_unit, user_service_file, system_daemon_user #}
+{# Service-related macros: ensure_running, service_stopped, service_with_healthcheck, unit_override, service_with_unit, user_service_file, system_daemon_user #}
 
 {% from 'host_config.jinja' import host %}
 {% set _user = host.user %}
@@ -81,19 +81,6 @@
       - {{ req }}
 {%- endfor %}
 {%- endif %}
-{%- endmacro -%}
-
-{# Trigger systemd daemon-reload when listed states change.
-   Usage: {{ daemon_reload('unbound', ['cmd: install_unbound', 'file: unbound_override']) }}
-#}
-{%- macro daemon_reload(name, onchanges) -%}
-{{ name }}_daemon_reload:
-  cmd.run:
-    - name: systemctl daemon-reload
-    - onchanges:
-{%- for item in onchanges %}
-      - {{ item }}
-{%- endfor %}
 {%- endmacro -%}
 
 {# Create system daemon user + data directory.

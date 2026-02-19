@@ -36,7 +36,6 @@ include:
   - fonts
   - greetd
   - hardware
-  - hy3
   - installers
   - installers_desktop
   - installers_themes
