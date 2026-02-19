@@ -30,16 +30,11 @@ snapper_config_root:
         NUMBER_CLEANUP="yes"
 
 snapper_registered:
-  cmd.run:
-    - name: |
-        if [ -f /etc/conf.d/snapper ]; then
-          rg -q 'root' /etc/conf.d/snapper || \
-            sed -i 's/^SNAPPER_CONFIGS=.*/SNAPPER_CONFIGS="root"/' /etc/conf.d/snapper
-        else
-          mkdir -p /etc/conf.d
-          echo 'SNAPPER_CONFIGS="root"' > /etc/conf.d/snapper
-        fi
-    - unless: rg -q 'root' /etc/conf.d/snapper 2>/dev/null
+  file.managed:
+    - name: /etc/conf.d/snapper
+    - contents: 'SNAPPER_CONFIGS="root"'
+    - makedirs: True
+    - mode: '0644'
 
 snapper_timeline_timer:
   service.enabled:

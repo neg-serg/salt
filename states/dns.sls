@@ -81,9 +81,9 @@ resolved_adguardhome:
 {% endif %}
 
 resolved_restart:
-  cmd.run:
-    - name: systemctl restart systemd-resolved
-    - onchanges:
+  service.running:
+    - name: systemd-resolved
+    - watch:
       - file: resolved_adguardhome
 {% endif %}
 

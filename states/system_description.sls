@@ -10,20 +10,20 @@ system_timezone:
   timezone.system:
     - name: Europe/Moscow
 
-system_locale_keymap:
+system_locale:
+  file.managed:
+    - name: /etc/locale.conf
+    - contents: 'LANG=en_US.UTF-8'
+
+system_keymap:
   cmd.run:
-    - name: |
-        set -eo pipefail
-        localectl set-locale LANG=en_US.UTF-8
-        localectl set-x11-keymap ru,us
-    - unless: |
-        rg -q 'LANG=en_US.UTF-8' /etc/locale.conf 2>/dev/null &&
-        rg -q 'ru' /etc/X11/xorg.conf.d/00-keyboard.conf 2>/dev/null
+    - name: localectl set-x11-keymap ru,us
+    - unless: rg -q 'ru' /etc/X11/xorg.conf.d/00-keyboard.conf 2>/dev/null
 
 system_hostname:
-  cmd.run:
-    - name: hostnamectl set-hostname {{ host.hostname }}
-    - unless: rg -qx '{{ host.hostname }}' /etc/hostname
+  file.managed:
+    - name: /etc/hostname
+    - contents: {{ host.hostname }}
 
 include:
   - audio
