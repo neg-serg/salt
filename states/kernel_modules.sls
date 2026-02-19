@@ -32,9 +32,9 @@ kernel_modules_blacklist:
 {% set modules_to_load = [host.kvm_module, 'tcp_bbr'] %}
 {% for mod in modules_to_load %}
 load_{{ mod | replace('-', '_') }}:
-  cmd.run:
-    - name: modprobe {{ mod }}
-    - unless: lsmod | rg -q '^{{ mod | replace('-', '_') }}'
+  kmod.present:
+    - name: {{ mod }}
+    - persist: False
     - require:
       - file: kernel_modules_load
 {% endfor %}
