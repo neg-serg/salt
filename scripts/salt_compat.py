@@ -4,13 +4,26 @@ Call patch() before importing any salt module. Installs:
   - MockCrypt: replaces removed `crypt` module using passlib
   - MockSpwd: replaces removed `spwd` module
   - Warning filter: suppresses Salt's own DeprecationWarnings
+  - Multiprocessing fork fix: Python 3.14 changed default to forkserver
 """
+import multiprocessing
 import sys
 import warnings
 
 
 def patch():
     """Install stdlib shims and warning filters for Salt compatibility."""
+    # Python 3.14 changed default multiprocessing start method from 'fork' to
+    # 'forkserver' on Linux.  Salt's parallel state execution (parallel: True)
+    # passes unpicklable objects through call_parallel and its Process.__new__
+    # only sets pickling attrs on spawning_platform().  Force 'fork' to restore
+    # the behavior Salt was designed for.
+    if sys.version_info >= (3, 14):
+        try:
+            multiprocessing.set_start_method("fork")
+        except RuntimeError:
+            pass  # already set
+
     # Suppress Salt's own DeprecationWarnings (noisy, not actionable)
     _orig = warnings.showwarning
 
