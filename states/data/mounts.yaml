@@ -1,0 +1,16 @@
+# Disk mounts and btrfs compression targets
+# Used by mounts.sls
+
+disks:
+  zero:
+    device: /dev/mapper/argon-zero
+    path: /mnt/zero
+    fstype: xfs
+  one:
+    device: /dev/mapper/xenon-one
+    path: /mnt/one
+    fstype: xfs
+
+btrfs_compress:
+  - /home
+  - /var
