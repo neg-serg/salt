@@ -1,6 +1,6 @@
 {% from 'host_config.jinja' import host %}
 {% from '_macros_service.jinja' import ensure_dir %}
-{% from '_macros_install.jinja' import curl_bin, github_tar, github_release, pip_pkg, cargo_pkg, curl_extract_tar, curl_extract_zip, git_clone_deploy, run_with_error_context, github_release_file, github_release_zip_to %}
+{% from '_macros_install.jinja' import curl_bin, github_tar, github_release, pip_pkg, cargo_pkg, curl_extract_tar, curl_extract_zip, git_clone_deploy, run_with_error_context, github_release_to %}
 {% import_yaml 'data/installers.yaml' as tools %}
 {% import_yaml 'data/versions.yaml' as ver %}
 {% set user = host.user %}
@@ -131,9 +131,9 @@ mpv_script_{{ filename | replace('.', '_') | replace('-', '_') }}:
 {% endfor %}
 
 {% for filename, opts in mpv.github_release.items() %}
-{{ github_release_file('mpv_script_' ~ (filename | replace('.', '_') | replace('-', '_')), filename, opts.repo, opts.asset, mpv_scripts_dir, require='mpv_scripts_dir', user=user) }}
+{{ github_release_to('mpv_script_' ~ (filename | replace('.', '_') | replace('-', '_')), filename, opts.repo, opts.asset, mpv_scripts_dir, require='mpv_scripts_dir') }}
 {% endfor %}
 
 {% for name, opts in mpv.github_release_zip.items() %}
-{{ github_release_zip_to('mpv_plugin_' ~ name, name, opts.repo, opts.asset, opts.dest, creates=mpv_scripts_dir ~ '/' ~ name, require='mpv_scripts_dir', user=user) }}
+{{ github_release_to('mpv_plugin_' ~ name, name, opts.repo, opts.asset, opts.dest, format='zip', creates=mpv_scripts_dir ~ '/' ~ name, require='mpv_scripts_dir') }}
 {% endfor %}
