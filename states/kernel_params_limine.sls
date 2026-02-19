@@ -1,4 +1,4 @@
-{% from 'host_config.jinja' import host %}
+{% from '_imports.jinja' import host, user, home %}
 # Kernel boot parameters for CachyOS (Limine bootloader).
 # Manages kernel_cmdline entries in /boot/limine.conf.
 #

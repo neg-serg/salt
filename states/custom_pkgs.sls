@@ -1,8 +1,7 @@
 # Salt state to build and install custom packages from local PKGBUILDs
 # These packages are not in official repos or AUR and require local builds
-{% from 'host_config.jinja' import host %}
+{% from '_imports.jinja' import host, user, home, pkg_list %}
 {% from '_macros_pkg.jinja' import pkgbuild_install %}
-{% set user = host.user %}
 {% set build_base = '/tmp/pkgbuild' %}
 
 # --- Simple PKGBUILDs (self-contained, download source from GitHub) ---
@@ -31,7 +30,7 @@ build_duf:
         rm -rf {{ build_base }}/duf
     - shell: /bin/bash
     - timeout: 600
-    - unless: rg -qx 'duf' /var/cache/salt/pacman_installed.txt && pacman -Qi duf 2>/dev/null | rg -q neg-serg
+    - unless: rg -qx 'duf' {{ pkg_list }} && pacman -Qi duf 2>/dev/null | rg -q neg-serg
     - require:
       - file: duf_pkgbuild
 
@@ -61,7 +60,7 @@ build_neg_pretty_printer:
         rm -rf {{ build_base }}/neg-pretty-printer /tmp/pretty-printer
     - shell: /bin/bash
     - timeout: 600
-    - unless: rg -qx 'neg-pretty-printer' /var/cache/salt/pacman_installed.txt
+    - unless: rg -qx 'neg-pretty-printer' {{ pkg_list }}
     - require:
       - file: neg_pretty_printer_pkgbuild
       - file: neg_pretty_printer_source

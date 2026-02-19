@@ -1,4 +1,4 @@
-{% from 'host_config.jinja' import host %}
+{% from '_imports.jinja' import host, user, home %}
 {% from '_macros_service.jinja' import system_daemon_user, service_with_unit, service_stopped %}
 {% from '_macros_install.jinja' import curl_extract_tar %}
 {% from '_macros_pkg.jinja' import pacman_install %}
@@ -32,7 +32,7 @@
 
 samba_share_dir:
   file.directory:
-    - name: /mnt/zero/sync/smb
+    - name: {{ host.mnt_zero }}/sync/smb
     - mode: '0777'
     - makedirs: True
 
@@ -45,6 +45,7 @@ samba_config:
     - template: jinja
     - context:
         hostname: {{ host.hostname }}
+        mnt_zero: {{ host.mnt_zero }}
 
 # Don't enable at boot — manual start only: systemctl start smb
 {{ service_stopped('samba_not_enabled', 'smb', stop=False, requires=['file: samba_config']) }}

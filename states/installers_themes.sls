@@ -1,8 +1,6 @@
-{% from 'host_config.jinja' import host %}
+{% from '_imports.jinja' import host, user, home %}
 {% from '_macros_install.jinja' import github_tar, git_clone_deploy %}
 {% import_yaml 'data/versions.yaml' as ver %}
-{% set user = host.user %}
-{% set home = host.home %}
 # Theme and icon installers
 
 # --- matugen (Material You color generation) ---

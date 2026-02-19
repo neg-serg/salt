@@ -1,7 +1,5 @@
-{% from 'host_config.jinja' import host %}
+{% from '_imports.jinja' import host, user, home, pkg_list %}
 {% from '_macros_service.jinja' import ensure_dir %}
-{% set user = host.user %}
-{% set home = host.home %}
 # Steam + gaming tools (native pacman install)
 # Requires multilib repo for lib32 dependencies;
 # --ask 4 resolves CachyOS lib32-mesa-git vs multilib lib32-mesa conflict.
@@ -24,18 +22,18 @@ sync_multilib:
 install_vulkan_radeon:
   cmd.run:
     - name: pacman -S --noconfirm --needed --ask 4 vulkan-radeon lib32-vulkan-radeon
-    - unless: rg -qx 'vulkan-radeon' /var/cache/salt/pacman_installed.txt
+    - unless: rg -qx 'vulkan-radeon' {{ pkg_list }}
     - require:
       - cmd: sync_multilib
 
 install_steam:
   cmd.run:
     - name: pacman -S --noconfirm --needed --ask 4 steam gamescope mangohud goverlay gamemode protontricks
-    - unless: rg -qx 'steam' /var/cache/salt/pacman_installed.txt
+    - unless: rg -qx 'steam' {{ pkg_list }}
     - require:
       - cmd: install_vulkan_radeon
 
-{{ ensure_dir('steam_library_dir', '/mnt/zero/steam/steamapps') }}
+{{ ensure_dir('steam_library_dir', host.mnt_zero ~ '/steam/steamapps') }}
 
 {{ ensure_dir('steam_skins_dir', home ~ '/.local/share/Steam/skins') }}
 

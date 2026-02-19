@@ -5,6 +5,7 @@
 {% set _home = host.home %}
 {% set _retry_attempts = 3 %}
 {% set _retry_interval = 10 %}
+{% set _pkg_list = '/var/cache/salt/pacman_installed.txt' %}
 
 {# Install packages via pacman (CachyOS/Arch).
    check defaults to first package. requires is an optional list of requisites.
@@ -16,7 +17,7 @@ install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: pacman -S --noconfirm --needed {{ pkgs }}
     - unless: |
-        C=/var/cache/salt/pacman_installed.txt
+        C={{ _pkg_list }}
         [ -f "$C" ] || pacman -Qq > "$C"
         rg -qx '{{ check or pkgs.split()[0] }}' "$C"
     - require:
@@ -39,7 +40,7 @@ install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: sudo -u {{ _user }} paru -S --noconfirm --needed {{ pkg }}
     - unless: |
-        C=/var/cache/salt/pacman_installed.txt
+        C={{ _pkg_list }}
         [ -f "$C" ] || pacman -Qq > "$C"
         rg -qx '{{ check or pkg }}' "$C"
     - require:
@@ -76,7 +77,7 @@ build_{{ safe }}:
     - shell: /bin/bash
     - timeout: {{ timeout }}
     - unless: |
-        C=/var/cache/salt/pacman_installed.txt
+        C={{ _pkg_list }}
         [ -f "$C" ] || pacman -Qq > "$C"
         rg -qx '{{ check or name }}' "$C"
     - require:
