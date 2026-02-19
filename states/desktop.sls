@@ -13,21 +13,10 @@ pacman_hooks_dir:
 pacman_salt_pkglist_hook:
   file.managed:
     - name: /etc/pacman.d/hooks/salt-pkglist.hook
+    - source: salt://configs/pacman-salt-cache.hook
     - mode: '0644'
     - require:
       - file: pacman_hooks_dir
-    - contents: |
-        [Trigger]
-        Type = Package
-        Operation = Install
-        Operation = Upgrade
-        Operation = Remove
-        Target = *
-
-        [Action]
-        When = PostTransaction
-        Exec = /bin/sh -c 'pacman -Qq > /var/cache/salt/pacman_installed.txt'
-        Description = Refresh Salt package cache
 
 pacman_salt_cache_dir:
   file.directory:

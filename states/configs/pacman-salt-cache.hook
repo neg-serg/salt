@@ -1,0 +1,11 @@
+[Trigger]
+Type = Package
+Operation = Install
+Operation = Upgrade
+Operation = Remove
+Target = *
+
+[Action]
+When = PostTransaction
+Exec = /bin/sh -c 'pacman -Qq > /var/cache/salt/pacman_installed.txt'
+Description = Refresh Salt package cache
