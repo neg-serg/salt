@@ -1,30 +1,16 @@
 {% from '_imports.jinja' import host, user, home %}
-{% from '_macros_service.jinja' import user_service_file, user_service_enable %}
+{% from '_macros_service.jinja' import user_service_file, user_unit_override, user_service_enable %}
 {% import_yaml 'data/user_services.yaml' as us %}
 # Systemd user services: mail, calendar, chezmoi, media, surfingkeys
 
 # --- Systemd user services for media ---
-# Drop-in override for RPM-shipped mpDris2.service: adds MPD ordering
-mpdris2_user_service:
-  file.managed:
-    - name: {{ home }}/.config/systemd/user/mpDris2.service.d/override.conf
-    - user: {{ user }}
-    - group: {{ user }}
-    - mode: '0644'
-    - makedirs: True
-    - contents: |
-        [Unit]
-        After=mpd.service
-        Wants=mpd.service
-
-mpdris2_daemon_reload:
-  cmd.run:
-    - name: systemctl --user daemon-reload
-    - runas: {{ user }}
-    - env:
-      - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
-    - onchanges:
-      - file: mpdris2_user_service
+# Drop-in override for mpDris2.service: adds MPD ordering
+{% set mpdris2_override %}
+[Unit]
+After=mpd.service
+Wants=mpd.service
+{% endset %}
+{{ user_unit_override('mpdris2_user_service', 'mpDris2.service', contents=mpdris2_override) }}
 
 chezmoi_config:
   file.managed:
