@@ -1,4 +1,6 @@
 {%- from 'host_config.jinja' import host -%}
+# Greeter Hyprland config — minimal session for quickshell login screen
+
 # Monitor: match main session resolution
 {% if host.display %}
 monitorv2 {
@@ -15,14 +17,34 @@ monitorv2 {
 }
 {% endif %}
 
+input {
+    kb_layout = us,ru
+    repeat_rate = 35
+    repeat_delay = 250
+}
+
 misc {
     force_default_wallpaper = 0
     disable_hyprland_logo = true
 }
 
+animations {
+    enabled = false
+}
+
+decoration {
+    blur {
+        enabled = false
+    }
+    shadow {
+        enabled = false
+    }
+}
+
 # Cursor: match main session theme
-env = XCURSOR_THEME,Alkano-aio
-env = XCURSOR_SIZE,23
-env = HYPRCURSOR_THEME,Alkano-aio
-env = HYPRCURSOR_SIZE,23
+env = XCURSOR_THEME,{{ host.cursor_theme }}
+env = XCURSOR_SIZE,{{ host.cursor_size }}
+env = HYPRCURSOR_THEME,{{ host.cursor_theme }}
+env = HYPRCURSOR_SIZE,{{ host.cursor_size }}
+
 exec-once = qs -p ~/.config/quickshell/greeter/greeter.qml
