@@ -277,12 +277,13 @@
    context: dict of template variables (default None), used with template='jinja'.
    onlyif: guard for service.enabled (default None), e.g. 'command -v ollama'.
    companion: optional second unit source for service+timer pairs (daemon-reload watches both).
-   Usage: {{ service_with_unit('loki', 'salt://units/loki.service', requires=['cmd: install_loki', 'file: loki_config']) }}
+   watch: optional list of extra state requisites to watch (e.g. config files); used with running=True.
+   Usage: {{ service_with_unit('loki', 'salt://units/loki.service', running=True, watch=['file: loki_config'], requires=['cmd: install_loki', 'file: loki_config']) }}
           {{ service_with_unit('ollama', 'salt://units/ollama.service', template='jinja', context={'user': user, 'home': home}, onlyif='command -v ollama') }}
           {{ service_with_unit('xray', 'salt://units/xray.service', enabled=False) }}
           {{ service_with_unit('duckdns-update', 'salt://units/duckdns-update.timer', unit_type='timer', enabled=False, companion='salt://units/duckdns-update.service') }}
 #}
-{%- macro service_with_unit(name, source, unit_type='service', running=False, enabled=True, requires=None, template=None, context=None, onlyif=None, companion=None) -%}
+{%- macro service_with_unit(name, source, unit_type='service', running=False, enabled=True, requires=None, template=None, context=None, onlyif=None, companion=None, watch=None) -%}
 {{ name }}_service:
   file.managed:
     - name: /etc/systemd/system/{{ name }}.{{ unit_type }}
@@ -353,6 +354,9 @@
     - name: {{ name }}
     - watch:
       - file: {{ name }}_service
+{%- for w in (watch or []) %}
+      - {{ w }}
+{%- endfor %}
     - require:
       - service: {{ name }}_enabled
       - cmd: {{ name }}_reset_failed

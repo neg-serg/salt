@@ -1,0 +1,104 @@
+{# GitHub release macros: github_tar, github_release_system, github_release_to #}
+
+{% from 'host_config.jinja' import host %}
+{% set _user = host.user %}
+{% set _home = host.home %}
+{% set _retry_attempts = 3 %}
+{% set _retry_interval = 10 %}
+
+{# Download tar.gz, extract single binary to ~/.local/bin/.
+   Usage: {{ github_tar('eza', 'https://github.com/.../eza_x86_64.tar.gz') }}
+#}
+{%- macro github_tar(name, url, user=_user, home=_home) -%}
+install_{{ name | replace('-', '_') }}:
+  cmd.run:
+    - name: |
+        set -eo pipefail
+        TMPDIR=$(mktemp -d)
+        curl -fsSL {{ url }} -o "$TMPDIR/archive.tar.gz"
+        tar -xzf "$TMPDIR/archive.tar.gz" -C "$TMPDIR"
+        find "$TMPDIR" -name '{{ name }}' -type f -exec install -m 0755 {} ~/.local/bin/{{ name }} \;
+        rm -rf "$TMPDIR"
+    - runas: {{ user }}
+    - shell: /bin/bash
+    - creates: {{ home }}/.local/bin/{{ name }}
+    - parallel: True
+    - retry:
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
+{%- endmacro -%}
+
+{# Download latest GitHub release asset to /usr/local/bin/ (system-level).
+   Like github_release but runs as root, no runas. Supports zip and tar.gz.
+   src_bin: filename of the binary inside the archive (default: name).
+   Usage: {{ github_release_system('loki', 'grafana/loki', 'loki-linux-amd64.zip', src_bin='loki-linux-amd64') }}
+          {{ github_release_system('adguardhome', 'AdguardTeam/AdGuardHome', 'AdGuardHome_linux_amd64.tar.gz', src_bin='AdGuardHome', format='tar.gz') }}
+#}
+{%- macro github_release_system(name, repo, asset, src_bin=None, format='zip', tag=None, dest='/usr/local/bin') -%}
+{%- set source_bin = src_bin or name -%}
+install_{{ name | replace('-', '_') }}:
+  cmd.run:
+    - name: |
+        set -eo pipefail
+{%- if tag %}
+        TAG="{{ tag }}"
+{%- else %}
+        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ repo }}/releases/latest | rg -oP '[^/]+$')
+{%- endif %}
+{%- if format == 'zip' %}
+        curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o /tmp/{{ name }}.zip
+        unzip -o /tmp/{{ name }}.zip -d /tmp
+        install -m 0755 /tmp/{{ source_bin }} {{ dest }}/{{ name }}
+        rm -f /tmp/{{ name }}.zip /tmp/{{ source_bin }}
+{%- elif format == 'tar.gz' %}
+        curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o /tmp/{{ name }}.tar.gz
+        tar -xzf /tmp/{{ name }}.tar.gz -C /tmp
+        find /tmp -maxdepth 3 -name '{{ source_bin }}' -type f -exec install -m 0755 {} {{ dest }}/{{ name }} \;
+        rm -rf /tmp/{{ name }}.tar.gz /tmp/{{ source_bin }}*
+{%- endif %}
+    - shell: /bin/bash
+    - creates: {{ dest }}/{{ name }}
+    - parallel: True
+    - retry:
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
+{%- endmacro -%}
+
+{# Download latest GitHub release asset to an arbitrary directory.
+   Supports single file downloads and ZIP extraction via format parameter.
+   format: 'file' (default) downloads asset directly; 'zip' extracts ZIP contents to dest.
+   state_id: explicit Salt state ID (caller must ensure uniqueness).
+   creates: idempotency guard (defaults to dest/name for file, required for zip).
+   require: optional file state ID to depend on.
+   Usage: {{ github_release_to('mpv_script_mpris_so', 'mpris.so', 'hoyon/mpv-mpris', 'mpris.so', mpv_scripts_dir, require='mpv_scripts_dir') }}
+          {{ github_release_to('mpv_plugin_uosc', 'uosc', 'tomasklaen/uosc', 'uosc.zip', '~/.config/mpv', format='zip', creates=mpv_scripts_dir ~ '/uosc', require='mpv_scripts_dir') }}
+#}
+{%- macro github_release_to(state_id, name, repo, asset, dest, format='file', tag=None, creates=None, require=None, user=_user) -%}
+{{ state_id }}:
+  cmd.run:
+    - name: |
+        set -eo pipefail
+{%- if tag %}
+        TAG="{{ tag }}"
+{%- else %}
+        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ repo }}/releases/latest | rg -oP '[^/]+$')
+{%- endif %}
+{%- if format == 'zip' %}
+        curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o /tmp/{{ name }}.zip
+        unzip -qo /tmp/{{ name }}.zip -d {{ dest }}
+        rm -f /tmp/{{ name }}.zip
+{%- else %}
+        curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o '{{ dest }}/{{ name }}'
+{%- endif %}
+    - runas: {{ user }}
+    - shell: /bin/bash
+    - creates: {{ creates or (dest ~ '/' ~ name) }}
+    - parallel: True
+{%- if require %}
+    - require:
+      - file: {{ require }}
+{%- endif %}
+    - retry:
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
+{%- endmacro -%}
