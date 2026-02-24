@@ -1,6 +1,7 @@
-{% from '_imports.jinja' import host, user, home %}
+{% from '_imports.jinja' import host, user, home, retry_attempts, retry_interval %}
 {% from '_macros_service.jinja' import ensure_dir %}
-{% from '_macros_install.jinja' import curl_bin, github_tar, github_release, pip_pkg, cargo_pkg, curl_extract_tar, curl_extract_zip, git_clone_deploy, run_with_error_context, github_release_to %}
+{% from '_macros_install.jinja' import curl_bin, pip_pkg, cargo_pkg, curl_extract_tar, curl_extract_zip, git_clone_deploy %}
+{% from '_macros_github.jinja' import github_tar, github_release_to %}
 {% import_yaml 'data/installers.yaml' as tools %}
 {% import_yaml 'data/versions.yaml' as ver %}
 
@@ -10,17 +11,14 @@
 
 # --- Direct binary downloads to ~/.local/bin/ ---
 {% for name, url in tools.curl_bin.items() %}
-{{ curl_bin(name, url) }}
+{% set resolved_url = url | replace('${VER}', ver.get(name | replace('-', '_'), '')) %}
+{{ curl_bin(name, resolved_url) }}
 {% endfor %}
 
 # --- GitHub tar.gz archives ---
 {% for name, url in tools.github_tar.items() %}
-{{ github_tar(name, url) }}
-{% endfor %}
-
-# --- GitHub releases (binary downloads with tag fetching) ---
-{% for name, opts in tools.github_release.items() %}
-{{ github_release(name, opts.repo, opts.asset, bin=opts.get('bin'), strip_v=opts.get('strip_v', False)) }}
+{% set resolved_url = url | replace('${VER}', ver.get(name | replace('-', '_'), '')) %}
+{{ github_tar(name, resolved_url) }}
 {% endfor %}
 
 # --- pip installs (pipx) ---
@@ -35,12 +33,14 @@
 
 # --- ZIP archive extractions ---
 {% for name, opts in tools.curl_extract_zip.items() %}
-{{ curl_extract_zip(name, opts.url, opts.binary_path, binaries=opts.get('binaries'), chmod=opts.get('chmod', False)) }}
+{% set resolved_url = opts.url | replace('${VER}', ver.get(name, '')) %}
+{{ curl_extract_zip(name, resolved_url, opts.binary_path, binaries=opts.get('binaries'), chmod=opts.get('chmod', False)) }}
 {% endfor %}
 
 # --- tar.gz archive extractions ---
-{% for name, opts in tools.curl_extract_tar.items() %}
-{{ curl_extract_tar(name, opts.url, opts.binary_pattern, fetch_tag=opts.get('fetch_tag', False), strip_v=opts.get('strip_v', False), binaries=opts.get('binaries'), bin=opts.get('bin')) }}
+{% for name, opts in tools.get('curl_extract_tar', {}).items() %}
+{% set resolved_url = opts.url | replace('${VER}', ver.get(name, '')) %}
+{{ curl_extract_tar(name, resolved_url, binary_pattern=opts.binary_pattern, bin=opts.get('bin')) }}
 {% endfor %}
 
 # ===========================================================================
@@ -50,30 +50,8 @@
 # --- Shell frameworks ---
 {{ git_clone_deploy('zi', 'https://github.com/z-shell/zi.git', '~/.config/zi/bin', creates=home ~ '/.config/zi/bin/zi.zsh', user=user, home=home) }}
 
-install_oh_my_posh:
-  cmd.run:
-    - name: curl -fsSL https://ohmyposh.dev/install.sh | bash -s -- -d ~/.local/bin
-    - runas: {{ user }}
-    - creates: {{ home }}/.local/bin/oh-my-posh
-
 # --- Hyprland tools (multi-binary) ---
 {{ curl_extract_tar('hyprevents', 'https://github.com/vilari-mickopf/hyprevents/archive/refs/heads/master.tar.gz', 'hyprevents-master', binaries=['hyprevents', 'event_handler', 'event_loader'], chmod=True) }}
-
-# --- Image upscaling (version-pinned) ---
-{{ curl_extract_zip('realesrgan', 'https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan/releases/download/v' ~ ver.realesrgan ~ '/realesrgan-ncnn-vulkan-v' ~ ver.realesrgan ~ '-ubuntu.zip', 'realesrgan-ncnn-vulkan-v' ~ ver.realesrgan ~ '-ubuntu', binaries=['realesrgan-ncnn-vulkan'], chmod=True) }}
-
-# --- Audio analysis (version-pinned) ---
-{% call run_with_error_context('install_essentia_extractor', creates=home ~ '/.local/bin/essentia_streaming_extractor_music') %}
-step "Downloading Essentia streaming extractor"
-curl -fsSL https://data.metabrainz.org/pub/musicbrainz/acousticbrainz/extractors/essentia-extractor-v{{ ver.essentia }}-linux-x86_64.tar.gz -o /tmp/essentia.tar.gz
-step "Extracting archive"
-tar -xzf /tmp/essentia.tar.gz -C /tmp
-step "Installing to ~/.local/bin/"
-install -m 0755 /tmp/streaming_extractor_music ~/.local/bin/essentia_streaming_extractor_music
-step "Cleaning up"
-rm -f /tmp/essentia.tar.gz
-success "Essentia streaming extractor installed"
-{%- endcall %}
 
 # --- pip: dr14_tmeter (custom git install, not standard pip_pkg) ---
 install_dr14_tmeter:
@@ -82,8 +60,8 @@ install_dr14_tmeter:
     - runas: {{ user }}
     - creates: {{ home }}/.local/bin/dr14_tmeter
     - retry:
-        attempts: 3
-        interval: 10
+        attempts: {{ retry_attempts }}
+        interval: {{ retry_interval }}
 
 # --- cargo: tailray (needs dbus headers, has onlyif guards) ---
 install_tailray:
@@ -95,11 +73,8 @@ install_tailray:
       - pkg-config --exists dbus-1
       - command -v cargo
     - retry:
-        attempts: 3
-        interval: 10
-
-# --- Script installs ---
-{{ git_clone_deploy('dool', 'https://github.com/scottchiefbaker/dool.git', '~/.local/bin', ['dool'], creates=home ~ '/.local/bin/dool', user=user, home=home) }}
+        attempts: {{ retry_attempts }}
+        interval: {{ retry_interval }}
 
 install_qmk_udev_rules:
   cmd.run:
@@ -124,14 +99,15 @@ mpv_script_{{ filename | replace('.', '_') | replace('-', '_') }}:
     - require:
       - file: mpv_scripts_dir
     - retry:
-        attempts: 3
-        interval: 10
+        attempts: {{ retry_attempts }}
+        interval: {{ retry_interval }}
 {% endfor %}
 
 {% for filename, opts in mpv.github_release.items() %}
-{{ github_release_to('mpv_script_' ~ (filename | replace('.', '_') | replace('-', '_')), filename, opts.repo, opts.asset, mpv_scripts_dir, require='mpv_scripts_dir') }}
+{% set mpv_tag = ver.get(opts.repo.split('/')[1] | replace('-', '_'), '') %}
+{{ github_release_to('mpv_script_' ~ (filename | replace('.', '_') | replace('-', '_')), filename, opts.repo, opts.asset, mpv_scripts_dir, tag=mpv_tag if mpv_tag else None, require='mpv_scripts_dir') }}
 {% endfor %}
 
 {% for name, opts in mpv.github_release_zip.items() %}
-{{ github_release_to('mpv_plugin_' ~ name, name, opts.repo, opts.asset, opts.dest, format='zip', creates=mpv_scripts_dir ~ '/' ~ name, require='mpv_scripts_dir') }}
+{{ github_release_to('mpv_plugin_' ~ name, name, opts.repo, opts.asset, opts.dest, format='zip', tag=ver.get(name, '') if ver.get(name, '') else None, creates=mpv_scripts_dir ~ '/' ~ name, require='mpv_scripts_dir') }}
 {% endfor %}

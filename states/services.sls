@@ -53,7 +53,9 @@ samba_config:
 
 # --- Bitcoind: Bitcoin Core node ---
 {% if svc.bitcoind %}
-{{ curl_extract_tar('bitcoind', 'https://bitcoincore.org/bin/bitcoin-core-' ~ ver.bitcoind ~ '/bitcoin-' ~ ver.bitcoind ~ '-x86_64-linux-gnu.tar.gz', binary_pattern='bitcoin-' ~ ver.bitcoind ~ '/bin', binaries=['bitcoind', 'bitcoin-cli'], bin_dest='/usr/local/bin', user=None) }}
+{% set btc_url = 'https://bitcoincore.org/bin/bitcoin-core-${VER}/bitcoin-${VER}-x86_64-linux-gnu.tar.gz' | replace('${VER}', ver.bitcoind) %}
+{% set btc_pattern = 'bitcoin-${VER}/bin' | replace('${VER}', ver.bitcoind) %}
+{{ curl_extract_tar('bitcoind', btc_url, binary_pattern=btc_pattern, binaries=['bitcoind', 'bitcoin-cli'], bin_dest='/usr/local/bin', user=None) }}
 
 {{ system_daemon_user('bitcoind', '/var/lib/bitcoind') }}
 

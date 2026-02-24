@@ -1,10 +1,8 @@
 {% from '_imports.jinja' import host, user, home %}
-{% from '_macros_install.jinja' import github_tar, git_clone_deploy %}
-{% import_yaml 'data/versions.yaml' as ver %}
+{% from '_macros_install.jinja' import git_clone_deploy %}
 # Theme and icon installers
 
-# --- matugen (Material You color generation) ---
-{{ github_tar('matugen', 'https://github.com/InioX/matugen/releases/download/v' ~ ver.matugen ~ '/matugen-' ~ ver.matugen ~ '-x86_64.tar.gz', user=user, home=home) }}
+# --- matugen themes (matugen itself now in pacman) ---
 {{ git_clone_deploy('matugen-themes', 'https://github.com/InioX/matugen-themes.git', '~/.config/matugen/templates', ['*/'], user=user, home=home) }}
 
 # --- Kora icon theme ---

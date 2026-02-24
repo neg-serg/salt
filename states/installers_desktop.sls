@@ -1,4 +1,4 @@
-{% from '_imports.jinja' import host, user, home %}
+{% from '_imports.jinja' import host, user, home, pkg_list %}
 {% from '_macros_install.jinja' import curl_bin, curl_extract_zip, curl_extract_tar %}
 {% from '_macros_pkg.jinja' import paru_install %}
 {% import_yaml 'data/installers_desktop.yaml' as apps %}
@@ -46,9 +46,6 @@ install_rofi_file_browser_extended:
         pacman -U --noconfirm --needed *.pkg.tar.zst
         rm -rf "$BUILDDIR"
     - shell: /bin/bash
-    - unless: |
-        C=/var/cache/salt/pacman_installed.txt
-        [ -f "$C" ] || pacman -Qq > "$C"
-        rg -qx 'rofi-file-browser-extended-git' "$C"
+    - unless: rg -qx 'rofi-file-browser-extended-git' {{ pkg_list }}
     - require:
       - cmd: pacman_db_warmup

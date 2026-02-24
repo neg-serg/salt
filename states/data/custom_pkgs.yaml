@@ -1,0 +1,18 @@
+# Custom package builds from local PKGBUILDs.
+# These packages are not in official repos or AUR and require local builds.
+# Source is always salt://build/pkgbuilds/<name>.
+
+pkgbuild:
+  raise: {}
+  richcolors: {}
+  albumdetails: {}
+
+  # neg-serg fork with --style plain; must replace stock duf if present
+  duf:
+    replace_check: "pacman -Qi duf 2>/dev/null | rg -q neg-serg"
+
+  # Needs local source tree from build/pretty-printer/
+  neg-pretty-printer:
+    extra_sources:
+      - source: "salt://build/pretty-printer"
+        dest: "/tmp/pretty-printer"
