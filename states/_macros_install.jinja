@@ -6,17 +6,35 @@
 {% set _home = host.home %}
 {% set _retry_attempts = 3 %}
 {% set _retry_interval = 10 %}
+{% set _ver_dir = _home ~ '/.cache/salt-versions' %}
+{% set _sys_ver_dir = '/var/cache/salt/versions' %}
 
 {# Download binary directly to ~/.local/bin/ and chmod +x.
+   version: when set, enables update-on-version-bump via version file.
    Usage: {{ curl_bin('aliae', 'https://github.com/.../aliae-linux-amd64') }}
-          {{ curl_bin('xdg-ninja', 'https://github.com/.../xdgnj') }}
+          {{ curl_bin('tdl', '.../${VER}/...', version=ver.tdl) }}
 #}
-{%- macro curl_bin(name, url, user=_user, home=_home) -%}
+{%- macro curl_bin(name, url, version=None, hash=None, user=_user, home=_home) -%}
+{%- set _creates = home ~ '/.local/bin/' ~ name -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
-    - name: curl -fsSL {{ url }} -o ~/.local/bin/{{ name }} && chmod +x ~/.local/bin/{{ name }}
+    - name: |
+        set -eo pipefail
+        curl -fsSL '{{ url }}' -o ~/.local/bin/{{ name }}
+{%- if hash %}
+        echo '{{ hash }}  {{ home }}/.local/bin/{{ name }}' | sha256sum -c --strict
+{%- endif %}
+        chmod +x ~/.local/bin/{{ name }}
+{%- if version %}
+        mkdir -p {{ _ver_dir }} && echo '{{ version }}' > {{ _ver_dir }}/{{ name }}
+{%- endif %}
     - runas: {{ user }}
-    - creates: {{ home }}/.local/bin/{{ name }}
+    - shell: /bin/bash
+{%- if version %}
+    - unless: test -f {{ _creates }} && test -f {{ _ver_dir }}/{{ name }} && rg -qx '{{ version }}' {{ _ver_dir }}/{{ name }}
+{%- else %}
+    - creates: {{ _creates }}
+{%- endif %}
     - parallel: True
     - retry:
         attempts: {{ _retry_attempts }}
@@ -25,33 +43,48 @@ install_{{ name | replace('-', '_') }}:
 
 {# pipx install (PEP 668 compatible).
    Handles broken symlinks (Python upgrades) by reinstalling if binary is missing despite being in pipx.
+   env: shell env prefix string (e.g. 'GIT_CONFIG_GLOBAL=/dev/null'); supports shell expansion.
    Usage: {{ pip_pkg('httpstat') }}
           {{ pip_pkg('neovim_python_deps', pkg='neovim-remote', bin='nvr') }}
+          {{ pip_pkg('dr14_tmeter', pkg='git+https://...', env='GIT_CONFIG_GLOBAL=/dev/null') }}
 #}
-{%- macro pip_pkg(name, pkg=None, bin=None, user=_user, home=_home) -%}
+{%- macro pip_pkg(name, pkg=None, bin=None, env=None, user=_user, home=_home) -%}
+{%- set _env = env ~ ' ' if env else '' -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: |
-        pipx install {{ pkg or name }} 2>/dev/null || true
-        test -x {{ home }}/.local/bin/{{ bin or name }} || pipx reinstall {{ pkg or name }}
+        {{ _env }}pipx install {{ pkg or name }} 2>/dev/null || true
+        test -x {{ home }}/.local/bin/{{ bin or name }} || {{ _env }}pipx reinstall {{ pkg or name }}
     - runas: {{ user }}
     - creates: {{ home }}/.local/bin/{{ bin or name }}
+    - parallel: True
     - retry:
         attempts: {{ _retry_attempts }}
         interval: {{ _retry_interval }}
 {%- endmacro -%}
 
 {# cargo install (crates.io or git).
+   env: shell env prefix string (e.g. 'FOO=bar BAZ=1'); supports shell expansion.
+   onlyif: list of guard commands — all must succeed for install to run.
    Usage: {{ cargo_pkg('handlr', pkg='handlr-regex') }}
           {{ cargo_pkg('agg', git='https://github.com/asciinema/agg') }}
           {{ cargo_pkg('pzip', bin='pz') }}
+          {{ cargo_pkg('wiremix', env='BINDGEN_EXTRA_CLANG_ARGS="..."') }}
+          {{ cargo_pkg('tailray', git='https://...', onlyif=['pkg-config --exists dbus-1', 'command -v cargo']) }}
 #}
-{%- macro cargo_pkg(name, pkg=None, bin=None, git=None, user=_user, home=_home) -%}
+{%- macro cargo_pkg(name, pkg=None, bin=None, git=None, env=None, onlyif=None, user=_user, home=_home) -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
-    - name: cargo install {{ '--git ' ~ git if git else pkg or name }}
+    - name: {{ env ~ ' ' if env else '' }}cargo install {{ '--git ' ~ git if git else pkg or name }}
     - runas: {{ user }}
     - creates: {{ home }}/.local/share/cargo/bin/{{ bin or name }}
+{%- if onlyif %}
+    - onlyif:
+{%- for check in onlyif %}
+      - {{ check }}
+{%- endfor %}
+{%- endif %}
+    - parallel: True
     - retry:
         attempts: {{ _retry_attempts }}
         interval: {{ _retry_interval }}
@@ -73,9 +106,11 @@ install_{{ name | replace('-', '_') }}:
           {{ curl_extract_tar('blesh', 'https://github.com/.../ble-nightly.tar.xz', archive_ext='tar.xz', dest='~/.local/share', strip_components=1, creates=home ~ '/.local/share/ble.sh') }}
           {{ curl_extract_tar('nyxt', '...', 'Nyxt-x86_64.AppImage', bin='nyxt', chmod=True) }}
 #}
-{%- macro curl_extract_tar(name, url, binary_pattern=None, archive_ext='tar.gz', fetch_tag=False, strip_v=False, binaries=None, bin=None, chmod=False, dest=None, strip_components=None, creates=None, bin_dest=None, user=_user, home=_home) -%}
+{%- macro curl_extract_tar(name, url, binary_pattern=None, archive_ext='tar.gz', fetch_tag=False, strip_v=False, binaries=None, bin=None, chmod=False, dest=None, strip_components=None, creates=None, bin_dest=None, hash=None, version=None, user=_user, home=_home) -%}
 {%- set ext_flag = 'J' if archive_ext == 'tar.xz' else 'z' -%}
 {%- set target_dir = bin_dest or '~/.local/bin' -%}
+{%- set _creates = creates or ((dest | replace('~', home)) if dest else (bin_dest or home ~ '/.local/bin') ~ '/' ~ (bin or (binaries[0] if binaries else binary_pattern.rsplit('/', 1)[-1]))) -%}
+{%- set _vd = _ver_dir if user else _sys_ver_dir -%}
 {%- if fetch_tag %}
 {%- if '/api.github.com/repos/' in url %}
 {%- set repo_path = url.split('/repos/')[1].split('/')[0:2] | join('/') %}
@@ -94,6 +129,9 @@ install_{{ name | replace('-', '_') }}:
 {%- endif %}
 {%- endif %}
         curl -fsSL "{{ url }}" -o /tmp/{{ name }}.{{ archive_ext }}
+{%- if hash %}
+        echo '{{ hash }}  /tmp/{{ name }}.{{ archive_ext }}' | sha256sum -c --strict
+{%- endif %}
 {%- if dest %}
         mkdir -p {{ dest }}
         tar -x{{ ext_flag }}f /tmp/{{ name }}.{{ archive_ext }} -C {{ dest }}{{ ' --strip-components=' ~ strip_components if strip_components }}
@@ -113,11 +151,18 @@ install_{{ name | replace('-', '_') }}:
 {%- endif %}
 {%- endif %}
         rm -rf /tmp/{{ name }}.{{ archive_ext }} /tmp/{{ name }}-* /tmp/{{ name }}
+{%- if version %}
+        mkdir -p {{ _vd }} && echo '{{ version }}' > {{ _vd }}/{{ name }}
+{%- endif %}
 {%- if user %}
     - runas: {{ user }}
 {%- endif %}
     - shell: /bin/bash
-    - creates: {{ creates or ((dest | replace('~', home)) if dest else (bin_dest or home ~ '/.local/bin') ~ '/' ~ (bin or (binaries[0] if binaries else binary_pattern.rsplit('/', 1)[-1]))) }}
+{%- if version %}
+    - unless: test -e {{ _creates }} && test -f {{ _vd }}/{{ name }} && rg -qx '{{ version }}' {{ _vd }}/{{ name }}
+{%- else %}
+    - creates: {{ _creates }}
+{%- endif %}
     - parallel: True
     - retry:
         attempts: {{ _retry_attempts }}
@@ -129,21 +174,28 @@ install_{{ name | replace('-', '_') }}:
    Supports: nested directories, multiple binaries, optional chmod.
    binary_path: path pattern relative to extraction dir (e.g., "yazi-x86_64-unknown-linux-musl/yazi").
    binaries: optional list of binaries to move. If None, uses last part of binary_path.
+   bin: output binary name (default: last part of binary_path). Use when archive name differs from desired name.
    chmod: True (default False) to chmod +x extracted binaries.
    dest: extract directly to this directory (skips find+move, for app bundles).
    symlink: create symlink from dest/<symlink> to ~/.local/bin/<name> after extraction.
    creates: override creates guard (default: ~/.local/bin/<binary> or dest).
    Usage: {{ curl_extract_zip('xray', 'https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip', 'xray/xray', chmod=True) }}
           {{ curl_extract_zip('yazi', 'https://github.com/sxyazi/yazi/releases/latest/download/yazi-x86_64-unknown-linux-musl.zip', 'yazi-x86_64-unknown-linux-musl', binaries=['yazi', 'ya']) }}
+          {{ curl_extract_zip('kanata', '...', 'kanata_linux_x64', bin='kanata', chmod=True) }}
           {{ curl_extract_zip('roomeqwizard', '...', dest='~/.local/opt/roomeqwizard') }}
           {{ curl_extract_zip('throne', '...', dest='~/.local/opt/throne', symlink='Throne') }}
 #}
-{%- macro curl_extract_zip(name, url, binary_path=None, binaries=None, chmod=False, dest=None, symlink=None, creates=None, user=_user, home=_home) -%}
+{%- macro curl_extract_zip(name, url, binary_path=None, binaries=None, bin=None, chmod=False, dest=None, symlink=None, creates=None, hash=None, version=None, user=_user, home=_home) -%}
+{%- set out_name = bin or (binaries[0] if binaries else binary_path.rsplit('/', 1)[-1]) -%}
+{%- set _creates = creates or ((dest | replace('~', home)) if dest else home ~ '/.local/bin/' ~ out_name) -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: |
         set -eo pipefail
         curl -fsSL "{{ url }}" -o /tmp/{{ name }}.zip
+{%- if hash %}
+        echo '{{ hash }}  /tmp/{{ name }}.zip' | sha256sum -c --strict
+{%- endif %}
 {%- if dest %}
         mkdir -p {{ dest }}
         unzip -o /tmp/{{ name }}.zip -d {{ dest }}
@@ -153,22 +205,31 @@ install_{{ name | replace('-', '_') }}:
 {%- else %}
         unzip -o /tmp/{{ name }}.zip -d /tmp/{{ name }}_extracted
 {%- if binaries %}
-{%- for bin in binaries %}
-        mv /tmp/{{ name }}_extracted/{{ binary_path }}/{{ bin }} ~/.local/bin/
+{%- for b in binaries %}
+        mv /tmp/{{ name }}_extracted/{{ binary_path }}/{{ b }} ~/.local/bin/
 {%- endfor %}
+{%- elif bin %}
+        mv /tmp/{{ name }}_extracted/{{ binary_path }} ~/.local/bin/{{ bin }}
 {%- else %}
         mv /tmp/{{ name }}_extracted/{{ binary_path }} ~/.local/bin/{{ binary_path.rsplit('/', 1)[-1] }}
 {%- endif %}
 {%- if chmod %}
-{%- for bin in (binaries or [binary_path.rsplit('/', 1)[-1]]) %}
-        chmod +x ~/.local/bin/{{ bin }}
+{%- for b in (binaries or [out_name]) %}
+        chmod +x ~/.local/bin/{{ b }}
 {%- endfor %}
 {%- endif %}
 {%- endif %}
         rm -rf /tmp/{{ name }}.zip /tmp/{{ name }}_extracted
+{%- if version %}
+        mkdir -p {{ _ver_dir }} && echo '{{ version }}' > {{ _ver_dir }}/{{ name }}
+{%- endif %}
     - runas: {{ user }}
     - shell: /bin/bash
-    - creates: {{ creates or ((dest | replace('~', home)) if dest else home ~ '/.local/bin/' ~ (binaries[0] if binaries else binary_path.rsplit('/', 1)[-1])) }}
+{%- if version %}
+    - unless: test -e {{ _creates }} && test -f {{ _ver_dir }}/{{ name }} && rg -qx '{{ version }}' {{ _ver_dir }}/{{ name }}
+{%- else %}
+    - creates: {{ _creates }}
+{%- endif %}
     - parallel: True
     - retry:
         attempts: {{ _retry_attempts }}
@@ -199,10 +260,11 @@ floorp_ext_{{ ext.slug | replace('-', '_') }}:
 
 {# Download and install a font from a ZIP archive to ~/.local/share/fonts/<subdir>.
    Creates the target directory, downloads/unzips, runs fc-cache, cleans up.
+   version: when set, tracks version in .salt-installed marker for update-on-bump.
    Usage: {{ download_font_zip('sf_pro_display', 'https://font.download/dl/font/sf-pro-display.zip', 'SFProDisplay') }}
-          {{ download_font_zip('anurati', 'https://font.download/dl/font/anurati.zip', 'Anurati') }}
+          {{ download_font_zip('fira_code_nerd', '.../${VER}/...', 'FiraCodeNerd', version=ver.fira_code_nerd) }}
 #}
-{%- macro download_font_zip(name, url, subdir, user=_user, home=_home) -%}
+{%- macro download_font_zip(name, url, subdir, hash=None, version=None, user=_user, home=_home) -%}
 {%- set fonts_dir = home ~ '/.local/share/fonts' -%}
 {{ fonts_dir }}/{{ subdir }}:
   file.directory:
@@ -215,16 +277,27 @@ install_{{ name }}:
     - name: |
         set -eo pipefail
         curl -fsSL '{{ url }}' -o /tmp/{{ name }}.zip
+{%- if hash %}
+        echo '{{ hash }}  /tmp/{{ name }}.zip' | sha256sum -c --strict
+{%- endif %}
         unzip -o /tmp/{{ name }}.zip -d {{ fonts_dir }}/{{ subdir }}
         fc-cache -f {{ fonts_dir }}/{{ subdir }}
         rm -f /tmp/{{ name }}.zip
+{%- if version %}
+        echo '{{ version }}' > {{ fonts_dir }}/{{ subdir }}/.salt-installed
+{%- else %}
         touch {{ fonts_dir }}/{{ subdir }}/.salt-installed
+{%- endif %}
     - runas: {{ user }}
     - shell: /bin/bash
+{%- if version %}
+    - unless: test -f {{ fonts_dir }}/{{ subdir }}/.salt-installed && rg -qx '{{ version }}' {{ fonts_dir }}/{{ subdir }}/.salt-installed
+{%- else %}
     - unless: |
         S="{{ fonts_dir }}/{{ subdir }}/.salt-installed"
         [ -f "$S" ] && exit 0
         find {{ fonts_dir }}/{{ subdir }} -maxdepth 1 \( -name '*.otf' -o -name '*.ttf' \) -print -quit 2>/dev/null | rg -q .
+{%- endif %}
     - parallel: True
     - retry:
         attempts: {{ _retry_attempts }}

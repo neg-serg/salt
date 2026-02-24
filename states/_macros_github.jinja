@@ -5,23 +5,38 @@
 {% set _home = host.home %}
 {% set _retry_attempts = 3 %}
 {% set _retry_interval = 10 %}
+{% set _ver_dir = _home ~ '/.cache/salt-versions' %}
+{% set _sys_ver_dir = '/var/cache/salt/versions' %}
 
 {# Download tar.gz, extract single binary to ~/.local/bin/.
+   version: when set, enables update-on-version-bump via version file.
    Usage: {{ github_tar('eza', 'https://github.com/.../eza_x86_64.tar.gz') }}
+          {{ github_tar('tool', '...', version=ver.tool) }}
 #}
-{%- macro github_tar(name, url, user=_user, home=_home) -%}
+{%- macro github_tar(name, url, version=None, hash=None, user=_user, home=_home) -%}
+{%- set _creates = home ~ '/.local/bin/' ~ name -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: |
         set -eo pipefail
         TMPDIR=$(mktemp -d)
-        curl -fsSL {{ url }} -o "$TMPDIR/archive.tar.gz"
+        curl -fsSL '{{ url }}' -o "$TMPDIR/archive.tar.gz"
+{%- if hash %}
+        echo '{{ hash }}  '"$TMPDIR/archive.tar.gz" | sha256sum -c --strict
+{%- endif %}
         tar -xzf "$TMPDIR/archive.tar.gz" -C "$TMPDIR"
         find "$TMPDIR" -name '{{ name }}' -type f -exec install -m 0755 {} ~/.local/bin/{{ name }} \;
         rm -rf "$TMPDIR"
+{%- if version %}
+        mkdir -p {{ _ver_dir }} && echo '{{ version }}' > {{ _ver_dir }}/{{ name }}
+{%- endif %}
     - runas: {{ user }}
     - shell: /bin/bash
-    - creates: {{ home }}/.local/bin/{{ name }}
+{%- if version %}
+    - unless: test -f {{ _creates }} && test -f {{ _ver_dir }}/{{ name }} && rg -qx '{{ version }}' {{ _ver_dir }}/{{ name }}
+{%- else %}
+    - creates: {{ _creates }}
+{%- endif %}
     - parallel: True
     - retry:
         attempts: {{ _retry_attempts }}
@@ -34,8 +49,9 @@ install_{{ name | replace('-', '_') }}:
    Usage: {{ github_release_system('loki', 'grafana/loki', 'loki-linux-amd64.zip', src_bin='loki-linux-amd64') }}
           {{ github_release_system('adguardhome', 'AdguardTeam/AdGuardHome', 'AdGuardHome_linux_amd64.tar.gz', src_bin='AdGuardHome', format='tar.gz') }}
 #}
-{%- macro github_release_system(name, repo, asset, src_bin=None, format='zip', tag=None, dest='/usr/local/bin') -%}
+{%- macro github_release_system(name, repo, asset, src_bin=None, format='zip', tag=None, hash=None, version=None, dest='/usr/local/bin') -%}
 {%- set source_bin = src_bin or name -%}
+{%- set _creates = dest ~ '/' ~ name -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: |
@@ -47,17 +63,30 @@ install_{{ name | replace('-', '_') }}:
 {%- endif %}
 {%- if format == 'zip' %}
         curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o /tmp/{{ name }}.zip
+{%- if hash %}
+        echo '{{ hash }}  /tmp/{{ name }}.zip' | sha256sum -c --strict
+{%- endif %}
         unzip -o /tmp/{{ name }}.zip -d /tmp
         install -m 0755 /tmp/{{ source_bin }} {{ dest }}/{{ name }}
         rm -f /tmp/{{ name }}.zip /tmp/{{ source_bin }}
 {%- elif format == 'tar.gz' %}
         curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o /tmp/{{ name }}.tar.gz
+{%- if hash %}
+        echo '{{ hash }}  /tmp/{{ name }}.tar.gz' | sha256sum -c --strict
+{%- endif %}
         tar -xzf /tmp/{{ name }}.tar.gz -C /tmp
         find /tmp -maxdepth 3 -name '{{ source_bin }}' -type f -exec install -m 0755 {} {{ dest }}/{{ name }} \;
         rm -rf /tmp/{{ name }}.tar.gz /tmp/{{ source_bin }}*
 {%- endif %}
+{%- if version %}
+        mkdir -p {{ _sys_ver_dir }} && echo '{{ version }}' > {{ _sys_ver_dir }}/{{ name }}
+{%- endif %}
     - shell: /bin/bash
-    - creates: {{ dest }}/{{ name }}
+{%- if version %}
+    - unless: test -f {{ _creates }} && test -f {{ _sys_ver_dir }}/{{ name }} && rg -qx '{{ version }}' {{ _sys_ver_dir }}/{{ name }}
+{%- else %}
+    - creates: {{ _creates }}
+{%- endif %}
     - parallel: True
     - retry:
         attempts: {{ _retry_attempts }}
@@ -73,7 +102,8 @@ install_{{ name | replace('-', '_') }}:
    Usage: {{ github_release_to('mpv_script_mpris_so', 'mpris.so', 'hoyon/mpv-mpris', 'mpris.so', mpv_scripts_dir, require='mpv_scripts_dir') }}
           {{ github_release_to('mpv_plugin_uosc', 'uosc', 'tomasklaen/uosc', 'uosc.zip', '~/.config/mpv', format='zip', creates=mpv_scripts_dir ~ '/uosc', require='mpv_scripts_dir') }}
 #}
-{%- macro github_release_to(state_id, name, repo, asset, dest, format='file', tag=None, creates=None, require=None, user=_user) -%}
+{%- macro github_release_to(state_id, name, repo, asset, dest, format='file', tag=None, hash=None, version=None, creates=None, require=None, user=_user) -%}
+{%- set _creates = creates or (dest ~ '/' ~ name) -%}
 {{ state_id }}:
   cmd.run:
     - name: |
@@ -85,14 +115,27 @@ install_{{ name | replace('-', '_') }}:
 {%- endif %}
 {%- if format == 'zip' %}
         curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o /tmp/{{ name }}.zip
+{%- if hash %}
+        echo '{{ hash }}  /tmp/{{ name }}.zip' | sha256sum -c --strict
+{%- endif %}
         unzip -qo /tmp/{{ name }}.zip -d {{ dest }}
         rm -f /tmp/{{ name }}.zip
 {%- else %}
         curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o '{{ dest }}/{{ name }}'
+{%- if hash %}
+        echo '{{ hash }}  {{ dest }}/{{ name }}' | sha256sum -c --strict
+{%- endif %}
+{%- endif %}
+{%- if version %}
+        mkdir -p {{ _ver_dir }} && echo '{{ version }}' > {{ _ver_dir }}/{{ name }}
 {%- endif %}
     - runas: {{ user }}
     - shell: /bin/bash
-    - creates: {{ creates or (dest ~ '/' ~ name) }}
+{%- if version %}
+    - unless: test -e {{ _creates }} && test -f {{ _ver_dir }}/{{ name }} && rg -qx '{{ version }}' {{ _ver_dir }}/{{ name }}
+{%- else %}
+    - creates: {{ _creates }}
+{%- endif %}
     - parallel: True
 {%- if require %}
     - require:
