@@ -6,4 +6,6 @@
 {%- set host = _hc.host -%}
 {%- set user = host.user -%}
 {%- set home = host.home -%}
-{%- set pkg_list = '/var/cache/salt/pacman_installed.txt' -%}
+{%- set pkg_list = host.pkg_list -%}
+{%- set retry_attempts = 3 -%}
+{%- set retry_interval = 10 -%}

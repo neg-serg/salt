@@ -8,12 +8,12 @@ pacman_db_warmup:
 
 system_timezone:
   timezone.system:
-    - name: Europe/Moscow
+    - name: {{ host.timezone }}
 
 system_locale:
   file.managed:
     - name: /etc/locale.conf
-    - contents: 'LANG=en_US.UTF-8'
+    - contents: 'LANG={{ host.locale }}'
 
 system_keymap:
   cmd.run:

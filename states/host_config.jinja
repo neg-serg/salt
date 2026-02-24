@@ -23,6 +23,10 @@
     'cpu_vendor':     'amd',
     'kvm_module':     'kvm_amd',
     'display':        '',
+    'primary_output': '',
+    'timezone':       'Europe/Moscow',
+    'locale':         'en_US.UTF-8',
+    'floorp_profile': '',
     'hostname':       grains['host'],
     'extra_kargs':    [],
     'extra_modules':  [],
@@ -62,7 +66,6 @@
         'mpd':          True,
         'ollama':       True,
         'floorp':       True,
-        'hy3':          True,
         'kanata':       True,
     },
 } %}
@@ -70,6 +73,8 @@
 {% set hosts = {
     'telfir': {
         'display':        '3840x2160@240',
+        'primary_output': 'DP-2',
+        'floorp_profile': 'c85pjaxk.default-default',
         'hostname':       'telfir',
         'extra_modules':  ['ec_sys', 'asus_ec_sensors'],
         'features': {
@@ -91,3 +96,4 @@
 {% set host = salt['slsutil.merge'](defaults, hosts.get(current_host, {}), strategy='recurse') %}
 {# Derived fields (depend on merged values, so computed after merge) #}
 {% do host.update({'runtime_dir': '/run/user/' ~ host.uid|string}) %}
+{% do host.update({'pkg_list': '/var/cache/salt/pacman_installed.txt'}) %}

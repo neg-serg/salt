@@ -5,7 +5,7 @@
 
 {{ pacman_install('greetd', 'greetd') }}
 
-{{ service_stopped('disable_sddm', 'sddm') }}
+{{ service_stopped('sddm_stopped', 'sddm') }}
 
 greetd_config_dir:
   file.directory:
@@ -55,7 +55,7 @@ greetd_session_wrapper:
 greetd_wallpaper:
   cmd.run:
     - name: |
-        wallpaper=$(tr '\0' '\n' < {{ home }}/.cache/swww/DP-2 2>/dev/null | grep '^/')
+        wallpaper=$(tr '\0' '\n' < {{ home }}/.cache/swww/{{ host.primary_output }} 2>/dev/null | rg '^/')
         if [ -n "$wallpaper" ] && [ -f "$wallpaper" ]; then
           cp -f "$wallpaper" {{ home }}/.cache/greeter-wallpaper
         fi
