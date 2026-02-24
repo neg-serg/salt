@@ -1,4 +1,4 @@
-{% from '_imports.jinja' import host, user, home, pkg_list %}
+{% from '_imports.jinja' import host, user, home, pkg_list, retry_attempts, retry_interval %}
 {% from '_macros_service.jinja' import ensure_dir, user_service_file, user_service_enable %}
 # MPD Native Deployment
 # Salt state for setting up MPD with systemd user service and pipewire output
@@ -30,12 +30,12 @@ rmpc_config:
 # wiremix needs custom clang args for bindgen
 install_wiremix:
   cmd.run:
-    - name: BINDGEN_EXTRA_CLANG_ARGS="-I/usr/lib/clang/21/include" cargo install wiremix
+    - name: BINDGEN_EXTRA_CLANG_ARGS="-I/usr/lib/clang/$(ls /usr/lib/clang/ | sort -V | tail -1)/include" cargo install wiremix
     - runas: {{ user }}
     - creates: {{ home }}/.local/share/cargo/bin/wiremix
     - retry:
-        attempts: 3
-        interval: 10
+        attempts: {{ retry_attempts }}
+        interval: {{ retry_interval }}
 
 # --- MPD FIFO for visualizers (cava, etc.) ---
 mpd_fifo:

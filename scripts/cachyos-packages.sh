@@ -86,6 +86,9 @@ PACMAN_PKGS=(
     7zip                # 7-Zip file archiver
     bat                 # cat clone with syntax highlighting
     borg                # deduplicating backup (borgbackup)
+    broot               # interactive tree file manager
+    eza                 # file lister (ls replacement)
+    yazi                # terminal file manager
     convmv              # filename encoding converter
     ddrescue            # data recovery from failing drives
     dos2unix            # line ending converter
@@ -101,7 +104,7 @@ PACMAN_PKGS=(
     testdisk            # partition recovery + undelete
 
     # --- Fonts ---
-    # material-icons-fonts → AUR (ttf-material-design-icons-git)
+    # material-icons-fonts → AUR (ttf-material-design-icons-extended)
     ttf-material-symbols-variable  # Material Symbols (Outlined/Rounded/Sharp) for quickshell
 
     # --- Media ---
@@ -139,7 +142,9 @@ PACMAN_PKGS=(
     media-player-info   # media player capability database
 
     # --- Media (tools) ---
+    dool                # system stats (dstat successor)
     imagemagick         # image manipulation suite (convert, identify)
+    rmpc                # MPD client TUI
     yt-dlp              # video downloader (YouTube, etc.)
 
     # --- Monitoring & System ---
@@ -178,6 +183,7 @@ PACMAN_PKGS=(
 
     # --- Network ---
     aria2               # multi-protocol download accelerator
+    handlr-regex        # MIME handler (xdg-open alternative)
     fping               # fast parallel ping
     freerdp             # RDP client (remote desktop)
     sshfs               # mount remote FS over SSH (FUSE)
@@ -209,6 +215,7 @@ PACMAN_PKGS=(
 
     # --- Shell & Tools ---
     abduco              # session management (detach/attach)
+    nushell             # structured data shell
     age                 # modern file encryption (GPG alternative)
     asciinema           # terminal session recorder
     cowsay              # ASCII cow with speech bubble
@@ -250,12 +257,17 @@ PACMAN_PKGS=(
     urlscan             # URL extractor from emails/text
     urlwatch            # web page change monitor
     go-yq               # YAML/JSON/XML processor (jq for YAML)
+    television          # fuzzy finder TUI (tv)
     zathura             # keyboard-driven document viewer
     zathura-pdf-poppler # PDF plugin for zathura
     zoxide              # smart cd with frecency (z/autojump alternative)
     zsh                 # Z shell
 
     # --- Wayland / Desktop ---
+    grimblast-git       # Hyprland screenshot tool
+    matugen             # Material You color generation
+    opencode            # AI coding assistant
+    rofi-pass           # rofi frontend for pass/gopass
     distrobox           # run any Linux distro in containers
     hyprland            # tiling Wayland compositor
     hypridle            # Hyprland idle daemon
@@ -295,6 +307,7 @@ PACMAN_PKGS=(
     # xonotic             # fast-paced FPS (Quake-like)
 
     # --- Security ---
+    sops                # secrets editor (Mozilla)
     hashcat             # GPU-accelerated password recovery
     pcsc-tools          # smartcard reader tools
     tcpdump             # packet capture / analyzer
@@ -370,7 +383,7 @@ AUR_PKGS=(
     patool              # universal archive manager (wrapper)
     act-bin             # run GitHub Actions locally
     # hxtools             # misc Linux utilities collection — FTBFS on CachyOS
-    ttf-material-design-icons-git  # Material Design icon font
+    ttf-material-design-icons-extended  # Material Design icon font
     advancecomp         # recompression tools (advpng, advzip)
     id3v2               # ID3v2 tag editor
     mpdas              # MPD AudioScrobbler (Last.fm scrobbler)
@@ -398,6 +411,22 @@ AUR_PKGS=(
     # bottles             # Wine prefix manager (GUI)
     ddccontrol          # DDC/CI monitor control
     git-extras          # extra git commands (git-summary, etc.)
+
+    adguardian          # AdGuard Home TUI
+    aliae-bin           # cross-shell alias manager
+    asciinema-agg       # asciicast to GIF converter
+    camilladsp          # audio DSP processor
+    euporie             # Jupyter notebook TUI
+    hishtory            # context-aware shell history
+    hyprprop-git        # Hyprland window property picker
+    iwmenu              # Wi-Fi rofi/dmenu menu
+    mpvc                # mpv remote control
+    neovim-remote       # nvr: neovim remote control
+    oh-my-posh          # cross-shell prompt engine
+    realesrgan-ncnn-vulkan-bin  # image upscaler
+    rustmission         # Transmission TUI client
+    sing-box            # proxy platform (VLESS/Reality)
+    xdg-ninja           # XDG Base Directory audit
 
     overskride-bin      # Bluetooth GTK4 client
     dualsensectl        # DualSense controller LED/haptics control
@@ -428,9 +457,8 @@ AUR_PKGS=(
     gist                # GitHub Gist CLI (Ruby)
     newsraft            # terminal RSS/Atom reader
     unflac              # FLAC + cue splitter
-    cmake-language-server  # CMake LSP server
-    # nginx-language-server    # check AUR availability
-    # systemd-language-server  # check AUR availability
+    # LSP servers managed by Mason (neovim) — removed cmake-language-server,
+    # nginx-language-server, systemd-language-server from here
 
     # --- VPN ---
     amneziawg-tools     # AmneziaWG VPN userspace tools
