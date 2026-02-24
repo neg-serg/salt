@@ -1,6 +1,5 @@
-{# Download/install macros: curl_bin, github_tar, github_release, github_release_system,
-   github_release_to, pip_pkg, cargo_pkg, curl_extract_tar, curl_extract_zip,
-   firefox_extension, download_font_zip, git_clone_deploy, run_with_error_context #}
+{# Download/install macros: curl_bin, pip_pkg, cargo_pkg, curl_extract_tar,
+   curl_extract_zip, firefox_extension, download_font_zip, git_clone_deploy #}
 
 {% from 'host_config.jinja' import host %}
 {% set _user = host.user %}
@@ -18,87 +17,6 @@ install_{{ name | replace('-', '_') }}:
     - name: curl -fsSL {{ url }} -o ~/.local/bin/{{ name }} && chmod +x ~/.local/bin/{{ name }}
     - runas: {{ user }}
     - creates: {{ home }}/.local/bin/{{ name }}
-    - parallel: True
-    - retry:
-        attempts: {{ _retry_attempts }}
-        interval: {{ _retry_interval }}
-{%- endmacro -%}
-
-{# Download tar.gz, extract single binary to ~/.local/bin/.
-   Usage: {{ github_tar('eza', 'https://github.com/.../eza_x86_64.tar.gz') }}
-#}
-{%- macro github_tar(name, url, user=_user, home=_home) -%}
-install_{{ name | replace('-', '_') }}:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        TMPDIR=$(mktemp -d)
-        curl -fsSL {{ url }} -o "$TMPDIR/archive.tar.gz"
-        tar -xzf "$TMPDIR/archive.tar.gz" -C "$TMPDIR"
-        find "$TMPDIR" -name '{{ name }}' -type f -exec install -m 0755 {} ~/.local/bin/{{ name }} \;
-        rm -rf "$TMPDIR"
-    - runas: {{ user }}
-    - shell: /bin/bash
-    - creates: {{ home }}/.local/bin/{{ name }}
-    - parallel: True
-    - retry:
-        attempts: {{ _retry_attempts }}
-        interval: {{ _retry_interval }}
-{%- endmacro -%}
-
-{# Download latest GitHub release binary to ~/.local/bin/.
-   Fetches TAG via GitHub API, downloads asset directly (no archive extraction).
-   For tar.gz/zip archives, use curl_extract_tar or curl_extract_zip instead.
-   Usage: {{ github_release('sops', 'getsops/sops', 'sops-${TAG}.linux.amd64') }}
-          {{ github_release('hishtory', 'ddworken/hishtory', 'hishtory-linux-amd64') }}
-#}
-{%- macro github_release(name, repo, asset, bin=None, strip_v=False, user=_user, home=_home) -%}
-{%- set target = bin or name -%}
-install_{{ name | replace('-', '_') }}:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ repo }}/releases/latest | rg -oP '[^/]+$')
-{%- if strip_v %}
-        VER=${TAG#v}
-{%- endif %}
-        curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o ~/.local/bin/{{ target }}
-        chmod +x ~/.local/bin/{{ target }}
-    - runas: {{ user }}
-    - shell: /bin/bash
-    - creates: {{ home }}/.local/bin/{{ target }}
-    - parallel: True
-    - retry:
-        attempts: {{ _retry_attempts }}
-        interval: {{ _retry_interval }}
-{%- endmacro -%}
-
-{# Download latest GitHub release asset to /usr/local/bin/ (system-level).
-   Like github_release but runs as root, no runas. Supports zip and tar.gz.
-   src_bin: filename of the binary inside the archive (default: name).
-   Usage: {{ github_release_system('loki', 'grafana/loki', 'loki-linux-amd64.zip', src_bin='loki-linux-amd64') }}
-          {{ github_release_system('adguardhome', 'AdguardTeam/AdGuardHome', 'AdGuardHome_linux_amd64.tar.gz', src_bin='AdGuardHome', format='tar.gz') }}
-#}
-{%- macro github_release_system(name, repo, asset, src_bin=None, format='zip', dest='/usr/local/bin') -%}
-{%- set source_bin = src_bin or name -%}
-install_{{ name | replace('-', '_') }}:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ repo }}/releases/latest | rg -oP '[^/]+$')
-{%- if format == 'zip' %}
-        curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o /tmp/{{ name }}.zip
-        unzip -o /tmp/{{ name }}.zip -d /tmp
-        install -m 0755 /tmp/{{ source_bin }} {{ dest }}/{{ name }}
-        rm -f /tmp/{{ name }}.zip /tmp/{{ source_bin }}
-{%- elif format == 'tar.gz' %}
-        curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o /tmp/{{ name }}.tar.gz
-        tar -xzf /tmp/{{ name }}.tar.gz -C /tmp
-        find /tmp -maxdepth 3 -name '{{ source_bin }}' -type f -exec install -m 0755 {} {{ dest }}/{{ name }} \;
-        rm -rf /tmp/{{ name }}.tar.gz /tmp/{{ source_bin }}*
-{%- endif %}
-    - shell: /bin/bash
-    - creates: {{ dest }}/{{ name }}
     - parallel: True
     - retry:
         attempts: {{ _retry_attempts }}
@@ -137,40 +55,6 @@ install_{{ name | replace('-', '_') }}:
     - retry:
         attempts: {{ _retry_attempts }}
         interval: {{ _retry_interval }}
-{%- endmacro -%}
-
-{# Wrap cmd.run with standardized error handling. Provides shell helper functions for
-   consistent error messages, timestamped status output, and clean failure reporting.
-   Useful for complex multi-step operations (installs, builds, configuration).
-   Usage:
-   {% call run_with_error_context('install_foo', requires=['cmd: install_bar']) %}
-   source /build/salt/error-helpers.sh
-   step "Downloading foo"
-   curl -fsSL https://example.com/foo -o /tmp/foo
-   run_step "Installing foo" install -m 0755 /tmp/foo ~/.local/bin/
-   success "Foo installed"
-   {% endcall %}
-#}
-{%- macro run_with_error_context(state_id, requires=None, creates=None, shell='/bin/bash') -%}
-{{ state_id }}:
-  cmd.run:
-    - name: |
-        set -uo pipefail
-        step() { printf "[%s] %s\n" "$(date +'%H:%M:%S')" "$*"; }
-        success() { printf "[  ✓  ] %s\n" "$*"; }
-        trap 'echo "[EXIT] Cleanup on exit (code: $?)" >&2' EXIT
-        {{ caller() | indent(8) }}
-    - shell: {{ shell }}
-{% if creates %}
-    - creates: {{ creates }}
-{% endif %}
-{% if requires %}
-    - require:
-{% for req in requires %}
-      - {{ req }}
-{% endfor %}
-{% endif %}
-
 {%- endmacro -%}
 
 {# Download and extract tar.gz/tar.xz archive, move binary(ies) to ~/.local/bin/.
@@ -347,40 +231,6 @@ install_{{ name }}:
         interval: {{ _retry_interval }}
     - require:
       - file: {{ fonts_dir }}/{{ subdir }}
-{%- endmacro -%}
-
-{# Download latest GitHub release asset to an arbitrary directory.
-   Supports single file downloads and ZIP extraction via format parameter.
-   format: 'file' (default) downloads asset directly; 'zip' extracts ZIP contents to dest.
-   state_id: explicit Salt state ID (caller must ensure uniqueness).
-   creates: idempotency guard (defaults to dest/name for file, required for zip).
-   require: optional file state ID to depend on.
-   Usage: {{ github_release_to('mpv_script_mpris_so', 'mpris.so', 'hoyon/mpv-mpris', 'mpris.so', mpv_scripts_dir, require='mpv_scripts_dir') }}
-          {{ github_release_to('mpv_plugin_uosc', 'uosc', 'tomasklaen/uosc', 'uosc.zip', '~/.config/mpv', format='zip', creates=mpv_scripts_dir ~ '/uosc', require='mpv_scripts_dir') }}
-#}
-{%- macro github_release_to(state_id, name, repo, asset, dest, format='file', creates=None, require=None, user=_user) -%}
-{{ state_id }}:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ repo }}/releases/latest | rg -oP '[^/]+$')
-{%- if format == 'zip' %}
-        curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o /tmp/{{ name }}.zip
-        unzip -qo /tmp/{{ name }}.zip -d {{ dest }}
-        rm -f /tmp/{{ name }}.zip
-{%- else %}
-        curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o '{{ dest }}/{{ name }}'
-{%- endif %}
-    - runas: {{ user }}
-    - shell: /bin/bash
-    - creates: {{ creates or (dest ~ '/' ~ name) }}
-{%- if require %}
-    - require:
-      - file: {{ require }}
-{%- endif %}
-    - retry:
-        attempts: {{ _retry_attempts }}
-        interval: {{ _retry_interval }}
 {%- endmacro -%}
 
 {# Git clone a repo to /tmp, copy selected items to dest, clean up.

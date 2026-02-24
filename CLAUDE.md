@@ -60,26 +60,46 @@ Packages installed via pacman/paru outside Salt; Salt handles configuration mana
 | `cachyos.sls` | Bootstrap verification: checks system state after initial install |
 | `cachyos_all.sls` | Full setup entry point: includes cachyos + system_description |
 
-## Macros (`_macros.jinja`)
+## Macros
+
+### `_macros_github.jinja` — GitHub release macros
+
+| Macro | Purpose |
+|---|---|
+| `github_tar(name, url)` | Download + extract tar.gz to `~/.local/bin/` |
+| `github_release_system(name, repo, asset)` | GitHub release install to `/usr/local/bin/` (system-level) |
+| `github_release_to(state_id, name, repo, asset, dest)` | GitHub release to arbitrary directory |
+
+### `_macros_install.jinja` — Download/install macros
+
+| Macro | Purpose |
+|---|---|
+| `curl_bin(name, url)` | Download binary to `~/.local/bin/` |
+| `pip_pkg(name, pkg, bin)` | pip install to `~/.local/` |
+| `cargo_pkg(name, pkg, bin, git)` | cargo install |
+| `curl_extract_tar(name, url, binary_pattern)` | Download + extract tar/tar.gz to `~/.local/bin/` |
+| `curl_extract_zip(name, url, binary_path)` | Download + extract zip to `~/.local/bin/` |
+| `firefox_extension(ext, profile)` | Download Firefox/Floorp extension from AMO |
+| `download_font_zip(name, url, subdir)` | Download + extract font ZIP to `~/.local/share/fonts/` |
+| `git_clone_deploy(name, repo, dest)` | Git clone + deploy items to dest |
+
+### `_macros_pkg.jinja` — Package manager macros
+
+| Macro | Purpose |
+|---|---|
+| `pacman_install(name, pkgs, check, requires)` | pacman install with idempotency guard |
+| `paru_install(name, pkg, check, requires)` | AUR install via paru |
+| `pkgbuild_install(name, source)` | Build + install from local PKGBUILD |
+| `npm_pkg(name, pkg, bin)` | npm global install |
+
+### `_macros_service.jinja` — Service/systemd macros
 
 | Macro | Purpose |
 |---|---|
 | `daemon_reload(name, onchanges)` | systemd daemon-reload on unit file changes |
-| `curl_bin(name, url)` | Download binary to `~/.local/bin/` |
-| `github_tar(name, url)` | Download + extract tar.gz to `~/.local/bin/` |
-| `github_release(name, repo, asset, ...)` | GitHub release install (bin/tar.gz, with tag fetch) |
-| `pip_pkg(name, pkg, bin)` | pip install to `~/.local/` |
-| `cargo_pkg(name, pkg, bin, git)` | cargo install |
-| `github_release_system(name, repo, asset)` | GitHub release install to `/usr/local/bin/` (system-level) |
-| `pacman_install(name, pkgs, check, requires)` | pacman install with idempotency guard |
-| `pkgbuild_install(name, source)` | Build + install from local PKGBUILD |
 | `system_daemon_user(name, home_dir)` | Create system daemon user + data directory |
 | `service_with_unit(name, source, enabled)` | Deploy systemd unit + daemon-reload + enable/disable service |
 | `user_service(name, filename)` | Deploy inline systemd user unit file (callable macro) |
-| `download_font_zip(name, url, subdir)` | Download + extract font ZIP to `~/.local/share/fonts/` |
-| `curl_extract_tar(name, url, binary_pattern)` | Download + extract tar/tar.gz to `~/.local/bin/` |
-| `curl_extract_zip(name, url, binary_path)` | Download + extract zip to `~/.local/bin/` |
-| `run_with_error_context(state_id)` | cmd.run with error handling helpers |
 
 ## Conventions
 
@@ -89,6 +109,7 @@ Packages installed via pacman/paru outside Salt; Salt handles configuration mana
 - **Inline content**: Configs ≥10 lines go to `configs/`, systemd units go to `units/`, scripts go to `scripts/`
 - **Commit style**: `[scope] description` — scope should be specific to what changed (e.g. `[nvim]`, `[zsh]`, `[mpd]`, `[dns]`, `[macros]`, `[fonts]`, `[hyprland]`). Use generic `[salt]` or `[dotfiles]` only for broad refactors that don't fit a specific scope. `[docs]` for documentation.
 - **Service enable**: Use `service.enabled` for packages installed via pacman
+- **State ID naming**: Use `target_descriptor` pattern (e.g. `loki_config`, `greetd_enabled`, `rfkill_service_masked`). Exception: `install_*` and `build_*` prefixes are reserved for macro-generated IDs. Never use file paths as state IDs — use a descriptive name with explicit `name:` parameter instead.
 
 ## Platform
 

@@ -5,7 +5,6 @@
 {% set _home = host.home %}
 {% set _retry_attempts = 3 %}
 {% set _retry_interval = 10 %}
-{% set _pkg_list = '/var/cache/salt/pacman_installed.txt' %}
 
 {# Install packages via pacman (CachyOS/Arch).
    check defaults to first package. requires is an optional list of requisites.
@@ -16,10 +15,10 @@
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: pacman -S --noconfirm --needed {{ pkgs }}
-    - unless: |
-        C={{ _pkg_list }}
-        [ -f "$C" ] || pacman -Qq > "$C"
-        rg -qx '{{ check or pkgs.split()[0] }}' "$C"
+    - unless: rg -qx '{{ check or pkgs.split()[0] }}' {{ host.pkg_list }}
+    - retry:
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
     - require:
       - cmd: pacman_db_warmup
 {%- if requires %}
@@ -33,16 +32,16 @@ install_{{ name | replace('-', '_') }}:
    Runs as user (paru handles sudo internally for makepkg).
    check defaults to pkg. requires is an optional list of requisites.
    Usage: {{ paru_install('wlr-which-key', 'wlr-which-key') }}
-          {{ paru_install('material-design-icons', 'ttf-material-design-icons-git') }}
+          {{ paru_install('material-design-icons', 'ttf-material-design-icons-extended') }}
 #}
 {%- macro paru_install(name, pkg, check=None, requires=None) -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: sudo -u {{ _user }} paru -S --noconfirm --needed {{ pkg }}
-    - unless: |
-        C={{ _pkg_list }}
-        [ -f "$C" ] || pacman -Qq > "$C"
-        rg -qx '{{ check or pkg }}' "$C"
+    - unless: rg -qx '{{ check or pkg }}' {{ host.pkg_list }}
+    - retry:
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
     - require:
       - cmd: pacman_db_warmup
 {%- if requires %}
@@ -54,10 +53,14 @@ install_{{ name | replace('-', '_') }}:
 
 {# Build and install a package from a local PKGBUILD via file.recurse + makepkg + pacman -U.
    source: salt:// path to PKGBUILD directory. check: package name for idempotency guard (default: name).
+   replace_check: shell command that returns 0 if the correct variant is installed; when provided,
+     removes the existing package if the check fails (e.g., replacing stock duf with a fork).
+   extra_sources: list of {source, dest} dicts for additional file.recurse states (e.g., local source trees).
    Usage: {{ pkgbuild_install('raise', 'salt://build/pkgbuilds/raise', user=_user) }}
           {{ pkgbuild_install('iosevka-neg-fonts', 'salt://build/pkgbuilds/iosevka-neg-fonts', user=_user, timeout=7200) }}
+          {{ pkgbuild_install('duf', 'salt://build/pkgbuilds/duf', user=_user, replace_check='pacman -Qi duf 2>/dev/null | rg -q neg-serg') }}
 #}
-{%- macro pkgbuild_install(name, source, user=_user, build_base='/tmp/pkgbuild', timeout=600, check=None) -%}
+{%- macro pkgbuild_install(name, source, user=_user, build_base='/tmp/pkgbuild', timeout=600, check=None, replace_check=None, extra_sources=None) -%}
 {%- set safe = name | replace('-', '_') -%}
 {{ safe }}_pkgbuild:
   file.recurse:
@@ -66,22 +69,40 @@ install_{{ name | replace('-', '_') }}:
     - makedirs: True
     - user: {{ user }}
     - group: {{ user }}
+{%- for src in (extra_sources or []) %}
+
+{{ safe }}_source_{{ loop.index }}:
+  file.recurse:
+    - name: {{ src.dest }}
+    - source: {{ src.source }}
+    - makedirs: True
+    - user: {{ user }}
+    - group: {{ user }}
+{%- endfor %}
 
 build_{{ safe }}:
   cmd.run:
     - name: |
         set -eo pipefail
+{%- if replace_check %}
+        if pacman -Q {{ name }} &>/dev/null && ! {{ replace_check }}; then
+            pacman -Rdd --noconfirm {{ name }}
+        fi
+{%- endif %}
         su - {{ user }} -c 'cd {{ build_base }}/{{ name }} && makepkg -sf --noconfirm'
         pacman -U --noconfirm --needed {{ build_base }}/{{ name }}/*.pkg.tar.zst
-        rm -rf {{ build_base }}/{{ name }}
+        rm -rf {{ build_base }}/{{ name }}{{ ' ' ~ (extra_sources | map(attribute='dest') | join(' ')) if extra_sources else '' }}
     - shell: /bin/bash
     - timeout: {{ timeout }}
-    - unless: |
-        C={{ _pkg_list }}
-        [ -f "$C" ] || pacman -Qq > "$C"
-        rg -qx '{{ check or name }}' "$C"
+    - unless: rg -qx '{{ check or name }}' {{ host.pkg_list }}{{ ' && ' ~ replace_check if replace_check else '' }}
+    - retry:
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
     - require:
       - file: {{ safe }}_pkgbuild
+{%- for src in (extra_sources or []) %}
+      - file: {{ safe }}_source_{{ loop.index }}
+{%- endfor %}
       - cmd: pacman_db_warmup
 {%- endmacro -%}
 
