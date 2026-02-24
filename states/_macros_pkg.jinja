@@ -116,6 +116,7 @@ install_{{ name | replace('-', '_') }}:
     - name: npm install -g {{ pkg or name }}
     - runas: {{ user }}
     - creates: {{ home }}/.local/bin/{{ bin or name }}
+    - parallel: True
     - retry:
         attempts: {{ _retry_attempts }}
         interval: {{ _retry_interval }}

@@ -1,4 +1,4 @@
-{# Service-related macros: ensure_dir, ensure_running, service_stopped, service_with_healthcheck, unit_override, service_with_unit, user_service_file, user_unit_override, user_service_enable, system_daemon_user #}
+{# Service-related macros: ensure_dir, udev_rule, ensure_running, service_stopped, service_with_healthcheck, unit_override, service_with_unit, user_service_file, user_unit_override, user_service_enable, system_daemon_user #}
 
 {% from 'host_config.jinja' import host %}
 {% set _user = host.user %}
@@ -27,6 +27,30 @@
       - {{ req }}
 {%- endfor %}
 {%- endif %}
+{%- endmacro -%}
+
+{# Deploy udev rule file + reload rules on change.
+   Supports source (salt:// path) or inline contents.
+   Emits two states: {{ name }} (file.managed) and {{ name }}_reload (udevadm).
+   Usage: {{ udev_rule('custom_udev_rules', '/etc/udev/rules.d/99-custom.rules', source='salt://configs/udev-custom.rules') }}
+          {{ udev_rule('kanata_udev_rule', '/etc/udev/rules.d/99-uinput.rules', contents='KERNEL=="uinput", ...') }}
+#}
+{%- macro udev_rule(name, path, source=None, contents=None) -%}
+{{ name }}:
+  file.managed:
+    - name: {{ path }}
+{%- if contents is not none %}
+    - contents: '{{ contents }}'
+{%- elif source %}
+    - source: {{ source }}
+{%- endif %}
+    - mode: '0644'
+
+{{ name }}_reload:
+  cmd.run:
+    - name: udevadm control --reload-rules && udevadm trigger
+    - onchanges:
+      - file: {{ name }}
 {%- endmacro -%}
 
 {# Clear failed state + ensure service is running with config watches.
