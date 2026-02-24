@@ -15,7 +15,7 @@ pacman:
   material-symbols: ttf-material-symbols-variable
 
 paru:
-  material-design-icons: ttf-material-design-icons-git
+  material-design-icons: ttf-material-design-icons-extended
 
 download_zip:
   fira_code_nerd:

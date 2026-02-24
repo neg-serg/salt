@@ -1,0 +1,125 @@
+# Bootstrap verification data for cachyos.sls
+# Entries with ${USER} are interpolated at render time from host_config.
+# Adding/updating a check is a YAML-only edit; no Jinja changes needed.
+
+required_files:
+  sudo_nopasswd: "/etc/sudoers.d/99-${USER}-nopasswd"
+  vconsole: /etc/vconsole.conf
+  limine_conf: /boot/limine.conf
+  limine_efi: /boot/EFI/BOOT/BOOTX64.EFI
+  snapper_config: /etc/snapper/configs/root
+  mirrorlist_v4: /etc/pacman.d/cachyos-v4-mirrorlist
+  mirrorlist: /etc/pacman.d/cachyos-mirrorlist
+  nm_iwd_backend: /etc/NetworkManager/conf.d/wifi-iwd.conf
+
+verify_checks:
+  sudo_nopasswd_content: "rg -q '${USER} ALL=\\(ALL\\) NOPASSWD: ALL' /etc/sudoers.d/99-${USER}-nopasswd"
+  wheel_sudoers: "rg -q '^%wheel ALL=\\(ALL:ALL\\) ALL' /etc/sudoers"
+  timezone: "readlink /etc/localtime | rg -q ${TIMEZONE}"
+  locale: "rg -q '^LANG=${LOCALE}' /etc/locale.conf"
+  hostname: "rg -q '^${HOSTNAME}' /etc/hostname"
+  hosts: "rg -q '${HOSTNAME}' /etc/hosts"
+  limine_conf_content: "rg -q 'vmlinuz-linux-cachyos-lts' /boot/limine.conf"
+  snapper_registered: "rg -q 'root' /etc/conf.d/snapper 2>/dev/null"
+  mkinitcpio_lvm2_hook: "rg -q 'lvm2' /etc/mkinitcpio.conf"
+  mkinitcpio_zstd: "rg -q '^COMPRESSION=\"zstd\"' /etc/mkinitcpio.conf"
+  initramfs_exists: "test -f /boot/initramfs-linux-cachyos-lts.img"
+  pacman_v4_arch: "rg -q 'x86_64_v4' /etc/pacman.conf"
+  repo_znver4: "rg -q '^\\[cachyos-znver4\\]' /etc/pacman.conf"
+  repo_core_znver4: "rg -q '^\\[cachyos-core-znver4\\]' /etc/pacman.conf"
+  repo_extra_znver4: "rg -q '^\\[cachyos-extra-znver4\\]' /etc/pacman.conf"
+  repo_cachyos: "rg -q '^\\[cachyos\\]' /etc/pacman.conf"
+  nm_iwd_backend_content: "rg -q 'wifi.backend=iwd' /etc/NetworkManager/conf.d/wifi-iwd.conf"
+  resolv_conf: "test -s /etc/resolv.conf"
+  zsh_neg: "getent passwd ${USER} | cut -d: -f7 | rg -q 'zsh$'"
+  zsh_root: "getent passwd root | cut -d: -f7 | rg -q 'zsh$'"
+
+enabled_services:
+  networkmanager: NetworkManager
+  iwd: iwd
+  sshd: sshd
+  snapper_timeline: snapper-timeline.timer
+  snapper_cleanup: snapper-cleanup.timer
+
+package_checks:
+  pkg:
+    - base
+    - linux-cachyos-lts
+    - linux-firmware
+    - limine
+    - btrfs-progs
+    - snapper
+    - snap-pac
+    - networkmanager
+    - openssh
+    - paru
+    - sudo
+    - zsh
+    - git
+    - hyprland
+    - kitty
+    - podman
+    - pipewire
+    - rust
+    - clang
+    - cmake
+    - nodejs
+    - bat
+    - fd
+    - fzf
+    - ripgrep
+    - zoxide
+    - mpd
+    - mpv
+    - ffmpegthumbnailer
+    - btop
+    - fastfetch
+    - smartmontools
+    - nmap
+    - socat
+    - ollama
+    - telegram-desktop
+    - tmux
+    - gopass
+    - chezmoi
+    - git-delta
+    - libvirt
+    - qemu-desktop
+    - rofi
+    - dunst
+    - swappy
+    - quickshell
+    - swayosd
+    - wl-clip-persist
+    - ttf-material-symbols-variable
+    - ttf-jetbrains-mono-nerd
+    - ttf-icomoon-feather
+    - otf-font-awesome
+    - noto-fonts
+    - noto-fonts-emoji
+    - ttf-ibm-plex
+    - inter-font
+    - imagemagick
+    - yt-dlp
+    - unbound
+    - avahi
+    - samba
+    - grafana
+  aur:
+    - pyprland
+    - wlogout
+    - carapace-bin
+    - doggo
+    - wallust
+    - pipemixer
+    - newsraft
+    - salt
+    - amneziawg-tools
+    - amneziawg-dkms
+  custom:
+    - raise
+    - neg-pretty-printer
+    - richcolors
+    - albumdetails
+    - taoup
+    - iosevka-neg-fonts
