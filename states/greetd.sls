@@ -60,7 +60,9 @@ greetd_wallpaper:
           cp -f "$wallpaper" {{ home }}/.cache/greeter-wallpaper
         fi
     - runas: {{ user }}
-    - unless: test -f {{ home }}/.cache/greeter-wallpaper
+    - unless: |
+        [ -f {{ home }}/.cache/greeter-wallpaper ] &&
+        [ ! {{ home }}/.cache/swww/{{ host.primary_output }} -nt {{ home }}/.cache/greeter-wallpaper ]
     - require:
       - file: greetd_config_dir
 

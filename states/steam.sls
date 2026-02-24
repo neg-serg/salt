@@ -11,11 +11,7 @@ multilib_repo:
   cmd.run:
     - name: |
         set -eo pipefail
-        cat >> /etc/pacman.conf << 'EOF'
-
-        [multilib]
-        Include = /etc/pacman.d/mirrorlist
-        EOF
+        printf '\n[multilib]\nInclude = /etc/pacman.d/mirrorlist\n' >> /etc/pacman.conf
         pacman -Sy
     - unless: rg -q '^\[multilib\]' /etc/pacman.conf
     - retry:
@@ -43,7 +39,7 @@ install_steam:
     - require:
       - cmd: install_vulkan_radeon
 
-{{ ensure_dir('steam_library_dir', host.mnt_zero ~ '/steam/steamapps') }}
+{{ ensure_dir('steam_library_dir', host.mnt_zero ~ '/steam/steamapps', require=['mount: mount_zero']) }}
 
 {{ ensure_dir('steam_skins_dir', home ~ '/.local/share/Steam/skins') }}
 

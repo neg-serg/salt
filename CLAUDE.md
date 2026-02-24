@@ -101,6 +101,17 @@ Packages installed via pacman/paru outside Salt; Salt handles configuration mana
 | `service_with_unit(name, source, enabled)` | Deploy systemd unit + daemon-reload + enable/disable service |
 | `user_service(name, filename)` | Deploy inline systemd user unit file (callable macro) |
 
+## Network Resilience
+
+All states that access the network (download, install, git clone) must follow these rules:
+
+- **Retry**: `retry: {attempts: retry_attempts, interval: retry_interval}` — import from `_imports.jinja`. Applies to: curl, cargo, pip, npm, paru, pacman, git clone. Does NOT apply to local operations (file.managed, service.enabled, kmod, btrfs).
+- **Parallel**: `parallel: True` on independent download/install states. Do NOT use on states with `require` chains to other installs (e.g. vulkan → steam).
+- **Idempotency guard**: every download/install state must have `creates:` (file marker) or `unless:` (state check) to avoid re-running on every apply.
+- **Curl flags**: always `curl -fsSL` — `-f` fail on HTTP errors, `-sS` silent with errors, `-L` follow redirects.
+
+Macros (`_macros_install.jinja`, `_macros_github.jinja`, `_macros_pkg.jinja`) enforce all four rules automatically. Inline `cmd.run` states that touch the network must apply them manually.
+
 ## Conventions
 
 - **Chezmoi naming**: `dot_config/foo/bar` deploys to `~/.config/foo/bar`

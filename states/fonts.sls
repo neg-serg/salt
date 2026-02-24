@@ -34,6 +34,7 @@
 # ===================================================================
 
 {% for name, opts in fonts.download_zip.items() %}
-{% set url = opts.url | replace('${VER}', ver.get(name, '')) %}
-{{ download_font_zip(name, url, opts.subdir, user=user, home=home) }}
+{% set _v = ver.get(name, '') %}
+{% set url = opts.url | replace('${VER}', _v) %}
+{{ download_font_zip(name, url, opts.subdir, hash=opts.get('hash'), version=_v if _v else None, user=user, home=home) }}
 {% endfor %}

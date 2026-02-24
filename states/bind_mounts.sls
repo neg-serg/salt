@@ -11,6 +11,7 @@
 
 {% for name, m in mounts.items() %}
 {% set target = home ~ '/' ~ m.target_suffix %}
+{% set disk_name = m.device.split('/')[2] %}
 {{ ensure_dir(name ~ '_mount_point', target) }}
 
 {{ name }}_mount_fstab:
@@ -23,9 +24,10 @@
 
 {{ name }}_mount:
   cmd.run:
-    - name: mount {{ target }}
-    - unless: mountpoint -q {{ target }}
+    - name: mount "{{ target }}"
+    - unless: mountpoint -q "{{ target }}"
     - require:
       - file: {{ name }}_mount_point
       - mount: {{ name }}_mount_fstab
+      - mount: mount_{{ disk_name }}
 {% endfor %}

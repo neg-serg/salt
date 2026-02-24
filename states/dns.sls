@@ -23,6 +23,13 @@ unbound_root_key:
     - require:
       - cmd: install_unbound
 
+unbound_control_certs:
+  cmd.run:
+    - name: unbound-control-setup
+    - creates: /etc/unbound/unbound_server.pem
+    - require:
+      - cmd: install_unbound
+
 {{ unit_override('unbound_restart_override', 'unbound.service', 'salt://units/unbound-restart-override.conf', filename='restart.conf', requires=['cmd: install_unbound']) }}
 
 unbound_enabled:
@@ -33,13 +40,14 @@ unbound_enabled:
       - file: unbound_config
       - cmd: unbound_restart_override_reload
       - cmd: unbound_root_key
+      - cmd: unbound_control_certs
 
 {{ ensure_running('unbound', watch=['file: unbound_config', 'file: unbound_restart_override']) }}
 {% endif %}
 
 # --- AdGuardHome: DNS filtering + ad blocking ---
 {% if dns.adguardhome %}
-{{ github_release_system('adguardhome', 'AdguardTeam/AdGuardHome', 'AdGuardHome_linux_amd64.tar.gz', src_bin='AdGuardHome', format='tar.gz', tag='v' ~ ver.adguardhome) }}
+{{ github_release_system('adguardhome', 'AdguardTeam/AdGuardHome', 'AdGuardHome_linux_amd64.tar.gz', src_bin='AdGuardHome', format='tar.gz', tag='v' ~ ver.adguardhome, hash='cf25794597a2f5b6cd8cd3670439db6f548c59af4ace392e40055b90e80c9329', version=ver.adguardhome) }}
 {{ system_daemon_user('adguardhome', '/var/lib/adguardhome') }}
 
 adguardhome_config:
@@ -87,17 +95,11 @@ avahi_config:
     - mode: '0644'
     - source: salt://configs/avahi-daemon.conf
 
-avahi_enabled:
+avahi-daemon_enabled:
   service.enabled:
     - name: avahi-daemon
     - require:
       - file: avahi_config
 
-avahi_running:
-  service.running:
-    - name: avahi-daemon
-    - watch:
-      - file: avahi_config
-    - require:
-      - service: avahi_enabled
+{{ ensure_running('avahi-daemon', watch=['file: avahi_config']) }}
 {% endif %}

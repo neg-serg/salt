@@ -10,15 +10,27 @@
 # ===========================================================================
 
 # --- Direct binary downloads to ~/.local/bin/ ---
-{% for name, url in tools.curl_bin.items() %}
-{% set resolved_url = url | replace('${VER}', ver.get(name | replace('-', '_'), '')) %}
-{{ curl_bin(name, resolved_url) }}
+{% for name, raw in tools.curl_bin.items() %}
+{% set _v = ver.get(name | replace('-', '_'), '') %}
+{% if raw is mapping %}
+{% set resolved_url = raw.url | replace('${VER}', _v) %}
+{{ curl_bin(name, resolved_url, version=_v if _v else None, hash=raw.get('hash')) }}
+{% else %}
+{% set resolved_url = raw | replace('${VER}', _v) %}
+{{ curl_bin(name, resolved_url, version=_v if _v else None) }}
+{% endif %}
 {% endfor %}
 
 # --- GitHub tar.gz archives ---
-{% for name, url in tools.github_tar.items() %}
-{% set resolved_url = url | replace('${VER}', ver.get(name | replace('-', '_'), '')) %}
-{{ github_tar(name, resolved_url) }}
+{% for name, raw in tools.github_tar.items() %}
+{% set _v = ver.get(name | replace('-', '_'), '') %}
+{% if raw is mapping %}
+{% set resolved_url = raw.url | replace('${VER}', _v) %}
+{{ github_tar(name, resolved_url, version=_v if _v else None, hash=raw.get('hash')) }}
+{% else %}
+{% set resolved_url = raw | replace('${VER}', _v) %}
+{{ github_tar(name, resolved_url, version=_v if _v else None) }}
+{% endif %}
 {% endfor %}
 
 # --- pip installs (pipx) ---
@@ -33,14 +45,16 @@
 
 # --- ZIP archive extractions ---
 {% for name, opts in tools.curl_extract_zip.items() %}
-{% set resolved_url = opts.url | replace('${VER}', ver.get(name, '')) %}
-{{ curl_extract_zip(name, resolved_url, opts.binary_path, binaries=opts.get('binaries'), chmod=opts.get('chmod', False)) }}
+{% set _v = ver.get(name, '') %}
+{% set resolved_url = opts.url | replace('${VER}', _v) %}
+{{ curl_extract_zip(name, resolved_url, opts.binary_path, binaries=opts.get('binaries'), chmod=opts.get('chmod', False), hash=opts.get('hash'), version=_v if _v else None) }}
 {% endfor %}
 
 # --- tar.gz archive extractions ---
 {% for name, opts in tools.get('curl_extract_tar', {}).items() %}
-{% set resolved_url = opts.url | replace('${VER}', ver.get(name, '')) %}
-{{ curl_extract_tar(name, resolved_url, binary_pattern=opts.binary_pattern, bin=opts.get('bin')) }}
+{% set _v = ver.get(name, '') %}
+{% set resolved_url = opts.url | replace('${VER}', _v) %}
+{{ curl_extract_tar(name, resolved_url, binary_pattern=opts.binary_pattern, bin=opts.get('bin'), hash=opts.get('hash'), version=_v if _v else None) }}
 {% endfor %}
 
 # ===========================================================================
@@ -53,33 +67,19 @@
 # --- Hyprland tools (multi-binary) ---
 {{ curl_extract_tar('hyprevents', 'https://github.com/vilari-mickopf/hyprevents/archive/refs/heads/master.tar.gz', 'hyprevents-master', binaries=['hyprevents', 'event_handler', 'event_loader'], chmod=True) }}
 
-# --- pip: dr14_tmeter (custom git install, not standard pip_pkg) ---
-install_dr14_tmeter:
-  cmd.run:
-    - name: GIT_CONFIG_GLOBAL=/dev/null pipx install git+https://github.com/simon-r/dr14_t.meter.git
-    - runas: {{ user }}
-    - creates: {{ home }}/.local/bin/dr14_tmeter
-    - retry:
-        attempts: {{ retry_attempts }}
-        interval: {{ retry_interval }}
+# --- pip: dr14_tmeter (custom git install, needs GIT_CONFIG_GLOBAL override) ---
+{{ pip_pkg('dr14_tmeter', pkg='git+https://github.com/simon-r/dr14_t.meter.git', env='GIT_CONFIG_GLOBAL=/dev/null') }}
 
 # --- cargo: tailray (needs dbus headers, has onlyif guards) ---
-install_tailray:
-  cmd.run:
-    - name: cargo install --git https://github.com/NotAShelf/tailray
-    - runas: {{ user }}
-    - creates: {{ home }}/.local/share/cargo/bin/tailray
-    - onlyif:
-      - pkg-config --exists dbus-1
-      - command -v cargo
-    - retry:
-        attempts: {{ retry_attempts }}
-        interval: {{ retry_interval }}
+{{ cargo_pkg('tailray', git='https://github.com/NotAShelf/tailray', onlyif=['pkg-config --exists dbus-1', 'command -v cargo']) }}
 
 install_qmk_udev_rules:
   cmd.run:
     - name: curl -fsSL https://raw.githubusercontent.com/qmk/qmk_firmware/master/util/udev/50-qmk.rules -o /etc/udev/rules.d/50-qmk.rules && udevadm control --reload-rules
     - creates: /etc/udev/rules.d/50-qmk.rules
+    - retry:
+        attempts: {{ retry_attempts }}
+        interval: {{ retry_interval }}
 
 # --- blesh (Bash Line Editor) ---
 {{ curl_extract_tar('blesh', 'https://github.com/akinomyoga/ble.sh/releases/download/nightly/ble-nightly.tar.xz', archive_ext='tar.xz', dest='~/.local/share', strip_components=1, creates=home ~ '/.local/share/ble.sh', user=user, home=home) }}
@@ -105,9 +105,10 @@ mpv_script_{{ filename | replace('.', '_') | replace('-', '_') }}:
 
 {% for filename, opts in mpv.github_release.items() %}
 {% set mpv_tag = ver.get(opts.repo.split('/')[1] | replace('-', '_'), '') %}
-{{ github_release_to('mpv_script_' ~ (filename | replace('.', '_') | replace('-', '_')), filename, opts.repo, opts.asset, mpv_scripts_dir, tag=mpv_tag if mpv_tag else None, require='mpv_scripts_dir') }}
+{{ github_release_to('mpv_script_' ~ (filename | replace('.', '_') | replace('-', '_')), filename, opts.repo, opts.asset, mpv_scripts_dir, tag=mpv_tag if mpv_tag else None, version=mpv_tag if mpv_tag else None, require='mpv_scripts_dir') }}
 {% endfor %}
 
 {% for name, opts in mpv.github_release_zip.items() %}
-{{ github_release_to('mpv_plugin_' ~ name, name, opts.repo, opts.asset, opts.dest, format='zip', tag=ver.get(name, '') if ver.get(name, '') else None, creates=mpv_scripts_dir ~ '/' ~ name, require='mpv_scripts_dir') }}
+{% set _v = ver.get(name, '') %}
+{{ github_release_to('mpv_plugin_' ~ name, name, opts.repo, opts.asset, opts.dest, format='zip', tag=_v if _v else None, version=_v if _v else None, creates=mpv_scripts_dir ~ '/' ~ name, require='mpv_scripts_dir') }}
 {% endfor %}

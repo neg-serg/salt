@@ -29,7 +29,7 @@ kernel_modules_blacklist:
         cpu_vendor: {{ host.cpu_vendor }}
 
 # Load modules that aren't already loaded (no reboot needed for most)
-{% set modules_to_load = [host.kvm_module, 'tcp_bbr'] %}
+{% set modules_to_load = [host.kvm_module, 'tcp_bbr', 'ntsync'] + host.extra_modules %}
 {% for mod in modules_to_load %}
 load_{{ mod | replace('-', '_') }}:
   kmod.present:
