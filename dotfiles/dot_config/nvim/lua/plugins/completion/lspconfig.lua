@@ -62,29 +62,7 @@ return {
       vim.lsp.enable(server)
     end
 
-    -- Servers with default config
-    local simple_servers = {
-      'autotools_ls',              -- autoconf/automake
-      'awk_ls',                    -- AWK
-      'bashls',                    -- Bash/sh
-      'cmake',                     -- CMake
-      'cssls',                     -- CSS/SCSS/Less
-      'dotls',                     -- Graphviz DOT
-      'html',                      -- HTML
-      'just',                      -- Justfiles
-      'lemminx',                   -- XML
-      'marksman',                  -- Markdown
-      'nginx_language_server',     -- nginx configs
-      'nil_ls',                    -- Nix (nil by oxalica)
-      'qmlls',                     -- QML (Qt)
-      'systemd_ls',                -- systemd units
-      'taplo',                     -- TOML
-      'ts_ls',                     -- TypeScript/JavaScript
-      'yamlls',                    -- YAML
-    }
-    for _, srv in ipairs(simple_servers) do configure(srv) end
-
-    -- Servers with custom config
+    -- Servers with custom config (default-config servers auto-enabled by mason-lspconfig)
     configure('clangd', {
       cmd = { 'clangd', '--background-index', '--clang-tidy', '--completion-style=detailed', '--header-insertion=never' },
       init_options = { clangdFileStatus = true },
