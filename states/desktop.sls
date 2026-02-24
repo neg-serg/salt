@@ -43,10 +43,15 @@ libvirtd_enabled:
   service.enabled:
     - name: libvirtd
 
+# pcscd is socket-activated: scdaemon connects on demand for Yubikey smart card operations.
+pcscd_socket_enabled:
+  service.enabled:
+    - name: pcscd.socket
+
 # Disable tuned: its throughput-performance profile conflicts with custom
 # I/O tuning (sets read_ahead_kb=8192 on NVMe, may override sysctl values).
 # All tuning is managed manually via sysctl.sls, kernel_params_limine.sls, hardware.sls.
-{{ service_stopped('disable_tuned', 'tuned') }}
+{{ service_stopped('tuned_stopped', 'tuned') }}
 
 # --- Hyprland ecosystem packages ---
 {{ pacman_install('hyprland_desktop',
@@ -80,7 +85,7 @@ wallust_hyprland_defaults:
       - file: wallust_cache_dir
 
 # --- dconf: GTK/icon/font theme for Wayland apps ---
-set_dconf_themes:
+dconf_themes:
   cmd.run:
     - name: |
         set -eo pipefail
