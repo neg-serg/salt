@@ -3,7 +3,7 @@
 {% from '_macros_service.jinja' import service_stopped %}
 # greetd display manager: replace sddm with quickshell greeter
 
-{{ pacman_install('greetd', 'greetd greetd-regreet') }}
+{{ pacman_install('greetd', 'greetd') }}
 
 {{ service_stopped('disable_sddm', 'sddm') }}
 
@@ -23,7 +23,7 @@ greetd_config:
         vt = 1
 
         [default_session]
-        command = "Hyprland -c /etc/greetd/hyprland-greeter.conf"
+        command = "start-hyprland -- -c /etc/greetd/hyprland-greeter.conf"
         user = "{{ user }}"
     - user: root
     - group: root
