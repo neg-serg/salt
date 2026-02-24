@@ -7,14 +7,12 @@ monitorv2 {
     output = {{ host.primary_output }}
     mode = {{ host.display }}
     position = 0x0
-    scale = 2
+    scale = {{ host.greetd_scale }}
     vrr = 3
     bitdepth = 10
 }
-monitorv2 {
-    output = DP-1
-    disabled = true
-}
+# Disable all other outputs during greeter
+monitor = , disable
 {% endif %}
 
 input {

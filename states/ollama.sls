@@ -5,7 +5,7 @@
 # Ollama LLM server: systemd service, model pulls
 {% if host.features.ollama %}
 
-{{ service_with_unit('ollama', 'salt://units/ollama.service', template='jinja', context={'user': user, 'home': home}, onlyif='command -v ollama') }}
+{{ service_with_unit('ollama', 'salt://units/ollama.service', template='jinja', context={'user': user, 'home': home, 'mnt_one': host.mnt_one}, onlyif='command -v ollama') }}
 
 {{ ensure_dir('ollama_models_dir', host.mnt_one ~ '/ollama/models', require=['mount: mount_one']) }}
 

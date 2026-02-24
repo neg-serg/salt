@@ -96,6 +96,17 @@ dconf_themes:
     - env:
       - DBUS_SESSION_BUS_ADDRESS: "unix:path={{ host.runtime_dir }}/bus"
     - unless: |
+        export DBUS_SESSION_BUS_ADDRESS=unix:path={{ host.runtime_dir }}/bus
 {% for key, val in desktop.dconf_settings.items() %}
         test "$(dconf read {{ key }})" = "'{{ val }}'"{{ ' &&' if not loop.last else '' }}
 {% endfor %}
+
+# --- Salt daemon systemd unit ---
+salt_daemon_service:
+  file.managed:
+    - name: /etc/systemd/system/salt-daemon.service
+    - source: salt://units/salt-daemon.service.j2
+    - template: jinja
+    - context:
+        project_dir: {{ host.project_dir }}
+    - mode: '0644'

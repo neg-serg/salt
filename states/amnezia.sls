@@ -1,5 +1,6 @@
 {% from '_imports.jinja' import host, user, home %}
 {% from '_macros_service.jinja' import ensure_dir %}
+{% import_yaml 'data/versions.yaml' as ver %}
 {% set cache = host.mnt_one ~ '/pkg/cache/amnezia' %}
 # Salt state for Amnezia build and deploy (Local User version)
 # All 3 components build in parallel for faster deployment
@@ -16,6 +17,9 @@ build_amnezia_all:
     - shell: /bin/bash
     - timeout: 3600
     - output_loglevel: info
+    - env:
+      - BUILD: {{ cache }}
+      - AMNEZIA_VERSION: {{ ver.amnezia_vpn }}
     - unless: >-
         test -f {{ cache }}/amneziawg-go-bin &&
         test -f {{ cache }}/awg-bin &&
