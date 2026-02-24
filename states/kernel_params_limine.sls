@@ -36,7 +36,7 @@ kernel_params_limine:
         WANTED=({% for karg in kargs %}'{{ karg }}' {% endfor %})
 
         # Build space-separated string of params not already present
-        current=$(grep 'kernel_cmdline:' "$LIMINE" | head -1)
+        current=$(rg 'kernel_cmdline:' "$LIMINE" | head -1)
         missing=""
         for k in "${WANTED[@]}"; do
           # Match param key (before =) to avoid partial matches
@@ -57,7 +57,7 @@ kernel_params_limine:
     - unless: |
         LIMINE="/boot/limine.conf"
         WANTED=({% for karg in kargs %}'{{ karg }}' {% endfor %})
-        current=$(grep 'kernel_cmdline:' "$LIMINE" | head -1)
+        current=$(rg 'kernel_cmdline:' "$LIMINE" | head -1)
         for k in "${WANTED[@]}"; do
           key="${k%%=*}"
           rg -q "$key" <<< "$current" || exit 1

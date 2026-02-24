@@ -4,7 +4,7 @@ case "${1:-}" in
   post)
     # Re-enable manual PWM control for motherboard fans (nct6775)
     for d in /sys/class/hwmon/hwmon*; do
-      if [ -f "$d/name" ] && grep -Eiq '^nct' "$d/name"; then
+      if [ -f "$d/name" ] && rg -qi '^nct' "$d/name"; then
         for en in "$d"/pwm[1-9]_enable; do
           [ -e "$en" ] || continue
           echo 1 > "$en" 2>/dev/null || true
@@ -14,7 +14,7 @@ case "${1:-}" in
 {% if cpu_vendor == 'amd' %}
     # Re-enable AMDGPU pwm1 manual control
     for d in /sys/class/hwmon/hwmon*; do
-      if [ -f "$d/name" ] && grep -Eiq '^amdgpu$' "$d/name"; then
+      if [ -f "$d/name" ] && rg -qi '^amdgpu$' "$d/name"; then
         [ -w "$d/pwm1_enable" ] && echo 1 > "$d/pwm1_enable" 2>/dev/null || true
       fi
     done
