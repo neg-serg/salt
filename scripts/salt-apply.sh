@@ -21,7 +21,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 VENV_DIR="${PROJECT_DIR}/.venv"
 RUNTIME_CONFIG_DIR="${PROJECT_DIR}/.salt_runtime"
-DAEMON_SOCK="${SALT_DAEMON_SOCK:-/tmp/salt-daemon.sock}"
+DAEMON_SOCK="${SALT_DAEMON_SOCK:-/run/salt-daemon.sock}"
 DAEMON_SCRIPT="${SCRIPT_DIR}/salt-daemon.py"
 
 STATE="system_description"
@@ -39,7 +39,7 @@ LOG_DIR="${PROJECT_DIR}/logs"
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 LOG_FILE="${SALT_LOG_FILE:-${LOG_DIR}/${STATE}-${TIMESTAMP}.log}"
 mkdir -p "${LOG_DIR}"
-touch "${LOG_FILE}"
+install -m 0640 /dev/null "${LOG_FILE}"
 
 # ── Bootstrap: venv + Salt install ────────────────────────────────────────────
 bootstrap_salt() {

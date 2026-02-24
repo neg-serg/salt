@@ -8,7 +8,7 @@ Type=simple
 RuntimeDirectory=sing-box-tun
 ExecStartPre=/usr/bin/sh -c 'ip rule del pref 100 2>/dev/null; ip rule del pref 200 2>/dev/null; ip route show table 200 default > /run/sing-box-tun/prev-default-route 2>/dev/null; ip route del default table 200 2>/dev/null; true'
 ExecStart=/usr/bin/sing-box run -c /run/user/{{ uid }}/secrets/vless-reality-singbox-tun.json
-ExecStartPost=/usr/bin/sh -c 'ip rule add pref 100 to 204.152.223.171 lookup main'
+ExecStartPost=/usr/bin/sh -c 'ip rule add pref 100 to $(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))[\"outbounds\"][0][\"server\"])" /run/user/{{ uid }}/secrets/vless-reality-singbox-tun.json) lookup main'
 ExecStartPost=/usr/bin/sh -c 'ip route replace default dev sb0 table 200'
 ExecStartPost=/usr/bin/sh -c 'ip rule add pref 200 lookup 200'
 ExecStartPost=/usr/bin/ip route flush cache
@@ -19,6 +19,6 @@ ExecStopPost=/usr/bin/resolvectl revert sb0
 Restart=on-failure
 CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_RAW CAP_NET_BIND_SERVICE
 AmbientCapabilities=CAP_NET_ADMIN CAP_NET_RAW CAP_NET_BIND_SERVICE
-NoNewPrivileges=false
+NoNewPrivileges=true
 
 # No [Install] — manual start only: systemctl start sing-box-tun

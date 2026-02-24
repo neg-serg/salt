@@ -247,12 +247,13 @@ cat > /etc/hosts <<HOSTS
 127.0.1.1   cachyos.localdomain cachyos
 HOSTS
 
-# Root password (change on first login)
-echo "root:changeme" | chpasswd
+# Lock root account — use sudo instead
+passwd -l root
 
-# User
+# User (password must be set on first login)
 useradd -m -G wheel -s /bin/zsh neg
-echo "neg:changeme" | chpasswd
+echo "neg:$(openssl rand -base64 32)" | chpasswd
+passwd --expire neg
 # Uncomment existing wheel rule (must stay BEFORE @includedir so NOPASSWD drop-in wins)
 sed -i "s/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/" /etc/sudoers
 
@@ -417,7 +418,9 @@ INNER_SCRIPT="${INNER_SCRIPT//__PACKAGES__/${PACKAGES[*]}}"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 echo "==> Launching Arch container for bootstrap..."
-podman run --rm -it --privileged \
+podman run --rm -it \
+    --cap-add=SYS_ADMIN --cap-add=SYS_CHROOT --cap-add=MKNOD \
+    --security-opt=no-new-privileges \
     --name cachyos-bootstrap \
     -v "$TARGET:/mnt/target" \
     -v "$SCRIPT_DIR:/mnt/packages:ro" \

@@ -42,7 +42,13 @@ sudo_nopasswd:
   file.managed:
     - name: /etc/sudoers.d/99-{{ user }}-nopasswd
     - contents: |
-        {{ user }} ALL=(ALL) NOPASSWD: ALL
+        # Salt/paru/system management — passwordless
+        {{ user }} ALL=(ALL) NOPASSWD: /usr/bin/pacman, /usr/bin/paru
+        {{ user }} ALL=(ALL) NOPASSWD: /usr/bin/systemctl, /usr/bin/journalctl
+        {{ user }} ALL=(ALL) NOPASSWD: /usr/bin/mount, /usr/bin/umount, /usr/bin/btrfs
+        {{ user }} ALL=(ALL) NOPASSWD: {{ home }}/src/salt/.venv/bin/python3, {{ home }}/src/salt/scripts/salt-daemon.py
+        {{ user }} ALL=(ALL) NOPASSWD: /usr/bin/ip, /usr/bin/resolvectl, /usr/bin/udevadm
+        {{ user }} ALL=(ALL) NOPASSWD: /usr/bin/podman
     - user: root
     - group: root
     - mode: '0440'
