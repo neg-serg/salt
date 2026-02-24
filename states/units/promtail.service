@@ -5,9 +5,18 @@ Wants=network-online.target
 
 [Service]
 Type=simple
+User=root
+Group=root
 ExecStart=/usr/local/bin/promtail -config.file=/etc/promtail/config.yaml
 Restart=on-failure
 RestartSec=5
+NoNewPrivileges=true
+ProtectSystem=full
+PrivateTmp=yes
+PrivateDevices=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+LockPersonality=yes
 
 [Install]
 WantedBy=multi-user.target

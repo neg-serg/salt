@@ -2,11 +2,16 @@
 workgroup = WORKGROUP
 server string = {{ hostname }} Samba Server
 netbios name = {{ hostname }}
-map to guest = Bad User
+map to guest = Never
 security = user
+bind interfaces only = yes
+interfaces = lo
 
 [shared]
 path = {{ mnt_zero }}/sync/smb
 browseable = yes
 read only = no
-guest ok = yes
+guest ok = no
+valid users = {{ user }}
+force user = {{ user }}
+force group = {{ user }}

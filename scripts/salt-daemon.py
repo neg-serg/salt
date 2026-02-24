@@ -35,6 +35,7 @@ import logging
 import os
 import signal
 import socket
+import struct
 import sys
 
 # ── Salt venv path setup ─────────────────────────────────────────────────────
@@ -54,8 +55,23 @@ import salt_compat
 salt_compat.patch()
 
 # ── Defaults ─────────────────────────────────────────────────────────────────
-_DEFAULT_SOCKET = "/tmp/salt-daemon.sock"
+_DEFAULT_SOCKET = "/run/salt-daemon.sock"
 _DEFAULT_CONFIG_DIR = os.path.join(_SCRIPT_DIR, ".salt_runtime")
+
+# ── Security: allowed log directory and state whitelist ──────────────────────
+_ALLOWED_LOG_DIR = os.path.join(_SCRIPT_DIR, os.pardir, "logs")
+
+# States from system_description.sls include list + top-level orchestrators.
+# Update this set when adding new .sls files to system_description.sls.
+_ALLOWED_STATES = frozenset({
+    "system_description", "cachyos", "cachyos_all",
+    "audio", "amnezia", "bind_mounts", "custom_pkgs", "desktop", "dns",
+    "floorp", "fonts", "greetd", "hardware", "installers",
+    "installers_desktop", "kanata", "installers_themes", "kernel_modules",
+    "kernel_params_limine", "monitoring", "mounts", "mpd", "network",
+    "ollama", "services", "snapshots", "steam", "sysctl", "users",
+    "user_services", "zsh",
+})
 
 log = logging.getLogger("salt-daemon")
 
@@ -208,8 +224,38 @@ class DaemonServer:
         self.socket_path = socket_path
         self.opts = opts
         self.minion = minion
+        # Build allowed UID set: root + all members of the wheel group
+        import grp
+        import pwd
+
+        self.allowed_uids = {0}  # root always allowed
+        try:
+            wheel = grp.getgrnam("wheel")
+            for username in wheel.gr_mem:
+                try:
+                    self.allowed_uids.add(pwd.getpwnam(username).pw_uid)
+                except KeyError:
+                    pass
+        except KeyError:
+            pass
+        log.info("Allowed UIDs for socket connections: %s", self.allowed_uids)
 
     def handle_client(self, conn: socket.socket) -> None:
+        # ── Verify peer credentials (SO_PEERCRED) ────────────────────────
+        # Only allow root (uid 0) and the primary user (uid from _ALLOWED_UID).
+        try:
+            cred = conn.getsockopt(socket.SOL_SOCKET, socket.SO_PEERCRED, struct.calcsize("iII"))
+            peer_pid, peer_uid, peer_gid = struct.unpack("iII", cred)
+        except (OSError, struct.error) as exc:
+            log.warning("Cannot get peer credentials: %s", exc)
+            conn.close()
+            return
+
+        if peer_uid not in self.allowed_uids:
+            log.warning("Rejected connection from uid=%d pid=%d (allowed: %s)", peer_uid, peer_pid, self.allowed_uids)
+            conn.close()
+            return
+
         try:
             # Read one newline-terminated JSON line
             data = b""
@@ -235,6 +281,27 @@ class DaemonServer:
         state = request.get("state", "system_description")
         kwargs = request.get("kwargs", {})
         log_file = request.get("log_file", "")
+
+        # ── Validate state name ──────────────────────────────────────────
+        if state not in _ALLOWED_STATES:
+            log.warning("Rejected disallowed state: %r", state)
+            try:
+                conn.sendall(
+                    (json.dumps({"type": "stdout", "line": f"error: state {state!r} not in allowed list"}) + "\n").encode()
+                )
+                conn.sendall((json.dumps({"type": "exit", "code": 1}) + "\n").encode())
+            except OSError:
+                pass
+            conn.close()
+            return
+
+        # ── Validate log_file path (restrict to project logs/ dir) ───────
+        if log_file:
+            real_log = os.path.realpath(log_file)
+            allowed_dir = os.path.realpath(_ALLOWED_LOG_DIR)
+            if not real_log.startswith(allowed_dir + os.sep):
+                log.warning("Rejected log_file outside allowed dir: %r (resolved to %r)", log_file, real_log)
+                log_file = ""
 
         log.info("Request: state=%r kwargs=%s log_file=%r", state, kwargs, log_file)
 
