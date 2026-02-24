@@ -11,7 +11,8 @@ makedepends=('go' 'git')
 conflicts=('duf')
 provides=('duf')
 source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/master.tar.gz")
-sha256sums=('SKIP')
+# Update hash after pushing to master: curl -sL ${url}/archive/master.tar.gz | sha256sum
+sha256sums=('3ee483ee98f3b2d8d7e0d8b89b27814819846f6d9964360f3ceffb3574e3f3ea')
 
 build() {
     cd "${pkgname}-master"

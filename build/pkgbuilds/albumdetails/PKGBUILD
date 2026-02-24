@@ -9,7 +9,8 @@ license=('MIT')
 depends=('taglib')
 makedepends=('gcc' 'make')
 source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/master.tar.gz")
-sha256sums=('SKIP')
+# Update hash after pushing to master: curl -sL ${url}/archive/master.tar.gz | sha256sum
+sha256sums=('3ec67787ff7465c62c8defd984a40a5499620829d11c80fdb846a3a571987294')
 
 build() {
     cd "${pkgname}-master"

@@ -11,7 +11,8 @@ depends=('fontconfig')
 makedepends=('npm' 'git' 'python-fonttools' 'fontforge')
 source=("iosevka-source-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz"
         'iosevka-neg.toml')
-sha256sums=('SKIP' 'SKIP')
+sha256sums=('34e267e3cf74c4feb7622321b8d11eb32310f9f05b8ba803a7e46c6cc7188773'
+            '72d60fba8e38084606e5f6dd808e4d34bb5363bf382bae94b61e0997e4f356c3')
 options=('!strip')
 
 prepare() {
