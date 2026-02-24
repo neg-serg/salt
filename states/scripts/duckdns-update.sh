@@ -3,4 +3,4 @@
 set -eu
 : "${DUCKDNS_TOKEN:?DUCKDNS_TOKEN not set}"
 : "${DUCKDNS_DOMAIN:?DUCKDNS_DOMAIN not set}"
-curl -s "https://www.duckdns.org/update?domains=${DUCKDNS_DOMAIN}&token=${DUCKDNS_TOKEN}&ip="
+curl -s -o /dev/null -d "domains=${DUCKDNS_DOMAIN}&token=${DUCKDNS_TOKEN}&ip=" "https://www.duckdns.org/update"

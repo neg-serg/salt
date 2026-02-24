@@ -3,7 +3,7 @@
 
 Usage:
     update-tools.py                  # list all tools with install status
-    update-tools.py --check          # check latest GitHub release tags
+    update-tools.py --check          # check latest GitHub release tags vs pinned
     update-tools.py --update name..  # update specific tools
     update-tools.py --update --all   # update all tools
 """
@@ -20,6 +20,7 @@ import yaml
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 YAML_PATH = os.path.join(PROJECT_ROOT, "states/data/installers.yaml")
+VERSIONS_PATH = os.path.join(PROJECT_ROOT, "states/data/versions.yaml")
 SALT_CONFIG = os.path.join(PROJECT_ROOT, ".salt_runtime")
 SLS_NAME = "installers"
 
@@ -27,16 +28,27 @@ HOME = os.path.expanduser("~")
 BIN = f"{HOME}/.local/bin"
 CARGO_BIN = f"{HOME}/.local/share/cargo/bin"
 
+# Mapping from versions.yaml keys to GitHub repos (for --check)
+GITHUB_REPOS = {
+    "ssh_to_age": "Mic92/ssh-to-age",
+    "tdl": "iyear/tdl",
+    "xray": "XTLS/Xray-core",
+    "loki": "grafana/loki",
+    "promtail": "grafana/loki",
+    "adguardhome": "AdguardTeam/AdGuardHome",
+    "mpv_mpris": "hoyon/mpv-mpris",
+    "uosc": "tomasklaen/uosc",
+    "nyxt": "atlas-engineer/nyxt",
+    "modern_steam": "SleepDaemon/Modern-Steam",
+    "fira_code_nerd": "ryanoasis/nerd-fonts",
+}
+
 # Custom (non-YAML) tools from installers.sls: name -> (guard_path, sls_name)
 CUSTOM_TOOLS = {
     "zi": (f"{HOME}/.config/zi/bin/zi.zsh", "installers"),
-    "oh-my-posh": (f"{BIN}/oh-my-posh", "installers"),
     "hyprevents": (f"{BIN}/hyprevents", "installers"),
-    "realesrgan": (f"{BIN}/realesrgan-ncnn-vulkan", "installers"),
-    "essentia": (f"{BIN}/essentia_streaming_extractor_music", "installers"),
     "dr14_tmeter": (f"{BIN}/dr14_tmeter", "installers"),
     "tailray": (f"{CARGO_BIN}/tailray", "installers"),
-    "dool": (f"{BIN}/dool", "installers"),
     "blesh": (f"{HOME}/.local/share/ble.sh", "installers"),
     "mpv-scripts": (f"{HOME}/.config/mpv/scripts/thumbfast.lua", "installers"),
     "qmk-udev": ("/etc/udev/rules.d/50-qmk.rules", "installers"),
@@ -48,6 +60,11 @@ def load_tools():
         return yaml.safe_load(f)
 
 
+def load_versions():
+    with open(VERSIONS_PATH) as f:
+        return yaml.safe_load(f)
+
+
 def guard_path(category, name, opts):
     """Return the creates: guard file path for a tool."""
     if isinstance(opts, str):
@@ -55,8 +72,6 @@ def guard_path(category, name, opts):
     match category:
         case "curl_bin" | "github_tar":
             return f"{BIN}/{name}"
-        case "github_release":
-            return f"{BIN}/{opts.get('bin', name)}"
         case "pip_pkg":
             return f"{BIN}/{opts.get('bin', name)}"
         case "cargo_pkg":
@@ -65,12 +80,18 @@ def guard_path(category, name, opts):
             bins = opts.get("binaries")
             if bins:
                 return f"{BIN}/{bins[0]}"
-            return f"{BIN}/{opts['binary_path'].rsplit('/', 1)[-1]}"
+            bp = opts.get("binary_path")
+            if bp:
+                return f"{BIN}/{bp.rsplit('/', 1)[-1]}"
+            return f"{BIN}/{name}"
         case "curl_extract_tar":
             bins = opts.get("binaries")
             if bins:
                 return f"{BIN}/{bins[0]}"
-            return f"{BIN}/{opts['binary_pattern'].rsplit('/', 1)[-1]}"
+            bp = opts.get("binary_pattern")
+            if bp:
+                return f"{BIN}/{bp.rsplit('/', 1)[-1]}"
+            return f"{BIN}/{opts.get('bin', name)}"
     return None
 
 
@@ -126,7 +147,6 @@ def cmd_list(tool_map):
     for cat in [
         "curl_bin",
         "github_tar",
-        "github_release",
         "pip_pkg",
         "cargo_pkg",
         "curl_extract_zip",
@@ -141,19 +161,26 @@ def cmd_list(tool_map):
             print(f"    {mark} {name}")
 
 
-def cmd_check(tool_map, tools):
-    """Check latest versions for github_release tools."""
-    gh_tools = tools.get("github_release", {})
-    if not gh_tools:
-        print("No github_release tools found")
-        return
+def cmd_check():
+    """Check latest GitHub versions against pinned versions.yaml."""
+    versions = load_versions()
 
-    print("Checking latest GitHub releases...\n")
-    for name, opts in gh_tools.items():
-        tag = fetch_latest_tag(opts["repo"])
-        info = tool_map[name]
-        mark = "\033[32m+\033[0m" if info["installed"] else "\033[31m-\033[0m"
-        print(f"  {mark} {name:16s} latest: {tag:16s} ({opts['repo']})")
+    print("Checking pinned versions against latest GitHub releases...\n")
+    for key, repo in sorted(GITHUB_REPOS.items()):
+        pinned = versions.get(key, "?")
+        latest = fetch_latest_tag(repo)
+        # Normalize: strip leading 'v' for comparison
+        latest_clean = latest.lstrip("v") if latest != "?" else "?"
+        pinned_clean = str(pinned).lstrip("v")
+
+        if latest_clean == "?" :
+            status = "\033[33m?\033[0m"
+        elif latest_clean == pinned_clean:
+            status = "\033[32m=\033[0m"
+        else:
+            status = "\033[31m!\033[0m"
+
+        print(f"  {status} {key:20s} pinned: {str(pinned):12s} latest: {latest:12s} ({repo})")
 
 
 def update_with_salt(name, info):
@@ -261,11 +288,11 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="Examples:\n"
         "  %(prog)s                    List all tools\n"
-        "  %(prog)s --check            Check latest GitHub releases\n"
+        "  %(prog)s --check            Check pinned vs latest GitHub versions\n"
         "  %(prog)s --update sops eza  Update specific tools\n"
         "  %(prog)s --update --all     Update everything\n",
     )
-    parser.add_argument("--check", action="store_true", help="check latest github_release versions")
+    parser.add_argument("--check", action="store_true", help="check pinned vs latest GitHub versions")
     parser.add_argument("--update", nargs="*", metavar="TOOL", help="update tools (or --all)")
     parser.add_argument("--all", action="store_true", help="update all tools (with --update)")
     args = parser.parse_args()
@@ -275,7 +302,7 @@ def main():
     tool_map = build_tool_map(tools)
 
     if args.check:
-        cmd_check(tool_map, tools)
+        cmd_check()
     elif args.update is not None:
         if args.all:
             names = sorted(tool_map.keys())
