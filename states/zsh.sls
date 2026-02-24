@@ -9,8 +9,9 @@ zsh_config_dir:
     - group: root
     - mode: '0755'
 
-/etc/zsh/zshenv:
+zsh_system_env:
   file.managed:
+    - name: /etc/zsh/zshenv
     - contents: |
         # System-wide Zsh environment (zsh reads /etc/zsh/ on Arch)
         export ZDOTDIR="${XDG_CONFIG_HOME:-$HOME/.config}/zsh"
@@ -20,8 +21,9 @@ zsh_config_dir:
     - require:
       - file: zsh_config_dir
 
-/etc/zsh/zshrc:
+zsh_system_rc:
   file.managed:
+    - name: /etc/zsh/zshrc
     - contents: |
         # System-wide zshrc (ZDOTDIR set in /etc/zsh/zshenv)
     - user: root

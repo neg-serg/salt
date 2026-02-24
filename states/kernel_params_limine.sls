@@ -29,7 +29,7 @@
 
 # Append missing kernel params to all kernel_cmdline entries in limine.conf.
 # Preserves existing root= and other boot-critical params.
-set_kernel_params_limine:
+kernel_params_limine:
   cmd.run:
     - name: |
         LIMINE="/boot/limine.conf"

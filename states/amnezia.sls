@@ -44,15 +44,17 @@ install_amneziawg_tools:
       - cmd: build_amnezia_all
 
 # Symlinks for sudo access
-/usr/local/bin/amneziawg-go:
+amneziawg_go_symlink:
   file.symlink:
+    - name: /usr/local/bin/amneziawg-go
     - target: {{ home }}/.local/bin/amneziawg-go
     - force: True
     - require:
       - file: install_amneziawg_go
 
-/usr/local/bin/awg:
+awg_symlink:
   file.symlink:
+    - name: /usr/local/bin/awg
     - target: {{ home }}/.local/bin/awg
     - force: True
     - require:
@@ -69,19 +71,19 @@ install_amnezia_vpn:
       - cmd: build_amnezia_all
 
 # Verification (only runs when the binary actually changed)
-verify_amneziawg_go:
+amneziawg_go_verify:
   cmd.run:
     - name: {{ home }}/.local/bin/amneziawg-go --version
     - onchanges:
       - file: install_amneziawg_go
 
-verify_awg:
+awg_verify:
   cmd.run:
     - name: {{ home }}/.local/bin/awg --version
     - onchanges:
       - file: install_amneziawg_tools
 
-verify_amnezia_vpn:
+amnezia_vpn_verify:
   cmd.run:
     - name: ldd {{ home }}/.local/bin/AmneziaVPN
     - onchanges:

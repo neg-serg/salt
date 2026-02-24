@@ -47,11 +47,11 @@ nct6775_module:
 # --- Mask rfkill on hosts without WiFi (avoids 5s+ timeout at boot) ---
 {% if not host.features.network.wifi %}
 
-mask_rfkill_service:
+rfkill_service_masked:
   service.masked:
     - name: systemd-rfkill.service
 
-mask_rfkill_socket:
+rfkill_socket_masked:
   service.masked:
     - name: systemd-rfkill.socket
 

@@ -5,7 +5,7 @@
 {% if host.features.floorp %}
 {% import_yaml 'data/floorp.yaml' as floorp %}
 
-{% set floorp_profile = home ~ '/.floorp/c85pjaxk.default-default' %}
+{% set floorp_profile = home ~ '/.floorp/' ~ host.floorp_profile %}
 
 floorp_user_js:
   file.managed:
