@@ -33,8 +33,12 @@
 samba_share_dir:
   file.directory:
     - name: {{ host.mnt_zero }}/sync/smb
-    - mode: '0777'
+    - user: {{ user }}
+    - group: {{ user }}
+    - mode: '0755'
     - makedirs: True
+    - require:
+      - mount: mount_zero
 
 samba_config:
   file.managed:
@@ -46,6 +50,7 @@ samba_config:
     - context:
         hostname: {{ host.hostname }}
         mnt_zero: {{ host.mnt_zero }}
+        user: {{ user }}
 
 # Don't enable at boot — manual start only: systemctl start smb
 {{ service_stopped('samba_not_enabled', 'smb', stop=False, requires=['file: samba_config']) }}
@@ -55,7 +60,7 @@ samba_config:
 {% if svc.bitcoind %}
 {% set btc_url = 'https://bitcoincore.org/bin/bitcoin-core-${VER}/bitcoin-${VER}-x86_64-linux-gnu.tar.gz' | replace('${VER}', ver.bitcoind) %}
 {% set btc_pattern = 'bitcoin-${VER}/bin' | replace('${VER}', ver.bitcoind) %}
-{{ curl_extract_tar('bitcoind', btc_url, binary_pattern=btc_pattern, binaries=['bitcoind', 'bitcoin-cli'], bin_dest='/usr/local/bin', user=None) }}
+{{ curl_extract_tar('bitcoind', btc_url, binary_pattern=btc_pattern, binaries=['bitcoind', 'bitcoin-cli'], bin_dest='/usr/local/bin', hash='07f77afd326639145b9ba9562912b2ad2ccec47b8a305bd075b4f4cb127b7ed7', version=ver.bitcoind, user=None) }}
 
 {{ system_daemon_user('bitcoind', '/var/lib/bitcoind') }}
 

@@ -4,11 +4,15 @@
 # URLs with ${VER} are interpolated at render time from data/versions.yaml.
 
 curl_bin:
-  ssh-to-age: "https://github.com/Mic92/ssh-to-age/releases/download/${VER}/ssh-to-age-linux-amd64"
+  ssh-to-age:
+    url: "https://github.com/Mic92/ssh-to-age/releases/download/${VER}/ssh-to-age-linux-amd64"
+    hash: "9980a9b19c9495d446e825a2639b77cb381db30710d50542c835b86e9efaf8e9"
   rofi-systemd: "https://raw.githubusercontent.com/IvanMalison/rofi-systemd/master/rofi-systemd"
 
 github_tar:
-  tdl: "https://github.com/iyear/tdl/releases/download/v${VER}/tdl_Linux_64bit.tar.gz"
+  tdl:
+    url: "https://github.com/iyear/tdl/releases/download/v${VER}/tdl_Linux_64bit.tar.gz"
+    hash: "3d9e6f940518673db9b3cd8e743057b75f93b4eca3f3925fb6bfe055c62cebd7"
 
 pip_pkg:
   httpstat: {}
@@ -28,9 +32,11 @@ curl_extract_zip:
     url: "https://github.com/XTLS/Xray-core/releases/download/v${VER}/Xray-linux-64.zip"
     binary_path: xray
     chmod: true
+    hash: "29ce535b56e207a406ffa1c2d4842dcc410be003eff8ec508bb732abc9f8e385"
 
 curl_extract_tar:
   essentia:
     url: "https://data.metabrainz.org/pub/musicbrainz/acousticbrainz/extractors/essentia-extractor-v${VER}-linux-x86_64.tar.gz"
     binary_pattern: streaming_extractor_music
     bin: essentia_streaming_extractor_music
+    hash: "d9902aadac4f442992877945da2a6fe8d6ea6b0de314ca8ac0c28dc5f253f7d8"

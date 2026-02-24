@@ -1,18 +1,8 @@
 {% from '_imports.jinja' import host, user, home %}
-{% from '_macros_service.jinja' import service_with_unit %}
+{% from '_macros_service.jinja' import udev_rule, service_with_unit %}
 
 # --- Custom udev rules: I/O schedulers, audio devices, SATA ALPM ---
-custom_udev_rules:
-  file.managed:
-    - name: /etc/udev/rules.d/99-custom.rules
-    - source: salt://configs/udev-custom.rules
-    - mode: '0644'
-
-udev_reload_custom:
-  cmd.run:
-    - name: udevadm control --reload-rules && udevadm trigger
-    - onchanges:
-      - file: custom_udev_rules
+{{ udev_rule('custom_udev_rules', '/etc/udev/rules.d/99-custom.rules', source='salt://configs/udev-custom.rules') }}
 
 # --- Fan control: auto-generate /etc/fancontrol from detected hwmon ---
 {% if host.features.fancontrol %}
