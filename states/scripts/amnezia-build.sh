@@ -1,7 +1,7 @@
 #!/bin/bash
 # shellcheck disable=SC2015  # A && B || C pattern is intentional (B=echo never fails)
 set -uo pipefail
-BUILD=/mnt/one/pkg/cache/amnezia
+BUILD=${BUILD:?BUILD env var required}
 IMG=archlinux:latest
 PIDS=()
 NAMES=()
@@ -60,7 +60,7 @@ if [ ! -f "$BUILD/AmneziaVPN-bin" ]; then
             qt6-remoteobjects libsecret && \
         git clone --recursive https://github.com/amnezia-vpn/amnezia-client.git /build/amnezia-client-src && \
         mkdir -p /build/amnezia-client-src/build && cd /build/amnezia-client-src/build && \
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DVERSION=2.1.2 && \
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DVERSION=${AMNEZIA_VERSION:?AMNEZIA_VERSION env var required} && \
         make -j\$(nproc) && \
         cp client/AmneziaVPN /build/AmneziaVPN-bin
         " && echo "[  OK ] amnezia-vpn" || { echo "[ FAIL] amnezia-vpn" >&2; exit 1; }
@@ -69,6 +69,10 @@ if [ ! -f "$BUILD/AmneziaVPN-bin" ]; then
 fi
 
 # Wait for all builds
+if [ ${#PIDS[@]} -eq 0 ]; then
+    echo "=== Amnezia: all binaries already cached ==="
+    exit 0
+fi
 for i in "${!PIDS[@]}"; do
     if ! wait "${PIDS[$i]}"; then
         echo "FAILED: ${NAMES[$i]}" >&2

@@ -1,15 +1,15 @@
 [Unit]
 Description=Salt state daemon (pre-loaded SMinion for fast state.apply)
-Documentation=file:///home/neg/src/salt/scripts/salt-daemon.py
+Documentation=file://{{ project_dir }}/scripts/salt-daemon.py
 After=network.target
 
 [Service]
 Type=simple
-ExecStart=/home/neg/src/salt/.venv/bin/python3 /home/neg/src/salt/scripts/salt-daemon.py \
-    --config-dir /home/neg/src/salt/.salt_runtime \
+ExecStart={{ project_dir }}/.venv/bin/python3 {{ project_dir }}/scripts/salt-daemon.py \
+    --config-dir {{ project_dir }}/.salt_runtime \
     --socket /tmp/salt-daemon.sock \
     --log-level warning
-WorkingDirectory=/home/neg/src/salt
+WorkingDirectory={{ project_dir }}
 Restart=on-failure
 RestartSec=5
 # State application requires root
