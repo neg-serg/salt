@@ -1,7 +1,8 @@
 {% from '_imports.jinja' import host, user, home %}
 {% from '_macros_service.jinja' import unit_override, system_daemon_user, service_with_unit, ensure_running %}
-{% from '_macros_install.jinja' import github_release_system %}
+{% from '_macros_github.jinja' import github_release_system %}
 {% from '_macros_pkg.jinja' import pacman_install %}
+{% import_yaml 'data/versions.yaml' as ver %}
 {% set dns = host.features.dns %}
 
 # --- Unbound: recursive DNS resolver with DNSSEC + DoT ---
@@ -38,7 +39,7 @@ unbound_enabled:
 
 # --- AdGuardHome: DNS filtering + ad blocking ---
 {% if dns.adguardhome %}
-{{ github_release_system('adguardhome', 'AdguardTeam/AdGuardHome', 'AdGuardHome_linux_amd64.tar.gz', src_bin='AdGuardHome', format='tar.gz') }}
+{{ github_release_system('adguardhome', 'AdguardTeam/AdGuardHome', 'AdGuardHome_linux_amd64.tar.gz', src_bin='AdGuardHome', format='tar.gz', tag='v' ~ ver.adguardhome) }}
 {{ system_daemon_user('adguardhome', '/var/lib/adguardhome') }}
 
 adguardhome_config:
@@ -53,7 +54,7 @@ adguardhome_config:
     - require:
       - file: adguardhome_data_dir
 
-{{ service_with_unit('adguardhome', 'salt://units/adguardhome.service.j2', template='jinja', context={'dns_unbound': dns.unbound}, requires=['cmd: install_adguardhome', 'file: adguardhome_config'], running=True) }}
+{{ service_with_unit('adguardhome', 'salt://units/adguardhome.service.j2', template='jinja', context={'dns_unbound': dns.unbound}, requires=['cmd: install_adguardhome', 'file: adguardhome_config'], running=True, watch=['file: adguardhome_config']) }}
 
 # Configure systemd-resolved to forward to AdGuardHome
 resolved_adguardhome:
@@ -91,4 +92,12 @@ avahi_enabled:
     - name: avahi-daemon
     - require:
       - file: avahi_config
+
+avahi_running:
+  service.running:
+    - name: avahi-daemon
+    - watch:
+      - file: avahi_config
+    - require:
+      - service: avahi_enabled
 {% endif %}
