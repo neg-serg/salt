@@ -334,14 +334,72 @@ api.mapkey('P', 'Open clipboard URL in new tab', function() {
   });
 });
 
-// ========== Image Download ==========
-api.mapkey('zi', 'Download image without dialog', function() {
-    api.Hints.create('img', function(element) {
-        var src = element.src;
-        api.RUNTIME('download', {
-            url: src,
-            saveAs: false
-        });
+// ========== Media Download ==========
+function getMediaUrl(el) {
+    // <img> — prefer srcset highest resolution, then src
+    if (el.tagName === 'IMG') {
+        if (el.srcset) {
+            var best = el.srcset.split(',').map(function(s) {
+                var parts = s.trim().split(/\s+/);
+                var w = parseFloat(parts[1]) || 0;
+                return { url: parts[0], w: w };
+            }).sort(function(a, b) { return b.w - a.w; });
+            if (best.length && best[0].url) return best[0].url;
+        }
+        return el.src;
+    }
+    // <picture> — grab the best <source> or fall back to inner <img>
+    if (el.tagName === 'PICTURE') {
+        var sources = el.querySelectorAll('source');
+        if (sources.length) return sources[0].srcset.split(',')[0].trim().split(/\s+/)[0];
+        var inner = el.querySelector('img');
+        if (inner) return getMediaUrl(inner);
+    }
+    // <video> / <source>
+    if (el.tagName === 'VIDEO') return el.src || (el.querySelector('source') || {}).src;
+    if (el.tagName === 'SOURCE') return el.src;
+    // <a> linking to media file
+    if (el.tagName === 'A' && /\.(jpe?g|png|gif|webp|avif|svg|mp4|webm)(\?|$)/i.test(el.href)) {
+        return el.href;
+    }
+    // <canvas>
+    if (el.tagName === 'CANVAS') {
+        try { return el.toDataURL('image/png'); } catch(e) { return null; }
+    }
+    // CSS background-image
+    var bg = window.getComputedStyle(el).backgroundImage;
+    if (bg && bg !== 'none') {
+        var m = bg.match(/url\(["']?(.+?)["']?\)/);
+        if (m) return m[1];
+    }
+    // Nested <img> inside clickable wrapper (div, a, figure, etc.)
+    var nested = el.querySelector('img');
+    if (nested) return getMediaUrl(nested);
+    return null;
+}
+
+var mediaSelector = [
+    'img',
+    'picture',
+    'video',
+    'canvas',
+    'a[href$=".jpg"]', 'a[href$=".jpeg"]', 'a[href$=".png"]',
+    'a[href$=".gif"]', 'a[href$=".webp"]', 'a[href$=".avif"]',
+    'a[href$=".svg"]', 'a[href$=".mp4"]',  'a[href$=".webm"]',
+    // Common wrappers that contain images
+    'figure', 'div[style*="background-image"]',
+    '[role="img"]'
+].join(',');
+
+api.mapkey(';i', 'Download media without dialog', function() {
+    api.Hints.create(mediaSelector, function(element) {
+        var url = getMediaUrl(element);
+        if (url) {
+            api.RUNTIME('download', { url: url, saveAs: false });
+            api.Front.showBanner('Downloading: ' + url.substring(0, 80));
+        } else {
+            api.Front.showBanner('No media URL found for this element');
+        }
     });
 });
 
