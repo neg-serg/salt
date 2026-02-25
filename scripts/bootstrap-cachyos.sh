@@ -22,7 +22,7 @@ set -euo pipefail
 TARGET="${1:-/var/mnt/one/cachyos-root}"
 ARCH_IMAGE="docker.io/archlinux/archlinux:latest"
 
-# CachyOS GPG key
+# CachyOS GPG signing key — https://github.com/CachyOS/CachyOS-PKGBUILDS/wiki
 CACHYOS_KEY="F3B607488DB35A47"
 
 # Packages to install into the rootfs
@@ -416,6 +416,10 @@ INNER_SCRIPT="${INNER_SCRIPT//__PACKAGES__/${PACKAGES[*]}}"
 # -------------------------------------------------------------------
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+if [[ ! -f "$SCRIPT_DIR/cachyos-packages.sh" ]]; then
+    echo "warning: $SCRIPT_DIR/cachyos-packages.sh not found — full package install will be skipped" >&2
+fi
 
 echo "==> Launching Arch container for bootstrap..."
 podman run --rm -it \

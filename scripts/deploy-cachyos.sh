@@ -376,8 +376,8 @@ fi
 
 echo ""
 echo "Before reboot (still in chroot/live USB):"
-echo "  1. Set passwords:    chroot $MNT passwd && chroot $MNT passwd neg"
-echo "  2. Unmount:          umount -R $MNT"
+echo "  1. Set passwords:    chroot \"$MNT\" passwd && chroot \"$MNT\" passwd neg"
+echo "  2. Unmount:          umount -R \"$MNT\""
 echo "  3. Reboot:           select 'CachyOS' in UEFI boot menu"
 echo ""
 echo "After first boot as neg:"
