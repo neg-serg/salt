@@ -10,7 +10,7 @@ Restart=always
 RestartSec=3
 WorkingDirectory={{ home }}
 Environment="HOME={{ home }}"
-Environment="OLLAMA_HOST=127.0.0.1:11434"
+Environment="OLLAMA_HOST=127.0.0.1:{{ ollama_port }}"
 Environment="OLLAMA_MODELS={{ mnt_one }}/ollama/models"
 
 [Install]
