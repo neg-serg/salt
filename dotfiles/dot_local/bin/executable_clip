@@ -11,8 +11,22 @@
 #   USE_CLIPCAT=true           # use clipcat instead of cliphist
 [ -z "${USE_CLIPCAT-}" ] && USE_CLIPCAT=false
 
+zmodload -F zsh/stat b:zstat 2>/dev/null
+zmodload zsh/datetime 2>/dev/null
 
-IFS=' 	
+# 2-second cache for cliphist list (avoids repeated DB reads on rapid calls)
+_cached_cliphist() {
+    local cache="${XDG_RUNTIME_DIR:-/tmp}/cliphist.cache"
+    local -A st
+    if [[ -s "$cache" ]] && zstat -H st "$cache" 2>/dev/null \
+       && (( EPOCHSECONDS - st[mtime] < 2 )); then
+        < "$cache"
+    else
+        cliphist list | tee "$cache"
+    fi
+}
+
+IFS='
 '
 
 
@@ -91,7 +105,7 @@ clip_main() {
         # cliphist: show history -> decode -> copy
         sel=$(cliphist list | rofi -dmenu -lines 10 -i -matching glob -p '⟬clip⟭ ❯>' -theme clip.rasi)
         [ -z "$sel" ] && exit 0
-        idx="$(printf '%s' "$sel" | awk -F ':' '{print $1}')"
+        idx=${sel%%:*}
         cliphist decode "$idx" | wl-copy
     fi
 }
@@ -105,14 +119,14 @@ yr() {
 
 youtube_url() {
     if command -v rg >/dev/null 2>&1; then
-        sel=$(cliphist list | rg -E 'https.*(youtube|vimeo)\\.com' \
+        sel=$(_cached_cliphist | rg -E 'https.*(youtube|vimeo)\\.com' \
             | rofi -lines 7 -dmenu -p '⟬youtube⟭ ❯>')
     else
-        sel=$(cliphist list | grep -E 'https.*(youtube|vimeo)\\.com' \
+        sel=$(_cached_cliphist | grep -E 'https.*(youtube|vimeo)\\.com' \
             | rofi -lines 7 -dmenu -p '⟬youtube⟭ ❯>')
     fi
     [ -z "$sel" ] && exit 1
-    idx="$(printf '%s' "$sel" | awk -F ':' '{print $1}')"
+    idx=${sel%%:*}
     cliphist decode "$idx" | tr -d '\n'
 }
 
