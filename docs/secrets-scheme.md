@@ -40,7 +40,7 @@ lastfm/
   api-secret              # Last.fm API secret (for rescrobbled)
 ```
 
-Подробные инструкции по заведению каждого секрета: см. `gopass-setup.md`.
+For detailed provisioning instructions for each secret, see `gopass-setup.md`.
 
 ## Chezmoi Integration
 
@@ -125,17 +125,3 @@ mpdas_config:
 - No plaintext secrets in the salt/ or dotfiles/ repos
 - chezmoi templates contain only gopass references, not actual values
 - Rendered files with secrets get 0600 permissions
-
-## Files Requiring Secrets (Migration Status)
-
-| Config | Secrets needed | Status |
-|---|---|---|
-| mbsync/mbsyncrc | Gmail app password, address | [x] chezmoi template |
-| msmtp/config | Gmail app password, address | [x] chezmoi template |
-| imapnotify/gmail.json | Gmail app password, address | [x] chezmoi template |
-| notmuch/notmuchrc | No secrets (just config) | [x] plain dotfile |
-| vdirsyncer/config | Google OAuth client ID + secret | [x] chezmoi template |
-| khal/config | No secrets (reads vdirsyncer data) | [x] plain dotfile |
-| rescrobbled/config.toml | Last.fm API key + secret | [x] chezmoi template |
-| zsh/10-secrets.zsh | API keys (GitHub, Brave, Context7) | [x] chezmoi template |
-| mpdas/mpdas.rc | Last.fm username + password | [x] Salt cmd.run + gopass |
