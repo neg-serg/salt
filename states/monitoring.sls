@@ -1,7 +1,7 @@
-{% from '_imports.jinja' import host, user, home, service_ports %}
+{% from '_imports.jinja' import host, user, service_ports %}
 {% from '_macros_service.jinja' import unit_override, service_with_unit, system_daemon_user, service_with_healthcheck, ensure_running %}
 {% from '_macros_github.jinja' import github_release_system %}
-{% from '_macros_pkg.jinja' import pacman_install, simple_service %}
+{% from '_macros_pkg.jinja' import simple_service %}
 {% import_yaml 'data/versions.yaml' as ver %}
 {% set mon = host.features.monitoring %}
 

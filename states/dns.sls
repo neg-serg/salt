@@ -1,7 +1,7 @@
-{% from '_imports.jinja' import host, user, home %}
+{% from '_imports.jinja' import host, user %}
 {% from '_macros_service.jinja' import unit_override, system_daemon_user, service_with_unit, ensure_running %}
 {% from '_macros_github.jinja' import github_release_system %}
-{% from '_macros_pkg.jinja' import pacman_install, simple_service %}
+{% from '_macros_pkg.jinja' import simple_service %}
 {% import_yaml 'data/versions.yaml' as ver %}
 {% set dns = host.features.dns %}
 

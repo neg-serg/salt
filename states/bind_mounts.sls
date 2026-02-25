@@ -5,7 +5,7 @@
 # Salt's device mismatch detection which always triggers remounts on
 # bind mounts (kernel reports the underlying block device, not bind source).
 
-{% from '_imports.jinja' import host, user, home %}
+{% from '_imports.jinja' import user, home %}
 {% from '_macros_service.jinja' import ensure_dir %}
 {% import_yaml 'data/bind_mounts.yaml' as mounts %}
 

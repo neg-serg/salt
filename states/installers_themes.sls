@@ -1,4 +1,4 @@
-{% from '_imports.jinja' import host, user, home %}
+{% from '_imports.jinja' import user, home %}
 {% from '_macros_install.jinja' import git_clone_deploy %}
 # Theme and icon installers
 

@@ -1,4 +1,4 @@
-{% from '_imports.jinja' import host, user, home %}
+{% from '_imports.jinja' import host, user %}
 {% from '_macros_service.jinja' import ensure_dir, system_daemon_user, service_with_unit, service_stopped %}
 {% from '_macros_install.jinja' import curl_extract_tar %}
 {% from '_macros_pkg.jinja' import pacman_install, simple_service %}

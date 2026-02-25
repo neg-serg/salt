@@ -1,4 +1,4 @@
-{% from '_imports.jinja' import host, user, home %}
+{% from '_imports.jinja' import host %}
 # Kernel module loading and blacklisting migrated from NixOS
 # (modules/system/kernel/params.nix, hosts/telfir/hardware.nix)
 #
