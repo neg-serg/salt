@@ -36,6 +36,7 @@ Item {
     property bool introspectAudioEnabled: true
     property string _lastPath: ""
     property string _pendingPath: ""
+    property bool _introspectionDone: false
     property var fileAudioMeta:({})   // { codec, codecLong, profile, sampleFormat, sampleRate, bitrateKbps, channels, bitDepth, tags:{}, fileSizeBytes, container, channelLayout, encoder }
     function resetFileMeta() { fileAudioMeta = ({}) }
 
@@ -75,7 +76,12 @@ Item {
         trackChannelLayout  = computeChannelLayout();
         // Depends on several of the above
         trackDsdRateStr     = computeDsdRateStr();
-        trackQualitySummary = computeQualitySummary();
+        // Defer quality summary until introspection completes to avoid partial display ("FLAC" → "FLAC/44.1k/24")
+        if (!introspectAudioEnabled || _introspectionDone || !trackUrlStr) {
+            trackQualitySummary = computeQualitySummary();
+        } else {
+            trackQualitySummary = "";
+        }
         
     }
 
@@ -188,12 +194,14 @@ Item {
     function startIntrospection(p) {
         _lastPath = p;
         _pendingPath = "";
+        _introspectionDone = false;
         resetFileMeta();
         ffprobeProcess.targetPath = p;
         ffprobeProcess.cmd = ["ffprobe", "-v", "quiet", "-print_format", "json", "-show_streams", "-show_format", p];
         ffprobeProcess.start();
     }
     function processChainFinished() {
+        _introspectionDone = true;
         // If a new path was queued while busy, start it now
         if (_pendingPath && _pendingPath !== _lastPath) {
             startIntrospection(_pendingPath);
@@ -202,7 +210,7 @@ Item {
     function introspectCurrentTrack() {
         if (!introspectAudioEnabled) return;
         const p = pathFromUrl(trackUrlStr);
-        if (!p) { resetFileMeta(); _lastPath = ""; _pendingPath = ""; return; }
+        if (!p) { resetFileMeta(); _lastPath = ""; _pendingPath = ""; _introspectionDone = true; return; }
         if (p === _lastPath) return; // no change
         if (isBusy()) { _pendingPath = p; return; }
         startIntrospection(p);
