@@ -26,6 +26,7 @@ lint:
     .venv/bin/ruff check .
     .venv/bin/ruff format --check .
     .venv/bin/python3 scripts/lint-jinja.py
+    .venv/bin/python3 scripts/lint-dotfiles.py
 
 # Format Python scripts
 fmt:
