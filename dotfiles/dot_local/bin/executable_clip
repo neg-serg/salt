@@ -1,7 +1,7 @@
 #!/usr/bin/env zsh
-# clip: clipboard helper (cliphist/clipcat + extras)
+# clip: clipboard helper (vicinae/clipcat + extras)
 # Usage:
-#   clip                       # open clipboard menu (cliphist/clipcat)
+#   clip                       # open clipboard menu (vicinae/clipcat)
 #   clip pipe [-p|--paste] [-c|--command CMD] [--]
 #   clip youtube-dw-list       # pick video URL from history and download
 #   clip youtube-dw            # download URL currently in clipboard
@@ -38,7 +38,7 @@ yt() {
 read_command() {
     # Offer a tiny preset list; user can also type arbitrary command
     printf '%s\n' sort tac \
-      | rofi -dmenu -matching glob -p '❯>'
+      | vicinae dmenu --placeholder "command"
 }
 
 send_key() {
@@ -101,11 +101,7 @@ clip_main() {
     if [ "$USE_CLIPCAT" = true ]; then
         clipcat-menu -c "$HOME/.config/clipcat/clipcat-menu.toml"
     else
-        # cliphist: show history -> decode -> copy
-        sel=$(cliphist list | rofi -dmenu -lines 10 -i -matching glob -p '⟬clip⟭ ❯>' -theme clip.rasi)
-        [ -z "$sel" ] && exit 0
-        idx=${sel%%:*}
-        cliphist decode "$idx" | wl-copy
+        vicinae "vicinae://extensions/vicinae/clipboard/history"
     fi
 }
 
@@ -119,10 +115,10 @@ yr() {
 youtube_url() {
     if command -v rg >/dev/null 2>&1; then
         sel=$(_cached_cliphist | rg -E 'https.*(youtube|vimeo)\\.com' \
-            | rofi -lines 7 -dmenu -p '⟬youtube⟭ ❯>')
+            | vicinae dmenu --placeholder "youtube")
     else
         sel=$(_cached_cliphist | grep -E 'https.*(youtube|vimeo)\\.com' \
-            | rofi -lines 7 -dmenu -p '⟬youtube⟭ ❯>')
+            | vicinae dmenu --placeholder "youtube")
     fi
     [ -z "$sel" ] && exit 1
     idx=${sel%%:*}

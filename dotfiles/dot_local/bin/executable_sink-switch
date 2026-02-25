@@ -60,7 +60,7 @@ select_sink() {
         fi
     done < <(get_sinks)
     local chosen
-    chosen=$(printf '%b' "$menu" | rofi -dmenu -p "Audio Sink" | sed 's/^[* ] //')
+    chosen=$(printf '%b' "$menu" | vicinae dmenu --placeholder "Audio Sink" | sed 's/^[* ] //')
     [[ -z "$chosen" ]] && return
     local target="${name_to_sink[$chosen]}"
     [[ -n "$target" ]] && set_sink "$target"
