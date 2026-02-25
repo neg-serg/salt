@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 
 ## Author : Aditya Shakya (adi1090x)
 ## Github : @adi1090x
@@ -14,8 +14,9 @@ dir="$HOME/.config/rofi/_rofi/type-5"
 theme='style-1'
 
 # CMDs
-lastlogin="$(last $USER | head -n1 | tr -s ' ' | cut -d' ' -f5,6,7)"
-uptime="$(uptime -p | sed -e 's/up //g')"
+local _ll; last $USER | read -r _ll
+local -a _lf=(${=_ll}); lastlogin="${_lf[5]} ${_lf[6]} ${_lf[7]}"
+uptime="${$(uptime -p)#up }"
 host=$(hostname)
 
 # Options
