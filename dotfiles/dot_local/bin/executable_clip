@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env zsh
 # clip: clipboard helper (cliphist/clipcat + extras)
 # Usage:
 #   clip                       # open clipboard menu (cliphist/clipcat)

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env zsh
 # POSIX safety
 # nb: update personal notes repo (~/notes) and music list, auto-commit if changed
 # Usage: nb [-h|--help]

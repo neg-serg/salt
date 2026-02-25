@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env zsh
 # punzip: simple unzip helper with optional -d DIR target
 # Usage: punzip [-d DIR] FILE.zip
 

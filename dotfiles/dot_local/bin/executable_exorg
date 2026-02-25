@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env zsh
 # exorg: start a headless Xvfb session for clipboard (clipmenud)
 # Usage: exorg
 #   Starts Xvfb on :1 if not running, exports DISPLAY and restarts clipmenud.

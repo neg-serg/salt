@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env zsh
 # v: open Neovim with system profile sourced
 # Usage: v [ARGS...]
 export NVIM_APPNAME=

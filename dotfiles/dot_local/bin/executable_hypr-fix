@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env zsh
 set -eu
 # Restart Pyprland and Quickshell, reload Hyprland config
 hyprctl reload > /dev/null 2>&1 || true

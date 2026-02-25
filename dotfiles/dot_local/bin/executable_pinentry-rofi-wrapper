@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 # pinentry-rofi — GPG pinentry using rofi as GUI
 # Implements the Assuan pinentry protocol over stdin/stdout.
 # Injects Wayland/DBus env vars for gpg-agent socket activation.

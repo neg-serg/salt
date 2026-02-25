@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 # hypr-shortcuts: Vicinae-powered quick commands for Hyprland helpers
 set -euo pipefail
 IFS=$'\n\t'

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env zsh
 # shot-optimizer: convert new BMP screenshots to PNG and remove BMP
 # Usage: shot-optimizer
 #   Watches ~/pic/shots for new .bmp files, converts to .png and deletes .bmp

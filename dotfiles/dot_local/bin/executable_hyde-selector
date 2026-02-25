@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 
 # HyDE-style Selector Script for NixOS
 # Mimics the visual behavior of HyDE's selectors
@@ -12,12 +12,7 @@ usage() {
 
 case "$1" in
   wallpaper)
-    # Assuming wallpapers are in ~/pic/wallpapers or similar
-    # For NixOS, we might need to find where the user keeps them
-    WP_DIR="$HOME/pic/wallpapers"
-    if [ ! -d "$WP_DIR" ]; then
-      WP_DIR="$HOME/Pictures/Wallpapers"
-    fi
+    WP_DIR="${XDG_PICTURES_DIR:-$HOME/pic}/wl"
 
     selected=$(find "$WP_DIR" -type f \( -iname "*.jpg" -o -iname "*.png" -o -iname "*.jpeg" \) | while read -r wp; do
       echo -en "$(basename "$wp")\0icon\x1f$wp\n"

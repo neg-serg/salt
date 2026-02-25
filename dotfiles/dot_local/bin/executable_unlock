@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env zsh
 # unlock: add SSH key to agent, passphrase from gopass
 # Usage: unlock
 

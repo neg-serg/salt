@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 # sw: unified wallpaper downloader (wallhaven + unsplash)
 # Usage: sw [options] [source]
 # Source: wallhaven (default), unsplash
