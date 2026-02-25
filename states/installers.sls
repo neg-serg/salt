@@ -77,6 +77,7 @@ qmk_udev_rules:
   cmd.run:
     - name: curl -fsSL https://raw.githubusercontent.com/qmk/qmk_firmware/master/util/udev/50-qmk.rules -o /etc/udev/rules.d/50-qmk.rules && udevadm control --reload-rules
     - creates: /etc/udev/rules.d/50-qmk.rules
+    - parallel: True
     - retry:
         attempts: {{ retry_attempts }}
         interval: {{ retry_interval }}

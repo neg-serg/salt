@@ -31,6 +31,7 @@
 # Preserves existing root= and other boot-critical params.
 kernel_params_limine:
   cmd.run:
+    - shell: /bin/bash
     - name: |
         LIMINE="/boot/limine.conf"
         WANTED=({% for karg in kargs %}'{{ karg }}' {% endfor %})
@@ -66,6 +67,7 @@ kernel_params_limine:
 # --- limine-snapper-sync: fix CachyOS-specific paths and OS name ---
 limine_snapper_sync_config:
   cmd.run:
+    - shell: /bin/bash
     - name: |
         set -eo pipefail
         CONF="/etc/limine-snapper-sync.conf"

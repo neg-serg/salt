@@ -52,6 +52,7 @@ greetd_session_wrapper:
     - require:
       - file: greetd_config_dir
 
+{% if host.primary_output %}
 greetd_wallpaper:
   cmd.run:
     - name: |
@@ -65,6 +66,7 @@ greetd_wallpaper:
         [ ! {{ home }}/.cache/swww/{{ host.primary_output }} -nt {{ home }}/.cache/greeter-wallpaper ]
     - require:
       - file: greetd_config_dir
+{% endif %}
 
 greetd_enabled:
   service.enabled:

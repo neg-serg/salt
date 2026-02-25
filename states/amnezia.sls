@@ -24,6 +24,9 @@ amnezia_build:
         test -f {{ cache }}/amneziawg-go-bin &&
         test -f {{ cache }}/awg-bin &&
         test -f {{ cache }}/AmneziaVPN-bin
+    - retry:
+        attempts: {{ retry_attempts }}
+        interval: {{ retry_interval }}
     - require:
       - file: amnezia_cache_dir
 

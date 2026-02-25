@@ -110,7 +110,7 @@ grafana_config:
     - source: salt://configs/grafana.ini.j2
     - template: jinja
     - context:
-        hostname: {{ grains['host'] }}
+        hostname: {{ host.hostname }}
         grafana_port: {{ service_ports.grafana.port }}
 
 {{ ensure_running('grafana', service='grafana-server', watch=['file: grafana_config', 'file: grafana_loki_datasource']) }}

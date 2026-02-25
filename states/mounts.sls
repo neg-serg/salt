@@ -2,8 +2,9 @@
 {% import_yaml 'data/mounts.yaml' as mounts %}
 
 {% for name, m in mounts.disks.items() %}
-{{ m.path }}:
+{{ name }}_dir:
   file.directory:
+    - name: {{ m.path }}
     - makedirs: True
 
 mount_{{ name }}:

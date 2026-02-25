@@ -21,9 +21,9 @@ fancontrol_reapply_script:
     - source: salt://scripts/fancontrol-reapply.sh.j2
     - template: jinja
     - context:
-        cpu_vendor: {{ host.get('cpu_vendor', '') }}
+        cpu_vendor: {{ host.cpu_vendor }}
 
-{{ service_with_unit('fancontrol-setup', 'salt://units/fancontrol-setup.service.j2', template='jinja', context={'gpu_enable': host.get('cpu_vendor', '') == 'amd'}, enabled=None) }}
+{{ service_with_unit('fancontrol-setup', 'salt://units/fancontrol-setup.service.j2', template='jinja', context={'gpu_enable': host.cpu_vendor == 'amd'}, enabled=None) }}
 
 {{ service_with_unit('fancontrol', 'salt://units/fancontrol.service', requires=['cmd: fancontrol-setup_daemon_reload', 'file: fancontrol_setup_script']) }}
 
