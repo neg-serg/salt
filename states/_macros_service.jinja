@@ -108,7 +108,7 @@
    Skips entirely if the check already passes (unless guard).
    check_cmd: shell command that returns 0 when service is ready (e.g. curl probe).
    timeout: seconds to poll before failing (default 30).
-   Usage: {{ service_with_healthcheck('ollama_start', 'ollama', 'curl -sf http://127.0.0.1:11434/api/tags >/dev/null 2>&1', requires=['service: ollama_enabled']) }}
+   Usage: {{ service_with_healthcheck('ollama_start', 'ollama', 'curl -sf http://127.0.0.1:' ~ service_ports.ollama.port ~ service_ports.ollama.healthcheck ~ ' >/dev/null 2>&1', requires=['service: ollama_enabled']) }}
 #}
 {%- macro service_with_healthcheck(name, service, check_cmd, timeout=30, requires=None) -%}
 {{ name }}:
