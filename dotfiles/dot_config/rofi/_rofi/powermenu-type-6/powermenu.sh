@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 
 ## Author : Aditya Shakya (adi1090x)
 ## Github : @adi1090x
@@ -14,7 +14,7 @@ dir="$HOME/.config/rofi/_rofi/powermenu-type-6"
 theme='style-1'
 
 # CMDs
-uptime="$(uptime -p | sed -e 's/up //g')"
+uptime="${$(uptime -p)#up }"
 host=$(hostname)
 
 # Options
