@@ -1,6 +1,6 @@
 {% from '_imports.jinja' import host, user, home %}
 {% from '_macros_pkg.jinja' import pacman_install %}
-{% from '_macros_service.jinja' import service_stopped %}
+{% from '_macros_service.jinja' import service_stopped, unit_override %}
 # greetd display manager: replace sddm with quickshell greeter
 
 {{ pacman_install('greetd', 'greetd') }}
@@ -75,6 +75,8 @@ greetd_cleanup_pacnew:
 greetd_cleanup_regreet:
   file.absent:
     - name: /etc/greetd/regreet.toml
+
+{{ unit_override('greetd_debug_override', 'greetd', 'salt://units/greetd-debug-override.conf') }}
 
 greetd_enabled:
   service.enabled:
