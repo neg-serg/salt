@@ -1,4 +1,4 @@
-{% from '_imports.jinja' import host, user, home %}
+{% from '_imports.jinja' import host, user %}
 {% import_yaml 'data/cachyos.yaml' as checks %}
 # CachyOS bootstrap verification state
 # Validates that bootstrap-cachyos.sh + cachyos-packages.sh completed correctly.

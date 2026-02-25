@@ -1,4 +1,4 @@
-{% from '_imports.jinja' import host, user, home, pkg_list %}
+{% from '_imports.jinja' import host, user, pkg_list %}
 # Salt state for CachyOS workstation — top-level orchestrator
 # Packages installed via pacman/paru outside Salt; Salt handles configuration
 

@@ -1,4 +1,4 @@
-{% from '_imports.jinja' import host, user, home %}
+{% from '_imports.jinja' import host, home %}
 {% from '_macros_service.jinja' import service_with_unit %}
 {% set net = host.features.network %}
 

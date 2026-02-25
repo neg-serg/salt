@@ -1,4 +1,4 @@
-{% from '_imports.jinja' import host, user, home, retry_attempts, retry_interval %}
+{% from '_imports.jinja' import user, home, retry_attempts, retry_interval %}
 {% from '_macros_service.jinja' import ensure_dir %}
 {% from '_macros_install.jinja' import curl_bin, pip_pkg, cargo_pkg, curl_extract_tar, curl_extract_zip, git_clone_deploy %}
 {% from '_macros_github.jinja' import github_tar, github_release_to %}

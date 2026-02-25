@@ -1,5 +1,5 @@
 # Desktop environment: services, SSH, wallust defaults, dconf themes
-{% from '_imports.jinja' import host, user, home, pkg_list %}
+{% from '_imports.jinja' import host, user, home %}
 {% from '_macros_pkg.jinja' import pacman_install, paru_install %}
 {% from '_macros_service.jinja' import ensure_dir, service_stopped %}
 {% import_yaml 'data/desktop.yaml' as desktop %}

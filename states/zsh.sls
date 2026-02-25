@@ -1,5 +1,5 @@
 # Zsh: system-wide config, ZDOTDIR, user dotfiles, force shell for users
-{% from '_imports.jinja' import host, user, home %}
+{% from '_imports.jinja' import user, home %}
 {% from '_macros_service.jinja' import ensure_dir %}
 
 {{ ensure_dir('zsh_config_dir', '/etc/zsh', mode='0755', user='root') }}

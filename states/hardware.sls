@@ -1,4 +1,4 @@
-{% from '_imports.jinja' import host, user, home %}
+{% from '_imports.jinja' import host %}
 {% from '_macros_service.jinja' import udev_rule, service_with_unit %}
 
 # --- Custom udev rules: I/O schedulers, audio devices, SATA ALPM ---

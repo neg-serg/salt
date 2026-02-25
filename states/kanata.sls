@@ -1,4 +1,4 @@
-{% from '_imports.jinja' import host, user, home, retry_attempts, retry_interval %}
+{% from '_imports.jinja' import host, user, home %}
 {% from '_macros_install.jinja' import curl_extract_zip %}
 {% from '_macros_service.jinja' import udev_rule, ensure_dir, user_service_file, user_service_enable %}
 # Kanata: software keyboard remapper (uinput-based)
