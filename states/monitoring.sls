@@ -1,5 +1,5 @@
 {% from '_imports.jinja' import host, user, home, service_ports %}
-{% from '_macros_service.jinja' import unit_override, service_with_unit, system_daemon_user, service_with_healthcheck %}
+{% from '_macros_service.jinja' import unit_override, service_with_unit, system_daemon_user, service_with_healthcheck, ensure_running %}
 {% from '_macros_github.jinja' import github_release_system %}
 {% from '_macros_pkg.jinja' import pacman_install, simple_service %}
 {% import_yaml 'data/versions.yaml' as ver %}
@@ -113,14 +113,7 @@ grafana_config:
         hostname: {{ grains['host'] }}
         grafana_port: {{ service_ports.grafana.port }}
 
-grafana_running:
-  service.running:
-    - name: grafana-server
-    - watch:
-      - file: grafana_config
-      - file: grafana_loki_datasource
-    - require:
-      - service: grafana_enabled
+{{ ensure_running('grafana', service='grafana-server', watch=['file: grafana_config', 'file: grafana_loki_datasource']) }}
 
 {{ service_with_healthcheck('grafana_start', 'grafana-server', 'curl -sf http://127.0.0.1:' ~ service_ports.grafana.port ~ service_ports.grafana.healthcheck ~ ' >/dev/null 2>&1', requires=['service: grafana_enabled']) }}
 {% endif %}
