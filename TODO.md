@@ -10,3 +10,8 @@ Create a dedicated Salt state (`music_analysis.sls` or extend `installers.sls`) 
 1. Builds/installs `essentia` via paru or PKGBUILD
 2. Installs `python-annoy` via pip_pkg macro
 3. Guards both with idempotency checks
+
+## Nyxt browser packaging
+
+`nyxt-bin` — binary packaging for the Nyxt browser. Needs investigation:
+current AUR package may be sufficient, or may need custom PKGBUILD.

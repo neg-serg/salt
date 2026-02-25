@@ -12,7 +12,7 @@ Packages installed via pacman/paru outside Salt; Salt handles configuration mana
 |---|---|
 | `states/` | Salt state files (`.sls`) and Jinja templates |
 | `states/system_description.sls` | Top-level orchestrator: locale, timezone, hostname, include list |
-| `states/_macros.jinja` | Reusable Jinja macros (see below) |
+| `states/_macros_*.jinja` | Reusable Jinja macros: common, github, install, pkg, service |
 | `states/host_config.jinja` | Per-host config map keyed by `grains['host']` |
 | `states/data/packages.yaml` | Package reference lists (not consumed by states) |
 | `states/data/floorp.yaml` | Floorp browser extensions (consumed by floorp.sls) |
@@ -25,7 +25,7 @@ Packages installed via pacman/paru outside Salt; Salt handles configuration mana
 | `states/data/` | YAML data files (installer definitions) loaded via `import_yaml` |
 | `scripts/` | Utility scripts (linting, tool updates) |
 
-## Salt State Modules (30 files)
+## Salt State Modules (31 files)
 
 | Module | Purpose |
 |---|---|
@@ -39,11 +39,13 @@ Packages installed via pacman/paru outside Salt; Salt handles configuration mana
 | `installers.sls` | CLI tools: data-driven from `data/installers.yaml` + custom installs |
 | `installers_desktop.sls` | Desktop apps: RoomEQ, Throne, Overskride, Nyxt, DroidCam |
 | `installers_themes.sls` | Themes/icons: matugen, kora, Flight GTK |
+| `kanata.sls` | Kanata keyboard remapper: uinput-based, udev rules, user service |
 | `user_services.sls` | User systemd services: chezmoi, mail, vdirsyncer, GPG agent |
 | `custom_pkgs.sls` | Build raise, neg-pretty-printer, richcolors, albumdetails from PKGBUILDs |
 | `dns.sls` | Unbound, AdGuardHome, Avahi |
 | `monitoring.sls` | Sysstat, vnstat, netdata, Loki/Promtail/Grafana stack |
 | `services.sls` | Samba, Jellyfin, Bitcoind, DuckDNS |
+| `snapshots.sls` | Btrfs snapshot management: snapper, snap-pac, limine-snapper-sync |
 | `mpd.sls` | MPD + mpdris2 + mpdas + scrobbling |
 | `amnezia.sls` | AmneziaVPN build and deploy |
 | `greetd.sls` | greetd login manager (replaces SDDM) |
@@ -56,11 +58,15 @@ Packages installed via pacman/paru outside Salt; Salt handles configuration mana
 | `kernel_params_limine.sls` | Kernel boot parameters via /boot/limine.conf |
 | `bind_mounts.sls` | Bind mounts for /mnt paths |
 | `sysctl.sls` | Sysctl tuning |
-| `hy3.sls` | Hyprland hy3 plugin |
 | `cachyos.sls` | Bootstrap verification: checks system state after initial install |
 | `cachyos_all.sls` | Full setup entry point: includes cachyos + system_description |
 
 ## Macros
+
+### `_macros_common.jinja` — Shared constants
+
+Not a macro file — exports shared variables used by all macro files:
+`user`, `home`, `retry_attempts` (3), `retry_interval` (10), `ver_dir`, `sys_ver_dir`.
 
 ### `_macros_github.jinja` — GitHub release macros
 
@@ -88,6 +94,7 @@ Packages installed via pacman/paru outside Salt; Salt handles configuration mana
 | Macro | Purpose |
 |---|---|
 | `pacman_install(name, pkgs, check, requires)` | pacman install with idempotency guard |
+| `simple_service(name, pkgs, service, check, requires)` | Shorthand: pacman install + service.enabled |
 | `paru_install(name, pkg, check, requires)` | AUR install via paru |
 | `pkgbuild_install(name, source)` | Build + install from local PKGBUILD |
 | `npm_pkg(name, pkg, bin)` | npm global install |
@@ -96,10 +103,17 @@ Packages installed via pacman/paru outside Salt; Salt handles configuration mana
 
 | Macro | Purpose |
 |---|---|
-| `daemon_reload(name, onchanges)` | systemd daemon-reload on unit file changes |
-| `system_daemon_user(name, home_dir)` | Create system daemon user + data directory |
-| `service_with_unit(name, source, enabled)` | Deploy systemd unit + daemon-reload + enable/disable service |
-| `user_service(name, filename)` | Deploy inline systemd user unit file (callable macro) |
+| `ensure_dir(name, path, mode, require, user)` | Create directory with ownership and optional mode |
+| `udev_rule(name, path, source, contents)` | Deploy udev rule + reload on change |
+| `ensure_running(name, service, watch)` | Reset failed state + ensure service running |
+| `service_stopped(name, svc, stop, requires)` | Stop and/or disable a service |
+| `service_with_healthcheck(name, service, check_cmd, timeout, requires)` | Restart service + poll health check |
+| `system_daemon_user(name, home_dir, shell, requires)` | Create system daemon user + data directory |
+| `unit_override(name, service, source, filename, requires)` | Deploy systemd unit drop-in override + reload |
+| `user_service_file(name, filename, source, user, home)` | Deploy systemd user unit file |
+| `user_unit_override(name, service, source, contents, filename, requires, user, home)` | Deploy user unit drop-in override + reload |
+| `user_service_enable(name, services, start_now, daemon_reload, check, onlyif, requires, user)` | Enable/start systemd user services |
+| `service_with_unit(name, source, unit_type, running, enabled, requires, template, context, onlyif, companion, watch)` | Deploy unit file + manage service lifecycle |
 
 ## Network Resilience
 
