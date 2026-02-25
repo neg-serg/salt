@@ -1,8 +1,6 @@
 {# Service-related macros: ensure_dir, udev_rule, ensure_running, service_stopped, service_with_healthcheck, unit_override, service_with_unit, user_service_file, user_unit_override, user_service_enable, system_daemon_user #}
 
-{% from 'host_config.jinja' import host %}
-{% set _user = host.user %}
-{% set _home = host.home %}
+{% from '_macros_common.jinja' import user as _user, home as _home %}
 
 {# Create directory with user ownership and makedirs.
    Covers the common pattern of user-owned directories (user/group/makedirs: True).
@@ -55,20 +53,22 @@
 
 {# Clear failed state + ensure service is running with config watches.
    Emits two states: {{ name }}_reset_failed and {{ name }}_running.
+   service: systemd service name override (default: name).
    Usage: {{ ensure_running('unbound', watch=['file: unbound_config']) }}
-          {{ ensure_running('adguardhome', watch=['file: adguardhome_service']) }}
+          {{ ensure_running('avahi', service='avahi-daemon', watch=['file: avahi_config']) }}
 #}
-{%- macro ensure_running(name, watch=None) -%}
+{%- macro ensure_running(name, service=None, watch=None) -%}
+{%- set svc = service or name -%}
 {{ name }}_reset_failed:
   cmd.run:
-    - name: systemctl reset-failed {{ name }} 2>/dev/null; true
-    - onlyif: systemctl is-failed {{ name }}
+    - name: systemctl reset-failed {{ svc }} 2>/dev/null; true
+    - onlyif: systemctl is-failed {{ svc }}
     - require:
       - service: {{ name }}_enabled
 
 {{ name }}_running:
   service.running:
-    - name: {{ name }}
+    - name: {{ svc }}
 {%- if watch %}
     - watch:
 {%- for w in watch %}
