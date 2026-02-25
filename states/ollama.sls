@@ -1,4 +1,4 @@
-{% from '_imports.jinja' import host, user, home, retry_attempts, retry_interval, service_ports %}
+{% from '_imports.jinja' import host, user, home, retry_attempts, retry_interval, service_ports, ollama_pull_timeout %}
 {% from '_macros_service.jinja' import ensure_dir, service_with_unit, service_with_healthcheck %}
 {% from '_macros_pkg.jinja' import npm_pkg %}
 {% import_yaml 'data/ollama.yaml' as ollama %}
@@ -16,7 +16,7 @@
 pull_{{ model | replace('.', '_') | replace(':', '_') | replace('-', '_') }}:
   cmd.run:
     - name: |
-        response=$(curl -sS --max-time 600 \
+        response=$(curl -sS --max-time {{ ollama_pull_timeout - 60 }} \
           -X POST http://{{ ollama_base }}/api/pull \
           -d '{"name": "{{ model }}", "stream": false}')
         status=$(echo "$response" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('status',''))" 2>/dev/null)
@@ -31,7 +31,7 @@ pull_{{ model | replace('.', '_') | replace(':', '_') | replace('-', '_') }}:
     - unless: >-
         curl -sf http://{{ ollama_base }}/api/tags |
         rg -q '"{{ model }}"'
-    - timeout: 660
+    - timeout: {{ ollama_pull_timeout }}
     - parallel: True
     - retry:
         attempts: {{ retry_attempts }}

@@ -1,5 +1,5 @@
 # User accounts, groups, and sudo configuration
-{% from '_imports.jinja' import host, user, home %}
+{% from '_imports.jinja' import host, user, home, sudo_timeout_minutes %}
 {% set uid = host.uid %}
 
 user_root:
@@ -32,7 +32,7 @@ sudo_timeout:
   file.managed:
     - name: /etc/sudoers.d/timeout
     - contents: |
-        Defaults timestamp_timeout=30
+        Defaults timestamp_timeout={{ sudo_timeout_minutes }}
     - user: root
     - group: root
     - mode: '0440'
