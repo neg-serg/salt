@@ -26,8 +26,7 @@ _cached_cliphist() {
     fi
 }
 
-IFS='
-'
+IFS=$' \t\n'
 
 
 
