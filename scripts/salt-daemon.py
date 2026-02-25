@@ -69,7 +69,7 @@ def _on_sigalrm(signum, frame):
 
 
 # ── Security: allowed log directory and state whitelist ──────────────────────
-_ALLOWED_LOG_DIR = os.path.join(_SCRIPT_DIR, os.pardir, "logs")
+_ALLOWED_LOG_DIR = os.path.join(_SCRIPT_DIR, "logs")
 
 
 def _discover_allowed_states():
