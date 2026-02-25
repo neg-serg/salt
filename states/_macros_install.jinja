@@ -130,13 +130,14 @@ install_{{ name | replace('-', '_') }}:
         mkdir -p {{ dest }}
         tar -x{{ ext_flag }}f /tmp/{{ name }}.{{ archive_ext }} -C {{ dest }}{{ ' --strip-components=' ~ strip_components if strip_components }}
 {%- else %}
-        tar -x{{ ext_flag }}f /tmp/{{ name }}.{{ archive_ext }} -C /tmp
+        mkdir -p /tmp/{{ name }}_extracted
+        tar -x{{ ext_flag }}f /tmp/{{ name }}.{{ archive_ext }} -C /tmp/{{ name }}_extracted
 {%- if binaries %}
 {% for b in binaries %}
-        install -m 0755 /tmp/{{ binary_pattern.replace('*', b) if '*' in binary_pattern else binary_pattern }}/{{ b }} {{ target_dir }}/ 2>/dev/null || install -m 0755 /tmp/{{ binary_pattern.rsplit('/', 1)[0] }}/{{ b }} {{ target_dir }}/
+        install -m 0755 /tmp/{{ name }}_extracted/{{ binary_pattern.replace('*', b) if '*' in binary_pattern else binary_pattern }}/{{ b }} {{ target_dir }}/ 2>/dev/null || install -m 0755 /tmp/{{ name }}_extracted/{{ binary_pattern.rsplit('/', 1)[0] }}/{{ b }} {{ target_dir }}/
 {%- endfor %}
 {%- else %}
-        find /tmp -maxdepth 3 -path "*{{ binary_pattern }}*" -type f ! -name "*.tar*" -exec install -m 0755 {} {{ target_dir }}/{{ bin or binary_pattern.rsplit('/', 1)[-1] }} \;
+        find /tmp/{{ name }}_extracted -maxdepth 3 -path "*{{ binary_pattern }}*" -type f ! -name "*.tar*" -exec install -m 0755 {} {{ target_dir }}/{{ bin or binary_pattern.rsplit('/', 1)[-1] }} \;
 {%- endif %}
 {%- if chmod %}
 {%- for b in (binaries or [bin or binary_pattern.rsplit('/', 1)[-1]]) %}
@@ -144,7 +145,7 @@ install_{{ name | replace('-', '_') }}:
 {%- endfor %}
 {%- endif %}
 {%- endif %}
-        rm -rf /tmp/{{ name }}.{{ archive_ext }} /tmp/{{ name }}-* /tmp/{{ name }}
+        rm -rf /tmp/{{ name }}.{{ archive_ext }} /tmp/{{ name }}_extracted /tmp/{{ name }}-* /tmp/{{ name }}
 {%- if version %}
         mkdir -p {{ _vd }} && echo '{{ version }}' > {{ _vd }}/{{ name }}
 {%- endif %}
