@@ -35,6 +35,7 @@ load_{{ mod | replace('-', '_') }}:
   kmod.present:
     - name: {{ mod }}
     - persist: False
+    - onlyif: modinfo {{ mod }} >/dev/null 2>&1
     - require:
       - file: kernel_modules_load
 {% endfor %}

@@ -35,7 +35,7 @@ throne: "1.0.13"
 modern_steam: "0.2.7"
 
 # --- MPV plugins ---
-mpv_mpris: "1.2"
+mpv_mpris: "1.1"  # 1.2 is source-only (no mpris.so binary asset)
 uosc: "5.12.0"
 
 # --- Fonts ---
