@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env zsh
 # pic-notify: send image preview notification and copy path to clipboard
 # Usage: pic-notify IMAGE
 #   Shows a notification with basic EXIF and copies path (png extension) to clipboard.

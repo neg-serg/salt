@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env zsh
 set -e
 
 if [ ! -d "$HOME/.local/share/antigravity" ]; then

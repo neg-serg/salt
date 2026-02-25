@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 set -euo pipefail
 
 mapfile -t entries < <(gopass ls --flat 2>/dev/null)

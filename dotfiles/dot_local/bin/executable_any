@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env zsh
 # any: show processes matching a pattern (pgrep -> ps)
 # Usage: any [PGREP_OPTS...] PATTERN
 # Example: any firefox

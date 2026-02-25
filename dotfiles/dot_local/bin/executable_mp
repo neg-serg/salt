@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env zsh
 # mp: play with mpv and print media info for inputs concurrently
 # Usage: mp FILES...
 #   Spawns vid-info for provided files/dirs and plays them via mpv.

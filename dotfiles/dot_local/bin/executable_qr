@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env zsh
 # qr: quick QR and screenshot helper
 # Usage:
 #   qr gen          # generate QR from current selection to ~/tmp/qrcode.png

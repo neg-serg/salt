@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env zsh
 # flacspec: generate spectrograms for all .flac in current directory
 # Usage: flacspec
 

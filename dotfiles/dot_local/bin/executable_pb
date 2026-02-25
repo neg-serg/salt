@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env zsh
 # pb; command line pastebin service helper
 # {kopimi,CC0} MMXVIII-MMXXIV . syntax samurai
 #         ▟▙

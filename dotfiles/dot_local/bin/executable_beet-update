@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env zsh
 # beet-update: run beets update without modifying tags or moving files
 # Usage: beet-update
 

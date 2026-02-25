@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env zsh
 set -eu
 # Reload Hyprland config (ignore failure to avoid spurious errors)
 hyprctl reload > /dev/null 2>&1 || true

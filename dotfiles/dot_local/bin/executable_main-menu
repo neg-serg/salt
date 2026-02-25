@@ -1,7 +1,6 @@
-#!/bin/sh
+#!/usr/bin/env zsh
 # main-menu: rofi-driven helper actions for music/clipboard/network/etc
 # Usage: main-menu
-# shellcheck shell=sh
 
 IFS=' 	
 '
@@ -20,7 +19,7 @@ termbin
 generate_menu() {
     blue="<span weight='bold' color='#395573'>"
     count=0
-    for item in $main_menu; do
+    for item in ${=main_menu}; do
         count=$((count+1))
         printf '%s\n' "$(printf %X "$count"):${blue}⟬</span>${item}${blue}⟭</span>"
     done
@@ -40,7 +39,7 @@ album_copy(){  _song_json | jq_str '.metadata.album'  | wl-copy; }
 artist_copy(){ _song_json | jq_str '.metadata.artist' | wl-copy; }
 
 path_copy(){
-    mpd_music_dir="${XDG_MUSIC_DIR:-$HOME/Music}"
+    mpd_music_dir="${XDG_MUSIC_DIR:-$HOME/music}"
     file=$(_song_json | jq_str '.file')
     [ -n "$file" ] && printf '%s/%s\n' "$mpd_music_dir" "$file" | wl-copy
 }
@@ -81,7 +80,7 @@ handler() {
         sel_item=$(printf '%s' "$line" \
           | sed -e 's/^[^:]*://' -e 's/<[^>]*>//g' -e 's/.*⟬//' -e 's/⟭.*//')
         if [ -n "$sel_item" ]; then
-            for t in $main_menu; do
+            for t in ${=main_menu}; do
                 if [ "$sel_item" = "$t" ]; then
                     "$t"
                     break

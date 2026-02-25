@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env zsh
 # Audio sink switcher for PipeWire/WirePlumber
 # Based on hyprland-sink-switcher, adapted for rofi + notify-send
 

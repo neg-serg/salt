@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env zsh
 # Smart scratchpad toggle: if a scratchpad is focused, hide it;
 # otherwise toggle the requested target scratchpad.
 target="$1"

@@ -15,7 +15,7 @@ mkdir -p ${XDG_DATA_HOME:-$HOME/.local/share}/swayimg
 last_file="${XDG_DATA_HOME:-$HOME/.local/share}/swayimg/last"
 trash="${HOME}/trash/1st-level/pic"
 rofi_cmd='rofi -dmenu -sort -matching fuzzy -no-plugins -auto-select -theme swayimg -custom'
-pics_dir_default="$HOME/Pictures"
+pics_dir_default="$HOME/pic"
 pics_dir="${XDG_PICTURES_DIR:-$pics_dir_default}"
 
 # ---- IPC helpers -----------------------------------------------------------

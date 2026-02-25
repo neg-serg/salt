@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 set -euo pipefail
 
 PIDFILE="${XDG_RUNTIME_DIR:-/tmp}/autoclick.pid"

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env zsh
 # pic-info: show screenshot metadata via pic-notify (auto-picks latest shot when no args).
 
 set -u
