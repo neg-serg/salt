@@ -6,6 +6,5 @@ PartOf=graphical-session.target
 ExecStart=%h/.local/bin/pic-dirs-list
 Restart=on-failure
 RestartSec=5
-Environment=XDG_PICTURES_DIR=%h/pic
 [Install]
 WantedBy=graphical-session.target

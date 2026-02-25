@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """Send current shell directory to a running Neovim (socket) as :lcd.
 
 Usage:
@@ -9,7 +9,9 @@ Description:
   editor's local directory (lcd) to the caller's current working directory.
   Intended to be used from a shell integration/alias.
 """
+
 import os
+
 import neovim
 
 nvim = neovim.attach("socket", path="/tmp/nvim.sock")

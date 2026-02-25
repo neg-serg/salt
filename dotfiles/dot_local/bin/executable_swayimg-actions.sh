@@ -137,6 +137,7 @@ choose_dest() {
           | awk -v pic="$pics_dir" 'index($0, pic) == 1'
       fi
     } \
+      | sed 's:/$::' \
       | awk '!seen[$0]++' \
       | while IFS= read -r d; do
           [ -d "$d" ] || continue
