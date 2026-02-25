@@ -5,6 +5,7 @@ Skips:
 - Jinja2 templates (.j2 extension or {{ }} markers)
 - Drop-in overrides (.conf) — not standalone units
 - "not executable" / "No such file" errors (binaries may not be installed)
+- "Unit X not found" when X exists as a .j2 template (rendered at deploy time)
 """
 
 import glob
@@ -24,6 +25,30 @@ _NOISE = re.compile(
 
 # Jinja2 template marker
 _JINJA = re.compile(r"\{\{|\{%")
+
+# "Unit foo.service not found" — extract unit name
+_UNIT_NOT_FOUND = re.compile(r"Unit (\S+) not found")
+
+
+def _j2_unit_names():
+    """Collect unit names that exist only as .j2 templates (rendered at deploy time)."""
+    names = set()
+    for path in glob.glob(os.path.join(UNITS_DIR, "**/*.j2"), recursive=True):
+        # e.g. states/units/fancontrol-setup.service.j2 → fancontrol-setup.service
+        names.add(os.path.basename(path).removesuffix(".j2"))
+    # Also collect units with inline Jinja (skipped from verification)
+    for pattern in ("**/*.service", "**/*.timer"):
+        for path in glob.glob(os.path.join(UNITS_DIR, pattern), recursive=True):
+            if path.endswith(".j2"):
+                continue
+            try:
+                with open(path, encoding="utf-8") as f:
+                    content = f.read()
+            except (OSError, UnicodeDecodeError):
+                continue
+            if _JINJA.search(content):
+                names.add(os.path.basename(path))
+    return names
 
 
 def find_units():
@@ -45,7 +70,7 @@ def find_units():
     return units
 
 
-def verify_unit(path):
+def verify_unit(path, templated_units):
     """Run systemd-analyze verify, return real errors (filtered)."""
     result = subprocess.run(
         ["systemd-analyze", "verify", path],
@@ -58,6 +83,10 @@ def verify_unit(path):
             continue
         if _NOISE.search(line):
             continue
+        # Filter "Unit X not found" when X is a .j2 template or inline-jinja unit
+        m = _UNIT_NOT_FOUND.search(line)
+        if m and m.group(1) in templated_units:
+            continue
         lines.append(line)
     return lines
 
@@ -68,9 +97,10 @@ def main():
         print("No verifiable unit files found")
         return
 
+    templated_units = _j2_unit_names()
     errors = 0
     for path in units:
-        issues = verify_unit(path)
+        issues = verify_unit(path, templated_units)
         if issues:
             errors += 1
             print(f"\033[31m{path}:\033[0m")
