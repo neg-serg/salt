@@ -20,7 +20,7 @@ greetd_main_config:
     - name: /etc/greetd/config.toml
     - contents: |
         [terminal]
-        vt = 1
+        vt = {{ host.greetd_vt }}
 
         [default_session]
         command = "start-hyprland -- -c /etc/greetd/hyprland-greeter.conf"
