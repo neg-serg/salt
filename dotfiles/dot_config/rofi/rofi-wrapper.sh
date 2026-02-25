@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 set -euo pipefail
 rofi_bin="rofi"
 jq_bin="jq"
@@ -30,18 +30,18 @@ for arg in "$@"; do
         ;;
     esac
     # remember base theme name for per-theme placement tweaks
-    base=$(printf '%s' "$val" | sed -E 's#.*/##; s/\.rasi(:.*)?$//')
+    base=${val:t}; base=${base%.rasi*}
     [ -n "$base" ] && theme_name="$base"
   fi
   case "$arg" in
     -theme) prev_is_theme=1 ;;
     -theme=*)
-      val=$(printf '%s' "$arg" | sed -e 's/^-theme=//')
+      val=${arg#-theme=}
       case "$val" in
         /* | */*) : ;;
         *) case "$val" in *.rasi | *.rasi:*) cd_dir="$themes_dir" ;; esac ;;
       esac
-      base=$(printf '%s' "$val" | sed -E 's#.*/##; s/\.rasi(:.*)?$//')
+      base=${val:t}; base=${base%.rasi*}
       [ -n "$base" ] && theme_name="$base"
       ;;
     -no-config | -config | -config=*) have_cfg=1 ;;
@@ -72,23 +72,26 @@ if [ "$want_offsets" -eq 1 ] && [ "$have_xoff" -eq 0 ] && [ "$have_yoff" -eq 0 ]
   scale=1
   extra=""
   if [ -f "$theme_json" ]; then
-    sm=$("$jq_bin" -r 'try .panel.sideMargin // 18' "$theme_json" 2> /dev/null || echo 18)
-    ay=$("$jq_bin" -r 'try .panel.menuYOffset // 8' "$theme_json" 2> /dev/null || echo 8)
-    extra=$("$jq_bin" -r 'try .panel.menuYOffsetAdjust // empty' "$theme_json" 2> /dev/null || echo "")
+    local jq_out
+    jq_out=$("$jq_bin" -r '"\(try .panel.sideMargin // 18)\t\(try .panel.menuYOffset // 8)\t\(try .panel.menuYOffsetAdjust // "")"' "$theme_json" 2>/dev/null) || jq_out=$'18\t8\t'
+    IFS=$'\t' read -r sm ay extra <<< "$jq_out"
+    : ${sm:=18} ${ay:=8}
   fi
-  if ! printf '%s' "$extra" | grep -Eq '^[0-9]+(\.[0-9]+)?$'; then
+  if ! [[ "$extra" =~ '^[0-9]+(\.[0-9]+)?$' ]]; then
     # Default: subtract full menuYOffset so the menu sits flush to panel
-    extra=$(awk -v a="$ay" 'BEGIN{print a}')
+    extra=$ay
   fi
   # Monitor scale: try Hyprland first, fall back to wlr-randr
   scale=$("$hyprctl_bin" -j monitors 2> /dev/null | "$jq_bin" -r 'try (.[] | select(.focused==true) | .scale) // 1' 2> /dev/null || \
          wlr-randr --json 2> /dev/null | "$jq_bin" -r 'try ([.[] | select(.enabled) | .scale] | first) // 1' 2> /dev/null || \
          echo 1)
   # reduce y-offset by adjustment (clamp >=0)
-  ay=$(awk -v a="$ay" -v e="$extra" 'BEGIN{v=a-e; if(v<0)v=0; print v}')
+  (( ay = ay - extra ))
+  (( ay < 0 )) && ay=0
   # Round offsets to ints
-  xoff=$(printf '%.0f\n' "$(awk -v a="$sm" -v s="$scale" 'BEGIN{printf a*s}')")
-  yoff=$(printf '%.0f\n' "$(awk -v a="$ay" -v s="$scale" 'BEGIN{printf -a*s}')")
+  local _tmp
+  (( _tmp = sm * scale )); xoff=${_tmp%.*}
+  (( _tmp = -(ay * scale) )); yoff=${_tmp%.*}
   set -- "$@" -xoffset "$xoff" -yoffset "$yoff"
   # Ensure bottom-left if not specified
   if [ "$have_loc" -eq 0 ]; then
