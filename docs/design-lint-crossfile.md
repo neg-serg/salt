@@ -1,30 +1,30 @@
-# Prompt: Расширение lint-jinja.py — кросс-файловая валидация
+# Design: lint-jinja.py — cross-file validation
 
-## Задача
+## Goal
 
-Расширить `scripts/lint-jinja.py` тремя новыми проверками:
-1. **require-resolve** — все `require:`/`watch:`/`onchanges:` ссылки указывают на существующие state ID
-2. **unused-imports** — импортированные макросы реально используются в файле
-3. **dangling-includes** — файлы в `include:` списке (system_description.sls) существуют на диске
+Extend `scripts/lint-jinja.py` with three new checks:
+1. **require-resolve** — all `require:`/`watch:`/`onchanges:` references point to existing state IDs
+2. **unused-imports** — imported macros are actually used in the file
+3. **dangling-includes** — files in the `include:` list (system_description.sls) exist on disk
 
-## Архитектура текущего линтера
+## Current linter architecture
 
-Файл: `scripts/lint-jinja.py`. Проверки:
-- `check_jinja_syntax()` — рендерит все .jinja/.sls через Jinja2 с mock-контекстом
-- `check_duplicate_state_ids()` — рендерит .sls, парсит YAML, ищет дубликаты ID
-- `check_state_id_naming()` — regex по сырым .sls файлам, проверяет конвенции
-- `check_host_config()` — валидирует ключи в host_config.jinja
-- `check_yaml_configs()` — yaml.safe_load на data/*.yaml
+File: `scripts/lint-jinja.py`. Checks:
+- `check_jinja_syntax()` — renders all .jinja/.sls via Jinja2 with mock context
+- `check_duplicate_state_ids()` — renders .sls, parses YAML, finds duplicate IDs
+- `check_state_id_naming()` — regex on raw .sls files, validates conventions
+- `check_host_config()` — validates keys in host_config.jinja
+- `check_yaml_configs()` — yaml.safe_load on data/*.yaml
 
-Рендеринг использует `jinja2.Environment` с `SaltTagExtension` (обрабатывает `{% import_yaml %}`, `{% do %}`) и stub-контекстом `grains={"host": "lint-check"}`. Не все файлы рендерятся — файлы с Salt-only фичами (pillar и т.д.) молча скипаются.
+Rendering uses `jinja2.Environment` with `SaltTagExtension` (handles `{% import_yaml %}`, `{% do %}`) and a stub context `grains={"host": "lint-check"}`. Not all files render — files with Salt-only features (pillar, etc.) are silently skipped.
 
-## Подводные камни (КРИТИЧЕСКИ ВАЖНО)
+## Pitfalls (CRITICAL)
 
-### 1. Макросы генерируют state ID по паттернам
+### 1. Macros generate state IDs by pattern
 
-Макросы из `_macros_*.jinja` создают state ID с предсказуемыми префиксами:
+Macros from `_macros_*.jinja` create state IDs with predictable prefixes:
 
-| Макрос | Генерируемые ID |
+| Macro | Generated IDs |
 |---|---|
 | `pacman_install(name, ...)` | `install_{name}` |
 | `paru_install(name, ...)` | `install_{name}` |
@@ -53,88 +53,88 @@
 | `download_font_zip(name, ...)` | `install_{name}` |
 | `git_clone_deploy(name, ...)` | `install_{name}`, `install_{name}_deploy` |
 
-Все `name` проходят через `| replace('-', '_')` при генерации ID.
+All `name` values pass through `| replace('-', '_')` during ID generation.
 
-Линтер должен знать эти паттерны, чтобы при встрече `require: cmd: install_unbound` понять, что это валидная ссылка на `pacman_install('unbound', ...)` или `simple_service('unbound', ...)`.
+The linter must know these patterns so that when it encounters `require: cmd: install_unbound`, it understands this is a valid reference to `pacman_install('unbound', ...)` or `simple_service('unbound', ...)`.
 
-### 2. Условные state ID
+### 2. Conditional state IDs
 
-Многие стейты обёрнуты в `{% if host.features.dns.unbound %}...{% endif %}`. При lint-check рендеринге с mock-грainами feature-флаги могут быть False, и стейты не сгенерируются. Решения:
-- **Подход A**: Рендерить с "all-features-on" mock-контекстом (требует знать структуру features)
-- **Подход B**: Парсить require-ссылки из сырого текста (regex), не из рендеренного YAML
-- **Подход C**: Рендерить несколько раз с разными конфигами хостов из `host_config.jinja`
+Many states are wrapped in `{% if host.features.dns.unbound %}...{% endif %}`. During lint-time rendering with mock grains, feature flags may be False, and states won't be generated. Solutions:
+- **Approach A**: Render with an "all-features-on" mock context (requires knowing the features structure)
+- **Approach B**: Parse require references from raw text (regex), not from rendered YAML
+- **Approach C**: Render multiple times with different host configs from `host_config.jinja`
 
-Рекомендация: **подход B** для require-resolve (regex по сырым файлам), **подход A** для полноты (как дополнительный режим). Уже существующая функция `check_duplicate_state_ids()` использует рендеринг — её результат (`all_ids`) можно расширить, но не полагаться на него как единственный источник.
+Recommendation: **approach B** for require-resolve (regex on raw files), **approach A** for completeness (as an additional mode). The existing `check_duplicate_state_ids()` function uses rendering — its result (`all_ids`) can be extended but should not be the sole source.
 
-### 3. Кросс-файловые зависимости
+### 3. Cross-file dependencies
 
-`dns.sls` может ссылаться на state ID из `system_description.sls` (через `include:`). Пример: `require: cmd: pacman_db_warmup` определён в `desktop.sls`, но используется во всех файлах через макросы.
+`dns.sls` can reference state IDs from `system_description.sls` (via `include:`). Example: `require: cmd: pacman_db_warmup` is defined in `desktop.sls` but used across all files via macros.
 
-Решение: собрать **глобальный пул state ID** из всех .sls файлов, а не проверять каждый файл изолированно.
+Solution: build a **global state ID pool** from all .sls files rather than checking each file in isolation.
 
-### 4. Sanitization при генерации ID
+### 4. Sanitization during ID generation
 
-State ID проходят через `| replace('-', '_')`, а иногда через более сложные цепочки:
+State IDs pass through `| replace('-', '_')`, and sometimes through more complex chains:
 ```
 model | replace('.', '_') | replace(':', '_') | replace('-', '_')
 ext_id | replace('{', '') | replace('}', '') | replace('-', '_') | replace('@', '_') | replace('.', '_')
 ```
-Require-ссылки используют уже санитизированную форму. Линтер должен или парсить replace-цепочки, или просто проверять ID как есть (после рендеринга).
+Require references use the already-sanitized form. The linter should either parse replace chains or simply check IDs as-is (after rendering).
 
-### 5. Данные из YAML влияют на state ID
+### 5. YAML data affects state IDs
 
-Data-driven циклы (`{% for name, opts in tools.curl_bin.items() %}`) генерируют ID на основе содержимого `data/*.yaml`. Линтер уже загружает эти файлы через `_resolve_import_yaml()` — это нужно сохранить.
+Data-driven loops (`{% for name, opts in tools.curl_bin.items() %}`) generate IDs based on `data/*.yaml` contents. The linter already loads these files via `_resolve_import_yaml()` — this must be preserved.
 
-### 6. `require` формат — не только `cmd:`
+### 6. `require` format — not just `cmd:`
 
-Формат requisite: `- {type}: {state_id}`, где type = `cmd`, `file`, `service`, `user`, `mount`, `pkg`. Линтер должен парсить все типы.
+Requisite format: `- {type}: {state_id}`, where type = `cmd`, `file`, `service`, `user`, `mount`, `pkg`. The linter must parse all types.
 
-### 7. Макро-вызовы внутри Jinja — не видны в YAML
+### 7. Macro calls inside Jinja — not visible in YAML
 
-`{{ pacman_install('foo', 'foo') }}` в сыром файле — это Jinja-выражение, а не YAML. Для unused-imports проверки нужно искать макро-имена в сыром тексте файла (regex), а не в рендеренном YAML.
+`{{ pacman_install('foo', 'foo') }}` in a raw file is a Jinja expression, not YAML. For the unused-imports check, macro names must be searched in raw file text (regex), not in rendered YAML.
 
 ### 8. False positives
 
-Некоторые require-ссылки валидны, но не проверяемы:
-- `require: mount: mount_zero` — из `mounts.sls`, может не рендериться
-- `require: cmd: pacman_db_warmup` — из `desktop.sls`, глобальная зависимость
-- Ссылки внутри макросов (e.g. `require: cmd: pacman_db_warmup` в `_macros_pkg.jinja`)
+Some require references are valid but not verifiable:
+- `require: mount: mount_zero` — from `mounts.sls`, may not render
+- `require: cmd: pacman_db_warmup` — from `desktop.sls`, global dependency
+- References inside macros (e.g. `require: cmd: pacman_db_warmup` in `_macros_pkg.jinja`)
 
-Нужен механизм **known-globals** — список state ID, которые считаются всегда доступными.
+A **known-globals** mechanism is needed — a list of state IDs that are always considered available.
 
-## Рекомендуемый план реализации
+## Recommended implementation plan
 
-### Фаза 1: unused-imports (простая, regex-based)
-- Для каждого .sls: распарсить `{% from '...' import foo, bar %}`
-- Для каждого импортированного имени: проверить, встречается ли `foo(` или `foo ` в теле файла
-- Исключить `_macros_common.jinja` импорты (они переимпортируются внутри макросов)
-- Severity: warning (не error)
+### Phase 1: unused-imports (simple, regex-based)
+- For each .sls: parse `{% from '...' import foo, bar %}`
+- For each imported name: check if `foo(` or `foo ` appears in the file body
+- Exclude `_macros_common.jinja` imports (they are re-imported inside macros)
+- Severity: warning (not error)
 
-### Фаза 2: require-resolve (средняя сложность)
-- Собрать глобальный пул state ID из всех рендеренных .sls (расширить `check_duplicate_state_ids`)
-- Добавить known-globals: `pacman_db_warmup`, `mount_zero`, `mount_one`
-- Для каждого рендеренного .sls: найти все `require:`/`watch:`/`onchanges:` блоки
-- Для каждой ссылки `- {type}: {id}`: проверить, что `{id}` есть в глобальном пуле или known-globals
+### Phase 2: require-resolve (medium complexity)
+- Build a global state ID pool from all rendered .sls (extend `check_duplicate_state_ids`)
+- Add known-globals: `pacman_db_warmup`, `mount_zero`, `mount_one`
+- For each rendered .sls: find all `require:`/`watch:`/`onchanges:` blocks
+- For each reference `- {type}: {id}`: verify `{id}` exists in the global pool or known-globals
 - Severity: error
 
-### Фаза 3: dangling-includes (тривиальная)
-- Прочитать `system_description.sls`, найти `include:` список
-- Для каждого имени: проверить, что `states/{name}.sls` существует
+### Phase 3: dangling-includes (trivial)
+- Read `system_description.sls`, find the `include:` list
+- For each name: verify `states/{name}.sls` exists
 - Severity: error
 
-## Ключевые файлы
+## Key files
 
-- `scripts/lint-jinja.py` — основной файл для модификации
-- `states/_macros_*.jinja` — справка по генерируемым state ID (читать, не менять)
-- `states/_imports.jinja` — определяет retry_attempts и т.д.
-- `states/host_config.jinja` — feature-флаги для mock-контекста
-- `states/data/*.yaml` — данные, влияющие на state ID
-- `states/system_description.sls` — include-список
+- `scripts/lint-jinja.py` — main file to modify
+- `states/_macros_*.jinja` — reference for generated state IDs (read, don't modify)
+- `states/_imports.jinja` — defines retry_attempts, etc.
+- `states/host_config.jinja` — feature flags for mock context
+- `states/data/*.yaml` — data affecting state IDs
+- `states/system_description.sls` — include list
 
-## Критерии приёмки
+## Acceptance criteria
 
-- `python3 scripts/lint-jinja.py` проходит на текущей кодовой базе с 0 ошибками
-- Намеренно сломанный require (e.g. `require: cmd: nonexistent_state`) детектируется
-- Неиспользованный import детектируется как warning
-- Несуществующий include детектируется как error
-- False positive rate = 0 на текущей кодовой базе (если нужен suppress-механизм — inline `# lint: ignore`)
+- `python3 scripts/lint-jinja.py` passes on the current codebase with 0 errors
+- A deliberately broken require (e.g. `require: cmd: nonexistent_state`) is detected
+- An unused import is detected as a warning
+- A non-existent include is detected as an error
+- False positive rate = 0 on the current codebase (if a suppress mechanism is needed — inline `# lint: ignore`)

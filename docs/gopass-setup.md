@@ -1,15 +1,15 @@
 # gopass Setup Guide
 
-Пошаговая инструкция по заведению всех секретов для Salt/chezmoi конфигурации.
-Каждый секрет используется в chezmoi-шаблонах или Salt states — без них деплой упадёт.
+Step-by-step instructions for provisioning all secrets required by Salt/chezmoi configuration.
+Each secret is consumed by chezmoi templates or Salt states — deployment will fail without them.
 
-## 0. Предварительная проверка
+## 0. Pre-flight check
 
 ```bash
-# Проверить, что gopass инициализирован
+# Verify gopass is initialized
 gopass ls
 
-# Посмотреть, какие секреты уже есть, а какие отсутствуют
+# Check which secrets exist and which are missing
 for key in \
     email/gmail/app-password email/gmail/address \
     caldav/google/client-id caldav/google/client-secret \
@@ -26,33 +26,33 @@ done
 
 ---
 
-## 1. Инициализация gopass (если store не существует)
+## 1. Initialize gopass (if store doesn't exist)
 
 ```bash
 gopass init <GPG-KEY-ID>
 gopass git init
 
-# Проверка
+# Verify
 gopass ls
 ```
 
 ---
 
-## 2. SSH и Yubikey (скрипт `unlock`)
+## 2. SSH and Yubikey (`unlock` script)
 
-Используются в: `~/.local/bin/unlock` — автоматический unlock SSH ключей при логине.
+Used by: `~/.local/bin/unlock` — automatic SSH key unlock at login.
 
-### 2a. Пароль SSH ключа
+### 2a. SSH key passphrase
 
 ```bash
-# Пароль от ~/.ssh/id_ed25519
+# Passphrase for ~/.ssh/id_ed25519
 gopass insert ssh-key
 ```
 
-### 2b. PIN Yubikey
+### 2b. Yubikey PIN
 
 ```bash
-# PIN для разблокировки Yubikey GPG ключа. Используется только если Yubikey подключен.
+# PIN for unlocking the Yubikey GPG key. Only used when Yubikey is connected.
 gopass insert yubikey-pin
 ```
 
@@ -60,221 +60,221 @@ gopass insert yubikey-pin
 
 ## 3. Email — Gmail
 
-Используются в: `mbsync` (получение почты), `msmtp` (отправка), `imapnotify` (push-уведомления).
-Шаблоны: `dot_config/mbsync/mbsyncrc.tmpl`, `dot_config/msmtp/config.tmpl`, `dot_config/imapnotify/gmail.json.tmpl`
+Used by: `mbsync` (mail fetch), `msmtp` (send), `imapnotify` (push notifications).
+Templates: `dot_config/mbsync/mbsyncrc.tmpl`, `dot_config/msmtp/config.tmpl`, `dot_config/imapnotify/gmail.json.tmpl`
 
-### 3a. Gmail адрес
+### 3a. Gmail address
 
 ```bash
 gopass insert email/gmail/address
-# Ввести: ваш gmail адрес (например serg.zorg@gmail.com)
+# Enter: your gmail address (e.g. serg.zorg@gmail.com)
 ```
 
 ### 3b. Gmail App Password
 
-**Где получить:**
-1. Перейти на https://myaccount.google.com/apppasswords
-2. Выбрать имя приложения (например "mbsync")
-3. Нажать "Create"
-4. Скопировать сгенерированный 16-символьный пароль
+**How to obtain:**
+1. Go to https://myaccount.google.com/apppasswords
+2. Choose an app name (e.g. "mbsync")
+3. Click "Create"
+4. Copy the generated 16-character password
 
-**Требования:** на аккаунте должна быть включена 2FA (без неё App Passwords недоступны).
+**Requirement:** 2FA must be enabled on the account (App Passwords are unavailable without it).
 
 ```bash
 gopass insert email/gmail/app-password
-# Ввести: 16-символьный App Password (без пробелов)
+# Enter: 16-character App Password (no spaces)
 ```
 
 ---
 
 ## 4. Calendar — Google OAuth (vdirsyncer)
 
-Используются в: `vdirsyncer` (синхронизация Google Calendar → локальные .ics файлы).
-Шаблон: `dot_config/vdirsyncer/config.tmpl`
+Used by: `vdirsyncer` (sync Google Calendar → local .ics files).
+Template: `dot_config/vdirsyncer/config.tmpl`
 
-**Где получить:**
-1. Перейти на https://console.cloud.google.com/
-2. Создать проект (или выбрать существующий)
-3. Перейти в **APIs & Services → Library**
-4. Найти и включить **Google Calendar API**
-5. Перейти в **APIs & Services → Credentials**
-6. Нажать **Create Credentials → OAuth client ID**
-7. Тип приложения: **Desktop app**
-8. Имя: любое (например "vdirsyncer")
-9. Нажать **Create**
-10. Скопировать **Client ID** и **Client Secret**
+**How to obtain:**
+1. Go to https://console.cloud.google.com/
+2. Create a project (or select existing)
+3. Go to **APIs & Services → Library**
+4. Find and enable **Google Calendar API**
+5. Go to **APIs & Services → Credentials**
+6. Click **Create Credentials → OAuth client ID**
+7. Application type: **Desktop app**
+8. Name: anything (e.g. "vdirsyncer")
+9. Click **Create**
+10. Copy **Client ID** and **Client Secret**
 
-**Важно:** Также нужно настроить OAuth consent screen:
+**Important:** You also need to configure the OAuth consent screen:
 - **APIs & Services → OAuth consent screen**
-- User type: External (или Internal, если Google Workspace)
-- Добавить scope: `Google Calendar API — .../auth/calendar`
-- Добавить свой email в test users (если приложение в Testing статусе)
+- User type: External (or Internal for Google Workspace)
+- Add scope: `Google Calendar API — .../auth/calendar`
+- Add your email to test users (if app is in Testing status)
 
 ```bash
 gopass insert caldav/google/client-id
-# Ввести: Client ID (формат: xxxx.apps.googleusercontent.com)
+# Enter: Client ID (format: xxxx.apps.googleusercontent.com)
 
 gopass insert caldav/google/client-secret
-# Ввести: Client Secret (формат: GOCSPX-xxx)
+# Enter: Client Secret (format: GOCSPX-xxx)
 ```
 
 ---
 
 ## 5. Last.fm (mpdas + rescrobbled)
 
-Используются в: `mpdas` (scrobbler через Salt state `mpd.sls`), `rescrobbled` (альтернативный scrobbler).
-Шаблон: `dot_config/rescrobbled/config.toml.tmpl`
+Used by: `mpdas` (scrobbler via Salt state `mpd.sls`), `rescrobbled` (alternative scrobbler).
+Template: `dot_config/rescrobbled/config.toml.tmpl`
 
-### 5a. Логин и пароль Last.fm
+### 5a. Last.fm credentials
 
 ```bash
 gopass insert lastfm/username
-# Ввести: ваш Last.fm username
+# Enter: your Last.fm username
 
 gopass insert lastfm/password
-# Ввести: ваш Last.fm пароль
+# Enter: your Last.fm password
 ```
 
-### 5b. API ключи Last.fm
+### 5b. Last.fm API keys
 
-**Где получить:**
-1. Перейти на https://www.last.fm/api/account/create
-2. Залогиниться (если не залогинены)
-3. Заполнить форму:
-   - Application name: любое (например "rescrobbled")
-   - Application description: любое
-   - Callback URL: оставить пустым
-4. Нажать **Submit**
-5. Скопировать **API key** и **Shared secret**
+**How to obtain:**
+1. Go to https://www.last.fm/api/account/create
+2. Log in (if not already)
+3. Fill the form:
+   - Application name: anything (e.g. "rescrobbled")
+   - Application description: anything
+   - Callback URL: leave empty
+4. Click **Submit**
+5. Copy **API key** and **Shared secret**
 
 ```bash
 gopass insert lastfm/api-key
-# Ввести: API key (32 hex символа)
+# Enter: API key (32 hex characters)
 
 gopass insert lastfm/api-secret
-# Ввести: Shared secret (32 hex символа)
+# Enter: Shared secret (32 hex characters)
 ```
 
 ---
 
-## 6. API ключи (zsh окружение)
+## 6. API keys (zsh environment)
 
-Используются в: `~/.config/zsh/10-secrets.zsh` — экспортируются как переменные окружения.
-Шаблон: `dot_config/zsh/10-secrets.zsh.tmpl`
+Used by: `~/.config/zsh/10-secrets.zsh` — exported as environment variables.
+Template: `dot_config/zsh/10-secrets.zsh.tmpl`
 
 ### 6a. GitHub Personal Access Token
 
-**Где получить:**
-1. Перейти на https://github.com/settings/tokens?type=beta
-2. Нажать **Generate new token**
-3. Выбрать нужные permissions (минимум: `repo`, `read:org`)
-4. Установить срок действия
-5. Нажать **Generate token**
-6. Скопировать токен (показывается один раз!)
+**How to obtain:**
+1. Go to https://github.com/settings/tokens?type=beta
+2. Click **Generate new token**
+3. Select permissions (minimum: `repo`, `read:org`)
+4. Set expiration
+5. Click **Generate token**
+6. Copy the token (shown only once!)
 
 ```bash
 gopass insert api/github-token
-# Ввести: github_pat_xxx или ghp_xxx
+# Enter: github_pat_xxx or ghp_xxx
 ```
 
 ### 6b. Brave Search API Key
 
-**Где получить:**
-1. Перейти на https://api.search.brave.com/app/keys
-2. Зарегистрироваться / залогиниться
-3. Создать ключ (Free план: 2000 запросов/мес)
-4. Скопировать API key
+**How to obtain:**
+1. Go to https://api.search.brave.com/app/keys
+2. Register / log in
+3. Create a key (Free plan: 2000 requests/month)
+4. Copy the API key
 
 ```bash
 gopass insert api/brave-search
-# Ввести: BSA-xxx
+# Enter: BSA-xxx
 ```
 
 ### 6c. Context7 API Key
 
-**Где получить:**
-1. Перейти на https://context7.com/
-2. Зарегистрироваться / залогиниться
-3. Получить API key в настройках аккаунта
+**How to obtain:**
+1. Go to https://context7.com/
+2. Register / log in
+3. Get the API key from account settings
 
 ```bash
 gopass insert api/context7
-# Ввести: ваш Context7 API key
+# Enter: your Context7 API key
 ```
 
 ---
 
-## 7. Применение
+## 7. Apply
 
-После заведения всех секретов:
+After provisioning all secrets:
 
 ```bash
-# Проверить, что все секреты на месте (скрипт из шага 0)
-# Затем:
+# Verify all secrets are present (script from step 0)
+# Then:
 
-# Salt state — деплоит конфиги, systemd-сервисы
+# Salt state — deploys configs, systemd services
 sudo salt-call state.apply
 
-# Chezmoi — рендерит шаблоны с секретами (потребует Yubikey)
-chezmoi diff      # превью изменений
-chezmoi apply -v  # применить
+# Chezmoi — renders templates with secrets (requires Yubikey)
+chezmoi diff      # preview changes
+chezmoi apply -v  # apply
 ```
 
 ---
 
-## 8. Активация сервисов
+## 8. Enable services
 
 ```bash
-# Почта
+# Mail
 systemctl --user enable --now mbsync-gmail.timer
 systemctl --user enable --now imapnotify-gmail.service
 
-# Календарь
+# Calendar
 systemctl --user enable --now vdirsyncer.timer
 
-# Проверка
+# Verify
 systemctl --user list-timers
 systemctl --user status mbsync-gmail.timer imapnotify-gmail vdirsyncer.timer
 ```
 
 ---
 
-## 9. Первичная синхронизация
+## 9. Initial sync
 
 ```bash
-# Почта — первый полный sync (может занять время)
+# Mail — first full sync (may take a while)
 mbsync gmail
 
-# Notmuch — инициализация поисковой базы
+# Notmuch — initialize search database
 notmuch new
 
-# Календарь — первый sync (откроет браузер для OAuth авторизации)
+# Calendar — first sync (opens browser for OAuth authorization)
 vdirsyncer discover
 vdirsyncer sync
 ```
 
 ---
 
-## 10. Финальная проверка
+## 10. Final verification
 
 ```bash
-# Все секреты на месте
+# All secrets present
 gopass ls
 
-# chezmoi — нет расхождений
+# chezmoi — no drift
 chezmoi verify
 
-# Почта
+# Mail
 ls ~/.local/mail/gmail/INBOX/
 
-# Календарь
+# Calendar
 khal list today 7d
 
 # MPD scrobbling
 systemctl --user status rescrobbled
 
-# API keys в окружении
+# API keys in environment
 source ~/.config/zsh/10-secrets.zsh
-echo $GITHUB_TOKEN | head -c4    # начало токена
+echo $GITHUB_TOKEN | head -c4    # token prefix
 echo $BRAVE_API_KEY | head -c4
 ```
