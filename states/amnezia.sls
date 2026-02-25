@@ -11,7 +11,7 @@
 {{ ensure_dir('amnezia_cache_dir', cache) }}
 
 # Build all Amnezia components in parallel
-build_amnezia_all:
+amnezia_build:
   cmd.script:
     - source: salt://scripts/amnezia-build.sh
     - shell: /bin/bash
@@ -27,7 +27,7 @@ build_amnezia_all:
     - require:
       - file: amnezia_cache_dir
 
-install_amneziawg_go:
+amneziawg_go_bin:
   file.managed:
     - name: {{ home }}/.local/bin/amneziawg-go
     - source: {{ cache }}/amneziawg-go-bin
@@ -35,9 +35,9 @@ install_amneziawg_go:
     - user: {{ user }}
     - group: {{ user }}
     - require:
-      - cmd: build_amnezia_all
+      - cmd: amnezia_build
 
-install_amneziawg_tools:
+amneziawg_tools_bin:
   file.managed:
     - name: {{ home }}/.local/bin/awg
     - source: {{ cache }}/awg-bin
@@ -45,7 +45,7 @@ install_amneziawg_tools:
     - user: {{ user }}
     - group: {{ user }}
     - require:
-      - cmd: build_amnezia_all
+      - cmd: amnezia_build
 
 # Symlinks for sudo access
 amneziawg_go_symlink:
@@ -54,7 +54,7 @@ amneziawg_go_symlink:
     - target: {{ home }}/.local/bin/amneziawg-go
     - force: True
     - require:
-      - file: install_amneziawg_go
+      - file: amneziawg_go_bin
 
 awg_symlink:
   file.symlink:
@@ -62,9 +62,9 @@ awg_symlink:
     - target: {{ home }}/.local/bin/awg
     - force: True
     - require:
-      - file: install_amneziawg_tools
+      - file: amneziawg_tools_bin
 
-install_amnezia_vpn:
+amnezia_vpn_bin:
   file.managed:
     - name: {{ home }}/.local/bin/AmneziaVPN
     - source: {{ cache }}/AmneziaVPN-bin
@@ -72,26 +72,26 @@ install_amnezia_vpn:
     - user: {{ user }}
     - group: {{ user }}
     - require:
-      - cmd: build_amnezia_all
+      - cmd: amnezia_build
 
 # Verification (only runs when the binary actually changed)
 amneziawg_go_verify:
   cmd.run:
     - name: {{ home }}/.local/bin/amneziawg-go --version
     - onchanges:
-      - file: install_amneziawg_go
+      - file: amneziawg_go_bin
 
 awg_verify:
   cmd.run:
     - name: {{ home }}/.local/bin/awg --version
     - onchanges:
-      - file: install_amneziawg_tools
+      - file: amneziawg_tools_bin
 
 amnezia_vpn_verify:
   cmd.run:
     - name: ldd {{ home }}/.local/bin/AmneziaVPN
     - onchanges:
-      - file: install_amnezia_vpn
+      - file: amnezia_vpn_bin
 
 {{ ensure_dir('amnezia_apps_dir', home ~ '/.local/share/applications') }}
 

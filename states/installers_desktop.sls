@@ -41,7 +41,7 @@
 # - CMake 4.0 removed cmake_minimum_required < 3.5 support
 # - GCC 15 made -Wincompatible-pointer-types a hard error (rofi API signature mismatch)
 # Can't use env vars — makepkg.conf overwrites CFLAGS. Patch build() directly.
-install_rofi_file_browser_extended:
+rofi_file_browser_extended:
   cmd.run:
     - name: |
         set -eo pipefail
