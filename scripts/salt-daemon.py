@@ -57,21 +57,32 @@ salt_compat.patch()
 # ── Defaults ─────────────────────────────────────────────────────────────────
 _DEFAULT_SOCKET = "/run/salt-daemon.sock"
 _DEFAULT_CONFIG_DIR = os.path.join(_SCRIPT_DIR, ".salt_runtime")
+_DEFAULT_TIMEOUT = 600  # 10 minutes per state run
+
+
+class StateTimeout(Exception):
+    """Raised by SIGALRM when a state execution exceeds the timeout."""
+
+
+def _on_sigalrm(signum, frame):
+    raise StateTimeout("state execution timed out")
 
 # ── Security: allowed log directory and state whitelist ──────────────────────
 _ALLOWED_LOG_DIR = os.path.join(_SCRIPT_DIR, os.pardir, "logs")
 
-# States from system_description.sls include list + top-level orchestrators.
-# Update this set when adding new .sls files to system_description.sls.
-_ALLOWED_STATES = frozenset({
-    "system_description", "cachyos", "cachyos_all",
-    "audio", "amnezia", "bind_mounts", "custom_pkgs", "desktop", "dns",
-    "floorp", "fonts", "greetd", "hardware", "installers",
-    "installers_desktop", "kanata", "installers_themes", "kernel_modules",
-    "kernel_params_limine", "monitoring", "mounts", "mpd", "network",
-    "ollama", "services", "snapshots", "steam", "sysctl", "users",
-    "user_services", "zsh",
-})
+def _discover_allowed_states():
+    """Build allowed state set from states/*.sls files on disk."""
+    import glob
+
+    states_dir = os.path.join(_SCRIPT_DIR, "states")
+    found = set()
+    for path in glob.glob(os.path.join(states_dir, "*.sls")):
+        name = os.path.basename(path).removesuffix(".sls")
+        found.add(name)
+    return frozenset(found)
+
+
+_ALLOWED_STATES = _discover_allowed_states()
 
 log = logging.getLogger("salt-daemon")
 
@@ -135,7 +146,7 @@ def run_state(
         try:
             client_sock.sendall((json.dumps(obj) + "\n").encode())
         except OSError:
-            pass
+            log.debug("Client disconnected during send")
 
     # Per-call opts (shallow copy so we don't mutate the shared opts)
     run_opts = dict(opts)
@@ -168,62 +179,65 @@ def run_state(
     try:
         filtered = {k: v for k, v in kwargs.items() if k != "state_output"}
         result = minion.functions["state.sls"](state, **filtered)
+
+        # ── Format and emit output ───────────────────────────────────────
+        # Determine exit code from state results before formatting
+        if isinstance(result, dict):
+            for state_result in result.values():
+                if isinstance(state_result, dict) and state_result.get("result") is False:
+                    exit_code = 1
+                    break
+
+        # Capture display_output (which writes to sys.stdout)
+        captured = io.StringIO()
+        old_stdout = sys.stdout
+        sys.stdout = captured
+        if isinstance(result, dict):
+            salt.output.display_output({"local": result}, out="highstate", opts=run_opts)
+        else:
+            # Non-dict result (error list, etc.)
+            salt.output.display_output({"local": result}, out="nested", opts=run_opts)
+        sys.stdout = old_stdout
+        formatted_output = captured.getvalue()
+
+        # Write to log file
+        if log_file and formatted_output:
+            try:
+                with open(log_file, "a", encoding="utf-8") as f:
+                    f.write(formatted_output)
+            except OSError as exc:
+                log.warning("Cannot write output to log file %s: %s", log_file, exc)
+
+        # Send to client
+        for line in formatted_output.splitlines():
+            send({"type": "stdout", "line": line})
+
+        send({"type": "exit", "code": exit_code})
+
     except Exception as exc:
         err_msg = f"salt-daemon: error running state.sls({state!r}): {exc}"
         log.exception(err_msg)
         send({"type": "stdout", "line": err_msg})
         send({"type": "exit", "code": 1})
-        return 1
+        exit_code = 1
 
-    # ── Format and emit output ───────────────────────────────────────────────
-    # Determine exit code from state results before formatting
-    if isinstance(result, dict):
-        for state_result in result.values():
-            if isinstance(state_result, dict) and state_result.get("result") is False:
-                exit_code = 1
-                break
-
-    # Capture display_output (which writes to sys.stdout)
-    captured = io.StringIO()
-    old_stdout = sys.stdout
-    sys.stdout = captured
-    if isinstance(result, dict):
-        salt.output.display_output({"local": result}, out="highstate", opts=run_opts)
-    else:
-        # Non-dict result (error list, etc.)
-        salt.output.display_output({"local": result}, out="nested", opts=run_opts)
-    sys.stdout = old_stdout
-    formatted_output = captured.getvalue()
-
-    # Write to log file
-    if log_file and formatted_output:
-        try:
-            with open(log_file, "a", encoding="utf-8") as f:
-                f.write(formatted_output)
-        except OSError as exc:
-            log.warning("Cannot write output to log file %s: %s", log_file, exc)
-
-    # Send to client
-    for line in formatted_output.splitlines():
-        send({"type": "stdout", "line": line})
-
-    send({"type": "exit", "code": exit_code})
-
-    # ── Teardown file handler ────────────────────────────────────────────────
-    if file_handler is not None:
-        logging.root.removeHandler(file_handler)
-        file_handler.close()
-    logging.root.setLevel(saved_root_level)
+    finally:
+        # ── Teardown file handler (always runs, even on timeout/error) ───
+        if file_handler is not None:
+            logging.root.removeHandler(file_handler)
+            file_handler.close()
+        logging.root.setLevel(saved_root_level)
 
     return exit_code
 
 
 # ── Socket server ─────────────────────────────────────────────────────────────
 class DaemonServer:
-    def __init__(self, socket_path: str, opts: dict, minion):
+    def __init__(self, socket_path: str, opts: dict, minion, timeout: int = _DEFAULT_TIMEOUT):
         self.socket_path = socket_path
         self.opts = opts
         self.minion = minion
+        self.timeout = timeout
         # Build allowed UID set: root + all members of the wheel group
         import grp
         import pwd
@@ -303,16 +317,28 @@ class DaemonServer:
                 log.warning("Rejected log_file outside allowed dir: %r (resolved to %r)", log_file, real_log)
                 log_file = ""
 
-        log.info("Request: state=%r kwargs=%s log_file=%r", state, kwargs, log_file)
+        log.info("Request: state=%r kwargs=%s log_file=%r timeout=%ds", state, kwargs, log_file, self.timeout)
 
+        signal.alarm(self.timeout)
         try:
             run_state(self.opts, self.minion, state, kwargs, log_file, conn)
+        except StateTimeout:
+            log.error("State %r timed out after %ds", state, self.timeout)
+            try:
+                conn.sendall(
+                    (json.dumps({"type": "stdout", "line": f"error: state {state!r} timed out after {self.timeout}s"}) + "\n").encode()
+                )
+                conn.sendall((json.dumps({"type": "exit", "code": 1}) + "\n").encode())
+            except OSError:
+                pass
         except Exception as exc:
             log.exception("Unhandled error in run_state: %s", exc)
             try:
                 conn.sendall((json.dumps({"type": "exit", "code": 1}) + "\n").encode())
             except OSError:
                 pass
+        finally:
+            signal.alarm(0)
 
         conn.close()
 
@@ -347,6 +373,7 @@ class DaemonServer:
 
         signal.signal(signal.SIGTERM, _shutdown)
         signal.signal(signal.SIGINT, _shutdown)
+        signal.signal(signal.SIGALRM, _on_sigalrm)
 
         print(f"salt-daemon ready on {socket_path}", flush=True)
         log.info("Listening on %s", socket_path)
@@ -382,6 +409,13 @@ def main() -> None:
         help="Unix socket path to listen on",
     )
     parser.add_argument(
+        "--timeout",
+        type=int,
+        default=_DEFAULT_TIMEOUT,
+        metavar="SEC",
+        help="Max seconds per state run (0 = no limit)",
+    )
+    parser.add_argument(
         "--log-level",
         default="warning",
         choices=["debug", "info", "warning", "error"],
@@ -404,7 +438,7 @@ def main() -> None:
         log.critical("Failed to load Salt: %s", exc, exc_info=True)
         sys.exit(1)
 
-    server = DaemonServer(args.socket, opts, minion)
+    server = DaemonServer(args.socket, opts, minion, timeout=args.timeout)
     server.serve(args.socket)
 
 
