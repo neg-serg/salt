@@ -6,6 +6,7 @@ curl_extract_zip:
     url: "https://github.com/throneproj/Throne/releases/download/${VER}/Throne-${VER}-linux-amd64.zip"
     dest: "~/.local/opt/throne"
     symlink: Throne
+    hash: "03b07f749f37211dcc158d4d788d61b19f45e41925cddb2858a84ed88d6e695d"
   droidcam:
     url: "https://files.dev47apps.net/linux/droidcam_${VER}.zip"
     binary_path: "."
@@ -13,6 +14,7 @@ curl_extract_zip:
       - droidcam
       - droidcam-cli
     chmod: true
+    hash: "e48c145c4fed5883883c8debb92064b24679ef26c5905427d58119aa6c9e58fe"
 
 curl_extract_tar:
   nyxt:
@@ -20,9 +22,12 @@ curl_extract_tar:
     binary_pattern: Nyxt-x86_64.AppImage
     bin: nyxt
     chmod: true
+    hash: "bfec7a2b9b2f2c0dcbf888c47538e62447f786f830870aefa8071e96963549c4"
 
 curl_bin:
-  opensoundmeter: "https://github.com/psmokotnin/osm/releases/download/v${VER}/Open_Sound_Meter-v${VER}-x86_64.AppImage"
+  opensoundmeter:
+    url: "https://github.com/psmokotnin/osm/releases/download/v${VER}/Open_Sound_Meter-v${VER}-x86_64.AppImage"
+    hash: "8f2b18318fed2110c46c99c6710067ed361c114dcfb06db954692dd49b4e92c7"
 
 paru_install:
   overskride: overskride-bin
