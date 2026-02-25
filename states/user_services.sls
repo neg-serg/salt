@@ -9,6 +9,10 @@
 [Unit]
 After=mpd.service
 Wants=mpd.service
+
+[Service]
+Restart=always
+RestartSec=3
 {% endset %}
 {{ user_unit_override('mpdris2_user_service', 'mpDris2.service', contents=mpdris2_override) }}
 
