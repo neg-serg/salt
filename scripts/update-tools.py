@@ -166,7 +166,7 @@ def cmd_check():
         latest_clean = latest.lstrip("v") if latest != "?" else "?"
         pinned_clean = str(pinned).lstrip("v")
 
-        if latest_clean == "?" :
+        if latest_clean == "?":
             status = "\033[33m?\033[0m"
         elif latest_clean == pinned_clean:
             status = "\033[32m=\033[0m"
@@ -289,7 +289,9 @@ def main():
         "  %(prog)s --update sops eza  Update specific tools\n"
         "  %(prog)s --update --all     Update everything\n",
     )
-    parser.add_argument("--check", action="store_true", help="check pinned vs latest GitHub versions")
+    parser.add_argument(
+        "--check", action="store_true", help="check pinned vs latest GitHub versions"
+    )
     parser.add_argument("--update", nargs="*", metavar="TOOL", help="update tools (or --all)")
     parser.add_argument("--all", action="store_true", help="update all tools (with --update)")
     args = parser.parse_args()

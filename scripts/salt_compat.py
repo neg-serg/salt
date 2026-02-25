@@ -6,6 +6,7 @@ Call patch() before importing any salt module. Installs:
   - Warning filter: suppresses Salt's own DeprecationWarnings
   - Multiprocessing fork fix: Python 3.14 changed default to forkserver
 """
+
 import multiprocessing
 import sys
 import warnings
@@ -39,6 +40,7 @@ def patch():
         def __init__(self):
             try:
                 import passlib.hash as _hash
+
                 self._hash = _hash
             except ImportError:
                 self._hash = None
