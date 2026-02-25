@@ -28,14 +28,14 @@ kernel_modules_blacklist:
     - context:
         cpu_vendor: {{ host.cpu_vendor }}
 
-# Load modules that aren't already loaded (no reboot needed for most)
+# Load modules now (no reboot needed); ignore missing-device errors
+# (systemd-modules-load handles boot-time loading and is equally forgiving)
 {% set modules_to_load = [host.kvm_module, 'tcp_bbr', 'ntsync'] + host.extra_modules %}
 {% for mod in modules_to_load %}
 load_{{ mod | replace('-', '_') }}:
-  kmod.present:
-    - name: {{ mod }}
-    - persist: False
-    - onlyif: modinfo {{ mod }} >/dev/null 2>&1
+  cmd.run:
+    - name: modprobe {{ mod }} || true
+    - unless: lsmod | rg -q '^{{ mod }}\b'
     - require:
       - file: kernel_modules_load
 {% endfor %}
