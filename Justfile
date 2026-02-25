@@ -30,6 +30,8 @@ lint:
     .venv/bin/python3 scripts/lint-units.py
     .venv/bin/python3 scripts/lint-qml.py
     shellcheck scripts/*.sh states/scripts/*.sh
+    yamllint states/data/*.yaml states/configs/*.yaml .github/workflows/*.yaml
+    taplo check $(find . -name '*.toml' -not -path './.venv/*' -not -path './.salt_runtime/*' 2>/dev/null)
 
 # Format Python scripts
 fmt:
