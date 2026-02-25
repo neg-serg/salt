@@ -65,10 +65,16 @@ parted -s /dev/nbd0 -- mkpart ESP fat32 1MiB 513MiB
 parted -s /dev/nbd0 -- set 1 esp on
 parted -s /dev/nbd0 -- mkpart root btrfs 513MiB 100%
 
-# Wait for partition devices
-sleep 1
+# Wait for partition devices to appear
 partprobe /dev/nbd0
-sleep 1
+for dev in /dev/nbd0p1 /dev/nbd0p2; do
+    timeout=10
+    until [ -b "$dev" ] || [ "$timeout" -le 0 ]; do
+        sleep 0.2
+        timeout=$((timeout - 1))
+    done
+    [ -b "$dev" ] || { echo "error: $dev did not appear" >&2; exit 1; }
+done
 
 echo "==> Formatting..."
 mkfs.fat -F32 -n EFI /dev/nbd0p1
