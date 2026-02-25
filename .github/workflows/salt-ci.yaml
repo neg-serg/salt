@@ -39,5 +39,8 @@ jobs:
       - name: Lint dotfiles (shebangs, zsh syntax, XDG paths)
         run: python3 scripts/lint-dotfiles.py
 
+      - name: Lint systemd units
+        run: python3 scripts/lint-units.py
+
       - name: Lint shell scripts
         run: shellcheck scripts/*.sh states/scripts/*.sh
