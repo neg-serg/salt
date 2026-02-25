@@ -24,9 +24,10 @@ vm_bridge_network:
 vm_bridge_firewall:
   cmd.run:
     - name: |
-        firewall-cmd --permanent --zone=trusted --add-interface=br0 2>/dev/null || true
-        firewall-cmd --permanent --zone=trusted --add-service=dhcp 2>/dev/null || true
-        firewall-cmd --reload 2>/dev/null || true
+        firewall-cmd --permanent --zone=trusted --add-interface=br0
+        firewall-cmd --permanent --zone=trusted --add-service=dhcp
+        firewall-cmd --reload
+    - onlyif: command -v firewall-cmd
     - onchanges:
       - file: vm_bridge_netdev
 {% endif %}

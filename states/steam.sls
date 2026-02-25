@@ -50,7 +50,7 @@ modern_steam_skin:
     - name: |
         set -eo pipefail
         TMPDIR=$(mktemp -d)
-        curl -fsSL https://github.com/SleepDaemon/Modern-Steam/releases/download/v{{ ver.modern_steam }}/SteamDarkMode.7z -o "$TMPDIR/SteamDarkMode.7z"
+        curl -fsSL https://github.com/SleepDaemon/Modern-Steam/releases/download/v{{ ver.get('modern_steam', '') }}/SteamDarkMode.7z -o "$TMPDIR/SteamDarkMode.7z"
         7z x -aoa "$TMPDIR/SteamDarkMode.7z" -o{{ home }}/.local/share/Steam/skins/
         rm -rf "$TMPDIR"
     - runas: {{ user }}

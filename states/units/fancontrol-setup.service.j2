@@ -16,7 +16,7 @@ Environment=HYST=3
 Environment=INTERVAL=2
 Environment=ALLOW_STOP=false
 Environment=GPU_PWM_CHANNELS=
-Environment=GPU_ENABLE={{ gpu_enable }}
+Environment=GPU_ENABLE={{ 'true' if gpu_enable else 'false' }}
 Environment=GPU_MIN_TEMP=50
 Environment=GPU_MAX_TEMP=85
 Environment=GPU_MIN_PWM=70

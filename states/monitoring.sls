@@ -25,7 +25,7 @@ vnstat_enabled:
 
 # --- Loki: log aggregation ---
 {% if mon.loki %}
-{{ github_release_system('loki', 'grafana/loki', 'loki-linux-amd64.zip', src_bin='loki-linux-amd64', tag='v' ~ ver.loki, hash='e9737023c71bc4381f7ced90a197a17a5908c1cf1b136bd381165e07ed50b1ac', version=ver.loki) }}
+{{ github_release_system('loki', 'grafana/loki', 'loki-linux-amd64.zip', src_bin='loki-linux-amd64', tag='v' ~ ver.get('loki', ''), hash='e9737023c71bc4381f7ced90a197a17a5908c1cf1b136bd381165e07ed50b1ac', version=ver.get('loki', '')) }}
 {{ system_daemon_user('loki', '/var/lib/loki') }}
 
 loki_subdirs:
@@ -54,7 +54,7 @@ loki_config:
 
 # --- Promtail: log shipper to Loki ---
 {% if mon.promtail %}
-{{ github_release_system('promtail', 'grafana/loki', 'promtail-linux-amd64.zip', src_bin='promtail-linux-amd64', tag='v' ~ ver.promtail, hash='330f97bf7ef7e97cc2e42649ce7299129ab09dbffe5a2f5c515188502220987c', version=ver.promtail) }}
+{{ github_release_system('promtail', 'grafana/loki', 'promtail-linux-amd64.zip', src_bin='promtail-linux-amd64', tag='v' ~ ver.get('promtail', ''), hash='330f97bf7ef7e97cc2e42649ce7299129ab09dbffe5a2f5c515188502220987c', version=ver.get('promtail', '')) }}
 promtail_cache_dir:
   file.directory:
     - name: /var/cache/promtail

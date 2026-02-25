@@ -70,6 +70,9 @@ mpdas_config:
         chmod 0600 {{ home }}/.config/mpdasrc
     - runas: {{ user }}
     - creates: {{ home }}/.config/mpdasrc
+    - retry:
+        attempts: {{ retry_attempts }}
+        interval: {{ retry_interval }}
 
 # --- Deploy mpdas systemd user service ---
 {{ user_service_file('mpdas_service_file', 'mpdas.service', source='salt://dotfiles/dot_config/systemd/user/mpdas.service') }}

@@ -37,7 +37,7 @@ unbound_control_certs:
 
 # --- AdGuardHome: DNS filtering + ad blocking ---
 {% if dns.adguardhome %}
-{{ github_release_system('adguardhome', 'AdguardTeam/AdGuardHome', 'AdGuardHome_linux_amd64.tar.gz', src_bin='AdGuardHome', format='tar.gz', tag='v' ~ ver.adguardhome, hash='cf25794597a2f5b6cd8cd3670439db6f548c59af4ace392e40055b90e80c9329', version=ver.adguardhome) }}
+{{ github_release_system('adguardhome', 'AdguardTeam/AdGuardHome', 'AdGuardHome_linux_amd64.tar.gz', src_bin='AdGuardHome', format='tar.gz', tag='v' ~ ver.get('adguardhome', ''), hash='cf25794597a2f5b6cd8cd3670439db6f548c59af4ace392e40055b90e80c9329', version=ver.get('adguardhome', '')) }}
 {{ system_daemon_user('adguardhome', '/var/lib/adguardhome') }}
 
 adguardhome_config:

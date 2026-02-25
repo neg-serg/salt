@@ -5,10 +5,7 @@
 {% import_yaml 'data/desktop.yaml' as desktop %}
 
 # --- Pacman hook: regenerate installed-package cache after every transaction ---
-pacman_hooks_dir:
-  file.directory:
-    - name: /etc/pacman.d/hooks
-    - mode: '0755'
+{{ ensure_dir('pacman_hooks_dir', '/etc/pacman.d/hooks', mode='0755', user='root') }}
 
 pacman_salt_pkglist_hook:
   file.managed:
@@ -18,10 +15,7 @@ pacman_salt_pkglist_hook:
     - require:
       - file: pacman_hooks_dir
 
-pacman_salt_cache_dir:
-  file.directory:
-    - name: /var/cache/salt
-    - mode: '0755'
+{{ ensure_dir('pacman_salt_cache_dir', '/var/cache/salt', mode='0755', user='root') }}
 
 etckeeper_init:
   cmd.run:
@@ -29,7 +23,7 @@ etckeeper_init:
     - unless: test -d /etc/.git
     - onlyif: command -v etckeeper
 
-running_services:
+desktop_services_enabled:
   service.running:
     - names:
 {% for svc in desktop.running_services %}
