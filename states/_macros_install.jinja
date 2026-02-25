@@ -243,6 +243,7 @@ floorp_ext_{{ ext.slug | replace('-', '_') }}:
     - name: curl -fsSL -o '{{ profile }}/extensions/{{ ext.id }}.xpi' 'https://addons.mozilla.org/firefox/downloads/latest/{{ ext.slug }}/latest.xpi'
     - creates: {{ profile }}/extensions/{{ ext.id }}.xpi
     - runas: {{ user }}
+    - parallel: True
 {%- if require %}
     - require:
       - file: {{ require }}
