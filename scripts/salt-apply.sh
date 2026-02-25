@@ -103,10 +103,10 @@ EOF
 # ── Sudo: prefer NOPASSWD, fall back to .password file ────────────────────────
 get_sudo() {
     if sudo -n true 2>/dev/null; then
-        SUDO_CMD="sudo -E"
+        SUDO_CMD="sudo"
         SUDO_PASS=""
     elif [[ -f "${PROJECT_DIR}/.password" ]]; then
-        SUDO_CMD="sudo -S -E"
+        SUDO_CMD="sudo -S"
         SUDO_PASS=$(cat "${PROJECT_DIR}/.password")
     else
         echo "error: no NOPASSWD sudo and no .password file found" >&2
