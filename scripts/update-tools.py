@@ -27,6 +27,8 @@ SLS_NAME = "installers"
 HOME = os.path.expanduser("~")
 BIN = f"{HOME}/.local/bin"
 CARGO_BIN = f"{HOME}/.local/share/cargo/bin"
+VER_DIR = f"{HOME}/.cache/salt-versions"
+SYS_VER_DIR = "/var/cache/salt/versions"
 
 # Mapping from versions.yaml keys to GitHub repos (for --check)
 GITHUB_REPOS = {
@@ -65,34 +67,25 @@ def load_versions():
         return yaml.safe_load(f)
 
 
-def guard_path(category, name, opts):
-    """Return the creates: guard file path for a tool."""
+def tool_guard(name, category, opts):
+    """Return the guard file path for a tool.
+
+    Checks version markers first (~/.cache/salt-versions/) — these are
+    written by macros and are the single source of truth for versioned tools.
+    Falls back to simple binary paths for unversioned tools (pip, cargo, etc).
+    """
     if isinstance(opts, str):
         opts = {}
-    match category:
-        case "curl_bin" | "github_tar":
-            return f"{BIN}/{name}"
-        case "pip_pkg":
-            return f"{BIN}/{opts.get('bin', name)}"
-        case "cargo_pkg":
-            return f"{CARGO_BIN}/{opts.get('bin', name)}"
-        case "curl_extract_zip":
-            bins = opts.get("binaries")
-            if bins:
-                return f"{BIN}/{bins[0]}"
-            bp = opts.get("binary_path")
-            if bp:
-                return f"{BIN}/{bp.rsplit('/', 1)[-1]}"
-            return f"{BIN}/{name}"
-        case "curl_extract_tar":
-            bins = opts.get("binaries")
-            if bins:
-                return f"{BIN}/{bins[0]}"
-            bp = opts.get("binary_pattern")
-            if bp:
-                return f"{BIN}/{bp.rsplit('/', 1)[-1]}"
-            return f"{BIN}/{opts.get('bin', name)}"
-    return None
+    # Version markers written by install macros (covers all versioned tools,
+    # including curl_extract_zip/tar with complex binary paths)
+    for d in (VER_DIR, SYS_VER_DIR):
+        marker = f"{d}/{name}"
+        if os.path.isfile(marker):
+            return marker
+    # Fallback for tools without version markers
+    if category == "cargo_pkg":
+        return f"{CARGO_BIN}/{opts.get('bin', name)}"
+    return f"{BIN}/{opts.get('bin', name)}"
 
 
 def state_id(name):
@@ -116,7 +109,7 @@ def build_tool_map(tools):
     result = {}
     for category, entries in tools.items():
         for name, opts in entries.items():
-            gp = guard_path(category, name, opts)
+            gp = tool_guard(name, category, opts)
             result[name] = {
                 "category": category,
                 "opts": opts if isinstance(opts, dict) else {},
@@ -194,7 +187,11 @@ def update_with_salt(name, info):
         try:
             os.remove(gp)
         except PermissionError:
-            subprocess.run(["sudo", "rm", "-f", gp], check=True)
+            try:
+                subprocess.run(["sudo", "rm", "-f", gp], check=True)
+            except subprocess.CalledProcessError:
+                print(f"  \033[31mFailed to remove {gp} (permission denied)\033[0m")
+                return False
 
     print(f"  Running {sid} from {sls}...")
     result = subprocess.run(

@@ -40,7 +40,8 @@ floorp_usercontent:
 
 # Remove extensions no longer wanted (list in data/floorp.yaml).
 {% for ext_id in floorp.unwanted %}
-floorp_remove_ext_{{ loop.index }}:
+{%- set safe_id = ext_id | replace('{', '') | replace('}', '') | replace('-', '_') | replace('@', '_') | replace('.', '_') %}
+floorp_remove_{{ safe_id }}:
   file.absent:
     - name: {{ floorp_profile }}/extensions/{{ ext_id }}.xpi
 {% endfor %}

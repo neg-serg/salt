@@ -90,7 +90,8 @@ dconf_themes:
     - name: |
         set -eo pipefail
 {% for key, val in desktop.dconf_settings.items() %}
-        dconf write {{ key }} "'{{ val }}'"
+{%- set safe = val | replace('\\', '\\\\') | replace('"', '\\"') | replace('`', '\\`') | replace('$', '\\$') %}
+        dconf write {{ key }} "'{{ safe }}'"
 {% endfor %}
     - runas: {{ user }}
     - env:
@@ -98,7 +99,8 @@ dconf_themes:
     - unless: |
         export DBUS_SESSION_BUS_ADDRESS=unix:path={{ host.runtime_dir }}/bus
 {% for key, val in desktop.dconf_settings.items() %}
-        test "$(dconf read {{ key }})" = "'{{ val }}'"{{ ' &&' if not loop.last else '' }}
+{%- set safe = val | replace('\\', '\\\\') | replace('"', '\\"') | replace('`', '\\`') | replace('$', '\\$') %}
+        test "$(dconf read {{ key }})" = "'{{ safe }}'"{{ ' &&' if not loop.last else '' }}
 {% endfor %}
 
 # --- Salt daemon systemd unit ---
