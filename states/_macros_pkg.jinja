@@ -1,10 +1,6 @@
-{# Package manager macros: pacman_install, paru_install, pkgbuild_install, npm_pkg #}
+{# Package manager macros: pacman_install, simple_service, paru_install, pkgbuild_install, npm_pkg #}
 
-{% from 'host_config.jinja' import host %}
-{% set _user = host.user %}
-{% set _home = host.home %}
-{% set _retry_attempts = 3 %}
-{% set _retry_interval = 10 %}
+{% from '_macros_common.jinja' import user as _user, home as _home, retry_attempts as _retry_attempts, retry_interval as _retry_interval %}
 
 {# Install packages via pacman (CachyOS/Arch).
    check defaults to first package. requires is an optional list of requisites.
@@ -21,6 +17,30 @@ install_{{ name | replace('-', '_') }}:
         interval: {{ _retry_interval }}
     - require:
       - cmd: pacman_db_warmup
+{%- if requires %}
+{%- for req in requires %}
+      - {{ req }}
+{%- endfor %}
+{%- endif %}
+{%- endmacro -%}
+
+{# Install packages via pacman + enable the corresponding systemd service.
+   Shorthand for: pacman_install() + service.enabled with require on install.
+   service: systemd service name (defaults to name).
+   check: idempotency check override (passed to pacman_install).
+   requires: optional extra requisites for service.enabled beyond the install (e.g. config files).
+   Usage: {{ simple_service('unbound', 'unbound') }}
+          {{ simple_service('avahi', 'avahi avahi-tools nss-mdns', service='avahi-daemon', requires=['file: avahi_config']) }}
+          {{ simple_service('grafana', 'grafana', service='grafana-server', requires=['file: grafana_config']) }}
+#}
+{%- macro simple_service(name, pkgs, service=None, check=None, requires=None) -%}
+{{ pacman_install(name, pkgs, check=check) }}
+
+{{ name }}_enabled:
+  service.enabled:
+    - name: {{ service or name }}
+    - require:
+      - cmd: install_{{ name | replace('-', '_') }}
 {%- if requires %}
 {%- for req in requires %}
       - {{ req }}

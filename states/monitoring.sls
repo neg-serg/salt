@@ -1,7 +1,7 @@
 {% from '_imports.jinja' import host, user, home %}
 {% from '_macros_service.jinja' import unit_override, service_with_unit, system_daemon_user, service_with_healthcheck %}
 {% from '_macros_github.jinja' import github_release_system %}
-{% from '_macros_pkg.jinja' import pacman_install %}
+{% from '_macros_pkg.jinja' import pacman_install, simple_service %}
 {% import_yaml 'data/versions.yaml' as ver %}
 {% set mon = host.features.monitoring %}
 
@@ -78,7 +78,7 @@ promtail_config:
 
 # --- Grafana: dashboard with Loki datasource ---
 {% if mon.grafana %}
-{{ pacman_install('grafana', 'grafana') }}
+{{ simple_service('grafana', 'grafana', service='grafana-server', requires=['file: grafana_config', 'file: grafana_loki_datasource']) }}
 
 grafana_provisioning_dir:
   file.directory:
@@ -102,13 +102,6 @@ grafana_config:
     - template: jinja
     - context:
         hostname: {{ grains['host'] }}
-
-grafana_enabled:
-  service.enabled:
-    - name: grafana-server
-    - require:
-      - file: grafana_config
-      - file: grafana_loki_datasource
 
 grafana_running:
   service.running:

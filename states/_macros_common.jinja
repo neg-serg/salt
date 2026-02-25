@@ -1,0 +1,11 @@
+{#- Shared constants for all macro files.
+    Single source of truth for host defaults, retry policy, and version paths.
+    Usage: {% from '_macros_common.jinja' import user as _user, home as _home, ... %}
+-#}
+{%- from 'host_config.jinja' import host -%}
+{%- set user = host.user -%}
+{%- set home = host.home -%}
+{%- set retry_attempts = 3 -%}
+{%- set retry_interval = 10 -%}
+{%- set ver_dir = home ~ '/.cache/salt-versions' -%}
+{%- set sys_ver_dir = '/var/cache/salt/versions' -%}
