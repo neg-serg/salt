@@ -1,21 +1,33 @@
-1. Custom Software (neg-serg)
-- [x] duf - Custom fork with --style plain support.
-- [x] albumdetails - CLI for music album metadata.
-- [x] neg-pretty-printer - Custom Python library and CLI (ppinfo) for colored output.
-- [x] raise - Tool for window management/raising.
-- [ ] nyxt-bin - Binary packaging for the Nyxt browser. (needs investigation)
-- [x] richcolors - Color manipulation/theme generation utility.
-- [x] rsmetrx - Metrics exporter/shader pack for Quickshell HUDs.
-- [x] fsread.nvim - Neovim plugin for "fast reading" mode.
-- [x] iosevka-neg - Custom build of the Iosevka font.
-- [x] Flight-Plasma-Themes (flight-gtk-theme) - Custom GTK/Plasma theme.
-- [x] Alkano-aio - Cursor theme.
-- [x] two_percent (sk) - Search utility.
+# salt
 
+Salt states + chezmoi dotfiles for CachyOS (Arch-based) workstation configuration.
 
-2. Specialized Third-party Software (used in your config)
-- [x] pipemixer - TUI mixer for PipeWire.
-- [x] wiremix - Another PipeWire mixer for terminal.
-- [x] matugen-themes - Collection of templates for Matugen.
-- [x] oldschool-pc-font-pack - Classic PC bitmap/outline fonts. (manual download: https://int10h.org/oldschool-pc-fonts/)
-- [x] surfingkeys-conf - Custom configuration for SurfingKeys browser extension.
+## Structure
+
+| Path | Purpose |
+|---|---|
+| `states/` | Salt state files (.sls) and Jinja macros |
+| `dotfiles/` | Chezmoi source directory |
+| `scripts/` | Utility scripts (apply, lint, daemon) |
+| `build/` | Custom package build configs (Iosevka, PKGBUILDs) |
+| `docs/` | Setup guides and reference |
+
+## Usage
+
+```bash
+# Apply Salt states + chezmoi dotfiles
+scripts/salt-apply.sh
+
+# Apply specific state
+scripts/salt-apply.sh desktop
+
+# Dry run
+scripts/salt-apply.sh --test
+```
+
+## Documentation
+
+- [Host setup](docs/adding-host.md) — adding a new machine
+- [Deployment](docs/deploy-cachyos.md) — fresh CachyOS install
+- [Secrets](docs/secrets-scheme.md) — gopass/Yubikey integration
+- [gopass setup](docs/gopass-setup.md) — step-by-step secret provisioning

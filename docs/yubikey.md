@@ -1,25 +1,53 @@
-  После перезагрузки вставьте YubiKey и выполните полный сброс всех приложений:
+# Yubikey Reset Guide
 
-  # 1. Проверить что YubiKey виден
-  ykman info
+Полный сброс всех приложений Yubikey. Используется при:
+- Переносе GPG ключей на новый Yubikey
+- Полной переинициализации ключа
+- Устранении проблем с заблокированным PIN
 
-  # 2. Сброс OpenPGP (GPG ключи)
-  ykman openpgp reset
+## Порядок действий
 
-  # 3. Сброс FIDO2 (WebAuthn/U2F регистрации)
-  ykman fido reset
+1. Перезагрузить машину (чтобы отсоединить все сессии gpg-agent)
+2. Вставить Yubikey
+3. Выполнить сброс:
 
-  # 4. Сброс PIV (сертификаты)
-  ykman piv reset
+```bash
+# Проверить что YubiKey виден
+ykman info
 
-  # 5. Сброс OATH (TOTP/HOTP токены)
-  ykman oath reset
+# Сброс OpenPGP (GPG ключи)
+ykman openpgp reset
 
-  # 6. Сброс OTP слотов (если использовались)
-  ykman otp delete 1
-  ykman otp delete 2
+# Сброс FIDO2 (WebAuthn/U2F регистрации)
+ykman fido reset
 
-  # 7. Проверить что всё чисто
-  ykman info
+# Сброс PIV (сертификаты)
+ykman piv reset
 
-  Каждая команда попросит подтверждение (y/N). Хотите перезагрузиться сейчас?
+# Сброс OATH (TOTP/HOTP токены)
+ykman oath reset
+
+# Сброс OTP слотов (если использовались)
+ykman otp delete 1
+ykman otp delete 2
+
+# Проверить что всё чисто
+ykman info
+```
+
+Каждая команда попросит подтверждение (y/N).
+
+## После сброса
+
+Перенести GPG ключ на Yubikey:
+
+```bash
+gpg --edit-key <KEY-ID>
+> keytocard
+> save
+
+# Проверить
+gpg --card-status
+```
+
+Затем пересоздать секреты gopass — см. `gopass-setup.md`.
