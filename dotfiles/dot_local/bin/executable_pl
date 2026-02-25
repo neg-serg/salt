@@ -90,7 +90,7 @@ pl_rofi() {
         return 0
     fi
     if (( ${#${(f)list}[@]} > 1 )); then
-        sel=$(print -r -- "$list" | rofi -theme clip -p '⟬vid⟭ ❯>' -i -dmenu)
+        sel=$(print -r -- "$list" | vicinae dmenu --placeholder "vid")
     else
         sel="$list"
     fi
