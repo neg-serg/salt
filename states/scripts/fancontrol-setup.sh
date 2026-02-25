@@ -26,12 +26,16 @@ set -euo pipefail
 FANCONTROL_CONF="/etc/fancontrol"
 
 # Find hwmon device by chip name pattern (nct67* for motherboard, amdgpu for GPU)
+# Optional second arg: require a specific sysfs file (e.g. 'pwm1_enable')
 find_hwmon() {
-    local pattern="$1"
+    local pattern="$1" required_file="${2:-}"
     for d in /sys/class/hwmon/hwmon*; do
         local name
         name=$(cat "$d/name" 2>/dev/null) || continue
         if [[ "$name" =~ $pattern ]]; then
+            if [ -n "$required_file" ] && [ ! -f "$d/$required_file" ]; then
+                continue
+            fi
             basename "$d"
             return 0
         fi
@@ -136,18 +140,8 @@ done
 
 # --- GPU (amdgpu) ---
 if [ "$GPU_ENABLE" = "true" ]; then
-    GPU_HW=$(find_hwmon '^amdgpu$' || true)
-    # Pick the amdgpu device that actually has pwm1_enable
-    if [ -n "$GPU_HW" ]; then
-        # There may be multiple amdgpu hwmon; find the one with PWM
-        for d in /sys/class/hwmon/hwmon*; do
-            local_name=$(cat "$d/name" 2>/dev/null) || continue
-            if [ "$local_name" = "amdgpu" ] && [ -f "$d/pwm1_enable" ]; then
-                GPU_HW=$(basename "$d")
-                break
-            fi
-        done
-    fi
+    # Find amdgpu hwmon that has PWM control (there may be multiple amdgpu hwmon nodes)
+    GPU_HW=$(find_hwmon '^amdgpu$' 'pwm1_enable' || true)
 
     if [ -n "$GPU_HW" ] && [ -f "/sys/class/hwmon/$GPU_HW/pwm1_enable" ]; then
         echo "  GPU: $GPU_HW (amdgpu)"

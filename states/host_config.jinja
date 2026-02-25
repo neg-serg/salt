@@ -88,6 +88,43 @@
     },
 } %}
 
+{#  ── Example hosts (copy into hosts dict above) ──────────────
+
+    Laptop with Intel CPU and WiFi:
+
+    'balmora': {
+        'is_laptop':      True,
+        'cpu_vendor':     'intel',
+        'kvm_module':     'kvm_intel',
+        'display':        '2560x1600@165',
+        'primary_output': 'eDP-1',
+        'hostname':       'balmora',
+        'features': {
+            'network': { 'wifi': True },
+            'steam':    False,
+            'ollama':   False,
+        },
+    },
+
+    Media/home server:
+
+    'caldera': {
+        'display':        '1920x1080@60',
+        'primary_output': 'HDMI-A-1',
+        'hostname':       'caldera',
+        'features': {
+            'monitoring': { 'loki': True, 'promtail': True, 'grafana': True },
+            'dns':        { 'unbound': True, 'adguardhome': True },
+            'services':   { 'samba': True, 'jellyfin': True, 'duckdns': True },
+            'steam':    False,
+            'mpd':      False,
+            'kanata':   False,
+        },
+    },
+
+    See docs/adding-host.md for full guide.
+#}
+
 {# Hostname aliases for migration (e.g. first run before rename) #}
 {% set aliases = {
     'cachyos': 'telfir',

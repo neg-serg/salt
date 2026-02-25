@@ -26,31 +26,44 @@ system_hostname:
     - contents: {{ host.hostname }}
 
 include:
-  - audio
-  - amnezia
+  # Core: user accounts, shell, disk mounts — foundations for everything else
+  - users
+  - zsh
+  - mounts
   - bind_mounts
-  - custom_pkgs
-  - desktop
-  - dns
-  - floorp
-  - fonts
-  - greetd
-  - hardware
-  - installers
-  - installers_desktop
-  - kanata
-  - installers_themes
+
+  # System: kernel tuning, hardware, sysctl
   - kernel_modules
   - kernel_params_limine
-  - monitoring
-  - mounts
-  - mpd
-  - network
-  - ollama
-  - services
-  - snapshots
-  - steam
   - sysctl
-  - users
+  - hardware
+
+  # Desktop: audio stack, DE config, login manager, fonts
+  - audio
+  - desktop
+  - fonts
+  - greetd
+
+  # Network: DNS, proxies, VPN
+  - dns
+  - network
+  - amnezia
+
+  # Packages: CLI tools, desktop apps, themes, custom PKGBUILDs
+  - installers
+  - installers_desktop
+  - installers_themes
+  - custom_pkgs
+
+  # Applications
+  - floorp
+  - kanata
+  - mpd
+  - ollama
+  - steam
+
+  # Services, monitoring, user units, snapshots
+  - services
+  - monitoring
   - user_services
-  - zsh
+  - snapshots

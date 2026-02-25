@@ -1,4 +1,4 @@
-{% from '_imports.jinja' import host, user, home %}
+{% from '_imports.jinja' import host, user, home, retry_attempts, retry_interval %}
 {% from '_macros_service.jinja' import ensure_dir, service_with_unit, service_with_healthcheck %}
 {% from '_macros_pkg.jinja' import npm_pkg %}
 {% import_yaml 'data/ollama.yaml' as ollama %}
@@ -31,6 +31,10 @@ pull_{{ model | replace('.', '_') | replace(':', '_') | replace('-', '_') }}:
         curl -sf http://127.0.0.1:11434/api/tags |
         rg -q '"{{ model }}"'
     - timeout: 660
+    - parallel: True
+    - retry:
+        attempts: {{ retry_attempts }}
+        interval: {{ retry_interval }}
     - require:
       - cmd: ollama_start
 {% endfor %}
