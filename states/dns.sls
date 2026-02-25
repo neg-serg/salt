@@ -1,13 +1,13 @@
 {% from '_imports.jinja' import host, user, home %}
 {% from '_macros_service.jinja' import unit_override, system_daemon_user, service_with_unit, ensure_running %}
 {% from '_macros_github.jinja' import github_release_system %}
-{% from '_macros_pkg.jinja' import pacman_install %}
+{% from '_macros_pkg.jinja' import pacman_install, simple_service %}
 {% import_yaml 'data/versions.yaml' as ver %}
 {% set dns = host.features.dns %}
 
 # --- Unbound: recursive DNS resolver with DNSSEC + DoT ---
 {% if dns.unbound %}
-{{ pacman_install('unbound', 'unbound') }}
+{{ simple_service('unbound', 'unbound', requires=['file: unbound_config', 'cmd: unbound_restart_override_reload', 'cmd: unbound_root_key', 'cmd: unbound_control_certs']) }}
 
 unbound_config:
   file.managed:
@@ -31,16 +31,6 @@ unbound_control_certs:
       - cmd: install_unbound
 
 {{ unit_override('unbound_restart_override', 'unbound.service', 'salt://units/unbound-restart-override.conf', filename='restart.conf', requires=['cmd: install_unbound']) }}
-
-unbound_enabled:
-  service.enabled:
-    - name: unbound
-    - require:
-      - cmd: install_unbound
-      - file: unbound_config
-      - cmd: unbound_restart_override_reload
-      - cmd: unbound_root_key
-      - cmd: unbound_control_certs
 
 {{ ensure_running('unbound', watch=['file: unbound_config', 'file: unbound_restart_override']) }}
 {% endif %}
@@ -86,7 +76,7 @@ resolved_restart:
 
 # --- Avahi: mDNS/Bonjour local service discovery ---
 {% if dns.avahi %}
-{{ pacman_install('avahi', 'avahi avahi-tools nss-mdns') }}
+{{ simple_service('avahi', 'avahi avahi-tools nss-mdns', service='avahi-daemon', requires=['file: avahi_config']) }}
 
 avahi_config:
   file.managed:
@@ -95,11 +85,5 @@ avahi_config:
     - mode: '0644'
     - source: salt://configs/avahi-daemon.conf
 
-avahi-daemon_enabled:
-  service.enabled:
-    - name: avahi-daemon
-    - require:
-      - file: avahi_config
-
-{{ ensure_running('avahi-daemon', watch=['file: avahi_config']) }}
+{{ ensure_running('avahi', service='avahi-daemon', watch=['file: avahi_config']) }}
 {% endif %}
