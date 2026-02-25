@@ -1,6 +1,6 @@
 {# Service-related macros: ensure_dir, udev_rule, ensure_running, service_stopped, service_with_healthcheck, unit_override, service_with_unit, user_service_file, user_unit_override, user_service_enable, system_daemon_user #}
 
-{% from '_macros_common.jinja' import user as _user, home as _home %}
+{% from '_macros_common.jinja' import user as _user, home as _home, healthcheck_timeout as _healthcheck_timeout %}
 
 {# Create directory with user ownership and makedirs.
    Covers the common pattern of user-owned directories (user/group/makedirs: True).
@@ -107,10 +107,10 @@
 {# Restart service and poll a health-check command until it succeeds.
    Skips entirely if the check already passes (unless guard).
    check_cmd: shell command that returns 0 when service is ready (e.g. curl probe).
-   timeout: seconds to poll before failing (default 30).
+   timeout: seconds to poll before failing (default: healthcheck_timeout from _macros_common).
    Usage: {{ service_with_healthcheck('ollama_start', 'ollama', 'curl -sf http://127.0.0.1:' ~ service_ports.ollama.port ~ service_ports.ollama.healthcheck ~ ' >/dev/null 2>&1', requires=['service: ollama_enabled']) }}
 #}
-{%- macro service_with_healthcheck(name, service, check_cmd, timeout=30, requires=None) -%}
+{%- macro service_with_healthcheck(name, service, check_cmd, timeout=_healthcheck_timeout, requires=None) -%}
 {{ name }}:
   cmd.run:
     - name: |
