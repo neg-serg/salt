@@ -18,7 +18,7 @@ multilib_repo:
         attempts: {{ retry_attempts }}
         interval: {{ retry_interval }}
 
-install_vulkan_radeon:
+vulkan_radeon_pkg:
   cmd.run:
     - name: pacman -S --noconfirm --needed --ask 4 vulkan-radeon lib32-vulkan-radeon
     - unless: rg -qx 'vulkan-radeon' {{ pkg_list }}
@@ -29,7 +29,7 @@ install_vulkan_radeon:
       - cmd: pacman_db_warmup
       - cmd: multilib_repo
 
-install_steam:
+steam_pkg:
   cmd.run:
     - name: pacman -S --noconfirm --needed --ask 4 steam gamescope mangohud goverlay gamemode protontricks
     - unless: rg -qx 'steam' {{ pkg_list }}
@@ -37,7 +37,7 @@ install_steam:
         attempts: {{ retry_attempts }}
         interval: {{ retry_interval }}
     - require:
-      - cmd: install_vulkan_radeon
+      - cmd: vulkan_radeon_pkg
 
 {{ ensure_dir('steam_library_dir', host.mnt_zero ~ '/steam/steamapps', require=['mount: mount_zero']) }}
 
@@ -78,5 +78,5 @@ dxvk_resolution_fix:
         done
         exit 0
     - require:
-      - cmd: install_steam
+      - cmd: steam_pkg
 {% endif %}

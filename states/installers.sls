@@ -73,7 +73,7 @@
 # --- cargo: tailray (needs dbus headers, has onlyif guards) ---
 {{ cargo_pkg('tailray', git='https://github.com/NotAShelf/tailray', onlyif=['pkg-config --exists dbus-1', 'command -v cargo']) }}
 
-install_qmk_udev_rules:
+qmk_udev_rules:
   cmd.run:
     - name: curl -fsSL https://raw.githubusercontent.com/qmk/qmk_firmware/master/util/udev/50-qmk.rules -o /etc/udev/rules.d/50-qmk.rules && udevadm control --reload-rules
     - creates: /etc/udev/rules.d/50-qmk.rules
