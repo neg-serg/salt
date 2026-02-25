@@ -42,5 +42,8 @@ jobs:
       - name: Lint systemd units
         run: python3 scripts/lint-units.py
 
+      - name: Lint QML files
+        run: python3 scripts/lint-qml.py
+
       - name: Lint shell scripts
         run: shellcheck scripts/*.sh states/scripts/*.sh
