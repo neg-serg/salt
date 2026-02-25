@@ -19,7 +19,6 @@ test STATE="system_description":
 daemon:
     sudo scripts/salt-daemon.py \
         --config-dir .salt_runtime \
-        --socket /tmp/salt-daemon.sock \
         --log-level warning
 
 # Lint Salt states and Python scripts
