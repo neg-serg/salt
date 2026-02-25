@@ -1,4 +1,4 @@
-{% from '_imports.jinja' import host, user, home %}
+{% from '_imports.jinja' import host, user, home, service_ports %}
 {% from '_macros_service.jinja' import unit_override, service_with_unit, system_daemon_user, service_with_healthcheck %}
 {% from '_macros_github.jinja' import github_release_system %}
 {% from '_macros_pkg.jinja' import pacman_install, simple_service %}
@@ -45,11 +45,14 @@ loki_config:
     - name: /etc/loki/config.yaml
     - makedirs: True
     - mode: '0644'
-    - source: salt://configs/loki.yaml
+    - source: salt://configs/loki.yaml.j2
+    - template: jinja
+    - context:
+        loki_port: {{ service_ports.loki.port }}
 
 {{ service_with_unit('loki', 'salt://units/loki.service', running=True, watch=['file: loki_config'], requires=['cmd: install_loki', 'file: loki_config', 'file: loki_subdirs']) }}
 
-{{ service_with_healthcheck('loki_start', 'loki', 'curl -sf http://127.0.0.1:3100/ready >/dev/null 2>&1', requires=['service: loki_enabled']) }}
+{{ service_with_healthcheck('loki_start', 'loki', 'curl -sf http://127.0.0.1:' ~ service_ports.loki.port ~ service_ports.loki.healthcheck ~ ' >/dev/null 2>&1', requires=['service: loki_enabled']) }}
 {% endif %}
 
 # --- Promtail: log shipper to Loki ---
@@ -69,11 +72,14 @@ promtail_config:
     - mode: '0644'
     - source: salt://configs/promtail.yaml.j2
     - template: jinja
+    - context:
+        loki_port: {{ service_ports.loki.port }}
+        promtail_port: {{ service_ports.promtail.port }}
 
 {{ service_with_unit('promtail', 'salt://units/promtail.service', running=True, watch=['file: promtail_config'], requires=['cmd: install_promtail', 'file: promtail_config']) }}
 
 {% set promtail_requires = ['service: promtail_enabled'] + (['cmd: loki_start'] if mon.loki else []) %}
-{{ service_with_healthcheck('promtail_start', 'promtail', 'curl -sf http://127.0.0.1:9080/ready >/dev/null 2>&1', requires=promtail_requires) }}
+{{ service_with_healthcheck('promtail_start', 'promtail', 'curl -sf http://127.0.0.1:' ~ service_ports.promtail.port ~ service_ports.promtail.healthcheck ~ ' >/dev/null 2>&1', requires=promtail_requires) }}
 {% endif %}
 
 # --- Grafana: dashboard with Loki datasource ---
@@ -90,7 +96,10 @@ grafana_loki_datasource:
     - name: /etc/grafana/provisioning/datasources/loki.yaml
     - makedirs: True
     - mode: '0644'
-    - source: salt://configs/grafana-loki-datasource.yaml
+    - source: salt://configs/grafana-loki-datasource.yaml.j2
+    - template: jinja
+    - context:
+        loki_port: {{ service_ports.loki.port }}
     - require:
       - file: grafana_provisioning_dir
 
@@ -102,6 +111,7 @@ grafana_config:
     - template: jinja
     - context:
         hostname: {{ grains['host'] }}
+        grafana_port: {{ service_ports.grafana.port }}
 
 grafana_running:
   service.running:
@@ -112,5 +122,5 @@ grafana_running:
     - require:
       - service: grafana_enabled
 
-{{ service_with_healthcheck('grafana_start', 'grafana-server', 'curl -sf http://127.0.0.1:3030/api/health >/dev/null 2>&1', requires=['service: grafana_enabled']) }}
+{{ service_with_healthcheck('grafana_start', 'grafana-server', 'curl -sf http://127.0.0.1:' ~ service_ports.grafana.port ~ service_ports.grafana.healthcheck ~ ' >/dev/null 2>&1', requires=['service: grafana_enabled']) }}
 {% endif %}
