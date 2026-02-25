@@ -132,6 +132,7 @@ except Exception:
     fi
     # Socket exists but daemon is dead — remove stale socket so ensure_daemon
     # can start a fresh daemon without bind() failing on the existing path.
+    # shellcheck disable=SC2086
     $SUDO_CMD rm -f "$DAEMON_SOCK"
     return 1
 }
@@ -140,6 +141,7 @@ ensure_daemon() {
     daemon_running && return 0
     [[ -x "$DAEMON_SCRIPT" ]] || return 1
     echo "(starting salt-daemon in background...)"
+    # shellcheck disable=SC2086
     $SUDO_CMD "$DAEMON_SCRIPT" \
         --config-dir "$RUNTIME_CONFIG_DIR" \
         --socket "$DAEMON_SOCK" \
@@ -218,6 +220,7 @@ run_direct() {
     local test_arg=""
     $TEST_MODE && test_arg="test=True"
 
+    # shellcheck disable=SC2206
     local salt_cmd=(
         $SUDO_CMD "$VENV_DIR/bin/python3" -u "$SALT_RUNNER"
         --config-dir="${RUNTIME_CONFIG_DIR}"

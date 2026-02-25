@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Lint dotfiles: shebang conventions and XDG path usage."""
+"""Lint dotfiles: shebang conventions, XDG path usage, zsh syntax."""
 
 import glob
 import os
 import re
+import subprocess
 import sys
 
 DOTFILES_BIN = os.path.join("dotfiles", "dot_local", "bin")
@@ -57,6 +58,39 @@ def check_shebangs():
     return errors, checked
 
 
+def check_zsh_syntax():
+    """Run zsh -n on all zsh scripts to catch structural syntax errors."""
+    errors = 0
+    checked = 0
+    zsh_files = []
+    # Collect all files with zsh shebang in dotfiles/
+    for path in sorted(glob.glob(os.path.join(DOTFILES_ROOT, "**"), recursive=True)):
+        if os.path.isdir(path):
+            continue
+        try:
+            with open(path, encoding="utf-8", errors="replace") as f:
+                first_line = f.readline().rstrip("\n")
+        except (PermissionError, OSError):
+            continue
+        if first_line == _ZSH_SHEBANG:
+            zsh_files.append(path)
+    for path in zsh_files:
+        checked += 1
+        result = subprocess.run(
+            ["zsh", "-n", path],
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            stderr = result.stderr.strip()
+            print(f"\033[31mzsh syntax error: {path}\033[0m")
+            if stderr:
+                for line in stderr.splitlines():
+                    print(f"  {line}")
+            errors += 1
+    return errors, checked
+
+
 def check_xdg_paths():
     """No canonical XDG defaults (~/Music, ~/Pictures, ...) in dotfiles."""
     errors = 0
@@ -90,6 +124,10 @@ def main():
     shebang_errors, scripts_checked = check_shebangs()
     total_errors += shebang_errors
     print(f"Shebangs: {scripts_checked} scripts, {shebang_errors} violations")
+
+    syntax_errors, zsh_checked = check_zsh_syntax()
+    total_errors += syntax_errors
+    print(f"Zsh syntax: {zsh_checked} scripts, {syntax_errors} errors")
 
     xdg_errors, files_checked = check_xdg_paths()
     total_errors += xdg_errors

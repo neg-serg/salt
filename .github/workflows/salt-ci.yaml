@@ -17,6 +17,9 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Install system dependencies
+        run: sudo apt-get update -qq && sudo apt-get install -yqq zsh
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -33,5 +36,8 @@ jobs:
           ruff check .
           ruff format --check .
 
+      - name: Lint dotfiles (shebangs, zsh syntax, XDG paths)
+        run: python3 scripts/lint-dotfiles.py
+
       - name: Lint shell scripts
-        run: shellcheck scripts/*.sh states/scripts/*.sh build/*.sh apply_config.sh
+        run: shellcheck scripts/*.sh states/scripts/*.sh

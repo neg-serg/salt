@@ -4,6 +4,7 @@
 Usage:
   python3 scripts/salt-runner.py --config-dir=.salt_runtime --local state.sls ...
 """
+
 import salt_compat
 
 salt_compat.patch()

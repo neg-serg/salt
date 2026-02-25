@@ -74,8 +74,7 @@ def check_no_cyrillic():
             for lineno, line in enumerate(f, 1):
                 if _CYRILLIC_RE.search(line) and not _RU_LINK_RE.search(line):
                     print(
-                        f"\033[31mCyrillic in English doc:"
-                        f" {path}:{lineno}: {line.rstrip()}\033[0m"
+                        f"\033[31mCyrillic in English doc: {path}:{lineno}: {line.rstrip()}\033[0m"
                     )
                     errors += 1
     return errors, files_checked
