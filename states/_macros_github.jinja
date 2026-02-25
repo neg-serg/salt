@@ -1,12 +1,6 @@
 {# GitHub release macros: github_tar, github_release_system, github_release_to #}
 
-{% from 'host_config.jinja' import host %}
-{% set _user = host.user %}
-{% set _home = host.home %}
-{% set _retry_attempts = 3 %}
-{% set _retry_interval = 10 %}
-{% set _ver_dir = _home ~ '/.cache/salt-versions' %}
-{% set _sys_ver_dir = '/var/cache/salt/versions' %}
+{% from '_macros_common.jinja' import user as _user, home as _home, retry_attempts as _retry_attempts, retry_interval as _retry_interval, ver_dir as _ver_dir, sys_ver_dir as _sys_ver_dir %}
 
 {# Download tar.gz, extract single binary to ~/.local/bin/.
    version: when set, enables update-on-version-bump via version file.

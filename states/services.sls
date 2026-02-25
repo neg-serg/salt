@@ -1,7 +1,7 @@
 {% from '_imports.jinja' import host, user, home %}
 {% from '_macros_service.jinja' import system_daemon_user, service_with_unit, service_stopped %}
 {% from '_macros_install.jinja' import curl_extract_tar %}
-{% from '_macros_pkg.jinja' import pacman_install %}
+{% from '_macros_pkg.jinja' import pacman_install, simple_service %}
 {% import_yaml 'data/versions.yaml' as ver %}
 {% import_yaml 'data/services.yaml' as services %}
 {% set svc = host.features.services %}
@@ -12,13 +12,7 @@
 
 {% for name, opts in services.simple.items() %}
 {% if svc.get(name, False) %}
-{{ pacman_install(name, opts.packages) }}
-
-{{ name }}_enabled:
-  service.enabled:
-    - name: {{ opts.service }}
-    - require:
-      - cmd: install_{{ name | replace('-', '_') }}
+{{ simple_service(name, opts.packages, service=opts.service) }}
 {% endif %}
 {% endfor %}
 
