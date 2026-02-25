@@ -34,6 +34,9 @@ if command -v oh-my-posh >/dev/null 2>&1; then
 
     if [[ ! -r "$omp_cache" || -z "$stored_hash" || "$config_hash" != "$stored_hash" ]]; then
       oh-my-posh init zsh --config "$omp_config" --print > "$omp_cache"
+      # Fix: bare `exec {fd}< <(cmd) 2>/dev/null` permanently redirects shell stderr;
+      # wrap in { } so 2>/dev/null is scoped to the block, not the shell
+      sed -i 's/exec {_omp_stream_fd}< <(exec "${stream_cmd\[@\]}") 2>\/dev\/null/{ exec {_omp_stream_fd}< <(exec "${stream_cmd[@]}"); } 2>\/dev\/null/' "$omp_cache"
       echo "$config_hash" > "$cache_hash_file"
     fi
     source "$omp_cache"
