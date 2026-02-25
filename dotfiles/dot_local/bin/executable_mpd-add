@@ -14,6 +14,9 @@ if [[ "$1" == "-h" || "$1" == "--help" ]]; then
   exit 0
 fi
 
+zmodload -F zsh/stat b:zstat 2>/dev/null
+zmodload zsh/datetime 2>/dev/null
+
 CLEAR_PLAYLIST=0
 MODE=""
 CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/mpd_manager"
@@ -123,11 +126,9 @@ get_data() {
 
     # Use cache if valid
     if [[ -z "$NO_CACHE" && -f "$cache_file" ]]; then
-        local now=$(date +%s)
-        local mtime=$(stat -c %Y "$cache_file")
-
-        if (( now - mtime < CACHE_TTL )); then
-            cat "$cache_file"
+        local -A st
+        if zstat -H st "$cache_file" 2>/dev/null && (( EPOCHSECONDS - st[mtime] < CACHE_TTL )); then
+            < "$cache_file"
             return 0
         fi
     fi
@@ -279,9 +280,9 @@ if [[ -n "$selected" ]]; then # Process selected items
                         artist="${item%% - *}"; album="${item#* - }"; year=""; # Fallback: simple splitting
                     fi
 
-                    # Clean up any extra spaces
-                    artist=$(echo "$artist" | sed 's/ *$//')
-                    album=$(echo "$album" | sed 's/ *$//')
+                    # Clean up trailing spaces
+                    artist=${artist%${artist##*[! ]}}
+                    album=${album%${album##*[! ]}}
                     # Add items
                     mpc findadd artist "$artist" album "$album" >/dev/null
                     # Calculate added tracks

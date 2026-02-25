@@ -180,9 +180,9 @@ proc() { # mv/cp with remembered last dest
 repeat_action() { # repeat last mv/cp to same dir
   file="$1"
   [ -f "$last_file" ] || exit 0
-  last="$(cat "$last_file")"
-  cmd="$(printf '%s\n' "$last" | awk '{print $1}')"
-  dest="$(printf '%s\n' "$last" | awk '{print $2}')"
+  last="$(<"$last_file")"
+  cmd=${last%% *}
+  dest=${last#* }
   if [ "$cmd" = "mv" ] || [ "$cmd" = "cp" ]; then
     "$cmd" "$file" "$dest"
   fi
