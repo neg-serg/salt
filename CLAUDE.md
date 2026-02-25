@@ -135,7 +135,7 @@ Macros (`_macros_install.jinja`, `_macros_github.jinja`, `_macros_pkg.jinja`) en
 - **Commit style**: `[scope] description` — scope should be specific to what changed (e.g. `[nvim]`, `[zsh]`, `[mpd]`, `[dns]`, `[macros]`, `[fonts]`, `[hyprland]`). Use generic `[salt]` or `[dotfiles]` only for broad refactors that don't fit a specific scope. `[docs]` for documentation.
 - **Service enable**: Use `service.enabled` for packages installed via pacman
 - **State ID naming**: Use `target_descriptor` pattern (e.g. `loki_config`, `greetd_enabled`, `rfkill_service_masked`). Exception: `install_*` and `build_*` prefixes are reserved for macro-generated IDs. Never use file paths as state IDs — use a descriptive name with explicit `name:` parameter instead.
-- **Documentation language**: All documentation (docs/, README.md, CLAUDE.md, code comments) must be in English.
+- **Documentation i18n**: English is the primary language. Each doc in `docs/` and `README.md` must have a `.ru.md` Russian translation (e.g. `gopass-setup.md` → `gopass-setup.ru.md`). Excluded from translation: `CLAUDE.md`, `TODO.md`, `dotfiles/`, `build/`. English docs must not contain Cyrillic text. Enforced by `scripts/lint-docs.py`.
 
 ## Platform
 
