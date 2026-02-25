@@ -1,5 +1,16 @@
 # Floorp browser extensions — consumed by floorp.sls
-# Each entry needs 'id' (extension UUID) and 'slug' (AMO download slug)
+#
+# ── Schema ────────────────────────────────────────────────────────────
+#
+# extensions:                      → macro: firefox_extension(ext, profile)
+#   - id:   (required) extension UUID (e.g. "{a8332c60-...}" or "addon@name")
+#     slug: (required) AMO download slug — used in URL:
+#           https://addons.mozilla.org/firefox/downloads/latest/<slug>/latest.xpi
+#
+# unwanted:
+#   - <extension_id>               — extension GUIDs to remove from profile
+#
+# ─────────────────────────────────────────────────────────────────────
 
 extensions:
   - id: "{a8332c60-5b6d-41ee-bfc8-e9bb331d34ad}"

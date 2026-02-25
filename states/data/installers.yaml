@@ -2,6 +2,48 @@
 # Adding/updating a tool is a YAML-only edit; no Jinja changes needed.
 # Grouped by macro type (maps 1:1 to _macros.jinja macro signatures).
 # URLs with ${VER} are interpolated at render time from data/versions.yaml.
+#
+# ── Schema ────────────────────────────────────────────────────────────
+#
+# curl_bin:                        → macro: curl_bin(name, url)
+#   <name>:
+#     url:  (required) download URL; may contain ${VER}
+#     hash: (optional) sha256 checksum
+#
+# github_tar:                      → macro: github_tar(name, url)
+#   <name>:
+#     url:  (required) tar.gz URL; may contain ${VER}
+#     hash: (optional) sha256 checksum
+#
+# pip_pkg:                         → macro: pip_pkg(name, pkg, bin)
+#   <name>:
+#     pkg:  (optional) override package name (default: key name)
+#     bin:  (optional) override binary name  (default: key name)
+#     — empty dict {} uses key name for both
+#
+# cargo_pkg:                       → macro: cargo_pkg(name, pkg, bin, git)
+#   <name>:
+#     pkg:  (optional) override crate name   (default: key name)
+#     bin:  (optional) override binary name   (default: key name)
+#     git:  (optional) git repo URL for `cargo install --git`
+#     — empty dict {} installs from crates.io using key name
+#
+# curl_extract_zip:                → macro: curl_extract_zip(name, url, binary_path)
+#   <name>:
+#     url:          (required) ZIP URL; may contain ${VER}
+#     binary_path:  (required) path to binary inside ZIP
+#     binaries:     (optional) list of binaries if >1 file needed
+#     chmod:        (optional) bool — chmod +x extracted files
+#     hash:         (optional) sha256 checksum
+#
+# curl_extract_tar:                → macro: curl_extract_tar(name, url, binary_pattern)
+#   <name>:
+#     url:             (required) tar.gz URL; may contain ${VER}
+#     binary_pattern:  (required) glob/name to find binary after extraction
+#     bin:             (optional) override output binary name
+#     hash:            (optional) sha256 checksum
+#
+# ─────────────────────────────────────────────────────────────────────
 
 curl_bin:
   ssh-to-age:

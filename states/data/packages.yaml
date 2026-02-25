@@ -1,6 +1,16 @@
 # Package reference for CachyOS workstation
-# NOT consumed by Salt states — serves as documentation/reference
-# Packages installed via pacman/paru outside Salt
+# NOT consumed by Salt states — serves as documentation/reference only.
+# Packages installed via pacman/paru outside Salt.
+#
+# ── Schema ────────────────────────────────────────────────────────────
+#
+# <Category>:
+#   <package_name>: <description>  — human-readable package reference
+#
+# flatpak:
+#   <app_id>: <description>        — Flatpak app IDs from Flathub
+#
+# ─────────────────────────────────────────────────────────────────────
 
 Archives & Compression:
   lbzip2: Parallel bzip2 compression utility

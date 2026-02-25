@@ -1,6 +1,22 @@
 # Font definitions for fonts.sls — data separated from logic.
 # URLs with ${VER} are interpolated at render time from data/versions.yaml.
 # Grouped by install method.
+#
+# ── Schema ────────────────────────────────────────────────────────────
+#
+# pacman:                          → macro: pacman_install(name, pkgs)
+#   <name>: <package_name>         — key: display name, value: pacman package
+#
+# paru:                            → macro: paru_install(name, pkg)
+#   <name>: <aur_package_name>     — key: display name, value: AUR package
+#
+# download_zip:                    → macro: download_font_zip(name, url, subdir)
+#   <name>:
+#     url:    (required) font ZIP URL; may contain ${VER}
+#     subdir: (required) subdirectory in ~/.local/share/fonts/
+#     hash:   (optional) sha256 checksum
+#
+# ─────────────────────────────────────────────────────────────────────
 
 pacman:
   jetbrains-mono-nerd: ttf-jetbrains-mono-nerd

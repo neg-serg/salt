@@ -1,6 +1,14 @@
 # Pinned versions for tools that don't use /latest/ URLs.
 # Centralised here so updating a tool is a one-line YAML edit.
 # Usage in .sls:  import_yaml 'data/versions.yaml' as ver
+#
+# ── Schema ────────────────────────────────────────────────────────────
+#
+# <key>: "<version>"               — version string, always quoted
+#   Key naming: matches tool name with - replaced by _ (e.g. ssh-to-age → ssh_to_age).
+#   Referenced in other data files as ${VER} in URLs — interpolated at render time.
+#
+# ─────────────────────────────────────────────────────────────────────
 
 # --- Core services ---
 bitcoind: "28.1"

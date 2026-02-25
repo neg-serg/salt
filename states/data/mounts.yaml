@@ -1,5 +1,19 @@
 # Disk mounts and btrfs compression targets
 # Used by mounts.sls
+#
+# ── Schema ────────────────────────────────────────────────────────────
+#
+# disks:
+#   <name>:
+#     device: (required) block device path (e.g. /dev/mapper/xenon-one)
+#     path:   (required) mount point (e.g. /mnt/one)
+#     fstype: (required) filesystem type (xfs, btrfs, etc.)
+#     — mounted with options: noatime, persist: True, failhard: True
+#
+# btrfs_compress:
+#   - <path>                       — filesystem path to set zstd:-1 compression on
+#
+# ─────────────────────────────────────────────────────────────────────
 
 disks:
   zero:

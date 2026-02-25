@@ -1,5 +1,13 @@
 # Ollama model definitions for ollama.sls
 # Adding/removing a model is a YAML-only edit.
+#
+# ── Schema ────────────────────────────────────────────────────────────
+#
+# models:
+#   - <model>:<tag>                — Ollama model specifier (e.g. "deepseek-r1:8b")
+#                                    pulled via POST /api/pull; guarded by /api/tags check
+#
+# ─────────────────────────────────────────────────────────────────────
 
 models:
   - deepseek-r1:8b

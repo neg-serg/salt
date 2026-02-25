@@ -1,6 +1,20 @@
 # Custom package builds from local PKGBUILDs.
 # These packages are not in official repos or AUR and require local builds.
 # Source is always salt://build/pkgbuilds/<name>.
+#
+# ── Schema ────────────────────────────────────────────────────────────
+#
+# pkgbuild:                        → macro: pkgbuild_install(name, source)
+#   <name>:
+#     timeout:        (optional) build timeout in seconds (default: 600)
+#     replace_check:  (optional) shell cmd to verify correct variant is installed;
+#                     if it fails, the old package is removed before rebuilding
+#     extra_sources:  (optional) list of additional source trees to deploy:
+#       - source: "salt://..."   — salt file path
+#         dest:   "/tmp/..."     — local extraction target
+#     — empty dict {} builds from salt://build/pkgbuilds/<name> with defaults
+#
+# ─────────────────────────────────────────────────────────────────────
 
 pkgbuild:
   raise: {}

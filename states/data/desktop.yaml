@@ -1,4 +1,15 @@
 # Desktop environment configuration (consumed by desktop.sls)
+#
+# ── Schema ────────────────────────────────────────────────────────────
+#
+# running_services:
+#   - <service_name>               — systemd services to start and enable
+#
+# dconf_settings:
+#   <dconf_path>: <value>          — key: full dconf path, value: setting value
+#                                    values are shell-escaped at render time
+#
+# ─────────────────────────────────────────────────────────────────────
 
 running_services:
   - NetworkManager

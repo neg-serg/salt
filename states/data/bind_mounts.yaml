@@ -1,6 +1,15 @@
 # Bind mount definitions: name → {device, target_suffix}
 # target_suffix is appended to user's home directory.
 # Used by bind_mounts.sls
+#
+# ── Schema ────────────────────────────────────────────────────────────
+#
+# <name>:
+#   device:        (required) source path on external disk (e.g. /mnt/zero/mail)
+#   target_suffix: (required) path relative to $HOME (e.g. ".local/mail", "music")
+#   — disk dependency is inferred from device path (/mnt/zero → mount_zero)
+#
+# ─────────────────────────────────────────────────────────────────────
 
 mail:
   device: /mnt/zero/mail
