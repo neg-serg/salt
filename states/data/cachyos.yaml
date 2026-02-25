@@ -1,6 +1,30 @@
 # Bootstrap verification data for cachyos.sls
 # Entries with ${USER} are interpolated at render time from host_config.
 # Adding/updating a check is a YAML-only edit; no Jinja changes needed.
+#
+# ── Schema ────────────────────────────────────────────────────────────
+#
+# required_files:
+#   <id>: <path>                   — file.exists check; path may contain
+#                                    ${USER} (interpolated from host_config)
+#
+# verify_checks:
+#   <id>: <shell_command>          — cmd.run with unless: guard
+#                                    placeholders: ${USER}, ${TIMEZONE},
+#                                    ${LOCALE}, ${HOSTNAME}
+#
+# enabled_services:
+#   <id>: <service_name>           — service.enabled check
+#
+# package_checks:
+#   pkg:                           — official repo packages (checked via pacman -Q)
+#     - <package_name>
+#   aur:                           — AUR packages
+#     - <package_name>
+#   custom:                        — locally-built packages
+#     - <package_name>
+#
+# ─────────────────────────────────────────────────────────────────────
 
 required_files:
   sudo_nopasswd: "/etc/sudoers.d/99-${USER}-nopasswd"

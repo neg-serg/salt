@@ -1,5 +1,23 @@
 # Kernel boot parameters for CachyOS (Limine bootloader).
 # Grouped by condition; kernel_params_limine.sls assembles the final list.
+#
+# ── Schema ────────────────────────────────────────────────────────────
+#
+# common:                          — always included
+#   - <param>
+# amd:                             — included if host.cpu_vendor == 'amd'
+#   - <param>
+# intel:                           — included if host.cpu_vendor == 'intel'
+#   - <param>
+# laptop:                          — included if host.is_laptop
+#   - <param>
+# desktop:                         — included if not host.is_laptop
+#   - <param>
+#
+# Each param is a kernel cmdline token (e.g. "key=value" or bare flag).
+# host.extra_kargs and host.display are appended by the .sls at render time.
+#
+# ─────────────────────────────────────────────────────────────────────
 
 common:
   - 8250.nr_uarts=0

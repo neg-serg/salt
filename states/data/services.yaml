@@ -1,6 +1,15 @@
 # Service definitions for services.sls — simple pacman-install + service-enable pattern.
 # Each entry is gated by host_config.jinja features.services.<key>.
 # Complex services (samba, bitcoind, duckdns) have custom logic and stay inline in .sls.
+#
+# ── Schema ────────────────────────────────────────────────────────────
+#
+# simple:                          → macro: simple_service(name, pkgs, service)
+#   <name>:
+#     packages: (required) space-separated pacman package names
+#     service:  (required) systemd service name to enable
+#
+# ─────────────────────────────────────────────────────────────────────
 
 simple:
   jellyfin:

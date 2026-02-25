@@ -1,4 +1,21 @@
 # User systemd services (consumed by user_services.sls)
+#
+# ── Schema ────────────────────────────────────────────────────────────
+#
+# unit_files:                      → macro: user_service_file(name, filename, source)
+#   - id:       (required) Salt state ID for the file.managed state
+#     filename: (required) systemd unit filename (e.g. "mbsync-gmail.service")
+#               — source file: salt://units/<filename>
+#
+# enable_services:                 → macro: user_service_enable(services=...)
+#   - <service_name>               — plain list of service/socket names
+#                                    enabled via `systemctl --user enable`
+#
+# enable_now_timers:               → macro: user_service_enable(services=..., start_now=True)
+#   - <timer_name>                 — plain list of timer names
+#                                    enabled and started via `systemctl --user enable --now`
+#
+# ─────────────────────────────────────────────────────────────────────
 
 # Custom unit files to deploy to ~/.config/systemd/user/
 unit_files:

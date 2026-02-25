@@ -1,5 +1,23 @@
 # MPV plugin/script definitions for installers.sls — data separated from logic.
 # Each entry gets its own Salt state with individual creates guard.
+#
+# ── Schema ────────────────────────────────────────────────────────────
+#
+# raw:
+#   <filename>: <url>              — direct download to ~/.config/mpv/scripts/
+#
+# github_release:                  → macro: github_release_to(..., format='file')
+#   <filename>:
+#     repo:  (required) GitHub repo (user/repo)
+#     asset: (required) release asset filename
+#
+# github_release_zip:              → macro: github_release_to(..., format='zip')
+#   <name>:
+#     repo:  (required) GitHub repo (user/repo)
+#     asset: (required) ZIP asset filename
+#     dest:  (required) extraction directory (e.g. "~/.config/mpv")
+#
+# ─────────────────────────────────────────────────────────────────────
 
 # Raw file downloads: filename → url (downloaded to ~/.config/mpv/scripts/)
 raw:
