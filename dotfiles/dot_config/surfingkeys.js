@@ -334,6 +334,17 @@ api.mapkey('P', 'Open clipboard URL in new tab', function() {
   });
 });
 
+// ========== Image Download ==========
+api.mapkey('zi', 'Download image without dialog', function() {
+    api.Hints.create('img', function(element) {
+        var src = element.src;
+        api.RUNTIME('download', {
+            url: src,
+            saveAs: false
+        });
+    });
+});
+
 // ========== Media Download ==========
 function getMediaUrl(el) {
     // <img> — prefer srcset highest resolution, then src
