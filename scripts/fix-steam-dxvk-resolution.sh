@@ -10,7 +10,7 @@
 # 2. Create DXVK config with flags to force proper mode enumeration
 # 3. This applies globally to all game prefixes
 
-set -eo pipefail
+set -euo pipefail
 
 STEAM_DIR="$HOME/.steam/root/steamapps/compatdata"
 

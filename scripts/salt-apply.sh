@@ -15,7 +15,7 @@
 #   SALT_DAEMON_SOCK  Unix socket path (default: /tmp/salt-daemon.sock)
 #   SALT_LOG_FILE     Override log file path
 
-set -uo pipefail
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
@@ -199,8 +199,8 @@ PYEOF
     )
 
     sleep 0.3
-    kill "$tail_pid" 2>/dev/null
-    wait "$tail_pid" 2>/dev/null
+    kill "$tail_pid" 2>/dev/null || true
+    wait "$tail_pid" 2>/dev/null || true
     return "${exit_code:-1}"
 }
 
@@ -218,26 +218,24 @@ run_direct() {
     local test_arg=""
     $TEST_MODE && test_arg="test=True"
 
+    local salt_cmd=(
+        $SUDO_CMD "$VENV_DIR/bin/python3" -u "$SALT_RUNNER"
+        --config-dir="${RUNTIME_CONFIG_DIR}"
+        --local --log-level=warning
+        --log-file="${LOG_FILE}" --log-file-level=debug
+        --state-output=mixed_id
+        state.sls "${STATE}" ${test_arg}
+    )
     if [[ -n "${SUDO_PASS:-}" ]]; then
-        echo "$SUDO_PASS" | $SUDO_CMD "$VENV_DIR/bin/python3" -u "$SALT_RUNNER" \
-            --config-dir="${RUNTIME_CONFIG_DIR}" \
-            --local --log-level=warning \
-            --log-file="${LOG_FILE}" --log-file-level=debug \
-            --state-output=mixed_id \
-            state.sls "${STATE}" ${test_arg} 2>&1 | tee -a "${LOG_FILE}" > /dev/null
+        echo "$SUDO_PASS" | "${salt_cmd[@]}" 2>&1 | tee -a "${LOG_FILE}" > /dev/null
     else
-        $SUDO_CMD "$VENV_DIR/bin/python3" -u "$SALT_RUNNER" \
-            --config-dir="${RUNTIME_CONFIG_DIR}" \
-            --local --log-level=warning \
-            --log-file="${LOG_FILE}" --log-file-level=debug \
-            --state-output=mixed_id \
-            state.sls "${STATE}" ${test_arg} 2>&1 | tee -a "${LOG_FILE}" > /dev/null
+        "${salt_cmd[@]}" 2>&1 | tee -a "${LOG_FILE}" > /dev/null
     fi
     local rc="${PIPESTATUS[0]}"
 
     sleep 0.3
-    kill "$tail_pid" 2>/dev/null
-    wait "$tail_pid" 2>/dev/null
+    kill "$tail_pid" 2>/dev/null || true
+    wait "$tail_pid" 2>/dev/null || true
     return "$rc"
 }
 
