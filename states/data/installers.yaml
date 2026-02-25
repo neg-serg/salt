@@ -7,7 +7,9 @@ curl_bin:
   ssh-to-age:
     url: "https://github.com/Mic92/ssh-to-age/releases/download/${VER}/ssh-to-age-linux-amd64"
     hash: "9980a9b19c9495d446e825a2639b77cb381db30710d50542c835b86e9efaf8e9"
-  rofi-systemd: "https://raw.githubusercontent.com/IvanMalison/rofi-systemd/master/rofi-systemd"
+  rofi-systemd:
+    url: "https://raw.githubusercontent.com/IvanMalison/rofi-systemd/b8b156b7fd9c9dc0f034a88f1adeb07ecbdd4d7f/rofi-systemd"
+    hash: "b0a601b9fceec20117aeb533e03c75569c8700f08ffc3107ea75dde4e0ef43b0"
 
 github_tar:
   tdl:

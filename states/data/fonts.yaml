@@ -21,15 +21,20 @@ download_zip:
   fira_code_nerd:
     url: "https://github.com/ryanoasis/nerd-fonts/releases/download/v${VER}/FiraCode.zip"
     subdir: FiraCodeNerd
+    hash: "89978e6f870d044286a339161d5ed961569744b1cd2afee62337fa140cd0b397"
   oldschool_pc_fonts:
     url: "https://int10h.org/oldschool-pc-fonts/download/oldschool_pc_font_pack_v${VER}_linux.zip"
     subdir: oldschool-pc
+    hash: "b30dc3ecc9931ad2dd8be7517dd01813c8834a1911b582ab7643191b41a3d759"
   sf_pro_display:
     url: "https://font.download/dl/font/sf-pro-display.zip"
     subdir: SFProDisplay
+    hash: "569f23e3f8bcdab709824af5b6b6dfa4a4aa9864e4b4034b70970b48ee36f2f2"
   anurati:
     url: "https://font.download/dl/font/anurati.zip"
     subdir: Anurati
+    hash: "8a936d59a5ddeb53df9aee641137d8e3e81bd260395c8784c07231b3fd25c109"
   alfa_slab_one:
     url: "https://font.download/dl/font/alfa-slab-one.zip"
     subdir: AlfaSlabOne
+    hash: "d09294d4f7ff6717dec3a486a74059070bf26a74a821598e600e8ecc015b9a51"
