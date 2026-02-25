@@ -136,6 +136,8 @@ Macros (`_macros_install.jinja`, `_macros_github.jinja`, `_macros_pkg.jinja`) en
 - **Service enable**: Use `service.enabled` for packages installed via pacman
 - **State ID naming**: Use `target_descriptor` pattern (e.g. `loki_config`, `greetd_enabled`, `rfkill_service_masked`). Exception: `install_*` and `build_*` prefixes are reserved for macro-generated IDs. Never use file paths as state IDs — use a descriptive name with explicit `name:` parameter instead.
 - **Documentation i18n**: English is the primary language. Each doc in `docs/` and `README.md` must have a `.ru.md` Russian translation (e.g. `gopass-setup.md` → `gopass-setup.ru.md`). Excluded from translation: `CLAUDE.md`, `TODO.md`, `dotfiles/`, `build/`. English docs must not contain Cyrillic text. Enforced by `scripts/lint-docs.py`.
+- **Shell scripts shebang**: All shell scripts in `dotfiles/dot_local/bin/` must use `#!/usr/bin/env zsh`. This ensures `.zshenv` is sourced and XDG user directories (`XDG_MUSIC_DIR`, `XDG_PICTURES_DIR`, etc.) are always available, regardless of how the script is invoked (Hyprland keybind, rofi, systemd). Use `${=var}` for explicit word splitting where needed (zsh does not split `$var` by default unlike sh/bash). Python and nushell scripts keep their own shebangs.
+- **XDG user directories**: Canonical source is `environment.d/10-user.conf`. Custom short paths: `~/music`, `~/pic`, `~/vid`, `~/doc`, `~/dw`. Never use canonical XDG defaults (`~/Music`, `~/Pictures`, `~/Documents`, etc.) in code or fallback values.
 
 ## Platform
 
