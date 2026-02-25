@@ -76,11 +76,10 @@ Item {
         trackChannelLayout  = computeChannelLayout();
         // Depends on several of the above
         trackDsdRateStr     = computeDsdRateStr();
-        // Defer quality summary until introspection completes to avoid partial display ("FLAC" → "FLAC/44.1k/24")
+        // Only update quality summary after introspection completes;
+        // keep previous value during the gap to avoid blank flash on track change
         if (!introspectAudioEnabled || _introspectionDone || !trackUrlStr) {
             trackQualitySummary = computeQualitySummary();
-        } else {
-            trackQualitySummary = "";
         }
         
     }
