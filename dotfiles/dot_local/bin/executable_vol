@@ -17,12 +17,16 @@ sign(){
     *) echo '' ;;
   esac
 }
-get_volume_(){ wpctl get-volume @DEFAULT_SINK@ }
-get_volume(){ get_volume_ | cut -d: -f2 | tr -d '[:space:]' }
 set_volume(){ wpctl set-volume @DEFAULT_SINK@ "$1" }
 set_volume_safe(){
-    # Clamp to 1.00 when increasing
-    set_volume "$(printf '%s %s' "$(get_volume)" "$1" | awk '{v=$1+$2; if (v>=1.0) print 1.00; else if (v<0) print 0.00; else print v}')"
+    # Clamp to [0.00, 1.00] — pure zsh arithmetic, 1 fork (wpctl) instead of 5
+    local raw=$(wpctl get-volume @DEFAULT_SINK@)
+    raw=${raw#*: }; raw=${raw%% *}
+    local -F 2 v
+    (( v = raw + $1 ))
+    (( v > 1.0 )) && v=1.00
+    (( v < 0.0 )) && v=0.00
+    set_volume "$v"
 }
 
 case "$(sign "$1")" in
