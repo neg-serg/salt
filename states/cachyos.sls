@@ -45,6 +45,6 @@ cachyos_svc_{{ id_suffix }}:
 cachyos_{{ category }}_{{ pkg | replace('-', '_') }}:
   cmd.run:
     - name: 'true'
-    - unless: pacman -Q {{ pkg }} >/dev/null 2>&1
+    - unless: pacman -Q {{ pkg }} >/dev/null 2>&1  {# standalone state: no pkg_list cache available #}
 {% endfor %}
 {% endfor %}

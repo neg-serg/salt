@@ -106,3 +106,9 @@ salt_daemon_service:
     - context:
         project_dir: {{ host.project_dir }}
     - mode: '0644'
+
+salt_daemon_reload:
+  cmd.run:
+    - name: systemctl daemon-reload
+    - onchanges:
+      - file: salt_daemon_service

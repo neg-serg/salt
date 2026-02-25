@@ -261,8 +261,9 @@ floorp_ext_{{ ext.slug | replace('-', '_') }}:
 #}
 {%- macro download_font_zip(name, url, subdir, hash=None, version=None, user=_user, home=_home) -%}
 {%- set fonts_dir = home ~ '/.local/share/fonts' -%}
-{{ fonts_dir }}/{{ subdir }}:
+{{ name }}_font_dir:
   file.directory:
+    - name: {{ fonts_dir }}/{{ subdir }}
     - user: {{ user }}
     - group: {{ user }}
     - makedirs: True
@@ -298,7 +299,7 @@ install_{{ name }}:
         attempts: {{ _retry_attempts }}
         interval: {{ _retry_interval }}
     - require:
-      - file: {{ fonts_dir }}/{{ subdir }}
+      - file: {{ name }}_font_dir
 {%- endmacro -%}
 
 {# Git clone a repo to /tmp, copy selected items to dest, clean up.

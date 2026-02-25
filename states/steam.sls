@@ -59,6 +59,7 @@ modern_steam_skin:
     - retry:
         attempts: {{ retry_attempts }}
         interval: {{ retry_interval }}
+    - parallel: True
     - require:
       - cmd: install_p7zip
       - file: steam_skins_dir
