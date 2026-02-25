@@ -84,10 +84,14 @@ limine_snapper_sync_config:
         ! rg -q '^COMMANDS_BEFORE_SAVE=' "$CONF" &&
         ! rg -q '^COMMANDS_AFTER_SAVE=' "$CONF"
 
-# Ensure limine.conf uses multi-profile format (required for snapshot boot entries)
+# Ensure limine.conf uses multi-profile format (required for snapshot boot entries).
+# Fails the state run to prevent silent misconfiguration.
 limine_multiprofile_check:
   cmd.run:
-    - name: echo "WARNING - limine.conf needs //KernelName sub-entries for snapshot sync"
+    - name: |
+        echo "ERROR: limine.conf needs //KernelName sub-entries for snapshot sync" >&2
+        echo "  See: https://github.com/limine-bootloader/limine/blob/trunk/CONFIG.md" >&2
+        exit 1
     - onlyif: |
         [ -f /boot/limine.conf ] &&
         ! rg -q '^    //' /boot/limine.conf

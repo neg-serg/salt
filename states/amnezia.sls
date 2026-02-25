@@ -19,7 +19,7 @@ amnezia_build:
     - output_loglevel: info
     - env:
       - BUILD: {{ cache }}
-      - AMNEZIA_VERSION: {{ ver.amnezia_vpn }}
+      - AMNEZIA_VERSION: {{ ver.get('amnezia_vpn', '') }}
     - unless: >-
         test -f {{ cache }}/amneziawg-go-bin &&
         test -f {{ cache }}/awg-bin &&

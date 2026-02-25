@@ -23,7 +23,7 @@ fancontrol_reapply_script:
     - context:
         cpu_vendor: {{ host.get('cpu_vendor', '') }}
 
-{{ service_with_unit('fancontrol-setup', 'salt://units/fancontrol-setup.service.j2', template='jinja', context={'gpu_enable': 'true' if host.get('cpu_vendor', '') == 'amd' else 'false'}, enabled=None) }}
+{{ service_with_unit('fancontrol-setup', 'salt://units/fancontrol-setup.service.j2', template='jinja', context={'gpu_enable': host.get('cpu_vendor', '') == 'amd'}, enabled=None) }}
 
 {{ service_with_unit('fancontrol', 'salt://units/fancontrol.service', requires=['cmd: fancontrol-setup_daemon_reload', 'file: fancontrol_setup_script']) }}
 

@@ -1,5 +1,5 @@
 {% from '_imports.jinja' import host, user, home %}
-{% from '_macros_service.jinja' import system_daemon_user, service_with_unit, service_stopped %}
+{% from '_macros_service.jinja' import ensure_dir, system_daemon_user, service_with_unit, service_stopped %}
 {% from '_macros_install.jinja' import curl_extract_tar %}
 {% from '_macros_pkg.jinja' import pacman_install, simple_service %}
 {% import_yaml 'data/versions.yaml' as ver %}
@@ -24,15 +24,7 @@
 {% if svc.samba %}
 {{ pacman_install('samba', 'samba') }}
 
-samba_share_dir:
-  file.directory:
-    - name: {{ host.mnt_zero }}/sync/smb
-    - user: {{ user }}
-    - group: {{ user }}
-    - mode: '0755'
-    - makedirs: True
-    - require:
-      - mount: mount_zero
+{{ ensure_dir('samba_share_dir', host.mnt_zero ~ '/sync/smb', mode='0755', require=['mount: mount_zero']) }}
 
 samba_config:
   file.managed:
@@ -52,9 +44,10 @@ samba_config:
 
 # --- Bitcoind: Bitcoin Core node ---
 {% if svc.bitcoind %}
-{% set btc_url = 'https://bitcoincore.org/bin/bitcoin-core-${VER}/bitcoin-${VER}-x86_64-linux-gnu.tar.gz' | replace('${VER}', ver.bitcoind) %}
-{% set btc_pattern = 'bitcoin-${VER}/bin' | replace('${VER}', ver.bitcoind) %}
-{{ curl_extract_tar('bitcoind', btc_url, binary_pattern=btc_pattern, binaries=['bitcoind', 'bitcoin-cli'], bin_dest='/usr/local/bin', hash='07f77afd326639145b9ba9562912b2ad2ccec47b8a305bd075b4f4cb127b7ed7', version=ver.bitcoind, user=None) }}
+{% set _btc_ver = ver.get('bitcoind', '') %}
+{% set btc_url = 'https://bitcoincore.org/bin/bitcoin-core-${VER}/bitcoin-${VER}-x86_64-linux-gnu.tar.gz' | replace('${VER}', _btc_ver) %}
+{% set btc_pattern = 'bitcoin-${VER}/bin' | replace('${VER}', _btc_ver) %}
+{{ curl_extract_tar('bitcoind', btc_url, binary_pattern=btc_pattern, binaries=['bitcoind', 'bitcoin-cli'], bin_dest='/usr/local/bin', hash='07f77afd326639145b9ba9562912b2ad2ccec47b8a305bd075b4f4cb127b7ed7', version=_btc_ver if _btc_ver else None, user=None) }}
 
 {{ system_daemon_user('bitcoind', '/var/lib/bitcoind') }}
 

@@ -2,12 +2,7 @@
 {% from '_imports.jinja' import host, user, home %}
 {% from '_macros_service.jinja' import ensure_dir %}
 
-zsh_config_dir:
-  file.directory:
-    - name: /etc/zsh
-    - user: root
-    - group: root
-    - mode: '0755'
+{{ ensure_dir('zsh_config_dir', '/etc/zsh', mode='0755', user='root') }}
 
 zsh_system_env:
   file.managed:

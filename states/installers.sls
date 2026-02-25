@@ -101,6 +101,7 @@ mpv_script_{{ filename | replace('.', '_') | replace('-', '_') }}:
     - retry:
         attempts: {{ retry_attempts }}
         interval: {{ retry_interval }}
+    - parallel: True
 {% endfor %}
 
 {% for filename, opts in mpv.github_release.items() %}

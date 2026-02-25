@@ -15,7 +15,7 @@ greetd_config_dir:
     - mode: '0755'
     - makedirs: True
 
-greetd_config:
+greetd_main_config:
   file.managed:
     - name: /etc/greetd/config.toml
     - contents: |
@@ -70,4 +70,4 @@ greetd_enabled:
   service.enabled:
     - name: greetd
     - require:
-      - file: greetd_config
+      - file: greetd_main_config
