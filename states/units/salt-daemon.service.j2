@@ -7,7 +7,6 @@ After=network.target
 Type=simple
 ExecStart={{ project_dir }}/.venv/bin/python3 {{ project_dir }}/scripts/salt-daemon.py \
     --config-dir {{ project_dir }}/.salt_runtime \
-    --socket /tmp/salt-daemon.sock \
     --log-level warning
 WorkingDirectory={{ project_dir }}
 Restart=on-failure
@@ -15,7 +14,7 @@ RestartSec=5
 # State application requires root
 User=root
 # Clean up socket on stop
-ExecStopPost=/bin/rm -f /tmp/salt-daemon.sock
+ExecStopPost=/bin/rm -f /run/salt-daemon.sock
 
 [Install]
 WantedBy=multi-user.target

@@ -1,4 +1,4 @@
-#!/home/neg/src/salt/.venv/bin/python3
+#!/usr/bin/env python3
 """
 salt-daemon.py — pre-loaded Salt Caller daemon for faster state.apply
 
@@ -67,8 +67,10 @@ class StateTimeout(Exception):
 def _on_sigalrm(signum, frame):
     raise StateTimeout("state execution timed out")
 
+
 # ── Security: allowed log directory and state whitelist ──────────────────────
 _ALLOWED_LOG_DIR = os.path.join(_SCRIPT_DIR, os.pardir, "logs")
+
 
 def _discover_allowed_states():
     """Build allowed state set from states/*.sls files on disk."""
@@ -266,7 +268,12 @@ class DaemonServer:
             return
 
         if peer_uid not in self.allowed_uids:
-            log.warning("Rejected connection from uid=%d pid=%d (allowed: %s)", peer_uid, peer_pid, self.allowed_uids)
+            log.warning(
+                "Rejected connection from uid=%d pid=%d (allowed: %s)",
+                peer_uid,
+                peer_pid,
+                self.allowed_uids,
+            )
             conn.close()
             return
 
@@ -300,9 +307,8 @@ class DaemonServer:
         if state not in _ALLOWED_STATES:
             log.warning("Rejected disallowed state: %r", state)
             try:
-                conn.sendall(
-                    (json.dumps({"type": "stdout", "line": f"error: state {state!r} not in allowed list"}) + "\n").encode()
-                )
+                msg = f"error: state {state!r} not in allowed list"
+                conn.sendall((json.dumps({"type": "stdout", "line": msg}) + "\n").encode())
                 conn.sendall((json.dumps({"type": "exit", "code": 1}) + "\n").encode())
             except OSError:
                 pass
@@ -314,10 +320,20 @@ class DaemonServer:
             real_log = os.path.realpath(log_file)
             allowed_dir = os.path.realpath(_ALLOWED_LOG_DIR)
             if not real_log.startswith(allowed_dir + os.sep):
-                log.warning("Rejected log_file outside allowed dir: %r (resolved to %r)", log_file, real_log)
+                log.warning(
+                    "Rejected log_file outside allowed dir: %r (resolved to %r)",
+                    log_file,
+                    real_log,
+                )
                 log_file = ""
 
-        log.info("Request: state=%r kwargs=%s log_file=%r timeout=%ds", state, kwargs, log_file, self.timeout)
+        log.info(
+            "Request: state=%r kwargs=%s log_file=%r timeout=%ds",
+            state,
+            kwargs,
+            log_file,
+            self.timeout,
+        )
 
         signal.alarm(self.timeout)
         try:
@@ -325,9 +341,8 @@ class DaemonServer:
         except StateTimeout:
             log.error("State %r timed out after %ds", state, self.timeout)
             try:
-                conn.sendall(
-                    (json.dumps({"type": "stdout", "line": f"error: state {state!r} timed out after {self.timeout}s"}) + "\n").encode()
-                )
+                msg = f"error: state {state!r} timed out after {self.timeout}s"
+                conn.sendall((json.dumps({"type": "stdout", "line": msg}) + "\n").encode())
                 conn.sendall((json.dumps({"type": "exit", "code": 1}) + "\n").encode())
             except OSError:
                 pass
