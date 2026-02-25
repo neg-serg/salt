@@ -18,12 +18,13 @@ warn() { echo -e "  ${YELLOW}!${NC} $1"; ((warn++)); }
 
 section() { echo -e "\n${BOLD}── $1 ──${NC}"; }
 
-# --- RPM packages ---
-section "RPM Packages"
+# --- Packages ---
+section "Packages"
 
 for pkg in greetd quickshell; do
-    if rpm -q "$pkg" &>/dev/null; then
-        ok "$pkg $(rpm -q --qf '%{VERSION}' "$pkg") installed"
+    ver=$(pacman -Q "$pkg" 2>/dev/null | awk '{print $2}')
+    if [ -n "$ver" ]; then
+        ok "$pkg $ver installed"
     else
         fail "$pkg not installed"
     fi
@@ -118,19 +119,6 @@ if [ "$sddm_enabled" = "disabled" ] || [ "$sddm_enabled" = "not-found" ]; then
     ok "sddm.service disabled/absent"
 else
     warn "sddm.service is '$sddm_enabled' — may conflict with greetd"
-fi
-
-# --- SELinux ---
-section "SELinux"
-
-if command -v semodule &>/dev/null; then
-    if semodule -l 2>/dev/null | grep -q '^greetd'; then
-        ok "greetd SELinux module loaded"
-    else
-        warn "greetd SELinux module not loaded (may cause denials)"
-    fi
-else
-    warn "semodule not available, skipping SELinux check"
 fi
 
 # --- Summary ---

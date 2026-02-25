@@ -4,6 +4,7 @@ naming conventions, unused imports, require resolution, dangling includes."""
 
 import ast
 import collections
+import getpass
 import glob
 import os
 import re
@@ -96,6 +97,13 @@ class _MockSalt:
         return _enable_all_features(merged)
 
 
+def _fallback_host():
+    """Build a minimal fallback host config from the current environment."""
+    user = os.environ.get("USER", getpass.getuser())
+    home = os.path.expanduser("~")
+    return {"user": user, "home": home, "pkg_list": "/var/cache/salt/pacman_installed.txt"}
+
+
 def _build_lint_host():
     """Build a synthetic host config with all features enabled for linting.
 
@@ -107,15 +115,15 @@ def _build_lint_host():
         with open("states/host_config.jinja") as fh:
             source = fh.read()
     except FileNotFoundError:
-        return {"user": "neg", "home": "/home/neg", "pkg_list": "/tmp/pkg_list.txt"}
+        return _fallback_host()
     defaults_src = _extract_dict_literal(source, "defaults")
     if not defaults_src:
-        return {"user": "neg", "home": "/home/neg", "pkg_list": "/tmp/pkg_list.txt"}
+        return _fallback_host()
     defaults_src = re.sub(r"grains\[.*?\]", "'lint-check'", defaults_src)
     try:
         defaults = ast.literal_eval(defaults_src)
     except (ValueError, SyntaxError):
-        return {"user": "neg", "home": "/home/neg", "pkg_list": "/tmp/pkg_list.txt"}
+        return _fallback_host()
     host = _enable_all_features(defaults)
     host["runtime_dir"] = f"/run/user/{host['uid']}"
     host["pkg_list"] = "/var/cache/salt/pacman_installed.txt"
@@ -368,12 +376,8 @@ def check_yaml_configs(config_files):
 
 # --- Cross-file validation checks ---
 
-_IMPORT_FROM_RE = re.compile(
-    r"\{%-?\s*from\s+['\"]([^'\"]+)['\"]\s+import\s+(.+?)\s*-?%\}"
-)
-_IMPORT_YAML_RE = re.compile(
-    r"\{%-?\s*import_yaml\s+['\"]([^'\"]+)['\"]\s+as\s+(\w+)\s*-?%\}"
-)
+_IMPORT_FROM_RE = re.compile(r"\{%-?\s*from\s+['\"]([^'\"]+)['\"]\s+import\s+(.+?)\s*-?%\}")
+_IMPORT_YAML_RE = re.compile(r"\{%-?\s*import_yaml\s+['\"]([^'\"]+)['\"]\s+as\s+(\w+)\s*-?%\}")
 _REQUISITE_KEYS = frozenset(
     {
         "require",
@@ -422,10 +426,7 @@ def check_unused_imports(sls_files):
 
         for src_file, name in imports:
             if not re.search(r"\b" + re.escape(name) + r"\b", body):
-                print(
-                    f"\033[33mUnused import: {path}: '{name}'"
-                    f" from '{src_file}'\033[0m"
-                )
+                print(f"\033[33mUnused import: {path}: '{name}' from '{src_file}'\033[0m")
                 warnings += 1
 
     return warnings
@@ -513,6 +514,78 @@ def check_dangling_includes(sls_files):
     return errors
 
 
+def check_data_integrity():
+    """Validate YAML data files: required keys, version cross-references."""
+    errors = 0
+
+    try:
+        with open("states/data/versions.yaml") as fh:
+            versions = yaml.safe_load(fh) or {}
+    except (FileNotFoundError, yaml.YAMLError):
+        return 0
+
+    # Required keys by section type
+    required_keys = {
+        "curl_extract_zip": ["url"],
+        "curl_extract_tar": ["url", "binary_pattern"],
+        "download_zip": ["url"],
+    }
+
+    # Data files with versioned tool definitions
+    data_files = [
+        "states/data/installers.yaml",
+        "states/data/installers_desktop.yaml",
+        "states/data/fonts.yaml",
+    ]
+
+    for data_file in data_files:
+        try:
+            with open(data_file) as fh:
+                data = yaml.safe_load(fh) or {}
+        except (FileNotFoundError, yaml.YAMLError):
+            continue
+
+        basename = os.path.basename(data_file)
+
+        for section, entries in data.items():
+            if not isinstance(entries, dict):
+                continue
+
+            # Check required keys
+            if section in required_keys:
+                for name, opts in entries.items():
+                    if not isinstance(opts, dict):
+                        continue
+                    for key in required_keys[section]:
+                        if key not in opts:
+                            print(
+                                f"\033[31mData: {basename}:"
+                                f" {section}.{name} missing required key"
+                                f" '{key}'\033[0m"
+                            )
+                            errors += 1
+
+            # Check ${VER} references have matching versions.yaml entry
+            for name, opts in entries.items():
+                url = ""
+                if isinstance(opts, str):
+                    url = opts
+                elif isinstance(opts, dict):
+                    url = opts.get("url", "")
+
+                if "${VER}" in url:
+                    ver_key = name.replace("-", "_")
+                    if ver_key not in versions:
+                        print(
+                            f"\033[31mData: {basename}:"
+                            f" {section}.{name} uses ${{VER}} but"
+                            f" '{ver_key}' not in versions.yaml\033[0m"
+                        )
+                        errors += 1
+
+    return errors
+
+
 def main():
     sls_files = sorted(glob.glob("states/*.sls"))
     jinja_files = sorted(glob.glob("states/*.jinja"))
@@ -532,9 +605,7 @@ def main():
     print(f"Jinja2 syntax: {len(all_jinja)} files, {jinja_errors} errors")
 
     # 2. Duplicate state IDs (also collects rendered docs for later checks)
-    dupe_errors, rendered, all_ids, rendered_docs = check_duplicate_state_ids(
-        sls_files
-    )
+    dupe_errors, rendered, all_ids, rendered_docs = check_duplicate_state_ids(sls_files)
     total_errors += dupe_errors
     print(f"State IDs: {rendered} files rendered, {dupe_errors} duplicates")
 
@@ -568,6 +639,11 @@ def main():
     include_errors = check_dangling_includes(sls_files)
     total_errors += include_errors
     print(f"Dangling includes: {include_errors} errors")
+
+    # 9. Data file integrity (required keys, version references)
+    data_errors = check_data_integrity()
+    total_errors += data_errors
+    print(f"Data integrity: {data_errors} errors")
 
     sys.exit(1 if total_errors else 0)
 
