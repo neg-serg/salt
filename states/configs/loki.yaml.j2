@@ -1,7 +1,7 @@
 auth_enabled: false
 server:
   http_listen_address: 127.0.0.1
-  http_listen_port: 3100
+  http_listen_port: {{ loki_port }}
   grpc_listen_port: 0
 common:
   path_prefix: /var/lib/loki

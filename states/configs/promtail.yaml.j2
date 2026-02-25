@@ -1,10 +1,10 @@
 server:
-  http_listen_port: 9080
+  http_listen_port: {{ promtail_port }}
   grpc_listen_port: 0
 positions:
   filename: /var/cache/promtail/positions.yaml
 clients:
-  - url: http://127.0.0.1:3100/loki/api/v1/push
+  - url: http://127.0.0.1:{{ loki_port }}/loki/api/v1/push
 scrape_configs:
   - job_name: journal
     journal:

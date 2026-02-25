@@ -9,3 +9,9 @@
 {%- set pkg_list = host.pkg_list -%}
 {%- set retry_attempts = 3 -%}
 {%- set retry_interval = 10 -%}
+{%- set service_ports = {
+    'loki':     {'port': 3100, 'healthcheck': '/ready'},
+    'promtail': {'port': 9080, 'healthcheck': '/ready'},
+    'grafana':  {'port': 3030, 'healthcheck': '/api/health'},
+    'ollama':   {'port': 11434, 'healthcheck': '/api/tags'},
+} -%}

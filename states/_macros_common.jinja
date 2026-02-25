@@ -9,3 +9,9 @@
 {%- set retry_interval = 10 -%}
 {%- set ver_dir = home ~ '/.cache/salt-versions' -%}
 {%- set sys_ver_dir = '/var/cache/salt/versions' -%}
+{%- set service_ports = {
+    'loki':     {'port': 3100, 'healthcheck': '/ready'},
+    'promtail': {'port': 9080, 'healthcheck': '/ready'},
+    'grafana':  {'port': 3030, 'healthcheck': '/api/health'},
+    'ollama':   {'port': 11434, 'healthcheck': '/api/tags'},
+} -%}
