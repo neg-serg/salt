@@ -68,6 +68,14 @@ greetd_wallpaper:
       - file: greetd_config_dir
 {% endif %}
 
+greetd_cleanup_pacnew:
+  file.absent:
+    - name: /etc/greetd/config.toml.pacnew
+
+greetd_cleanup_regreet:
+  file.absent:
+    - name: /etc/greetd/regreet.toml
+
 greetd_enabled:
   service.enabled:
     - name: greetd
