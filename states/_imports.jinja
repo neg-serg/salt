@@ -1,20 +1,18 @@
-{#- Common preamble: host config + convenience variables.
+{#- Thin proxy: re-exports constants from _macros_common.jinja for .sls states.
     Usage: {% from '_imports.jinja' import host, user, home %}
     With pkg_list: {% from '_imports.jinja' import host, user, home, pkg_list %}
 -#}
-{%- import 'host_config.jinja' as _hc -%}
-{%- set host = _hc.host -%}
-{%- set user = host.user -%}
-{%- set home = host.home -%}
-{%- set pkg_list = host.pkg_list -%}
-{%- set retry_attempts = 3 -%}
-{%- set retry_interval = 10 -%}
-{%- set healthcheck_timeout = 30 -%}
-{%- set sudo_timeout_minutes = 30 -%}
-{%- set ollama_pull_timeout = 660 -%}
-{%- set service_ports = {
-    'loki':     {'port': 3100, 'healthcheck': '/ready'},
-    'promtail': {'port': 9080, 'healthcheck': '/ready'},
-    'grafana':  {'port': 3030, 'healthcheck': '/api/health'},
-    'ollama':   {'port': 11434, 'healthcheck': '/api/tags'},
-} -%}
+{%- from '_macros_common.jinja' import
+    host,
+    user,
+    home,
+    pkg_list,
+    retry_attempts,
+    retry_interval,
+    healthcheck_timeout,
+    sudo_timeout_minutes,
+    ollama_pull_timeout,
+    service_ports,
+    ver_dir,
+    sys_ver_dir
+-%}
