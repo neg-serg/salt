@@ -1,4 +1,4 @@
-{% from '_imports.jinja' import host, user, home %}
+{% from '_imports.jinja' import host, user, home, retry_attempts, retry_interval %}
 {% from '_macros_service.jinja' import ensure_dir %}
 {% import_yaml 'data/versions.yaml' as ver %}
 {% set cache = host.mnt_one ~ '/pkg/cache/amnezia' %}

@@ -180,7 +180,7 @@ install_{{ name | replace('-', '_') }}:
           {{ curl_extract_zip('throne', '...', dest='~/.local/opt/throne', symlink='Throne') }}
 #}
 {%- macro curl_extract_zip(name, url, binary_path=None, binaries=None, bin=None, chmod=False, dest=None, symlink=None, creates=None, hash=None, version=None, user=_user, home=_home) -%}
-{%- set out_name = bin or (binaries[0] if binaries else binary_path.rsplit('/', 1)[-1]) -%}
+{%- set out_name = bin or (binaries[0] if binaries else (binary_path.rsplit('/', 1)[-1] if binary_path else name)) -%}
 {%- set _creates = creates or ((dest | replace('~', home)) if dest else home ~ '/.local/bin/' ~ out_name) -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
