@@ -29,6 +29,12 @@ setopt short_loops # short loops support
 setopt transient_rprompt # only show the rprompt on the current prompt
 setopt rc_quotes # quotes with ''
 
+# --- Interactive shell settings ---
+export GPG_TTY=$(tty)
+export KEYTIMEOUT=10
+export REPORTTIME=60
+export ESCDELAY=1
+
 () {
     local hist
     for hist in ~/.zsh_history*~$HISTFILE(N); do
@@ -52,27 +58,16 @@ setopt rc_quotes # quotes with ''
 }
 
 _exists() { (( $+commands[$1] )) }
-watch=(notme root) # watch for everyone but me and root
-typeset -U path cdpath fpath manpath # automatically remove duplicates from these arrays
+typeset -U cdpath fpath manpath # automatically remove duplicates from these arrays
 typeset -gx PATH=$HOME/.local/bin:$PATH
-_exists nvim && {
-    typeset -gx EDITOR="nvim"
-    typeset -gx VISUAL="${EDITOR}"
-    typeset -gx MANPAGER="nvim +Man!"
-}
-
+_exists nvim && typeset -gx MANPAGER="nvim +Man!"
 
 typeset -gx ZSH_CACHE_DIR=${XDG_CACHE_HOME:-$HOME/.cache}/zsh
 [[ -d $ZSH_CACHE_DIR ]] || mkdir -p -- $ZSH_CACHE_DIR
 
-# Initialize zoxide (smarter cd) if available — cached to avoid fork on every startup
+# Initialize zoxide (smarter cd) if available
 if (( $+commands[zoxide] )); then
-  local _zoxide_cache="$ZSH_CACHE_DIR/zoxide-init.zsh"
-  local _zoxide_bin=${commands[zoxide]}
-  if [[ ! -r "$_zoxide_cache" || "$_zoxide_bin" -nt "$_zoxide_cache" ]]; then
-    zoxide init zsh --no-cmd --hook prompt > "$_zoxide_cache"
-  fi
-  source "$_zoxide_cache"
+  smartcache eval zoxide init zsh --no-cmd --hook prompt
   alias z='__zoxide_z'
 fi
 

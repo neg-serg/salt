@@ -1,3 +1,7 @@
+# FZF widget options (interactive-only, moved from .zshenv)
+export FZF_CTRL_R_OPTS="--sort --exact --border=sharp --margin=0 --padding=0 --no-scrollbar --footer='[Enter] Paste  [Ctrl-y] Yank  [?] Preview' --preview 'echo {}' --preview-window down:5:hidden,wrap --bind '?:toggle-preview'"
+export FZF_CTRL_T_OPTS="--border=sharp --margin=0 --padding=0 --no-scrollbar --preview 'if [ -d \"{}\" ]; then (eza --tree --icons=auto -L 2 --color=always \"{}\" 2>/dev/null || tree -C -L 2 \"{}\" 2>/dev/null); else (bat --style=plain --color=always --line-range :200 \"{}\" 2>/dev/null || highlight -O ansi -l \"{}\" 2>/dev/null || head -200 \"{}\" 2>/dev/null || file -b \"{}\" 2>/dev/null); fi' --preview-window=right,60%,border-left,wrap"
+
 # Resolve fzf dir (prefer fzf-share)
 local _fzf_base
 if (( ${+commands[fzf-share]} )); then
