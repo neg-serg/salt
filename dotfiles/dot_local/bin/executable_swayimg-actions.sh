@@ -150,7 +150,7 @@ choose_dest() {
   )"
 
   printf '%s\n' "$entries" \
-    | sh -c "$rofi_cmd -p \"⟬$prompt⟭ ❯>\"" \
+    | sh -c "$rofi_cmd -p \"⟬$prompt⟭ ❯\"" \
     | sed "s:^~:$HOME:"
 }
 
