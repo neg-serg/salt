@@ -45,11 +45,4 @@ env = XCURSOR_SIZE,{{ host.cursor_size }}
 env = HYPRCURSOR_THEME,{{ host.cursor_theme }}
 env = HYPRCURSOR_SIZE,{{ host.cursor_size }}
 
-# Debug: trace aquamarine (libaquamarine) and enable Hyprland stdout logs
-# The greeter Hyprland segfaults in libaquamarine during shutdown — these help diagnose it
-env = AQ_TRACE,1
-debug {
-    enable_stdout_logs = true
-}
-
 exec-once = qs -p ~/.config/quickshell/greeter/greeter.qml
