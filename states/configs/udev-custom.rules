@@ -22,6 +22,10 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="35ef", ATTRS{idProduct}=="2200", GROUP="use
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="31e3", ATTRS{idProduct}=="1322", GROUP="users", MODE="0666"
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="31e3", ATTRS{idProduct}=="132f", GROUP="users", MODE="0666"
 
+# ASUS ROG Falcata: WebHID access for Gear Link browser configurator (gearlink.asus.com)
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="0b05", TAG+="uaccess"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0b05", TAG+="uaccess"
+
 # NVMe: reduce read_ahead_kb (8MB default from tuned is excessive for NVMe)
 # Match namespace block devices only (nvme0n1), not controllers (nvme0) or partitions (nvme0n1p1)
 ACTION=="add|change", KERNEL=="nvme[0-9]*n[0-9]", ATTR{queue/read_ahead_kb}="256"
