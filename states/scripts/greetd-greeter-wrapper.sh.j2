@@ -2,6 +2,25 @@
 # Greeter wrapper: runs quickshell greeter inside cage kiosk compositor.
 # cage (wlroots-based) handles SIGTERM cleanly — no DRM workarounds needed,
 # unlike Hyprland's aquamarine which has a 5-second modeset timeout.
+#
+# Crash guard: if the greeter crashes 3 times within 30 seconds,
+# falls back to agreety (terminal greeter). Normal login resets the counter
+# because the session lasts longer than 30s.
+
+CRASH_FILE=/tmp/greetd-crash-count
+
+if [ -f "$CRASH_FILE" ] && [ $(($(date +%s) - $(stat -c %Y "$CRASH_FILE"))) -lt 30 ]; then
+    count=$(cat "$CRASH_FILE")
+else
+    count=0
+fi
+count=$((count + 1))
+echo "$count" > "$CRASH_FILE"
+
+if [ "$count" -ge 3 ]; then
+    echo 0 > "$CRASH_FILE"
+    exec agreety --cmd /etc/greetd/session-wrapper
+fi
 
 export GREETER_MODE=cage
 export QT_QPA_PLATFORM=wayland
