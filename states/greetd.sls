@@ -37,6 +37,11 @@ greetd_greeter_wrapper:
     - name: /etc/greetd/greeter-wrapper
     - source: salt://scripts/greetd-greeter-wrapper.sh.j2
     - template: jinja
+    - context:
+        greetd_scale: {{ host.greetd_scale }}
+        cursor_theme: {{ host.cursor_theme }}
+        cursor_size: {{ host.cursor_size }}
+        home: {{ home }}
     - user: root
     - group: root
     - mode: '0755'
