@@ -44,7 +44,7 @@ steam_pkg:
 
 {{ ensure_dir('steam_skins_dir', home ~ '/.local/share/Steam/skins') }}
 
-{{ pacman_install('p7zip', 'p7zip') }}
+{{ pacman_install('p7zip', '7zip') }}
 
 modern_steam_skin:
   cmd.run:

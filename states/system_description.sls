@@ -4,7 +4,18 @@
 
 pacman_db_warmup:
   cmd.run:
-    - name: pacman -Qq > {{ pkg_list }}
+    - name: |
+        _tmp=$(mktemp)
+        pacman -Qq > "$_tmp"
+        if cmp -s "$_tmp" {{ pkg_list }}; then
+          rm "$_tmp"
+          echo "changed=no"
+        else
+          mv "$_tmp" {{ pkg_list }}
+          echo "changed=yes"
+        fi
+    - stateful: True
+    - shell: /bin/bash
 
 system_timezone:
   timezone.system:

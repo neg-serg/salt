@@ -34,8 +34,9 @@ kernel_modules_blacklist:
 {% for mod in modules_to_load %}
 load_{{ mod | replace('-', '_') }}:
   cmd.run:
-    - name: modprobe {{ mod }} || true
+    - name: modprobe {{ mod }} 2>/dev/null; touch /run/.salt-modprobe-{{ mod }}
     - unless: lsmod | rg -q '^{{ mod }}\b'
+    - creates: /run/.salt-modprobe-{{ mod }}
     - require:
       - file: kernel_modules_load
 {% endfor %}
