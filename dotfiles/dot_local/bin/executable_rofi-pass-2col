@@ -1,5 +1,5 @@
 #!/usr/bin/env zsh
-set -euo pipefail
+setopt ERR_EXIT NOUNSET PIPE_FAIL
 
 entries=("${(@f)$(gopass ls --flat 2>/dev/null)}")
 count=${#entries[@]}

@@ -68,6 +68,7 @@ mpdas_config:
         PASS=$(gopass show -o lastfm/password)
         printf 'host = localhost\nport = 6600\nservice = lastfm\nusername = %s\npassword = %s\n' "$USER" "$PASS" > {{ home }}/.config/mpdasrc
         chmod 0600 {{ home }}/.config/mpdasrc
+    - shell: /bin/bash
     - runas: {{ user }}
     - creates: {{ home }}/.config/mpdasrc
     - retry:

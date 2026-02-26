@@ -2,7 +2,7 @@
 # Toggle screen recording with wf-recorder
 # Usage: screenrec [area|screen]
 
-set -euo pipefail
+setopt ERR_EXIT NOUNSET PIPE_FAIL
 
 RECORDINGS_DIR="${HOME}/vid/recordings"
 PIDFILE="/tmp/wf-recorder-${USER}.pid"

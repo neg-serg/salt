@@ -1,5 +1,5 @@
 #!/usr/bin/env zsh
-set -euo pipefail
+setopt ERR_EXIT NOUNSET PIPE_FAIL
 
 # Clean what can be cleaned without root:
 # - Try vacuuming user journal (if permitted) to a minimal retention window

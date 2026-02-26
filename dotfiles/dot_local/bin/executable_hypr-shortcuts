@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 # hypr-shortcuts: Vicinae-powered quick commands for Hyprland helpers
-set -euo pipefail
+setopt ERR_EXIT NOUNSET PIPE_FAIL
 IFS=$'\n\t'
 
 log() {
