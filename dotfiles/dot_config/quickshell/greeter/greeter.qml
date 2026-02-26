@@ -10,6 +10,9 @@ ShellRoot {
 	id: root
 
 	readonly property bool testMode: !Quickshell.env("GREETD_SOCK")
+	// cage kiosk compositor does not support ext-session-lock-v1;
+	// use wlr-layer-shell PanelWindow instead (cage supports it since 0.1.5)
+	readonly property bool useSessionLock: !testMode && Quickshell.env("GREETER_MODE") !== "cage"
 
 	GreeterContext {
 		id: context
@@ -19,16 +22,16 @@ ShellRoot {
 			if (root.testMode) {
 				Qt.quit();
 			} else {
-				lock.locked = false;
+				if (root.useSessionLock) lock.locked = false;
 				Greetd.launch(["/etc/greetd/session-wrapper"]);
 			}
 		}
 	}
 
-	// Real greeter: session lock (only active when greetd is running)
+	// Session lock mode: compositors that support ext-session-lock-v1 (e.g. Hyprland)
 	WlSessionLock {
 		id: lock
-		locked: !root.testMode
+		locked: root.useSessionLock
 
 		WlSessionLockSurface {
 			id: lockSurface
@@ -48,15 +51,15 @@ ShellRoot {
 		}
 	}
 
-	// Test mode: overlay window for previewing the greeter UI
+	// Panel mode: cage kiosk greeter or test preview (wlr-layer-shell)
 	PanelWindow {
-		id: testWindow
-		visible: root.testMode
+		id: panelWindow
+		visible: !root.useSessionLock
 		color: "darkgreen"
 
 		WlrLayershell.layer: WlrLayer.Overlay
 		WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
-		WlrLayershell.namespace: "greeter:test"
+		WlrLayershell.namespace: "greeter"
 
 		anchors {
 			top: true
@@ -67,7 +70,7 @@ ShellRoot {
 
 		BackgroundImage {
 			anchors.fill: parent
-			screen: testWindow.screen
+			screen: panelWindow.screen
 			slideAmount: 0
 		}
 
