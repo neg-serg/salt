@@ -1,5 +1,5 @@
 #!/usr/bin/env zsh
-set -euo pipefail
+setopt ERR_EXIT NOUNSET PIPE_FAIL
 # Hint: SteamVR AppID is 250820
 steam -applaunch 250820 &
 STEAM_PID=$!

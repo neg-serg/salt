@@ -1,5 +1,5 @@
 #!/usr/bin/env zsh
-set -euo pipefail
+setopt ERR_EXIT NOUNSET PIPE_FAIL
 
 # qe: print the most recently modified subdirectory of the given directory.
 # Semantics are similar to the original zsh glob:

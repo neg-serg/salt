@@ -87,6 +87,7 @@ dconf_themes:
 {%- set safe = val | replace('\\', '\\\\') | replace('"', '\\"') | replace('`', '\\`') | replace('$', '\\$') %}
         dconf write {{ key }} "'{{ safe }}'"
 {% endfor %}
+    - shell: /bin/bash
     - runas: {{ user }}
     - env:
       - DBUS_SESSION_BUS_ADDRESS: "unix:path={{ host.runtime_dir }}/bus"

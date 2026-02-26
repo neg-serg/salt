@@ -13,6 +13,7 @@ multilib_repo:
         set -eo pipefail
         printf '\n[multilib]\nInclude = /etc/pacman.d/mirrorlist\n' >> /etc/pacman.conf
         pacman -Sy
+    - shell: /bin/bash
     - unless: rg -q '^\[multilib\]' /etc/pacman.conf
     - retry:
         attempts: {{ retry_attempts }}

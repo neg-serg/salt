@@ -273,6 +273,9 @@
 {%- if now_list %}
         systemctl --user enable --now {{ now_list | join(' ') }}
 {%- endif %}
+{%- if multi_cmd %}
+    - shell: /bin/bash
+{%- endif %}
     - runas: {{ user }}
     - env:
       - XDG_RUNTIME_DIR: {{ host.runtime_dir }}

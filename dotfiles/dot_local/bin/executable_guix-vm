@@ -1,5 +1,5 @@
 #!/usr/bin/env zsh
-set -euo pipefail
+setopt ERR_EXIT NOUNSET PIPE_FAIL
 
 # Configuration
 VM_DIR="/zero/vms/guix"
