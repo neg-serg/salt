@@ -228,10 +228,11 @@ run_direct() {
 
     if [[ -n "${SUDO_PASS:-}" ]]; then
         echo "$SUDO_PASS" | "${salt_cmd[@]}" 2>&1 | tee -a "${LOG_FILE}" > /dev/null
+        local rc="${pipestatus[2]}"
     else
         "${salt_cmd[@]}" 2>&1 | tee -a "${LOG_FILE}" > /dev/null
+        local rc="${pipestatus[1]}"
     fi
-    local rc="${pipestatus[1]}"
 
     sleep 0.3
     kill "$tail_pid" 2>/dev/null || true
