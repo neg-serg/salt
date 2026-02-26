@@ -1,6 +1,4 @@
-#!/usr/bin/env bash
-# shellcheck shell=bash
-# shellcheck disable=SC2034,SC2294
+#!/usr/bin/env zsh
 
 # I'm a bonsai-making machine!
 
@@ -292,7 +290,7 @@ branch() {
   # check if the user is hitting q
   timeout=0.001
   [ $live = "false" ] && timeout=.0001
-  read -n 1 -t $timeout input
+  read -k 1 -t $timeout input
   [ "$input" = "q" ] && clean "quit"
 
   branches=$((branches + 1))
