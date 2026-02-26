@@ -1,3 +1,8 @@
+# P10k instant prompt — must be first, renders cached prompt before plugins load
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
 ZI_HOME="${XDG_CONFIG_HOME:-$HOME/.config}/zi"
 if [[ -d "$ZI_HOME/zmodules/zpmod/Src" ]]; then
   module_path+=("$ZI_HOME/zmodules/zpmod/Src")
@@ -20,29 +25,10 @@ zi ice depth'1' lucid
 zi light romkatv/zsh-defer
 typeset -f zsh-defer >/dev/null || zsh-defer() { "$@"; }
 
-# Oh-My-Posh prompt initialization (Cached)
-if command -v oh-my-posh >/dev/null 2>&1; then
-  omp_config="${XDG_CONFIG_HOME:-$HOME/.config}/zsh/neg.omp.json"
-  omp_cache="${XDG_CACHE_HOME:-$HOME/.cache}/oh-my-posh-init.zsh"
-
-  if [[ -r "$omp_config" ]]; then
-    local config_hash
-    config_hash=$(md5sum "$omp_config" 2>/dev/null | awk '{print $1}')
-    local cache_hash_file="${omp_cache}.md5"
-    local stored_hash
-    [[ -f "$cache_hash_file" ]] && stored_hash=$(<"$cache_hash_file")
-
-    if [[ ! -r "$omp_cache" || -z "$stored_hash" || "$config_hash" != "$stored_hash" ]]; then
-      oh-my-posh init zsh --config "$omp_config" --print > "$omp_cache"
-      # Fix: bare `exec {fd}< <(cmd) 2>/dev/null` permanently redirects shell stderr;
-      # wrap in { } so 2>/dev/null is scoped to the block, not the shell
-      sed -i 's/exec {_omp_stream_fd}< <(exec "${stream_cmd\[@\]}") 2>\/dev\/null/{ exec {_omp_stream_fd}< <(exec "${stream_cmd[@]}"); } 2>\/dev\/null/' "$omp_cache"
-      echo "$config_hash" > "$cache_hash_file"
-    fi
-    source "$omp_cache"
-    _omp_enable_streaming=1  # workaround: streaming: N in config not yet propagated by init (omp beta)
-  fi
-fi
+# Powerlevel10k prompt
+zi ice depth'1' lucid
+zi light romkatv/powerlevel10k
+[[ -r ~/.p10k.zsh ]] && source ~/.p10k.zsh
 
 # Utilities (deferred)
 zi ice depth'1' lucid wait'0'
@@ -75,5 +61,22 @@ _load_f_sy_h() {
 zsh-defer _load_f_sy_h
 
 [[ $NEOVIM_TERMINAL ]] && source "${ZDOTDIR}/08-neovim-cd.zsh"
+
+# Background-compile .zsh modules and lazyfuncs digest for faster subsequent startups
+zsh-defer -c '{
+  for f in ${ZDOTDIR}/*.zsh(N); do
+    [[ ! -f "${f}.zwc" || "$f" -nt "${f}.zwc" ]] && zcompile "$f"
+  done
+  local _lf=${ZDOTDIR}/lazyfuncs
+  local _zwc=${_lf}.zwc
+  local _stale=0
+  [[ ! -f "$_zwc" ]] && _stale=1
+  if (( !_stale )); then
+    for f in ${_lf}/*(N); do
+      [[ "$f" -nt "$_zwc" ]] && { _stale=1; break }
+    done
+  fi
+  (( _stale )) && zcompile "$_zwc" ${_lf}/*(N)
+}'
 
 # vim: ft=zsh:nowrap
