@@ -10,8 +10,8 @@ ShellRoot {
 	id: root
 
 	readonly property bool testMode: !Quickshell.env("GREETD_SOCK")
-	// cage kiosk compositor does not support ext-session-lock-v1;
-	// use wlr-layer-shell PanelWindow instead (cage supports it since 0.1.5)
+	// cage supports neither ext-session-lock-v1 nor wlr-layer-shell;
+	// fall back to a plain FloatingWindow (cage auto-fullscreens it)
 	readonly property bool useSessionLock: !testMode && Quickshell.env("GREETER_MODE") !== "cage"
 
 	GreeterContext {
@@ -51,26 +51,17 @@ ShellRoot {
 		}
 	}
 
-	// Panel mode: cage kiosk greeter or test preview (wlr-layer-shell)
-	PanelWindow {
-		id: panelWindow
+	// Cage mode: regular toplevel window (cage auto-fullscreens it).
+	// cage does not support wlr-layer-shell or ext-session-lock-v1,
+	// so a plain FloatingWindow is the only option.
+	FloatingWindow {
+		id: cageWindow
 		visible: !root.useSessionLock
 		color: "darkgreen"
 
-		WlrLayershell.layer: WlrLayer.Overlay
-		WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
-		WlrLayershell.namespace: "greeter"
-
-		anchors {
-			top: true
-			bottom: true
-			left: true
-			right: true
-		}
-
 		BackgroundImage {
 			anchors.fill: parent
-			screen: panelWindow.screen
+			screen: cageWindow.screen
 			slideAmount: 0
 		}
 
