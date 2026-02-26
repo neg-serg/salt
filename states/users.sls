@@ -42,13 +42,36 @@ sudo_nopasswd:
   file.managed:
     - name: /etc/sudoers.d/99-{{ user }}-nopasswd
     - contents: |
-        # Salt/paru/system management — passwordless
+        # Package management
         {{ user }} ALL=(ALL) NOPASSWD: /usr/bin/pacman, /usr/bin/paru
+
+        # Systemd control
         {{ user }} ALL=(ALL) NOPASSWD: /usr/bin/systemctl, /usr/bin/journalctl
-        {{ user }} ALL=(ALL) NOPASSWD: /usr/bin/mount, /usr/bin/umount, /usr/bin/btrfs
-        {{ user }} ALL=(ALL) NOPASSWD: {{ home }}/src/salt/.venv/bin/python3, {{ home }}/src/salt/scripts/salt-daemon.py
-        {{ user }} ALL=(ALL) NOPASSWD: /usr/bin/ip, /usr/bin/resolvectl, /usr/bin/udevadm
+        {{ user }} ALL=(ALL) NOPASSWD: /usr/bin/localectl, /usr/bin/timedatectl, /usr/bin/hostnamectl
+        {{ user }} ALL=(ALL) NOPASSWD: /usr/bin/loginctl, /usr/bin/networkctl, /usr/bin/machinectl, /usr/bin/bootctl
+
+        # Storage and filesystems
+        {{ user }} ALL=(ALL) NOPASSWD: /usr/bin/mount, /usr/bin/umount, /usr/bin/btrfs, /usr/bin/snapper
+
+        # Network and VPN
+        {{ user }} ALL=(ALL) NOPASSWD: /usr/bin/ip, /usr/bin/resolvectl, /usr/bin/firewall-cmd
+        {{ user }} ALL=(ALL) NOPASSWD: /usr/local/bin/awg, /usr/local/bin/amneziawg-go
+        {{ user }} ALL=(ALL) NOPASSWD: /usr/bin/wg, /usr/bin/wg-quick
+
+        # Kernel and hardware
+        {{ user }} ALL=(ALL) NOPASSWD: /usr/bin/modprobe, /usr/bin/sysctl, /usr/bin/udevadm, /usr/bin/rfkill
+
+        # File operations
+        {{ user }} ALL=(ALL) NOPASSWD: /usr/bin/chmod, /usr/bin/chown, /usr/bin/etckeeper
+
+        # Containers
         {{ user }} ALL=(ALL) NOPASSWD: /usr/bin/podman
+
+        # Monitoring and diagnostics
+        {{ user }} ALL=(ALL) NOPASSWD: /usr/bin/iotop, /usr/bin/lsof, /usr/bin/kmon
+
+        # Salt
+        {{ user }} ALL=(ALL) NOPASSWD: {{ home }}/src/salt/.venv/bin/python3, {{ home }}/src/salt/scripts/salt-daemon.py
     - user: root
     - group: root
     - mode: '0440'
