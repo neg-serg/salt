@@ -8,6 +8,7 @@ export QT_QPA_PLATFORM=wayland
 {% if greetd_scale > 1 %}
 export QT_SCALE_FACTOR={{ greetd_scale }}
 {% endif %}
+export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
 export XCURSOR_THEME={{ cursor_theme }}
 export XCURSOR_SIZE={{ cursor_size }}
 export XKB_DEFAULT_LAYOUT=us,ru
