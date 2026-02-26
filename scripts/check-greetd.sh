@@ -21,7 +21,7 @@ section() { echo -e "\n${BOLD}── $1 ──${NC}"; }
 # --- Packages ---
 section "Packages"
 
-for pkg in greetd quickshell; do
+for pkg in greetd cage quickshell; do
     ver=$(pacman -Q "$pkg" 2>/dev/null | awk '{print $2}')
     if [ -n "$ver" ]; then
         ok "$pkg $ver installed"
@@ -33,7 +33,7 @@ done
 # --- Binaries ---
 section "Binaries"
 
-for bin in greetd agreety qs start-hyprland Hyprland; do
+for bin in greetd agreety qs cage; do
     path=$(command -v "$bin" 2>/dev/null)
     if [ -n "$path" ]; then
         ok "$bin → $path"
@@ -45,7 +45,7 @@ done
 # --- Config files ---
 section "Config Files (/etc/greetd/)"
 
-for f in config.toml hyprland-greeter.conf session-wrapper; do
+for f in config.toml greeter-wrapper session-wrapper; do
     fp="/etc/greetd/$f"
     if [ -f "$fp" ]; then
         ok "$fp exists"
@@ -54,13 +54,15 @@ for f in config.toml hyprland-greeter.conf session-wrapper; do
     fi
 done
 
-if [ -f /etc/greetd/session-wrapper ]; then
-    if [ -x /etc/greetd/session-wrapper ]; then
-        ok "session-wrapper is executable"
-    else
-        fail "session-wrapper is NOT executable"
+for wrapper in greeter-wrapper session-wrapper; do
+    if [ -f "/etc/greetd/$wrapper" ]; then
+        if [ -x "/etc/greetd/$wrapper" ]; then
+            ok "$wrapper is executable"
+        else
+            fail "$wrapper is NOT executable"
+        fi
     fi
-fi
+done
 
 # --- Quickshell greeter QML ---
 section "Quickshell Greeter"

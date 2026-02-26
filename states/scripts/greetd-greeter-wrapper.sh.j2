@@ -1,0 +1,17 @@
+#!/bin/sh
+# Greeter wrapper: runs quickshell greeter inside cage kiosk compositor.
+# cage (wlroots-based) handles SIGTERM cleanly — no DRM workarounds needed,
+# unlike Hyprland's aquamarine which has a 5-second modeset timeout.
+
+export GREETER_MODE=cage
+export QT_QPA_PLATFORM=wayland
+{% if host.greetd_scale > 1 %}
+export QT_SCALE_FACTOR={{ host.greetd_scale }}
+{% endif %}
+export XCURSOR_THEME={{ host.cursor_theme }}
+export XCURSOR_SIZE={{ host.cursor_size }}
+export XKB_DEFAULT_LAYOUT=us,ru
+export XKB_DEFAULT_OPTIONS=grp:alt_shift_toggle
+
+ulimit -c 0
+exec cage -s -- qs -p {{ home }}/.config/quickshell/greeter/greeter.qml

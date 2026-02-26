@@ -1,9 +1,10 @@
 {% from '_imports.jinja' import host, user, home %}
 {% from '_macros_pkg.jinja' import pacman_install %}
 {% from '_macros_service.jinja' import service_stopped %}
-# greetd display manager: replace sddm with quickshell greeter
+# greetd display manager: cage kiosk compositor + quickshell greeter
 
 {{ pacman_install('greetd', 'greetd') }}
+{{ pacman_install('cage', 'cage') }}
 
 {{ service_stopped('sddm_stopped', 'sddm') }}
 
@@ -31,21 +32,11 @@ greetd_main_config:
     - require:
       - file: greetd_config_dir
 
-greetd_hyprland_config:
-  file.managed:
-    - name: /etc/greetd/hyprland-greeter.conf
-    - source: salt://configs/greetd-hyprland.conf.j2
-    - template: jinja
-    - user: root
-    - group: root
-    - mode: '0644'
-    - require:
-      - file: greetd_config_dir
-
 greetd_greeter_wrapper:
   file.managed:
     - name: /etc/greetd/greeter-wrapper
-    - source: salt://scripts/greetd-greeter-wrapper.sh
+    - source: salt://scripts/greetd-greeter-wrapper.sh.j2
+    - template: jinja
     - user: root
     - group: root
     - mode: '0755'
@@ -85,6 +76,10 @@ greetd_cleanup_pacnew:
 greetd_cleanup_regreet:
   file.absent:
     - name: /etc/greetd/regreet.toml
+
+greetd_cleanup_hyprland:
+  file.absent:
+    - name: /etc/greetd/hyprland-greeter.conf
 
 greetd_enabled:
   service.enabled:
