@@ -167,7 +167,7 @@ if [ $flag_m = true ]; then
 
   # get number of lines in the message
   messageLineCount=0
-  for line in $message; do
+  for line in ${=message}; do
     messageLineCount=$((messageLineCount + 1))
   done
 
@@ -175,7 +175,7 @@ if [ $flag_m = true ]; then
 
   # put lines of message into a grid
   index=$messageOffset
-  for line in $message; do
+  for line in ${=message}; do
     gridMessage[$index]="$line"
     index=$((index + 1))
   done
@@ -223,13 +223,13 @@ esac
 
 # get base height
 baseHeight=0
-for line in $art; do
+for line in ${=art}; do
   baseHeight=$((baseHeight + 1))
 done
 
 # add spaces before base so that it's in the middle of the terminal
 iter=1
-for line in $art; do
+for line in ${=art}; do
   filler=''
   for ((i = 0; i < $(((cols / 2) - width)); i++)); do
     filler+=" "
