@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 # Fix DXVK resolution detection for all Proton prefixes.
 # Ensures games properly enumerate all available display modes.
 # Issue: DXVK sometimes reports only a subset of resolutions to games.

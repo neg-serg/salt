@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 # Auto-generate /etc/fancontrol from detected hwmon devices.
 # Discovers nct6775/nct6799 (motherboard) and optionally amdgpu PWM channels,
 # then writes a fancontrol config for all active fans.

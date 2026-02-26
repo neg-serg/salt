@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 # Install all user packages on CachyOS after bootstrap
 # Run as root after first boot (or from arch-chroot)
 #
@@ -473,7 +473,7 @@ AUR_PKGS=(
 # ===================================================================
 # Packages with no official/AUR equivalent, built from local PKGBUILDs.
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="${0:A:h}"
 SALT_DIR="$(dirname "$SCRIPT_DIR")"
 PKGBUILD_DIR="${SALT_DIR}/build/pkgbuilds"
 

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env zsh
 set -euo pipefail
 
 # Boot CachyOS rootfs in a QEMU VM to verify networking and services.
