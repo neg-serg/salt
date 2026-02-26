@@ -671,6 +671,63 @@ def check_data_integrity():
     return errors
 
 
+# salt:// paths in string literals (handles both 'salt://...' and "salt://...")
+_SALT_URI_RE = re.compile(r"""salt://([^'"\s}]+)""")
+
+# file_roots search order (relative to project root)
+_FILE_ROOTS = ["states", "."]
+
+
+def check_salt_uri_refs(sls_files, jinja_files, data_files=None):
+    """Validate that salt:// references point to existing files.
+
+    Checks .sls, .jinja, and data YAML files. Resolves paths using the same
+    file_roots order as the Salt minion config (states/, then project root).
+    Skips paths containing Jinja expressions ({{ ... }}).
+    """
+    errors = 0
+    seen = set()
+    all_files = sls_files + jinja_files + (data_files or [])
+
+    for path in all_files:
+        with open(path) as fh:
+            in_comment = False
+            for lineno, line in enumerate(fh, 1):
+                # Track Jinja block comments {# ... #}
+                if "{#" in line:
+                    in_comment = True
+                if "#}" in line:
+                    in_comment = False
+                    continue
+                if in_comment:
+                    continue
+                # Skip YAML/shell comments
+                if line.lstrip().startswith("#"):
+                    continue
+
+                for m in _SALT_URI_RE.finditer(line):
+                    ref = m.group(1)
+                    # Skip paths with unresolved Jinja expressions
+                    if "{{" in ref or "{%" in ref or "}}" in ref:
+                        continue
+                    # Deduplicate (same ref from macro docs, etc.)
+                    key = (path, ref)
+                    if key in seen:
+                        continue
+                    seen.add(key)
+
+                    # Check file_roots in order
+                    found = any(os.path.exists(os.path.join(root, ref)) for root in _FILE_ROOTS)
+                    if not found:
+                        print(
+                            f"\033[31mSalt URI: {path}:{lineno}:"
+                            f" salt://{ref} — file not found\033[0m"
+                        )
+                        errors += 1
+
+    return errors
+
+
 def main():
     sls_files = sorted(glob.glob("states/*.sls"))
     jinja_files = sorted(glob.glob("states/*.jinja"))
@@ -734,6 +791,12 @@ def main():
     network_warnings = check_network_resilience(rendered_docs)
     total_warnings += network_warnings
     print(f"Network resilience: {network_warnings} warnings")
+
+    # 11. Salt URI references (salt:// paths point to existing files)
+    data_yamls = sorted(glob.glob("states/data/*.yaml"))
+    uri_errors = check_salt_uri_refs(sls_files, jinja_files, data_yamls)
+    total_errors += uri_errors
+    print(f"Salt URI refs: {uri_errors} errors")
 
     sys.exit(1 if total_errors else 0)
 
