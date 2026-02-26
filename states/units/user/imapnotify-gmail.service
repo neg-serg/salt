@@ -6,5 +6,12 @@ Wants=network-online.target
 ExecStart=/usr/bin/goimapnotify -conf %h/.config/imapnotify/gmail.json
 Restart=on-failure
 RestartSec=30
+NoNewPrivileges=true
+ProtectSystem=strict
+PrivateTmp=yes
+PrivateDevices=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+LockPersonality=yes
 [Install]
 WantedBy=default.target

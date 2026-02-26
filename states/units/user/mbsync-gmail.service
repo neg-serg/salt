@@ -5,5 +5,12 @@ Wants=network-online.target
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/mbsync -c %h/.config/mbsync/mbsyncrc gmail
+NoNewPrivileges=true
+ProtectSystem=strict
+PrivateTmp=yes
+PrivateDevices=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+LockPersonality=yes
 [Install]
 WantedBy=default.target

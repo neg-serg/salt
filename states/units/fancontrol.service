@@ -9,6 +9,12 @@ Type=simple
 ExecStart=/usr/sbin/fancontrol
 Restart=on-failure
 RestartSec=5
+NoNewPrivileges=true
+ProtectHome=yes
+PrivateTmp=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+LockPersonality=yes
 
 [Install]
 WantedBy=multi-user.target
