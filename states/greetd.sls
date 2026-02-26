@@ -5,6 +5,7 @@
 
 {{ pacman_install('greetd', 'greetd') }}
 {{ pacman_install('cage', 'cage') }}
+{{ pacman_install('wlr_randr', 'wlr-randr') }}
 
 {{ service_stopped('sddm_stopped', 'sddm') }}
 
@@ -42,6 +43,8 @@ greetd_greeter_wrapper:
         cursor_theme: {{ host.cursor_theme }}
         cursor_size: {{ host.cursor_size }}
         home: {{ home }}
+        primary_output: {{ host.primary_output }}
+        display: {{ host.display }}
     - user: root
     - group: root
     - mode: '0755'
