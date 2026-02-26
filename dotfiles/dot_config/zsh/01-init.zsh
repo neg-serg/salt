@@ -62,9 +62,14 @@ _exists nvim && {
 }
 
 
-# Initialize zoxide (smarter cd) if available
+# Initialize zoxide (smarter cd) if available — cached to avoid fork on every startup
 if (( $+commands[zoxide] )); then
-  eval "$(zoxide init zsh --no-cmd --hook prompt)"
+  local _zoxide_cache="$ZSH_CACHE_DIR/zoxide-init.zsh"
+  local _zoxide_bin=${commands[zoxide]}
+  if [[ ! -r "$_zoxide_cache" || "$_zoxide_bin" -nt "$_zoxide_cache" ]]; then
+    zoxide init zsh --no-cmd --hook prompt > "$_zoxide_cache"
+  fi
+  source "$_zoxide_cache"
   alias z='__zoxide_z'
 fi
 
@@ -111,7 +116,6 @@ autoload -Uz chpwd
 autoload -Uz zcompare
 autoload -Uz h
 zle_highlight=(region:bg=228 paste:none)
-zsh-defer _zpcompinit_custom
 zsh-defer dircolors_init
 
 # vim: ft=zsh:nowrap

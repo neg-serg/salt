@@ -3,8 +3,10 @@ THEME_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/f-sy-h/current_theme.zsh"
 typeset -gA FAST_HIGHLIGHT_STYLES
 FAST_THEME_NAME="neg"
 
-if [ -f "$THEME_FILE" ] && tail -n1 "$THEME_FILE" | grep -Fxq "$MAGIC"; then
-    return 0 2>/dev/null || exit 0
+if [[ -f "$THEME_FILE" ]]; then
+    local _last_line
+    _last_line="${"$(<"$THEME_FILE")"##*$'\n'}"
+    [[ "$_last_line" == "$MAGIC" ]] && { return 0 2>/dev/null || exit 0; }
 fi
 
 typeset -gA FILE_EXTENSION_STYLES # Global associative array for file extension styles
