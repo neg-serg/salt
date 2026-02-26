@@ -4,7 +4,7 @@
 # Usage:
 #   sudo ./scripts/deploy-cachyos.sh /dev/nvme0n1 [ROOTFS_DIR]
 #
-# Default rootfs: /var/mnt/one/cachyos-root
+# Default rootfs: /mnt/one/cachyos-root
 #
 # Layout:
 #   /dev/nvmeXn1p1  4 GiB  FAT32 (ESP)  → /boot
@@ -17,7 +17,7 @@
 set -euo pipefail
 
 DISK="${1:-}"
-ROOTFS="${2:-/var/mnt/one/cachyos-root}"
+ROOTFS="${2:-/mnt/one/cachyos-root}"
 MNT="/mnt/deploy"
 LV_PERCENT="90"
 
