@@ -42,22 +42,22 @@ menu:
     submenu:
       - key: "d"
         desc: Teardown
-        cmd: hypr-scratch-toggle teardown
+        cmd: pypr toggle teardown
       - key: "e"
         desc: IM
-        cmd: hypr-scratch-toggle im
+        cmd: pypr toggle im
       - key: "f"
         desc: Music
-        cmd: hypr-scratch-toggle music
+        cmd: pypr toggle music
       - key: "t"
         desc: Torrents
-        cmd: hypr-scratch-toggle torrment
+        cmd: pypr toggle torrment
       - key: "u"
         desc: VPN
-        cmd: hypr-scratch-toggle vpn
+        cmd: pypr toggle vpn
       - key: "m"
         desc: Mixer
-        cmd: hypr-scratch-toggle mixer
+        cmd: pypr toggle mixer
 
   # --- Power ---
   - key: "p"
