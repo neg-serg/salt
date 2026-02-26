@@ -4,6 +4,7 @@
 Usage:
     update-tools.py                  # list all tools with install status
     update-tools.py --check          # check latest GitHub release tags vs pinned
+    update-tools.py --check --ci     # same, but markdown output + exit 1 if updates
     update-tools.py --update name..  # update specific tools
     update-tools.py --update --all   # update all tools
 """
@@ -95,7 +96,11 @@ def state_id(name):
 def fetch_latest_tag(repo):
     """Fetch latest release tag from GitHub API."""
     url = f"https://api.github.com/repos/{repo}/releases/latest"
-    req = urllib.request.Request(url, headers={"Accept": "application/vnd.github.v3+json"})
+    headers = {"Accept": "application/vnd.github.v3+json"}
+    token = os.environ.get("GITHUB_TOKEN")
+    if token:
+        headers["Authorization"] = f"token {token}"
+    req = urllib.request.Request(url, headers=headers)
     try:
         with urllib.request.urlopen(req, timeout=10) as resp:
             data = json.loads(resp.read())
@@ -154,26 +159,43 @@ def cmd_list(tool_map):
             print(f"    {mark} {name}")
 
 
-def cmd_check():
-    """Check latest GitHub versions against pinned versions.yaml."""
+def cmd_check(ci=False):
+    """Check latest GitHub versions against pinned versions.yaml.
+
+    When ci=True, outputs a markdown table of outdated tools and returns
+    exit code 1 if any updates are available.
+    """
     versions = load_versions()
 
-    print("Checking pinned versions against latest GitHub releases...\n")
+    results = []
     for key, repo in sorted(GITHUB_REPOS.items()):
         pinned = versions.get(key, "?")
         latest = fetch_latest_tag(repo)
-        # Normalize: strip leading 'v' for comparison
         latest_clean = latest.lstrip("v") if latest != "?" else "?"
         pinned_clean = str(pinned).lstrip("v")
+        results.append((key, repo, pinned_clean, latest_clean, latest))
 
+    if ci:
+        outdated = [(k, r, p, lc, tag) for k, r, p, lc, tag in results if lc not in ("?", p)]
+        if not outdated:
+            print("All pinned versions are up to date.")
+            return 0
+        print("| Tool | Pinned | Latest | Repo |")
+        print("|------|--------|--------|------|")
+        for key, repo, pinned, _, tag in outdated:
+            print(f"| {key} | {pinned} | {tag} | {repo} |")
+        return 1
+
+    print("Checking pinned versions against latest GitHub releases...\n")
+    for key, repo, pinned_clean, latest_clean, latest in results:
         if latest_clean == "?":
             status = "\033[33m?\033[0m"
         elif latest_clean == pinned_clean:
             status = "\033[32m=\033[0m"
         else:
             status = "\033[31m!\033[0m"
-
-        print(f"  {status} {key:20s} pinned: {str(pinned):12s} latest: {latest:12s} ({repo})")
+        print(f"  {status} {key:20s} pinned: {pinned_clean:12s} latest: {latest:12s} ({repo})")
+    return 0
 
 
 def update_with_salt(name, info):
@@ -286,11 +308,15 @@ def main():
         epilog="Examples:\n"
         "  %(prog)s                    List all tools\n"
         "  %(prog)s --check            Check pinned vs latest GitHub versions\n"
+        "  %(prog)s --check --ci       Markdown output, exit 1 if updates\n"
         "  %(prog)s --update sops eza  Update specific tools\n"
         "  %(prog)s --update --all     Update everything\n",
     )
     parser.add_argument(
         "--check", action="store_true", help="check pinned vs latest GitHub versions"
+    )
+    parser.add_argument(
+        "--ci", action="store_true", help="CI mode: markdown output, exit 1 if updates available"
     )
     parser.add_argument("--update", nargs="*", metavar="TOOL", help="update tools (or --all)")
     parser.add_argument("--all", action="store_true", help="update all tools (with --update)")
@@ -301,7 +327,7 @@ def main():
     tool_map = build_tool_map(tools)
 
     if args.check:
-        cmd_check()
+        sys.exit(cmd_check(ci=args.ci))
     elif args.update is not None:
         if args.all:
             names = sorted(tool_map.keys())
