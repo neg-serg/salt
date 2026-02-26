@@ -63,7 +63,7 @@ pl_fzf() {
     dir="${~dir}"
     need fzf
     local sel
-    sel=$(find_candidates "$dir" "$2" | fzf --multi --prompt '⟬vid⟭ ❯>' || true)
+    sel=$(find_candidates "$dir" "$2" | fzf --multi --prompt '⟬vid⟭ ❯' || true)
     [[ -z "${sel:-}" ]] && return 0
     print -r -- "$sel" | wl-copy || true
     # Build absolute paths

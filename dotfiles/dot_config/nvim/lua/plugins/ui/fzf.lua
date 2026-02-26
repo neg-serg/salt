@@ -64,7 +64,7 @@ return {
       },
       fzf_opts = {
         ['--layout'] = 'reverse-list',
-        ['--prompt'] = '❯> ',
+        ['--prompt'] = '❯ ',
         ['--pointer'] = '•',
         ['--marker'] = '•',
         ['--separator'] = '─',
