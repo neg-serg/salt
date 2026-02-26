@@ -514,6 +514,91 @@ def check_dangling_includes(sls_files):
     return errors
 
 
+# Patterns indicating the cmd.run command accesses the network
+_NETWORK_CMD_RE = re.compile(
+    r"""
+    \bcurl\s          # curl downloads
+    | \bwget\s        # wget downloads
+    | \bgit\s+clone\b # git clone
+    | \bgit\s+pull\b  # git pull
+    | \bpacman\s+-S\b # pacman install (not -Q queries)
+    | \bparu\s        # AUR helper (always downloads)
+    | \bmakepkg\b     # builds from AUR (downloads sources)
+    | \bcargo\s+install\b
+    | \bpip\s+install\b
+    | \bnpm\s+install\b
+    """,
+    re.VERBOSE,
+)
+# Curl to localhost/127.0.0.1 is a health check, not a network download
+_LOCALHOST_CURL_RE = re.compile(r"\bcurl\s.*\b(127\.0\.0\.1|localhost)\b")
+
+
+def check_network_resilience(rendered_docs):
+    """Check that cmd.run states with network commands have retry and parallel.
+
+    Reports warnings (not errors) since some states intentionally omit parallel
+    due to require chains or CPU-heavy builds.
+    """
+    warnings = 0
+
+    for filepath, docs in rendered_docs.items():
+        for doc in docs:
+            if not doc or not isinstance(doc, dict):
+                continue
+            for state_id, state_body in doc.items():
+                if state_id in _SALT_DIRECTIVES:
+                    continue
+                if not isinstance(state_body, dict):
+                    continue
+                for mod_func, directives in state_body.items():
+                    if mod_func not in ("cmd.run", "cmd.script"):
+                        continue
+                    if not isinstance(directives, list):
+                        continue
+
+                    cmd_text = ""
+                    has_retry = False
+                    has_parallel = False
+                    has_require = False
+
+                    for d in directives:
+                        if not isinstance(d, dict):
+                            continue
+                        if "name" in d:
+                            cmd_text = str(d["name"])
+                        if "retry" in d:
+                            has_retry = True
+                        if "parallel" in d:
+                            has_parallel = True
+                        if "require" in d:
+                            has_require = True
+
+                    if not _NETWORK_CMD_RE.search(cmd_text):
+                        continue
+                    # Exclude localhost health checks (curl to 127.0.0.1/localhost)
+                    if _LOCALHOST_CURL_RE.search(cmd_text) and not re.search(
+                        r"\b(wget|git\s+clone|pacman\s+-S|paru|makepkg)\b", cmd_text
+                    ):
+                        continue
+
+                    if not has_retry:
+                        print(
+                            f"\033[33mNetwork: {filepath}:"
+                            f" '{state_id}' — network command without retry:\033[0m"
+                        )
+                        warnings += 1
+                    if not has_parallel and not has_require:
+                        print(
+                            f"\033[33mNetwork: {filepath}:"
+                            f" '{state_id}' — network command without"
+                            f" parallel: True (and no require: chain)\033[0m"
+                        )
+                        warnings += 1
+
+    return warnings
+
+
 def check_data_integrity():
     """Validate YAML data files: required keys, version cross-references."""
     errors = 0
@@ -644,6 +729,11 @@ def main():
     data_errors = check_data_integrity()
     total_errors += data_errors
     print(f"Data integrity: {data_errors} errors")
+
+    # 10. Network resilience (retry + parallel on network commands)
+    network_warnings = check_network_resilience(rendered_docs)
+    total_warnings += network_warnings
+    print(f"Network resilience: {network_warnings} warnings")
 
     sys.exit(1 if total_errors else 0)
 
