@@ -50,12 +50,13 @@ modern_steam_skin:
   cmd.run:
     - name: |
         set -eo pipefail
-        TMPDIR=$(mktemp -d)
-        curl -fsSL https://github.com/SleepDaemon/Modern-Steam/releases/download/v{{ ver.get('modern_steam', '') }}/SteamDarkMode.7z -o "$TMPDIR/SteamDarkMode.7z"
-        7z x -aoa "$TMPDIR/SteamDarkMode.7z" -o{{ home }}/.local/share/Steam/skins/
-        rm -rf "$TMPDIR"
+        _td=$(mktemp -d)
+        trap 'rm -rf "$_td"' EXIT
+        curl -fsSL https://github.com/SleepDaemon/Modern-Steam/releases/download/v{{ ver.get('modern_steam', '') }}/SteamDarkMode.7z -o "$_td/SteamDarkMode.7z"
+        7z x -aoa "$_td/SteamDarkMode.7z" -o{{ home }}/.local/share/Steam/skins/
     - runas: {{ user }}
     - shell: /bin/bash
+    - timeout: 600
     - creates: {{ home }}/.local/share/Steam/skins/steamui
     - retry:
         attempts: {{ retry_attempts }}
