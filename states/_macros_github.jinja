@@ -13,14 +13,14 @@ install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: |
         set -eo pipefail
-        TMPDIR=$(mktemp -d)
-        curl -fsSL '{{ url }}' -o "$TMPDIR/archive.tar.gz"
+        _td=$(mktemp -d)
+        trap 'rm -rf "$_td"' EXIT
+        curl -fsSL '{{ url }}' -o "$_td/archive.tar.gz"
 {%- if hash %}
-        echo '{{ hash }}  '"$TMPDIR/archive.tar.gz" | sha256sum -c --strict
+        echo '{{ hash }}  '"$_td/archive.tar.gz" | sha256sum -c --strict
 {%- endif %}
-        tar -xzf "$TMPDIR/archive.tar.gz" -C "$TMPDIR"
-        find "$TMPDIR" -name '{{ name }}' -type f -exec install -m 0755 {} ~/.local/bin/{{ name }} \;
-        rm -rf "$TMPDIR"
+        tar -xzf "$_td/archive.tar.gz" -C "$_td"
+        find "$_td" -name '{{ name }}' -type f -exec install -m 0755 {} ~/.local/bin/{{ name }} \;
 {%- if version %}
         mkdir -p {{ _ver_dir }} && echo '{{ version }}' > {{ _ver_dir }}/{{ name }}
 {%- endif %}
@@ -50,27 +50,27 @@ install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: |
         set -eo pipefail
+        _td=$(mktemp -d)
+        trap 'rm -rf "$_td"' EXIT
 {%- if tag %}
         TAG="{{ tag }}"
 {%- else %}
         TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ repo }}/releases/latest | rg -oP '[^/]+$')
 {%- endif %}
 {%- if format == 'zip' %}
-        curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o /tmp/{{ name }}.zip
+        curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o "$_td/archive.zip"
 {%- if hash %}
-        echo '{{ hash }}  /tmp/{{ name }}.zip' | sha256sum -c --strict
+        echo '{{ hash }}  '"$_td/archive.zip" | sha256sum -c --strict
 {%- endif %}
-        unzip -o /tmp/{{ name }}.zip -d /tmp
-        install -m 0755 /tmp/{{ source_bin }} {{ dest }}/{{ name }}
-        rm -f /tmp/{{ name }}.zip /tmp/{{ source_bin }}
+        unzip -o "$_td/archive.zip" -d "$_td"
+        install -m 0755 "$_td/{{ source_bin }}" {{ dest }}/{{ name }}
 {%- elif format == 'tar.gz' %}
-        curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o /tmp/{{ name }}.tar.gz
+        curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o "$_td/archive.tar.gz"
 {%- if hash %}
-        echo '{{ hash }}  /tmp/{{ name }}.tar.gz' | sha256sum -c --strict
+        echo '{{ hash }}  '"$_td/archive.tar.gz" | sha256sum -c --strict
 {%- endif %}
-        tar -xzf /tmp/{{ name }}.tar.gz -C /tmp
-        find /tmp -maxdepth 3 -name '{{ source_bin }}' -type f -exec install -m 0755 {} {{ dest }}/{{ name }} \;
-        rm -rf /tmp/{{ name }}.tar.gz /tmp/{{ source_bin }}*
+        tar -xzf "$_td/archive.tar.gz" -C "$_td"
+        find "$_td" -maxdepth 3 -name '{{ source_bin }}' -type f -exec install -m 0755 {} {{ dest }}/{{ name }} \;
 {%- endif %}
 {%- if version %}
         mkdir -p {{ _sys_ver_dir }} && echo '{{ version }}' > {{ _sys_ver_dir }}/{{ name }}
@@ -108,12 +108,13 @@ install_{{ name | replace('-', '_') }}:
         TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ repo }}/releases/latest | rg -oP '[^/]+$')
 {%- endif %}
 {%- if format == 'zip' %}
-        curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o /tmp/{{ name }}.zip
+        _td=$(mktemp -d)
+        trap 'rm -rf "$_td"' EXIT
+        curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o "$_td/archive.zip"
 {%- if hash %}
-        echo '{{ hash }}  /tmp/{{ name }}.zip' | sha256sum -c --strict
+        echo '{{ hash }}  '"$_td/archive.zip" | sha256sum -c --strict
 {%- endif %}
-        unzip -qo /tmp/{{ name }}.zip -d {{ dest }}
-        rm -f /tmp/{{ name }}.zip
+        unzip -qo "$_td/archive.zip" -d {{ dest }}
 {%- else %}
         curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o '{{ dest }}/{{ name }}'
 {%- if hash %}

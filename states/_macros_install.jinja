@@ -116,28 +116,29 @@ install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: |
         set -eo pipefail
+        _td=$(mktemp -d)
+        trap 'rm -rf "$_td"' EXIT
 {%- if fetch_tag %}
         TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ repo_path }}/releases/latest | rg -oP '[^/]+$')
 {%- if strip_v %}
         VER=${TAG#v}
 {%- endif %}
 {%- endif %}
-        curl -fsSL "{{ url }}" -o /tmp/{{ name }}.{{ archive_ext }}
+        curl -fsSL "{{ url }}" -o "$_td/archive.{{ archive_ext }}"
 {%- if hash %}
-        echo '{{ hash }}  /tmp/{{ name }}.{{ archive_ext }}' | sha256sum -c --strict
+        echo '{{ hash }}  '"$_td/archive.{{ archive_ext }}" | sha256sum -c --strict
 {%- endif %}
 {%- if dest %}
         mkdir -p {{ dest }}
-        tar -x{{ ext_flag }}f /tmp/{{ name }}.{{ archive_ext }} -C {{ dest }}{{ ' --strip-components=' ~ strip_components if strip_components }}
+        tar -x{{ ext_flag }}f "$_td/archive.{{ archive_ext }}" -C {{ dest }}{{ ' --strip-components=' ~ strip_components if strip_components }}
 {%- else %}
-        mkdir -p /tmp/{{ name }}_extracted
-        tar -x{{ ext_flag }}f /tmp/{{ name }}.{{ archive_ext }} -C /tmp/{{ name }}_extracted
+        tar -x{{ ext_flag }}f "$_td/archive.{{ archive_ext }}" -C "$_td"
 {%- if binaries %}
 {% for b in binaries %}
-        install -m 0755 /tmp/{{ name }}_extracted/{{ binary_pattern.replace('*', b) if '*' in binary_pattern else binary_pattern }}/{{ b }} {{ target_dir }}/ 2>/dev/null || install -m 0755 /tmp/{{ name }}_extracted/{{ binary_pattern.rsplit('/', 1)[0] }}/{{ b }} {{ target_dir }}/
+        install -m 0755 "$_td"/{{ binary_pattern.replace('*', b) if '*' in binary_pattern else binary_pattern }}/{{ b }} {{ target_dir }}/ 2>/dev/null || install -m 0755 "$_td"/{{ binary_pattern.rsplit('/', 1)[0] }}/{{ b }} {{ target_dir }}/
 {%- endfor %}
 {%- else %}
-        find /tmp/{{ name }}_extracted -maxdepth 3 -path "*{{ binary_pattern }}*" -type f ! -name "*.tar*" -exec install -m 0755 {} {{ target_dir }}/{{ bin or binary_pattern.rsplit('/', 1)[-1] }} \;
+        find "$_td" -maxdepth 3 -path "*{{ binary_pattern }}*" -type f ! -name "*.tar*" -exec install -m 0755 {} {{ target_dir }}/{{ bin or binary_pattern.rsplit('/', 1)[-1] }} \;
 {%- endif %}
 {%- if chmod %}
 {%- for b in (binaries or [bin or binary_pattern.rsplit('/', 1)[-1]]) %}
@@ -145,7 +146,6 @@ install_{{ name | replace('-', '_') }}:
 {%- endfor %}
 {%- endif %}
 {%- endif %}
-        rm -rf /tmp/{{ name }}.{{ archive_ext }} /tmp/{{ name }}_extracted /tmp/{{ name }}-* /tmp/{{ name }}
 {%- if version %}
         mkdir -p {{ _vd }} && echo '{{ version }}' > {{ _vd }}/{{ name }}
 {%- endif %}
@@ -187,26 +187,28 @@ install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: |
         set -eo pipefail
-        curl -fsSL "{{ url }}" -o /tmp/{{ name }}.zip
+        _td=$(mktemp -d)
+        trap 'rm -rf "$_td"' EXIT
+        curl -fsSL "{{ url }}" -o "$_td/archive.zip"
 {%- if hash %}
-        echo '{{ hash }}  /tmp/{{ name }}.zip' | sha256sum -c --strict
+        echo '{{ hash }}  '"$_td/archive.zip" | sha256sum -c --strict
 {%- endif %}
 {%- if dest %}
         mkdir -p {{ dest }}
-        unzip -o /tmp/{{ name }}.zip -d {{ dest }}
+        unzip -o "$_td/archive.zip" -d {{ dest }}
 {%- if symlink %}
         ln -sf {{ dest }}/{{ symlink }} ~/.local/bin/{{ name }}
 {%- endif %}
 {%- else %}
-        unzip -o /tmp/{{ name }}.zip -d /tmp/{{ name }}_extracted
+        unzip -o "$_td/archive.zip" -d "$_td"
 {%- if binaries %}
 {%- for b in binaries %}
-        mv /tmp/{{ name }}_extracted/{{ binary_path }}/{{ b }} ~/.local/bin/
+        mv "$_td"/{{ binary_path }}/{{ b }} ~/.local/bin/
 {%- endfor %}
 {%- elif bin %}
-        mv /tmp/{{ name }}_extracted/{{ binary_path }} ~/.local/bin/{{ bin }}
+        mv "$_td"/{{ binary_path }} ~/.local/bin/{{ bin }}
 {%- else %}
-        mv /tmp/{{ name }}_extracted/{{ binary_path }} ~/.local/bin/{{ binary_path.rsplit('/', 1)[-1] }}
+        mv "$_td"/{{ binary_path }} ~/.local/bin/{{ binary_path.rsplit('/', 1)[-1] }}
 {%- endif %}
 {%- if chmod %}
 {%- for b in (binaries or [out_name]) %}
@@ -214,7 +216,6 @@ install_{{ name | replace('-', '_') }}:
 {%- endfor %}
 {%- endif %}
 {%- endif %}
-        rm -rf /tmp/{{ name }}.zip /tmp/{{ name }}_extracted
 {%- if version %}
         mkdir -p {{ _ver_dir }} && echo '{{ version }}' > {{ _ver_dir }}/{{ name }}
 {%- endif %}
@@ -273,13 +274,14 @@ install_{{ name }}:
   cmd.run:
     - name: |
         set -eo pipefail
-        curl -fsSL '{{ url }}' -o /tmp/{{ name }}.zip
+        _td=$(mktemp -d)
+        trap 'rm -rf "$_td"' EXIT
+        curl -fsSL '{{ url }}' -o "$_td/archive.zip"
 {%- if hash %}
-        echo '{{ hash }}  /tmp/{{ name }}.zip' | sha256sum -c --strict
+        echo '{{ hash }}  '"$_td/archive.zip" | sha256sum -c --strict
 {%- endif %}
-        unzip -o /tmp/{{ name }}.zip -d {{ fonts_dir }}/{{ subdir }}
+        unzip -o "$_td/archive.zip" -d {{ fonts_dir }}/{{ subdir }}
         fc-cache -f {{ fonts_dir }}/{{ subdir }}
-        rm -f /tmp/{{ name }}.zip
 {%- if version %}
         echo '{{ version }}' > {{ fonts_dir }}/{{ subdir }}/.salt-installed
 {%- else %}
@@ -316,12 +318,13 @@ install_{{ name | replace('-', '_') }}:
     - name: |
         set -eo pipefail
 {%- if items %}
-        git clone --depth=1 {{ repo }} /tmp/{{ name }}
+        _td=$(mktemp -d)
+        trap 'rm -rf "$_td"' EXIT
+        git clone --depth=1 {{ repo }} "$_td/repo"
         mkdir -p {{ dest }}
 {%- for item in items %}
-        cp -r /tmp/{{ name }}/{{ item }} {{ dest }}/
+        cp -r "$_td/repo"/{{ item }} {{ dest }}/
 {%- endfor %}
-        rm -rf /tmp/{{ name }}
 {%- else %}
         git clone --depth=1 {{ repo }} {{ dest }}
 {%- endif %}
