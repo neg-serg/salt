@@ -5,7 +5,7 @@
 # Usage:
 #   sudo ./scripts/bootstrap-cachyos.sh [TARGET_DIR]
 #
-# Default target: /var/mnt/one/cachyos-root
+# Default target: /mnt/one/cachyos-root
 #
 # After bootstrap, deploy to a Btrfs partition with the expected subvolume
 # layout (see deploy-cachyos.sh or the "Next steps" output).
@@ -19,7 +19,7 @@
 
 set -euo pipefail
 
-TARGET="${1:-/var/mnt/one/cachyos-root}"
+TARGET="${1:-/mnt/one/cachyos-root}"
 ARCH_IMAGE="docker.io/archlinux/archlinux:latest"
 
 # CachyOS GPG signing key — https://github.com/CachyOS/CachyOS-PKGBUILDS/wiki
@@ -52,7 +52,7 @@ PACKAGES=(
     # LVM (for /dev/main/sys)
     lvm2
 
-    # XFS support (for /var/mnt/zero, /var/mnt/one)
+    # XFS support (for /mnt/zero, /mnt/one)
     xfsprogs
 
     # Network

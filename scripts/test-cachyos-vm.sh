@@ -6,7 +6,7 @@ set -euo pipefail
 # Usage:
 #   sudo ./scripts/test-cachyos-vm.sh [ROOTFS_DIR]
 #
-# Default rootfs: /var/mnt/one/cachyos-root
+# Default rootfs: /mnt/one/cachyos-root
 # Creates a temporary qcow2 image, copies rootfs into it, boots with UEFI.
 # The VM gets a virtio NIC with user-mode networking (SLIRP) — DHCP auto.
 # SSH forwarded to host port 2222.
@@ -14,7 +14,7 @@ set -euo pipefail
 # Note: VM uses simple btrfs (no LVM) for quick testing.
 # Production deployment uses LVM — see docs/deploy-cachyos.md.
 
-ROOTFS="${1:-/var/mnt/one/cachyos-root}"
+ROOTFS="${1:-/mnt/one/cachyos-root}"
 VM_DIR="/tmp/cachyos-vm"
 DISK="${VM_DIR}/cachyos.qcow2"
 OVMF_CODE="/usr/share/edk2/ovmf/OVMF_CODE.fd"
