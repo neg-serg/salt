@@ -10,7 +10,6 @@ if [[ -d "$ZI_HOME/zmodules/zpmod/Src" ]]; then
 fi
 
 FAST_WORK_DIR=~/.config/f-sy-h
-source ~/.config/zsh/00-fsyh-parser.zsh
 
 if [[ -r "$ZI_HOME/bin/zi.zsh" ]]; then
   source "$ZI_HOME/bin/zi.zsh"
@@ -30,25 +29,24 @@ zi ice depth'1' lucid
 zi light romkatv/powerlevel10k
 [[ -r ~/.p10k.zsh ]] && source ~/.p10k.zsh
 
-# Utilities (deferred)
-zi ice depth'1' lucid wait'0'
+# Utilities (synchronous — used by 01-init.zsh for eval caching)
+zi ice depth'1' lucid
 zi light QuarticCat/zsh-smartcache
 
+source "${ZDOTDIR}/00-ulimits.zsh"
 source "${ZDOTDIR}/01-init.zsh"
 
-for file in {02-cmds,03-completion,04-bindings,04-fzf,05-git,05-neg-cd,07-hishtory,10-secrets}; do
+for file in {02-cmds,03-completion,04-bindings,04-fzf,05-git,05-neg-cd,06-aliae,07-hishtory,10-secrets}; do
   [[ -r "${ZDOTDIR}/$file.zsh" ]] && zsh-defer source "${ZDOTDIR}/$file.zsh"
 done
-
-## Load Aliae aliases after base command aliases to allow Aliae to override them
-if [[ -r "${ZDOTDIR}/06-aliae.zsh" ]]; then
-  zsh-defer source "${ZDOTDIR}/06-aliae.zsh"
-fi
 
 # Last-resort alias fixes
 if [[ -r "${ZDOTDIR}/99-fix-aliases.zsh" ]]; then
   zsh-defer source "${ZDOTDIR}/99-fix-aliases.zsh"
 fi
+
+# F-Sy-H theme parser (populates FAST_HIGHLIGHT_STYLES before F-Sy-H loads)
+zsh-defer source "${ZDOTDIR}/00-fsyh-parser.zsh"
 
 # F-Sy-H (must be loaded last to correctly wrap ZLE widgets)
 # We use zsh-defer to ensure it runs after all other widget-defining scripts

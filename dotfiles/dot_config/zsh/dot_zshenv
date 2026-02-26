@@ -7,17 +7,8 @@ set -a
 source "${HOME}/.config/environment.d/10-user.conf"
 set +a
 
-# --- GPG ---
-export GPG_TTY=$(tty)
-
 # --- Shell ---
 export ZDOTDIR="$HOME/.config/zsh"
-export WORDCHARS='*/?_-.[]~&;!#$%^(){}<>~` '
-export KEYTIMEOUT=10
-export REPORTTIME=60
-export ESCDELAY=1
-export HISTSIZE=100000
-export SAVEHIST=100000
 
 # --- Tools & Paths ---
 export MANWIDTH="80"
@@ -40,61 +31,7 @@ export GTK2_RC_FILES="$XDG_CONFIG_HOME/gtk-2.0/gtkrc"
 
 # --- Search Tools ---
 export FZF_DEFAULT_COMMAND="fd --type=f --hidden --exclude=.git"
-export FZF_DEFAULT_OPTS="\
---bind='alt-p:toggle-preview,alt-a:select-all,alt-s:toggle-sort' \
---bind='alt-d:change-prompt(Directories ❯ )+reload(fd . -t d)' \
---bind='alt-f:change-prompt(Files ❯ )+reload(fd . -t f)' \
---bind='ctrl-j:execute(v {+})+abort' \
---bind='ctrl-space:select-all' \
---bind='ctrl-t:accept' \
---bind='ctrl-v:execute(v {+})' \
---bind='ctrl-y:execute-silent(echo {+} | wl-copy)' \
---bind='tab:execute(handlr open {+})+abort' \
---ansi \
---layout=reverse \
---cycle \
---border=sharp \
---margin=0 \
---padding=0 \
---footer='[Alt-f] Files  [Alt-d] Dirs  [Alt-p] Preview  [Alt-s] Sort  [Tab] Open' \
---color=header:white \
---color=footer:underline \
---color=footer:white \
---exact \
---height=16 \
---min-height=14 \
---info=default \
---multi \
---no-mouse \
---no-scrollbar \
---prompt='❯  ' \
---pointer=▶ \
---marker=✓ \
---with-nth=1.. \
---color=preview-bg:-1 \
---color=gutter:#000000 \
---color=bg:#000000 \
---color=bg+:#000000 \
---color=fg:#4f5d78 \
---color=fg+:#8DA6B2 \
---color=hl:#546c8a \
---color=hl+:#005faf \
---color=border:#0b2536 \
---color=list-border:#0b2536 \
---color=input-border:#0b2536 \
---color=preview-border:#000000 \
---color=header-border:#0b2536 \
---color=footer-border:#0b2536 \
---color=separator:#0b2536 \
---color=scrollbar:#0b2536 \
---color=info:#3f5876 \
---color=pointer:#005faf \
---color=marker:#04141C \
---color=prompt:#005faf \
---color=spinner:#3f5876 \
---color=preview-fg:#4f5d78"
-export FZF_CTRL_R_OPTS="--sort --exact --border=sharp --margin=0 --padding=0 --no-scrollbar --footer='[Enter] Paste  [Ctrl-y] Yank  [?] Preview' --preview 'echo {}' --preview-window down:5:hidden,wrap --bind '?:toggle-preview'"
-export FZF_CTRL_T_OPTS="--border=sharp --margin=0 --padding=0 --no-scrollbar --preview 'if [ -d \"{}\" ]; then (eza --tree --icons=auto -L 2 --color=always \"{}\" 2>/dev/null || tree -C -L 2 \"{}\" 2>/dev/null); else (bat --style=plain --color=always --line-range :200 \"{}\" 2>/dev/null || highlight -O ansi -l \"{}\" 2>/dev/null || head -200 \"{}\" 2>/dev/null || file -b \"{}\" 2>/dev/null); fi' --preview-window=right,60%,border-left,wrap"
+export FZF_DEFAULT_OPTS_FILE="$XDG_CONFIG_HOME/fzf/fzfrc"
 
 # --- XDG Compliance (xdg-ninja fixes) ---
 export CCACHE_CONFIGPATH="$XDG_CONFIG_HOME/ccache.config"
@@ -120,10 +57,8 @@ export __GL_VRR_ALLOWED="1"
 export XZ_DEFAULTS="-T 0"
 export LIBSEAT_BACKEND="logind"
 
-# --- Cleanup/Ensure ~/tmp ---
-[[ $(readlink -e ~/tmp) == "" ]] && rm -f ~/tmp
-if [[ ! -L ${HOME}/tmp ]]; then
+# --- Ensure ~/tmp (survives tmpfs cleanup across reboots) ---
+if [[ ! -L ~/tmp || ! -d ~/tmp ]]; then
   rm -f ~/tmp
-  tmp_loc=$(mktemp -d)
-  ln -fs "${tmp_loc}" "${HOME}/tmp"
+  ln -fs "$(mktemp -d)" ~/tmp
 fi

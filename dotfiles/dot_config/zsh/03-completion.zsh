@@ -93,7 +93,6 @@ zle -N forward-word-match
 zstyle ':zle:backward-kill-word*' word-style standard
 zstyle ':zle:*kill*' word-chars '*?_-.[]~=&;!#$%^(){}<>'
 
-zshcache_time="$(date +%s%N)"
 autoload -Uz add-zsh-hook
 
 # vim: ft=zsh:nowrap
