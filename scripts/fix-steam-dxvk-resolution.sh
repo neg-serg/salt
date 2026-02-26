@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 # Fix DXVK resolution detection for all Steam Proton game prefixes
 # This ensures games properly enumerate all available display modes instead of only seeing 1920x1080
 #

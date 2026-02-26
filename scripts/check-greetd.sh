@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env zsh
 set -u
 # Preflight check for greetd + quickshell greeter setup
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 # Requires DUCKDNS_TOKEN and DUCKDNS_DOMAIN in environment
 set -eu
 : "${DUCKDNS_TOKEN:?DUCKDNS_TOKEN not set}"

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 # Deploy bootstrapped CachyOS rootfs to NVMe with LVM + btrfs + Limine.
 #
 # Usage:
@@ -83,7 +83,7 @@ echo "  Target:   $MNT"
 echo ""
 echo "  WARNING: ALL DATA ON $DISK WILL BE DESTROYED"
 echo ""
-read -rp "  Type 'yes' to continue: " confirm
+read -r "confirm?  Type 'yes' to continue: "
 if [[ "$confirm" != "yes" ]]; then
     echo "Aborted."
     exit 0

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 # Bootstrap CachyOS (Zen4/5 optimized) rootfs via Podman + Arch container.
 # Produces a rootfs with Limine bootloader and Btrfs snapshot support.
 #
