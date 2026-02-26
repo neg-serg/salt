@@ -94,3 +94,9 @@ greetd_enabled:
     - name: greetd
     - require:
       - file: greetd_main_config
+
+# Emergency TTY: Ctrl+Alt+F2 always drops to a text login,
+# even if the graphical greeter is frozen or broken.
+greetd_emergency_tty:
+  service.enabled:
+    - name: getty@tty2
