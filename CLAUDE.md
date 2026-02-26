@@ -126,11 +126,47 @@ All states that access the network (download, install, git clone) must follow th
 
 Macros (`_macros_install.jinja`, `_macros_github.jinja`, `_macros_pkg.jinja`) enforce all four rules automatically. Inline `cmd.run` states that touch the network must apply them manually.
 
+## Idempotency Guards
+
+Every `cmd.run`/`cmd.script` state must have a guard to prevent re-running:
+
+| Guard | When to use | Example |
+|---|---|---|
+| `creates:` | State produces a known file | `creates: /etc/udev/rules.d/50-qmk.rules` |
+| `unless:` | Check command returns 0 when already done | `unless: rg -qx 'steam' {{ pkg_list }}` |
+| `onlyif:` | State should only run when condition is true (inverse guard) | `onlyif: command -v firewall-cmd` |
+
+**Guidelines:**
+- Prefer `creates:` when the state produces a single file — simplest and most readable.
+- Use `unless:` when the result is a system state change (package installed, group membership, kernel module loaded) rather than a single file.
+- Use `onlyif:` to conditionally skip states that depend on optional software or hardware (e.g. firewall-cmd may not be installed).
+- `onlyif:` and `unless:` can be combined — state runs only when `onlyif` succeeds AND `unless` fails.
+- For package checks: `unless: rg -qx 'pkg' {{ pkg_list }}` (uses pacman cache file).
+- For module/service checks: `unless: lsmod | rg -q '^mod\b'` or `unless: systemctl is-active svc`.
+
+## `cmd.run` vs `cmd.script`
+
+| | `cmd.run` | `cmd.script` |
+|---|---|---|
+| **Use when** | Inline command, ≤3 lines | Complex multi-step logic, shared scripts |
+| **Source** | `name:` parameter (inline shell) | `source: salt://scripts/foo.sh` (file in `states/scripts/`) |
+| **Shell** | Defaults to `/bin/sh`; set `shell: /bin/bash` for bash features | Always set `shell: /bin/bash` explicitly |
+| **Timeout** | Default 60s | Set `timeout:` for long builds (e.g. `timeout: 3600`) |
+| **Parallel** | Add `parallel: True` if independent | Generally sequential — long-running builds shouldn't compete for CPU |
+
+**When to choose `cmd.script`:**
+- The command is reusable or complex enough to warrant a standalone file (≥10 lines).
+- The script needs `set -euo pipefail`, functions, or loops.
+- Examples: `amnezia-build.sh` (container build, ~3600s), `dxvk-resolution-fix.sh` (multi-step display fix).
+
+**When to keep `cmd.run`:**
+- Short one-liners or simple pipes (firewall rules, group membership, config checks).
+- Inline content that is clearer in context than as a separate file.
+
 ## Conventions
 
 - **Chezmoi naming**: `dot_config/foo/bar` deploys to `~/.config/foo/bar`
 - **Build containers**: `archlinux:latest`, ephemeral (`--rm`)
-- **Salt creates guard**: `creates:` directive prevents re-running completed builds
 - **Inline content**: Configs ≥10 lines go to `configs/`, systemd units go to `units/`, scripts go to `scripts/`
 - **Commit style**: `[scope] description` — scope should be specific to what changed (e.g. `[nvim]`, `[zsh]`, `[mpd]`, `[dns]`, `[macros]`, `[fonts]`, `[hyprland]`). Use generic `[salt]` or `[dotfiles]` only for broad refactors that don't fit a specific scope. `[docs]` for documentation.
 - **Service enable**: Use `service.enabled` for packages installed via pacman
