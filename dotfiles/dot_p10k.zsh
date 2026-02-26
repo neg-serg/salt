@@ -439,7 +439,7 @@
     full_path="$PWD"
     mainc="%(?.%F{4}.%F{4})"
     tildac="%(?.%F{2}.%F{4})"
-    prompt_end=" %F{25}❯%B%F{26}>%B%f"
+    prompt_end=" %F{25}❯%f"
     neg_user_pretok="%f"
     [[ ${UID} -ne 0 ]] && _neg_promptcolor="${tildac}" && _neg_user_pretoken="${mainc}%f"
     [[ ${UID} -ne 0 ]] && _neg_promptcolor="${tildac}" && _neg_user_token="${mainc}${prompt_end}"

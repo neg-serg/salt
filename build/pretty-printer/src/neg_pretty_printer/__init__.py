@@ -102,7 +102,7 @@ class PrettyPrinter:
     @classmethod
     def prefix(cls) -> str:
         """Print prefix"""
-        return cls.wrap(colored.fg(25) + "❯" + colored.fg(26) + ">")
+        return cls.wrap(colored.fg(25) + "❯")
 
     @classmethod
     def delim(cls) -> str:
