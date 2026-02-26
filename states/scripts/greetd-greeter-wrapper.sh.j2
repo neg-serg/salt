@@ -15,4 +15,8 @@ export XKB_DEFAULT_LAYOUT=us,ru
 export XKB_DEFAULT_OPTIONS=grp:alt_shift_toggle
 
 ulimit -c 0
+{% if primary_output and display %}
+exec cage -s -- sh -c 'wlr-randr --output {{ primary_output }} --mode {{ display }}Hz; exec qs -p {{ home }}/.config/quickshell/greeter/greeter.qml'
+{% else %}
 exec cage -s -- qs -p {{ home }}/.config/quickshell/greeter/greeter.qml
+{% endif %}
