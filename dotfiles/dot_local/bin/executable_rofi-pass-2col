@@ -1,7 +1,7 @@
 #!/usr/bin/env zsh
 set -euo pipefail
 
-mapfile -t entries < <(gopass ls --flat 2>/dev/null)
+entries=("${(@f)$(gopass ls --flat 2>/dev/null)}")
 count=${#entries[@]}
 [ "$count" -gt 0 ] || exit 0
 
