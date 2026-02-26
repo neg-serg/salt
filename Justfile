@@ -7,13 +7,13 @@
 #   just test     # dry-run system_description
 #   just test kernel_modules
 
-# List available recipes
-help:
-    @just --list
-
 # Apply a state (default: system_description)
 apply STATE="system_description":
     scripts/salt-apply.sh {{STATE}}
+
+# List available recipes
+help:
+    @just --list
 
 # Dry-run a state — no changes applied
 test STATE="system_description":
