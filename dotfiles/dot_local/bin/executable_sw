@@ -113,13 +113,13 @@ download_wallhaven() {
     api_url+="&page=$(("$RANDOM" % 10 + 1))" # Reduce page depth to standard
 
     json="$(curl -fsS --retry 3 "${api_url}")" || die "Wallhaven API failed"
-    mapfile -t img_paths < <(jq -r '.data[]?.path' <<< "$json")
-    
+    img_paths=("${(@f)$(jq -r '.data[]?.path' <<< "$json")}")
+
     if [[ ${#img_paths[@]} -eq 0 ]]; then
         die "No wallpapers found on Wallhaven."
     fi
-    
-    rand_img="${img_paths[$RANDOM % ${#img_paths[@]}]}"
+
+    rand_img="${img_paths[$RANDOM % ${#img_paths[@]} + 1]}"
     mkdir -p -- "$location"
     dest="$location/${rand_img##*/}"
     curl -fsS --retry 3 -o "$dest" "$rand_img"
