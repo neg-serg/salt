@@ -1,5 +1,4 @@
-#!/bin/bash
-# shellcheck disable=SC2015  # A && B || C pattern is intentional (B=echo never fails)
+#!/usr/bin/env zsh
 set -uo pipefail
 BUILD=${BUILD:?BUILD env var required}
 IMG=archlinux:latest
@@ -73,7 +72,7 @@ if [ ${#PIDS[@]} -eq 0 ]; then
     echo "=== Amnezia: all binaries already cached ==="
     exit 0
 fi
-for i in "${!PIDS[@]}"; do
+for i in {1..${#PIDS[@]}}; do
     if ! wait "${PIDS[$i]}"; then
         echo "FAILED: ${NAMES[$i]}" >&2
         FAILURES=$((FAILURES + 1))
