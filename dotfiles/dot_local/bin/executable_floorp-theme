@@ -1,0 +1,54 @@
+#!/usr/bin/env zsh
+set -eu
+
+# Find Floorp profile chrome directory (first profile with a chrome/ dir)
+CHROME_DIR="${HOME}/.floorp/c85pjaxk.default-default/chrome"
+
+if [[ ! -d "${CHROME_DIR}" ]]; then
+    print -u2 "Error: chrome directory not found: ${CHROME_DIR}"
+    exit 1
+fi
+
+UC="${CHROME_DIR}/userChrome.css"
+UCONT="${CHROME_DIR}/userContent.css"
+
+get_current() {
+    if rg -q '^@import "custom/' "${UC}" 2>/dev/null; then
+        print "custom"
+    elif rg -q '^@import "neptune/' "${UC}" 2>/dev/null; then
+        print "neptune"
+    else
+        print "unknown"
+    fi
+}
+
+activate() {
+    local enable=$1 disable=$2 file=$3
+    # Comment out the disabled theme's imports
+    sed -i "s|^\(@import \"${disable}/.*\)$|/* \1 */|" "${file}"
+    # Uncomment the enabled theme's imports
+    sed -i "s|^/\* \(@import \"${enable}/.*\) \*/$|\1|" "${file}"
+}
+
+case "${1:-}" in
+    custom)
+        activate custom neptune "${UC}"
+        activate custom neptune "${UCONT}"
+        print "Switched to custom theme. Restart Floorp to apply."
+        ;;
+    neptune)
+        activate neptune custom "${UC}"
+        activate neptune custom "${UCONT}"
+        print "Switched to Neptune theme. Restart Floorp to apply."
+        ;;
+    status)
+        print "Current theme: $(get_current)"
+        ;;
+    *)
+        print "Usage: floorp-theme [custom|neptune|status]"
+        print "  custom  — minimal (autohide tab bar, findbar fixes)"
+        print "  neptune — polished UI (requires ATBC extension)"
+        print "  status  — show active theme"
+        exit 1
+        ;;
+esac

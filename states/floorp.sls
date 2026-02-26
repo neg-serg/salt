@@ -1,6 +1,6 @@
 {% from '_imports.jinja' import host, user, home %}
 {% from '_macros_service.jinja' import ensure_dir %}
-{% from '_macros_install.jinja' import firefox_extension %}
+{% from '_macros_install.jinja' import firefox_extension, git_clone_deploy %}
 # Floorp browser: user.js + userChrome.css + userContent.css + extensions
 {% if host.features.floorp %}
 {% import_yaml 'data/floorp.yaml' as floorp %}
@@ -30,6 +30,24 @@ floorp_usercontent:
     - user: {{ user }}
     - group: {{ user }}
     - makedirs: True
+
+floorp_custom_userchrome:
+  file.managed:
+    - name: {{ floorp_profile }}/chrome/custom/userChrome.css
+    - source: salt://dotfiles/dot_config/floorp/custom/userChrome.css
+    - user: {{ user }}
+    - group: {{ user }}
+    - makedirs: True
+
+floorp_custom_usercontent:
+  file.managed:
+    - name: {{ floorp_profile }}/chrome/custom/userContent.css
+    - source: salt://dotfiles/dot_config/floorp/custom/userContent.css
+    - user: {{ user }}
+    - group: {{ user }}
+    - makedirs: True
+
+{{ git_clone_deploy('neptune_theme', 'https://github.com/yiiyahui/Neptune-Firefox.git', floorp_profile ~ '/chrome', items=['chrome/neptune'], creates=floorp_profile ~ '/chrome/neptune/theme/main.css') }}
 
 {{ ensure_dir('floorp_extensions_dir', floorp_profile ~ '/extensions') }}
 

@@ -61,8 +61,9 @@ extensions:
     slug: to-google-translate
   - id: BeautifulPurpleSky@Godie
     slug: beautiful-purple-sky
+  - id: ATBC@EasonWong
+    slug: adaptive-tab-bar-colour
 
 # Extensions to remove (no longer wanted)
 unwanted:
   - "{3c078156-979c-498b-8990-85f7987dd929}"
-  - ATBC@EasonWong

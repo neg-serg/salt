@@ -1,13 +1,13 @@
-* {
-  scrollbar-width: none !important;
-}
+/* === Content theme: must match userChrome.css selection === */
 
-@-moz-document url(about:blank), url(about:newtab), url(about:home) {
-  html:not(#ublock0-epicker),
-  html:not(#ublock0-epicker) body,
-  #newtab-customize-overlay {
-    background: #1b1e2b !important;
-  }
-}
+/* Custom */
+@import "custom/userContent.css";
 
-/* :root */
+/* Neptune */
+/* @import "neptune/share/shared.css"; */
+/* @import "neptune/firefox/root.css"; */
+/* @import "neptune/firefox/aboutpage.css"; */
+/* @import "neptune/firefox/startpage.css"; */
+/* @import "neptune/firefox/reader.css"; */
+/* @import "neptune/firefox/firefoxview.css"; */
+/* @import "neptune/firefox/pdf.css"; */
