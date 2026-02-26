@@ -1,6 +1,6 @@
 {% from '_imports.jinja' import host, user, home %}
 {% from '_macros_pkg.jinja' import pacman_install %}
-{% from '_macros_service.jinja' import service_stopped, unit_override %}
+{% from '_macros_service.jinja' import service_stopped %}
 # greetd display manager: replace sddm with quickshell greeter
 
 {{ pacman_install('greetd', 'greetd') }}
@@ -23,7 +23,7 @@ greetd_main_config:
         vt = {{ host.greetd_vt }}
 
         [default_session]
-        command = "start-hyprland -- -c /etc/greetd/hyprland-greeter.conf"
+        command = "/etc/greetd/greeter-wrapper"
         user = "{{ user }}"
     - user: root
     - group: root
@@ -39,6 +39,16 @@ greetd_hyprland_config:
     - user: root
     - group: root
     - mode: '0644'
+    - require:
+      - file: greetd_config_dir
+
+greetd_greeter_wrapper:
+  file.managed:
+    - name: /etc/greetd/greeter-wrapper
+    - source: salt://scripts/greetd-greeter-wrapper.sh
+    - user: root
+    - group: root
+    - mode: '0755'
     - require:
       - file: greetd_config_dir
 
@@ -75,8 +85,6 @@ greetd_cleanup_pacnew:
 greetd_cleanup_regreet:
   file.absent:
     - name: /etc/greetd/regreet.toml
-
-{{ unit_override('greetd_debug_override', 'greetd', 'salt://units/greetd-debug-override.conf') }}
 
 greetd_enabled:
   service.enabled:
