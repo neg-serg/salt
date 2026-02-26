@@ -1,6 +1,4 @@
-#!/bin/bash
-# shellcheck shell=bash
-# shellcheck disable=SC2297,SC2034,SC2125,SC1083,SC2099
+#!/usr/bin/env zsh
 # Let it Rain!
 # Copyright (C) 2011, 2013 by Yu-Jie Lin
 #
@@ -64,7 +62,7 @@ do_exit() {
 
 do_render() {
   # Clean screen first
-  for ((idx = 0; idx < num_rains * NUM_RAIN_METADATA; idx += NUM_RAIN_METADATA)); do
+  for ((idx = 1; idx <= num_rains * NUM_RAIN_METADATA; idx += NUM_RAIN_METADATA)); do
     X=${rains[idx]}
     Y=${rains[idx + 1]}
     LENGTH=${rains[idx + 4]}
@@ -74,13 +72,13 @@ do_render() {
     done
   done
 
-  for ((idx = 0; idx < num_rains * NUM_RAIN_METADATA; idx += NUM_RAIN_METADATA)); do
+  for ((idx = 1; idx <= num_rains * NUM_RAIN_METADATA; idx += NUM_RAIN_METADATA)); do
     if ((100 * RANDOM / 32768 < FALLING_ODD)); then
       # Falling
       if ((++rains[idx + 1] > TERM_HEIGHT)); then
         # Out of screen, bye sweet <3
-        rains=("${rains[@]:0:idx}"
-          "${rains[@]:idx+NUM_RAIN_METADATA:num_rains*NUM_RAIN_METADATA}")
+        rains=("${rains[1,idx-1]}"
+          "${rains[idx+NUM_RAIN_METADATA,-1]}")
         ((num_rains--))
         continue
       fi
@@ -107,7 +105,7 @@ echo -ne "\e[2J"
 rains=()
 sigwinch
 while :; do
-  read -n 1 -t $STEP_DURATION ch
+  read -k 1 -t $STEP_DURATION ch
   case "$ch" in
     q | Q)
       do_exit
@@ -116,8 +114,8 @@ while :; do
 
   if ((num_rains < MAX_RAINS)) && ((100 * RANDOM / 32768 < NEW_RAIN_ODD)); then
     # Need new |, 1-based
-    RAIN="${RAINS[NRAINS * RANDOM / 32768]}"
-    COLOR="${COLORS[NCOLORS * RANDOM / 32768]}"
+    RAIN="${RAINS[NRAINS * RANDOM / 32768 + 1]}"
+    COLOR="${COLORS[NCOLORS * RANDOM / 32768 + 1]}"
     LENGTH=$((MAX_RAIN_LENGTH * RANDOM / 32768 + 1))
     X=$((TERM_WIDTH * RANDOM / 32768 + 1))
     Y=$((1 - LENGTH))

@@ -1,11 +1,9 @@
-#!/bin/bash
-# shellcheck shell=bash
-# shellcheck disable=SC2297,SC2301,SC2034,SC2154
+#!/usr/bin/env zsh
 
 f=3 b=4
 for j in f b; do
   for i in {0..7}; do
-    printf -v $j$i %b "\e[${!j}${i}m"
+    eval "${j}${i}=\$'\\e[${(P)j}${i}m'"
   done
 done
 bld=$'\e[1m'
