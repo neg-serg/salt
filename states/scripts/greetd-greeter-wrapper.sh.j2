@@ -5,11 +5,11 @@
 
 export GREETER_MODE=cage
 export QT_QPA_PLATFORM=wayland
-{% if host.greetd_scale > 1 %}
-export QT_SCALE_FACTOR={{ host.greetd_scale }}
+{% if greetd_scale > 1 %}
+export QT_SCALE_FACTOR={{ greetd_scale }}
 {% endif %}
-export XCURSOR_THEME={{ host.cursor_theme }}
-export XCURSOR_SIZE={{ host.cursor_size }}
+export XCURSOR_THEME={{ cursor_theme }}
+export XCURSOR_SIZE={{ cursor_size }}
 export XKB_DEFAULT_LAYOUT=us,ru
 export XKB_DEFAULT_OPTIONS=grp:alt_shift_toggle
 
