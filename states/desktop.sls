@@ -53,6 +53,7 @@ pcscd_socket_enabled:
 {{ pacman_install('screenshot_tools', 'grim slurp') }}
 {{ pacman_install('rsync', 'rsync') }}
 {{ pacman_install('localsend', 'localsend') }}
+{{ pacman_install('chromium', 'chromium') }}
 
 {{ paru_install('xdg-termfilechooser', 'xdg-desktop-portal-termfilechooser-boydaihungst-git') }}
 
