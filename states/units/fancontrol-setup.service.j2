@@ -23,6 +23,12 @@ Environment=GPU_MIN_PWM=70
 Environment=GPU_MAX_PWM=255
 Environment=GPU_HYST=3
 RemainAfterExit=true
+NoNewPrivileges=true
+ProtectHome=yes
+PrivateTmp=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+LockPersonality=yes
 
 [Install]
 WantedBy=fancontrol.service

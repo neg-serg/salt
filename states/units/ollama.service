@@ -12,6 +12,14 @@ WorkingDirectory={{ home }}
 Environment="HOME={{ home }}"
 Environment="OLLAMA_HOST=127.0.0.1:{{ ollama_port }}"
 Environment="OLLAMA_MODELS={{ mnt_one }}/ollama/models"
+NoNewPrivileges=true
+ProtectSystem=strict
+PrivateTmp=yes
+PrivateDevices=yes
+ReadWritePaths={{ mnt_one }}/ollama
+RestrictNamespaces=yes
+RestrictRealtime=yes
+LockPersonality=yes
 
 [Install]
 WantedBy=default.target

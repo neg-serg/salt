@@ -5,3 +5,10 @@ Wants=network-online.target
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/vdirsyncer sync
+NoNewPrivileges=true
+ProtectSystem=strict
+PrivateTmp=yes
+PrivateDevices=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+LockPersonality=yes

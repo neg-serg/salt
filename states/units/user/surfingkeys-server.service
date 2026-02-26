@@ -6,5 +6,12 @@ PartOf=graphical-session.target
 ExecStart=%h/.local/bin/surfingkeys-server
 Restart=on-failure
 RestartSec=5
+NoNewPrivileges=true
+ProtectSystem=strict
+PrivateTmp=yes
+PrivateDevices=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+LockPersonality=yes
 [Install]
 WantedBy=graphical-session.target

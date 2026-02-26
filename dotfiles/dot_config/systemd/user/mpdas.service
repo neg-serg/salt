@@ -7,6 +7,13 @@ Requires=mpd.service
 ExecStart=/bin/mpdas
 Restart=on-failure
 RestartSec=5
+NoNewPrivileges=true
+ProtectSystem=strict
+PrivateTmp=yes
+PrivateDevices=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+LockPersonality=yes
 
 [Install]
 WantedBy=default.target

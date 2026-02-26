@@ -8,6 +8,10 @@ Environment=QML_XHR_ALLOW_FILE_READ=1
 ExecStart=/bin/qs
 Restart=on-failure
 RestartSec=2
+NoNewPrivileges=true
+RestrictNamespaces=yes
+RestrictRealtime=yes
+LockPersonality=yes
 
 [Install]
 WantedBy=graphical-session.target

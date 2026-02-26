@@ -8,3 +8,7 @@ ExecStartPre=/bin/sh -c 'rm -f "$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATU
 ExecStart=/bin/pypr
 Restart=always
 RestartSec=3
+NoNewPrivileges=true
+RestrictNamespaces=yes
+RestrictRealtime=yes
+LockPersonality=yes
