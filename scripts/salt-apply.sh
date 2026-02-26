@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env zsh
 # salt-apply.sh — apply Salt states (daemon-aware)
 #
 # Bootstraps venv + runtime config on first run, then uses the running
@@ -17,7 +17,7 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="${0:A:h}"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 VENV_DIR="${PROJECT_DIR}/.venv"
 RUNTIME_CONFIG_DIR="${PROJECT_DIR}/.salt_runtime"
@@ -103,11 +103,11 @@ EOF
 # ── Sudo: prefer NOPASSWD, fall back to .password file ────────────────────────
 get_sudo() {
     if sudo -n true 2>/dev/null; then
-        SUDO_CMD="sudo"
+        SUDO_CMD=(sudo)
         SUDO_PASS=""
     elif [[ -f "${PROJECT_DIR}/.password" ]]; then
-        SUDO_CMD="sudo -S"
-        SUDO_PASS=$(cat "${PROJECT_DIR}/.password")
+        SUDO_CMD=(sudo -S)
+        SUDO_PASS=$(<"${PROJECT_DIR}/.password")
     else
         echo "error: no NOPASSWD sudo and no .password file found" >&2
         echo "  either configure NOPASSWD or create .password" >&2
@@ -132,8 +132,7 @@ except Exception:
     fi
     # Socket exists but daemon is dead — remove stale socket so ensure_daemon
     # can start a fresh daemon without bind() failing on the existing path.
-    # shellcheck disable=SC2086
-    $SUDO_CMD rm -f "$DAEMON_SOCK"
+    "${SUDO_CMD[@]}" rm -f "$DAEMON_SOCK"
     return 1
 }
 
@@ -141,8 +140,7 @@ ensure_daemon() {
     daemon_running && return 0
     [[ -x "$DAEMON_SCRIPT" ]] || return 1
     echo "(starting salt-daemon in background...)"
-    # shellcheck disable=SC2086
-    $SUDO_CMD "$DAEMON_SCRIPT" \
+    "${SUDO_CMD[@]}" "$DAEMON_SCRIPT" \
         --config-dir "$RUNTIME_CONFIG_DIR" \
         --socket "$DAEMON_SOCK" \
         --log-level warning &>/dev/null &
@@ -217,24 +215,23 @@ run_direct() {
     tail -f "${LOG_FILE}" | awk -v maxlen=100 -f "$AWK_FORMATTER" &
     local tail_pid=$!
 
-    local test_arg=""
-    $TEST_MODE && test_arg="test=True"
-
-    # shellcheck disable=SC2206
-    local salt_cmd=(
-        $SUDO_CMD "$VENV_DIR/bin/python3" -u "$SALT_RUNNER"
+    local -a salt_cmd
+    salt_cmd=(
+        "${SUDO_CMD[@]}" "$VENV_DIR/bin/python3" -u "$SALT_RUNNER"
         --config-dir="${RUNTIME_CONFIG_DIR}"
         --local --log-level=warning
         --log-file="${LOG_FILE}" --log-file-level=debug
         --state-output=mixed_id
-        state.sls "${STATE}" ${test_arg}
+        state.sls "${STATE}"
     )
+    $TEST_MODE && salt_cmd+=(test=True)
+
     if [[ -n "${SUDO_PASS:-}" ]]; then
         echo "$SUDO_PASS" | "${salt_cmd[@]}" 2>&1 | tee -a "${LOG_FILE}" > /dev/null
     else
         "${salt_cmd[@]}" 2>&1 | tee -a "${LOG_FILE}" > /dev/null
     fi
-    local rc="${PIPESTATUS[0]}"
+    local rc="${pipestatus[1]}"
 
     sleep 0.3
     kill "$tail_pid" 2>/dev/null || true
