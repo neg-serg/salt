@@ -10,6 +10,8 @@ user_pref("gfx.color_management.mode", 1);
 user_pref("extensions.autoDisableScopes", 0);
 user_pref("xpinstall.signatures.required", false);
 user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
+user_pref("svg.context-properties.content.enabled", true);
+user_pref("widget.non-native-theme.use-theme-accent", true);
 user_pref("browser.uidensity", 1); // Be more compact
 
 /****************************************************************************************
