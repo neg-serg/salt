@@ -7,6 +7,10 @@
 #   just test     # dry-run system_description
 #   just test kernel_modules
 
+# List available recipes
+help:
+    @just --list
+
 # Apply a state (default: system_description)
 apply STATE="system_description":
     scripts/salt-apply.sh {{STATE}}
@@ -84,6 +88,27 @@ validate:
     done
     echo "Validated $(ls states/*.sls | wc -l) states, $failed failed"
     [ "$failed" -eq 0 ]
+
+# Check if salt-daemon is running and responsive
+daemon-health:
+    #!/usr/bin/env bash
+    sock="${SALT_DAEMON_SOCK:-/run/salt-daemon.sock}"
+    if [ ! -S "$sock" ]; then
+        echo "OFFLINE (no socket at $sock)"
+        exit 1
+    fi
+    if python3 -c "
+    import socket, sys
+    s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    s.settimeout(2)
+    s.connect('$sock')
+    s.close()
+    " 2>/dev/null; then
+        echo "HEALTHY (listening on $sock)"
+    else
+        echo "UNHEALTHY (socket exists but not responding)"
+        exit 1
+    fi
 
 # Remove generated runtime files (venv and salt runtime config)
 clean:

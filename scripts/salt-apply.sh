@@ -50,7 +50,7 @@ bootstrap_salt() {
 
     if [[ ! -f "$VENV_DIR/bin/salt-call" ]]; then
         echo "--- Installing Salt and dependencies ---"
-        "$VENV_DIR/bin/pip" install salt passlib tornado jinja2 msgpack pyyaml psutil requests distro looseversion packaging pycryptodomex
+        "$VENV_DIR/bin/pip" install -r "${PROJECT_DIR}/requirements.txt"
 
         # Patch Salt for Python 3.14+ urlunparse behavior
         PYVER=$("$VENV_DIR/bin/python3" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')

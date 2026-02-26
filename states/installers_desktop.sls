@@ -46,13 +46,13 @@ rofi_file_browser_extended:
     - name: |
         set -eo pipefail
         BUILDDIR=$(sudo -u {{ user }} mktemp -d)
+        trap 'rm -rf "$BUILDDIR"' EXIT
         cd "$BUILDDIR"
         sudo -u {{ user }} paru -G rofi-file-browser-extended-git
         cd rofi-file-browser-extended-git
         sed -i '/^build()/a\  export CMAKE_POLICY_VERSION_MINIMUM=3.5\n  export CFLAGS="${CFLAGS} -Wno-error=incompatible-pointer-types"' PKGBUILD
         sudo -u {{ user }} makepkg -sf --noconfirm
         pacman -U --noconfirm --needed *.pkg.tar.zst
-        rm -rf "$BUILDDIR"
     - shell: /bin/bash
     - unless: rg -qx 'rofi-file-browser-extended-git' {{ pkg_list }}
     - retry:
