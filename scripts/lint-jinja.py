@@ -8,7 +8,10 @@ import getpass
 import glob
 import os
 import re
+import shutil
+import subprocess
 import sys
+import tempfile
 
 import jinja2
 import jinja2.ext
@@ -794,6 +797,128 @@ def check_salt_uri_refs(sls_files, jinja_files, data_files=None):
     return errors
 
 
+# Noise patterns from systemd-analyze verify (not errors in our unit files)
+_SYSTEMD_NOISE_RE = re.compile(
+    r"""
+    is\ not\ executable          # binary not installed yet
+    | Cannot\ find\ unit         # dependency resolution
+    | not\ found\ in\ search     # unit not installed
+    | has\ a\ bad\ unit\ file    # summary line (details are separate)
+    | Support\ for\ option.*removed  # system-level deprecation noise
+    """,
+    re.VERBOSE,
+)
+
+
+def check_systemd_units():
+    """Validate systemd unit files with systemd-analyze verify.
+
+    Checks both plain unit files and rendered .j2 templates.
+    Filters noise from dependency resolution and missing binaries.
+    """
+    if not shutil.which("systemd-analyze"):
+        return 0, 0
+
+    plain_units = sorted(
+        glob.glob("states/units/**/*.service", recursive=True)
+        + glob.glob("states/units/**/*.timer", recursive=True)
+        + glob.glob("dotfiles/**/systemd/**/*.service", recursive=True)
+        + glob.glob("dotfiles/**/systemd/**/*.timer", recursive=True)
+    )
+    j2_units = sorted(
+        glob.glob("states/units/**/*.service.j2", recursive=True)
+        + glob.glob("states/units/**/*.timer.j2", recursive=True)
+    )
+
+    errors = 0
+    checked = 0
+
+    def _run_verify(filepath, source_path=None):
+        """Run systemd-analyze verify and return relevant error lines."""
+        result = subprocess.run(
+            ["systemd-analyze", "verify", "--man=no", filepath],
+            capture_output=True,
+            text=True,
+        )
+        basename = os.path.basename(filepath)
+        relevant = []
+        for line in result.stderr.splitlines():
+            # Only keep lines about OUR unit file
+            if basename not in line and filepath not in line:
+                continue
+            if _SYSTEMD_NOISE_RE.search(line):
+                continue
+            relevant.append(line)
+        return relevant
+
+    # Separate plain units into truly-plain and Jinja-templated
+    jinja_re = re.compile(r"\{\{|\{%")
+    truly_plain = []
+    for path in plain_units:
+        with open(path) as f:
+            content = f.read()
+        if jinja_re.search(content):
+            j2_units.append(path)
+        else:
+            truly_plain.append(path)
+
+    # Plain unit files (no Jinja syntax)
+    for path in truly_plain:
+        checked += 1
+        issues = _run_verify(path)
+        if issues:
+            label = path
+            for line in issues:
+                print(f"\033[31mUnit: {label}: {line}\033[0m")
+            errors += 1
+
+    # Render Jinja templates (.j2 and plain files with Jinja syntax) and verify
+    env = _make_render_env()
+    host = _build_lint_host()
+    j2_context = {
+        "user": host.get("user", "neg"),
+        "home": host.get("home", "/home/neg"),
+        "uid": host.get("uid", 1000),
+        "mnt_one": host.get("mnt_one", "/mnt/one"),
+        "ollama_port": 11434,
+        "dns_unbound": True,
+        "gpu_enable": True,
+        "project_dir": host.get("home", "/home/neg") + "/src/salt",
+    }
+    for path in sorted(j2_units):
+        try:
+            with open(path) as fh:
+                source = fh.read()
+            t = env.from_string(source)
+            rendered = t.render(**j2_context)
+        except Exception:
+            continue
+
+        # Determine suffix from original filename (.service.j2 → .service)
+        suffix = "." + path.removesuffix(".j2").rsplit(".", 1)[-1]
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=suffix, prefix="lint-", delete=False
+        ) as f:
+            f.write(rendered)
+            tmppath = f.name
+
+        try:
+            checked += 1
+            issues = _run_verify(tmppath, source_path=path)
+            if issues:
+                for line in issues:
+                    # Replace tmpfile path with original source path
+                    line = line.replace(tmppath, path).replace(
+                        os.path.basename(tmppath), os.path.basename(path)
+                    )
+                    print(f"\033[31mUnit: {line}\033[0m")
+                errors += 1
+        finally:
+            os.unlink(tmppath)
+
+    return errors, checked
+
+
 def main():
     sls_files = sorted(glob.glob("states/*.sls"))
     jinja_files = sorted(glob.glob("states/*.jinja"))
@@ -868,6 +993,11 @@ def main():
     uri_errors = check_salt_uri_refs(sls_files, jinja_files, data_yamls)
     total_errors += uri_errors
     print(f"Salt URI refs: {uri_errors} errors")
+
+    # 13. Systemd unit file validation
+    unit_errors, units_checked = check_systemd_units()
+    total_errors += unit_errors
+    print(f"Systemd units: {units_checked} files, {unit_errors} errors")
 
     sys.exit(1 if total_errors else 0)
 
