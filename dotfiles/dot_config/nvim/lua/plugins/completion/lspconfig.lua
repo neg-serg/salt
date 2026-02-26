@@ -62,6 +62,10 @@ return {
       vim.lsp.enable(server)
     end
 
+    -- System-installed servers (pacman/AUR — not managed by Mason)
+    configure('cmake')
+    configure('systemd_ls')
+
     -- Servers with custom config (default-config servers auto-enabled by mason-lspconfig)
     configure('clangd', {
       cmd = { 'clangd', '--background-index', '--clang-tidy', '--completion-style=detailed', '--header-insertion=never' },
