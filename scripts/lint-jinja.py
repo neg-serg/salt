@@ -671,6 +671,72 @@ def check_data_integrity():
     return errors
 
 
+# Bash-specific syntax patterns that require shell: /bin/bash
+_BASH_SYNTAX_RE = re.compile(
+    r"""
+    \bset\s+-[a-z]*o\s+pipefail\b   # set -eo pipefail (pipefail not POSIX)
+    | \bdeclare\s+-             # declare -a/-A/-i (bash builtin)
+    | \breadarray\b             # readarray/mapfile (bash 4+)
+    | \bmapfile\b
+    | \[\[                      # [[ ]] extended test (bash/zsh, not POSIX)
+    | <<<                       # here-string (bash/zsh, not POSIX)
+    | \$\{[^}]+%%              # ${var%%pattern} advanced expansion (works in POSIX
+                                # but often combined with other bash-isms)
+    """,
+    re.VERBOSE,
+)
+
+
+def check_cmd_shell(rendered_docs):
+    """Check that multiline cmd.run using bash features specify shell: /bin/bash.
+
+    Salt defaults to /bin/sh, which is bash on Arch but not POSIX-guaranteed.
+    States using bash-specific syntax should be explicit.
+    """
+    warnings = 0
+
+    for filepath, docs in rendered_docs.items():
+        for doc in docs:
+            if not doc or not isinstance(doc, dict):
+                continue
+            for state_id, state_body in doc.items():
+                if state_id in _SALT_DIRECTIVES:
+                    continue
+                if not isinstance(state_body, dict):
+                    continue
+                for mod_func, directives in state_body.items():
+                    if mod_func not in ("cmd.run", "cmd.script"):
+                        continue
+                    if not isinstance(directives, list):
+                        continue
+
+                    cmd_text = ""
+                    has_shell = False
+
+                    for d in directives:
+                        if not isinstance(d, dict):
+                            continue
+                        if "name" in d:
+                            cmd_text = str(d["name"])
+                        if "shell" in d:
+                            has_shell = True
+
+                    # Only check multiline commands (single-line rarely needs bash)
+                    if "\n" not in cmd_text.strip():
+                        continue
+                    if has_shell:
+                        continue
+                    if _BASH_SYNTAX_RE.search(cmd_text):
+                        print(
+                            f"\033[33mShell: {filepath}:"
+                            f" '{state_id}' — bash syntax without"
+                            f" shell: /bin/bash\033[0m"
+                        )
+                        warnings += 1
+
+    return warnings
+
+
 # salt:// paths in string literals (handles both 'salt://...' and "salt://...")
 _SALT_URI_RE = re.compile(r"""salt://([^'"\s}]+)""")
 
@@ -792,7 +858,12 @@ def main():
     total_warnings += network_warnings
     print(f"Network resilience: {network_warnings} warnings")
 
-    # 11. Salt URI references (salt:// paths point to existing files)
+    # 11. Bash syntax without shell: /bin/bash
+    shell_warnings = check_cmd_shell(rendered_docs)
+    total_warnings += shell_warnings
+    print(f"Cmd shell: {shell_warnings} warnings")
+
+    # 12. Salt URI references (salt:// paths point to existing files)
     data_yamls = sorted(glob.glob("states/data/*.yaml"))
     uri_errors = check_salt_uri_refs(sls_files, jinja_files, data_yamls)
     total_errors += uri_errors

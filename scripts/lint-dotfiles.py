@@ -91,6 +91,45 @@ def check_zsh_syntax():
     return errors, checked
 
 
+# Bash idioms that should not appear in zsh scripts
+_BASH_IDIOMS = [
+    (re.compile(r"^\s*set\s+-[a-z]*o\s+pipefail"), "set -o pipefail → setopt PIPE_FAIL"),
+    (re.compile(r"^\s*set\s+-[a-z]*e[a-z]*u[a-z]*o\b"), "set -euo → use setopt"),
+    (re.compile(r"^\s*shopt\s"), "shopt is bash-only (use setopt in zsh)"),
+    (re.compile(r"\bBASH_"), "BASH_* variables are bash-only"),
+    (re.compile(r"\breadarray\b"), "readarray/mapfile are bash-only (use zsh arrays)"),
+    (re.compile(r"\bmapfile\b"), "mapfile/readarray are bash-only (use zsh arrays)"),
+]
+
+
+def check_bash_idioms():
+    """Detect bash-specific constructs in zsh scripts."""
+    errors = 0
+    checked = 0
+    for path in sorted(glob.glob(os.path.join(DOTFILES_BIN, "executable_*"))):
+        if os.path.isdir(path):
+            continue
+        try:
+            with open(path, encoding="utf-8", errors="replace") as f:
+                first_line = f.readline().rstrip("\n")
+                if first_line != _ZSH_SHEBANG:
+                    continue
+                checked += 1
+                lines = f.readlines()
+        except (PermissionError, OSError):
+            continue
+        for lineno, line in enumerate(lines, 2):
+            # Skip comments
+            if line.lstrip().startswith("#"):
+                continue
+            for pattern, msg in _BASH_IDIOMS:
+                if pattern.search(line):
+                    print(f"\033[31mBash idiom: {path}:{lineno}: {msg}\033[0m")
+                    errors += 1
+                    break
+    return errors, checked
+
+
 def check_xdg_paths():
     """No canonical XDG defaults (~/Music, ~/Pictures, ...) in dotfiles."""
     errors = 0
@@ -128,6 +167,10 @@ def main():
     syntax_errors, zsh_checked = check_zsh_syntax()
     total_errors += syntax_errors
     print(f"Zsh syntax: {zsh_checked} scripts, {syntax_errors} errors")
+
+    bash_errors, bash_checked = check_bash_idioms()
+    total_errors += bash_errors
+    print(f"Bash idioms: {bash_checked} zsh scripts, {bash_errors} violations")
 
     xdg_errors, files_checked = check_xdg_paths()
     total_errors += xdg_errors
