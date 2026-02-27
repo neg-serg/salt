@@ -1,0 +1,14 @@
+{
+   "$schema": "https://vicinae.com/schemas/config.json",
+   "keybinding": "emacs",
+   "theme": {
+      "dark": {
+         "name": "tokyo-night"
+      }
+   },
+   "launcher_window": {
+      "layer_shell": {
+         "enabled": false
+      }
+   }
+}
