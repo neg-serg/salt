@@ -72,6 +72,10 @@ idempotency STATE="system_description":
     fi
     echo "PASS: all states idempotent"
 
+# Verify sysctl-custom.conf values are applied on live system
+lint-sysctl:
+    .venv/bin/python3 scripts/lint-sysctl.py
+
 # Check all state files render without errors (no execution)
 validate:
     #!/usr/bin/env bash
