@@ -141,7 +141,13 @@ local function open_link(opts)
       end
     end
     if path == nil or path == '' then return end
-    vim.cmd(('find %s'):format(vim.fn.fnameescape(path)))
+    if path:sub(1, 1) == '.' then
+      local buf_dir = vim.fn.expand('%:p:h')
+      local abs = buf_dir .. '/' .. path
+      vim.cmd.edit(vim.fn.fnameescape(abs))
+    else
+      vim.cmd(('find %s'):format(vim.fn.fnameescape(path)))
+    end
     if opts.jump_to_anchor and link.anchor then goto_markdown_anchor(link.anchor) end
     return
   end
