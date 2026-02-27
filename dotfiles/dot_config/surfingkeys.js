@@ -351,15 +351,15 @@ settings.blocklistPattern = /mail\.google\.com|docs\.google\.com|discord\.com|ap
 // ========== Clipboard Navigation ==========
 // Open URL from system clipboard in current tab
 api.mapkey('p', 'Open clipboard URL in current tab', function() {
-  navigator.clipboard.readText().then(text => {
-    const url = text.trim();
+  api.Clipboard.read(function(resp) {
+    const url = resp.data.trim();
     if (url) window.location.href = url;
   });
 });
 // Open URL from system clipboard in new tab
 api.mapkey('P', 'Open clipboard URL in new tab', function() {
-  navigator.clipboard.readText().then(text => {
-    const url = text.trim();
+  api.Clipboard.read(function(resp) {
+    const url = resp.data.trim();
     if (url) api.tabOpenLink(url);
   });
 });
