@@ -256,10 +256,6 @@ api.unmap('ow');
 api.unmap('on');
 api.unmap('ox');
 
-// Mapping for standard browsing
-api.map('j', 'j');
-api.map('k', 'k');
-
 // Large Scroll (Half Page)
 api.mapkey('b', 'Scroll half page down', () => {
   api.Normal.scroll("pageDown");
