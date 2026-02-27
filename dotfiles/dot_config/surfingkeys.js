@@ -58,9 +58,6 @@ settings.theme = `
   background: var(--bg-highlight);
 }
 
-/* ── Hints ───────────────────────────────────────── */
-#sk_hints .begin { color: var(--accent) !important; }
-
 /* ── Banner ──────────────────────────────────────── */
 #sk_banner {
   font-family: var(--font-mono);
@@ -166,8 +163,15 @@ settings.theme = `
   border-radius: 0;
 }
 .sk_tab_title { color: var(--fg) !important; }
-.sk_tab_url   { color: var(--accent) !important; }
 .sk_tab.active  { background: var(--bg-highlight) !important; }
+.sk_tab_hint {
+  background: var(--hint-bg) !important;
+  background-image: none !important;
+  color: var(--accent) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
 `;
 
 // ========== Hints Styling (Shadow DOM) ==========
