@@ -14,7 +14,7 @@ local function require_module_at_cursor()
   return mod:gsub('%.', '/')
 end
 
-vim.keymap.set('n', 'gf', function()
+local function follow_require()
   local mod_path = require_module_at_cursor()
   if not mod_path then return vim.cmd('normal! gf') end
 
@@ -37,4 +37,7 @@ vim.keymap.set('n', 'gf', function()
   local tail = mod_path:match('[^/]+$') or mod_path
   local ok, fzf = pcall(require, 'fzf-lua')
   if ok then fzf.files({ query = tail, cwd = nav.project_root() }) end
-end, { buffer = true, desc = "Follow require() to source" })
+end
+
+vim.keymap.set('n', 'gf', follow_require, { buffer = true, desc = "Follow require() to source" })
+vim.keymap.set('n', '<CR>', follow_require, { buffer = true, desc = "Follow require() to source" })

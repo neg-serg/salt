@@ -16,9 +16,12 @@ local function source_target()
   return path
 end
 
-vim.keymap.set('n', 'gf', function()
+local function follow_source()
   local path = source_target()
   if not path then return vim.cmd('normal! gf') end
   local resolved = nav.resolve_path(path, { extensions = { '.sh', '.zsh', '.bash' } })
   if resolved then nav.open_file(resolved) end
-end, { buffer = true, desc = 'Follow source/. path' })
+end
+
+vim.keymap.set('n', 'gf', follow_source, { buffer = true, desc = 'Follow source/. path' })
+vim.keymap.set('n', '<CR>', follow_source, { buffer = true, desc = 'Follow source/. path' })

@@ -49,7 +49,7 @@ local function try_py_path(base)
   end
 end
 
-vim.keymap.set('n', 'gf', function()
+local function follow_import()
   local imp = import_at_cursor()
   if not imp then return vim.cmd('normal! gf') end
 
@@ -81,4 +81,7 @@ vim.keymap.set('n', 'gf', function()
     local ok, fzf = pcall(require, 'fzf-lua')
     if ok then fzf.files({ query = imp.path:match('[^/]+$') or imp.path, cwd = nav.project_root() }) end
   end
-end, { buffer = true, desc = 'Follow import to source' })
+end
+
+vim.keymap.set('n', 'gf', follow_import, { buffer = true, desc = 'Follow import to source' })
+vim.keymap.set('n', '<CR>', follow_import, { buffer = true, desc = 'Follow import to source' })
