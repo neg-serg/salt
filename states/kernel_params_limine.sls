@@ -27,6 +27,22 @@
 {% do kargs.append(karg) %}
 {% endfor %}
 
+# --- Restructure limine.conf for flat boot entries ---
+# Moves //CachyOS LTS from inside /CachyOS directory to a flat top-level entry.
+# This fixes timeout auto-boot: flat entries boot directly, directories open submenus.
+limine_flat_boot_entries:
+  cmd.script:
+    - source: salt://scripts/limine-restructure.sh
+    - shell: /bin/bash
+    - unless: rg -q '^/CachyOS LTS' /boot/limine.conf
+
+# Deploy limine-set-default convenience script.
+limine_set_default_deployed:
+  file.managed:
+    - name: /usr/local/bin/limine-set-default
+    - source: salt://scripts/limine-set-default.sh
+    - mode: '0755'
+
 # Append missing kernel params to all kernel_cmdline entries in limine.conf.
 # Preserves existing root= and other boot-critical params.
 kernel_params_limine:
@@ -63,6 +79,8 @@ kernel_params_limine:
           key="${k%%=*}"
           rg -q "$key" <<< "$current" || exit 1
         done
+    - require:
+      - cmd: limine_flat_boot_entries
 
 # --- limine-snapper-sync: fix CachyOS-specific paths and OS name ---
 limine_snapper_sync_config:
@@ -97,3 +115,5 @@ limine_multiprofile_check:
     - onlyif: |
         [ -f /boot/limine.conf ] &&
         ! rg -q '^    //' /boot/limine.conf
+    - require:
+      - cmd: limine_flat_boot_entries
