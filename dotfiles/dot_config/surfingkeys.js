@@ -291,6 +291,18 @@ api.map('L', 'D');  // Forward
 // Open links
 api.map('F', 'gf'); // Open link in new tab
 
+// ========== Built-in bindings (no code needed, verified conflict-free) ==========
+// Tab utilities:
+//   <Ctrl-6>  — go to last used tab (MRU; differs from E→gT: uses goToLastTab)
+//   gp        — jump to audible/playing tab
+// URL navigation:
+//   gu        — go up one path level (e.g. /a/b/c → /a/b; repeatable: 2gu)
+// Scroll targeting:
+//   cS        — reset scroll target (fix scroll stuck on sidebar/iframe)
+//   cs        — cycle through scrollable elements (highlights current target)
+// Scroll by ratio:
+//   N%        — scroll to N% of page (50% → middle, 0% → top, 100% → bottom)
+
 // Clipboard
 api.map('yy', 'yy');
 api.map('yl', 'yl');
