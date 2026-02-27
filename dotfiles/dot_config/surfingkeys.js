@@ -13,40 +13,55 @@ settings.modeAfterYank = "Normal";
 // ========== Theme ==========
 settings.theme = `
 :root {
-  --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: "Iosevka", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --font-size: 0.875rem;
-  --bg: #020202;
+  --bg:           #020202;
+  --bg-alt:       #0a0a0a;
   --bg-highlight: #13384f;
-  --fg: #f0f1ff;
-  --fg-muted: rgba(240, 241, 255, 0.6);
-  --accent: #89cdd2;
-  --border: #0a3749;
-  --hint-bg: #001742;
+  --fg:           #f0f1ff;
+  --fg-muted:     rgba(240, 241, 255, 0.6);
+  --accent:       #89cdd2;
+  --border:       #0a3749;
+  --hint-bg:      #001742;
 }
 
-/* Global Reset */
+/* ── Base ────────────────────────────────────────── */
 .sk_theme {
   font-family: var(--font-mono);
   font-size: var(--font-size);
   background: var(--bg);
   color: var(--fg);
 }
+.sk_theme tbody { color: var(--fg); }
+.sk_theme input  { color: var(--fg); }
 
-.sk_theme tbody {
-  color: var(--fg);
+/* ── Omnibar text elements ───────────────────────── */
+.sk_theme .url              { color: var(--accent); }
+.sk_theme .annotation       { color: var(--fg-muted); }
+.sk_theme .omnibar_highlight { color: var(--accent); font-weight: 600; }
+.sk_theme .omnibar_timestamp { color: var(--fg-muted); }
+.sk_theme .omnibar_visitcount { color: var(--fg-muted); }
+.sk_theme .omnibar_folder   { color: var(--accent); }
+.sk_theme .prompt           { color: var(--fg-muted); }
+.sk_theme .separator        { color: var(--border); }
+
+/* ── Omnibar container + result rows ─────────────── */
+#sk_omnibar {
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.9);
+  border-radius: 0;
+}
+.sk_theme #sk_omnibarSearchResult ul li:nth-child(odd) {
+  background: var(--bg-alt);
+}
+.sk_theme #sk_omnibarSearchResult ul li.focused {
+  background: var(--bg-highlight);
 }
 
-.sk_theme input {
-  color: var(--fg);
-}
+/* ── Hints ───────────────────────────────────────── */
+#sk_hints .begin { color: var(--accent) !important; }
 
-/* Hints */
-#sk_hints .begin {
-  color: var(--accent) !important;
-}
-
-/* Status bar / Banner */
+/* ── Banner ──────────────────────────────────────── */
 #sk_banner {
   font-family: var(--font-mono);
   font-size: var(--font-size);
@@ -59,7 +74,7 @@ settings.theme = `
   padding: 4px 12px;
 }
 
-/* Keystroke help */
+/* ── Keystroke overlay ───────────────────────────── */
 #sk_keystroke {
   background: var(--bg) !important;
   border: 1px solid var(--border) !important;
@@ -68,7 +83,6 @@ settings.theme = `
   padding: 6px !important;
   color: var(--fg) !important;
 }
-
 #sk_keystroke kbd {
   font-family: var(--font-mono);
   font-size: var(--font-size);
@@ -81,16 +95,10 @@ settings.theme = `
   margin: 2px;
   box-shadow: none;
 }
+#sk_keystroke .annotation { color: var(--fg) !important; }
+#sk_keystroke .candidates  { color: var(--accent) !important; }
 
-#sk_keystroke .annotation {
-  color: var(--fg) !important;
-}
-
-#sk_keystroke .candidates {
-  color: var(--accent) !important;
-}
-
-/* Status line */
+/* ── Status line ─────────────────────────────────── */
 #sk_status {
   font-family: var(--font-mono);
   font-size: var(--font-size);
@@ -100,62 +108,66 @@ settings.theme = `
   border: 1px solid var(--border) !important;
   border-radius: 0;
 }
-
 #sk_status > span {
   padding: 4px 8px;
   color: var(--fg) !important;
   border-right: 1px solid var(--border);
 }
 
-/* Search Matches on Page */
+/* ── Find bar + in-page highlights ───────────────── */
 .sk_find_highlight {
   background: var(--bg-highlight) !important;
   color: var(--fg) !important;
   border-bottom: 2px solid var(--accent) !important;
 }
-
-/* Search Bar (Visual Mode /) */
 #sk_find {
   background: var(--bg) !important;
   border: 1px solid var(--border) !important;
   color: var(--fg) !important;
 }
-
 #sk_find input {
   font-family: var(--font-mono) !important;
   font-weight: 600 !important;
   color: var(--fg) !important;
-  background: transparent !important; 
+  background: transparent !important;
   border: none !important;
 }
 
-/* Markdown/Misc Popups */
-#sk_bubble {
+/* ── Bubble / Popup / Usage ──────────────────────── */
+#sk_bubble, #sk_popup {
   background: var(--bg) !important;
   color: var(--fg) !important;
   border: 1px solid var(--border) !important;
+  border-radius: 0;
+  box-shadow: none;
 }
-
 #sk_usage {
   background: var(--bg) !important;
   color: var(--fg) !important;
   border: 1px solid var(--border) !important;
+  border-radius: 0;
 }
-
 #sk_usage .feature_name {
   color: var(--accent) !important;
   border-bottom: 2px solid var(--border) !important;
 }
+#sk_usage .feature_name > span { border-bottom: none !important; }
 
-#sk_usage .feature_name > span {
-  border-bottom: none !important;
-}
-
-#sk_popup {
+/* ── Tab list (w key) ────────────────────────────── */
+#sk_tabs {
   background: var(--bg) !important;
-  color: var(--fg) !important;
   border: 1px solid var(--border) !important;
+  border-radius: 0;
 }
+.sk_tab {
+  background: var(--bg-alt) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--fg) !important;
+  border-radius: 0;
+}
+.sk_tab_title { color: var(--fg) !important; }
+.sk_tab_url   { color: var(--accent) !important; }
+.sk_tab.focused { background: var(--bg-highlight) !important; }
 `;
 
 // ========== Hints Styling (Shadow DOM) ==========
@@ -202,6 +214,10 @@ api.Hints.style(`
     color: #89cdd2 !important;
   }
 `, "text");
+
+// ========== Visual Mode ==========
+api.Visual.style('cursor', 'background-color: #89cdd2; color: #020202;');
+api.Visual.style('marks',  'background-color: rgba(137, 205, 210, 0.3); border-bottom: 1px solid #89cdd2;');
 
 // ========== Navigation ==========
 
