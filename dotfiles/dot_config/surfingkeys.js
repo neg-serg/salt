@@ -206,14 +206,24 @@ api.Hints.style(`
 // ========== Navigation ==========
 
 // Unmap Omnibar-related default bindings to prevent accidental triggering
-// Map 't' to Local Focus Server (bypassing Content Script restrictions)
-api.mapkey('t', 'Focus Address Bar', function () {
+// Map 'o' to Local Focus Server (bypassing Content Script restrictions)
+api.mapkey('o', 'Focus Address Bar', function () {
   fetch('http://localhost:18888/focus')
     .then(r => {
       if (!r.ok) api.Front.showBanner("Focus Error: " + r.statusText);
     })
     .catch(e => {
       api.Front.showBanner("Focus Failed: Is surfingkeys-server running?");
+      console.error(e);
+    });
+});
+api.mapkey('t', 'Open new tab + focus address bar', function () {
+  fetch('http://localhost:18888/newtab')
+    .then(r => {
+      if (!r.ok) api.Front.showBanner("Newtab Error: " + r.statusText);
+    })
+    .catch(e => {
+      api.Front.showBanner("Newtab Failed: Is surfingkeys-server running?");
       console.error(e);
     });
 });
