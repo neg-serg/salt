@@ -237,15 +237,10 @@ api.mapkey('o', 'Focus Address Bar', function () {
       console.error(e);
     });
 });
-api.mapkey('t', 'Open new tab + focus address bar', function () {
-  fetch('http://localhost:18888/newtab')
-    .then(r => {
-      if (!r.ok) api.Front.showBanner("Newtab Error: " + r.statusText);
-    })
-    .catch(e => {
-      api.Front.showBanner("Newtab Failed: Is surfingkeys-server running?");
-      console.error(e);
-    });
+api.mapkey('t', 'Open new tab (surfingkeys-accessible, auto-focus address bar)', function () {
+  // Open blank.html served locally — Surfingkeys injects here (HTTP URL),
+  // so 'd' works on the new tab. The page itself calls /focus to focus the address bar.
+  api.RUNTIME('openLink', {tab: {tabbed: true, active: true}, url: 'http://localhost:18888/blank.html'});
 });
 
 api.unmap('b');
