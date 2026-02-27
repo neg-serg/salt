@@ -295,13 +295,26 @@ timeout: 5
 default_entry: 1
 interface_branding: CachyOS
 
-/CachyOS
+/CachyOS LTS
     protocol: linux
     kernel_path: boot():/vmlinuz-linux-cachyos-lts
     kernel_cmdline: root=/dev/mapper/main-sys rootflags=subvol=@ rw quiet splash
     module_path: boot():/initramfs-linux-cachyos-lts.img
 
-/CachyOS (fallback)
+/CachyOS LTS (fallback)
+    protocol: linux
+    kernel_path: boot():/vmlinuz-linux-cachyos-lts
+    kernel_cmdline: root=/dev/mapper/main-sys rootflags=subvol=@ rw
+    module_path: boot():/initramfs-linux-cachyos-lts-fallback.img
+
+/CachyOS
+    //CachyOS LTS
+    protocol: linux
+    kernel_path: boot():/vmlinuz-linux-cachyos-lts
+    kernel_cmdline: root=/dev/mapper/main-sys rootflags=subvol=@ rw quiet splash
+    module_path: boot():/initramfs-linux-cachyos-lts.img
+
+    //CachyOS LTS (fallback)
     protocol: linux
     kernel_path: boot():/vmlinuz-linux-cachyos-lts
     kernel_cmdline: root=/dev/mapper/main-sys rootflags=subvol=@ rw
