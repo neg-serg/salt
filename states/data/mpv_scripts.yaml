@@ -27,10 +27,8 @@ raw:
   cutter.lua: "https://raw.githubusercontent.com/rushmj/mpv-video-cutter/master/cutter.lua"
 
 # GitHub release binary: filename → {repo, asset} (downloaded to ~/.config/mpv/scripts/)
-github_release:
-  mpris.so:
-    repo: hoyon/mpv-mpris
-    asset: mpris.so
+# mpris.so removed: v1.2+ is source-only; built via meson in installers.sls
+github_release: {}
 
 # GitHub release ZIP: name → {repo, asset, dest} (extracted to dest, creates guard in scripts/)
 github_release_zip:
