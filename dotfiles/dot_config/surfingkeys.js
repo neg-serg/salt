@@ -269,16 +269,7 @@ api.mapkey('v', 'Scroll half page up', () => {
 // R = built-in "Go one tab right" → RUNTIME("nextTab")     — positional
 api.unmap('e');       // free e from built-in scroll-half-page-up
 api.map('e', 'R');    // e → next tab (positional right)
-api.mapkey('d', 'Close current tab', function () {
-  fetch('http://localhost:18888/close')
-    .then(r => {
-      if (!r.ok) api.Front.showBanner("Close Error: " + r.statusText);
-    })
-    .catch(e => {
-      api.Front.showBanner("Close Failed: Is surfingkeys-server running?");
-      console.error(e);
-    });
-});
+api.map('d', 'x');  // Close current tab (built-in x → RUNTIME("closeTab"))
 api.mapkey('u', 'Restore closed tab', function() {
   api.RUNTIME('openLast');
 });  // Restore tab
