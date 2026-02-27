@@ -279,7 +279,9 @@ api.mapkey('d', 'Close current tab', function () {
       console.error(e);
     });
 });
-api.map('u', 'X');  // Restore tab
+api.mapkey('u', 'Restore closed tab', function() {
+  api.RUNTIME('openLast');
+});  // Restore tab
 api.map('w', 'T');  // Tab list
 
 // History
