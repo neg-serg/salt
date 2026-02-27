@@ -120,6 +120,8 @@ vim.keymap.set('n', 'gf', function() open_link({ jump_to_anchor = false }) end,
   { buffer = true, desc = 'Open file/wiki/URL under cursor' })
 vim.keymap.set('n', 'gF', function() open_link({ jump_to_anchor = true }) end,
   { buffer = true, desc = 'Open and jump to anchor' })
+vim.keymap.set('n', '<CR>', function() open_link({ jump_to_anchor = true }) end,
+  { buffer = true, desc = 'Follow link under cursor' })
 vim.keymap.set('n', 'gx', function()
   local link = link_at_cursor()
   if link and link.type == 'url' then nav.open_url(link.url)

@@ -48,7 +48,7 @@ local function ref_at_cursor()
   return { type = 'file', path = ref, anchor = anchor }
 end
 
-vim.keymap.set('n', 'gf', function()
+local function follow_ref()
   local r = ref_at_cursor()
   if not r then return vim.cmd('normal! gf') end
 
@@ -62,4 +62,7 @@ vim.keymap.set('n', 'gf', function()
       nav.open_file(resolved, { anchor = r.anchor, anchor_fn = goto_yaml_keypath })
     end
   end
-end, { buffer = true, desc = 'Follow $ref / include / extends / uses' })
+end
+
+vim.keymap.set('n', 'gf', follow_ref, { buffer = true, desc = 'Follow $ref / include / extends / uses' })
+vim.keymap.set('n', '<CR>', follow_ref, { buffer = true, desc = 'Follow $ref / include / extends / uses' })
