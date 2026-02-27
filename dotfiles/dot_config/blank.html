@@ -4,11 +4,98 @@
 <meta charset="utf-8">
 <title> </title>
 <style>
-html, body { margin: 0; padding: 0; background: #020202; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; background: #020202; overflow: hidden; }
+canvas { position: absolute; inset: 0; }
+#clock {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: monospace;
+  font-size: 3rem;
+  color: #89cdd2;
+  letter-spacing: 0.1em;
+  pointer-events: none;
+  text-shadow: 0 0 24px rgba(137,205,210,0.25);
+}
 </style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="clock"></div>
 <script>
 fetch('http://localhost:18888/focus').catch(function() {});
+
+const clockEl = document.getElementById('clock');
+function tick() {
+  const d = new Date();
+  const h = String(d.getHours()).padStart(2, '0');
+  const m = String(d.getMinutes()).padStart(2, '0');
+  const s = String(d.getSeconds()).padStart(2, '0');
+  clockEl.textContent = h + ':' + m + ':' + s;
+}
+tick();
+setInterval(tick, 1000);
+
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const N = 35;
+const MAX_DIST = 150;
+let W, H, pts;
+
+function resize() {
+  W = canvas.width  = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+
+function init() {
+  resize();
+  pts = Array.from({length: N}, () => ({
+    x:  Math.random() * W,
+    y:  Math.random() * H,
+    vx: (Math.random() - 0.5) * 0.4,
+    vy: (Math.random() - 0.5) * 0.4,
+    r:  Math.random() * 1.5 + 1,
+  }));
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+
+  for (let i = 0; i < N; i++) {
+    for (let j = i + 1; j < N; j++) {
+      const dx = pts[i].x - pts[j].x;
+      const dy = pts[i].y - pts[j].y;
+      const d  = Math.sqrt(dx * dx + dy * dy);
+      if (d < MAX_DIST) {
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(137,205,210,' + ((1 - d / MAX_DIST) * 0.15) + ')';
+        ctx.lineWidth = 0.5;
+        ctx.moveTo(pts[i].x, pts[i].y);
+        ctx.lineTo(pts[j].x, pts[j].y);
+        ctx.stroke();
+      }
+    }
+  }
+
+  for (const p of pts) {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(137,205,210,0.5)';
+    ctx.fill();
+    p.x += p.vx;
+    p.y += p.vy;
+    if (p.x < 0 || p.x > W) p.vx *= -1;
+    if (p.y < 0 || p.y > H) p.vy *= -1;
+  }
+
+  requestAnimationFrame(draw);
+}
+
+window.addEventListener('resize', resize);
+init();
+draw();
 </script>
-</head>
-<body></body>
+</body>
 </html>
