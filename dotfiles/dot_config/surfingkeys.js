@@ -3,7 +3,7 @@
 
 // ========== Settings ==========
 settings.hintAlign = "left";
-settings.hintCharacters = "asdfghjkl";
+api.Hints.setCharacters("asdfghjkl");
 settings.omnibarSuggestion = false; // DISABLED: Using native address bar
 settings.focusFirstCandidate = false;
 settings.scrollStepSize = 120;
