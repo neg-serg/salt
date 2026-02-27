@@ -264,11 +264,11 @@ api.mapkey('v', 'Scroll half page up', () => {
   api.Normal.scroll("pageUp");
 });
 
-// Tabs (unmap default scroll first)
-api.unmap('e');  // Default: scroll page up
-api.unmap('E');  // Default: scroll page down
-api.map('E', 'gT');  // Previous tab
-api.map('e', 'R');  // Next tab (R is default next tab)
+// Tabs
+// E = built-in "Go one tab left"  → RUNTIME("previousTab") — positional
+// R = built-in "Go one tab right" → RUNTIME("nextTab")     — positional
+api.unmap('e');       // free e from built-in scroll-half-page-up
+api.map('e', 'R');    // e → next tab (positional right)
 api.mapkey('d', 'Close current tab', function () {
   fetch('http://localhost:18888/close')
     .then(r => {
