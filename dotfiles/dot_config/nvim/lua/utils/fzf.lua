@@ -12,12 +12,7 @@ M.ignore_patterns = {
 }
 
 function M.project_root()
-  local cwd = vim.uv.cwd()
-  for _, marker in ipairs({ '.git', '.hg', 'pyproject.toml', 'package.json', 'Cargo.toml', 'go.mod' }) do
-    local p = vim.fn.finddir(marker, cwd .. ';'); if p ~= '' then return vim.fn.fnamemodify(p, ':h') end
-    p = vim.fn.findfile(marker, cwd .. ';'); if p ~= '' then return vim.fn.fnamemodify(p, ':h') end
-  end
-  return cwd
+  return require('utils.nav').project_root(vim.uv.cwd())
 end
 
 function M.smart_files()
