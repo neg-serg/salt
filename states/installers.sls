@@ -119,7 +119,7 @@ cutter_lua_output_path:
 {{ github_release_to('mpv_script_' ~ (filename | replace('.', '_') | replace('-', '_')), filename, opts.repo, opts.asset, mpv_scripts_dir, tag=mpv_tag if mpv_tag else None, version=mpv_tag if mpv_tag else None, require='mpv_scripts_dir') }}
 {% endfor %}
 
-# mpris.so: v1.2+ is source-only; build with meson (v1.1 binary was libavformat.so.58, system has .so.62)
+# mpris.so: v1.2+ is source-only; build with make (v1.1 binary was libavformat.so.58, system has .so.62)
 mpv_script_mpris_so:
   cmd.run:
     - name: |
@@ -128,9 +128,8 @@ mpv_script_mpris_so:
         trap 'rm -rf "$_td"' EXIT
         git clone --depth 1 --branch {{ ver.mpv_mpris }} https://github.com/hoyon/mpv-mpris "$_td"
         cd "$_td"
-        meson setup build
-        meson compile -C build
-        install -m 0644 build/mpris.so {{ mpv_scripts_dir }}/mpris.so
+        make
+        install -m 0644 mpris.so {{ mpv_scripts_dir }}/mpris.so
         mkdir -p {{ ver_dir }} && echo '{{ ver.mpv_mpris }}' > {{ ver_dir }}/mpris.so
     - runas: {{ user }}
     - shell: /bin/bash
