@@ -1,4 +1,4 @@
-{% from '_imports.jinja' import user, home, retry_attempts, retry_interval %}
+{% from '_imports.jinja' import user, home, retry_attempts, retry_interval, ver_dir %}
 {% from '_macros_service.jinja' import ensure_dir %}
 {% from '_macros_install.jinja' import curl_bin, pip_pkg, cargo_pkg, curl_extract_tar, curl_extract_zip, git_clone_deploy %}
 {% from '_macros_github.jinja' import github_tar, github_release_to %}
@@ -105,10 +105,41 @@ mpv_script_{{ filename | replace('.', '_') | replace('-', '_') }}:
     - parallel: True
 {% endfor %}
 
+# cutter.lua writes time_pairs.txt to scripts/ by default; mpv tries to load it as a script
+cutter_lua_output_path:
+  file.replace:
+    - name: {{ mpv_scripts_dir }}/cutter.lua
+    - pattern: "output_file='~/.config/mpv/scripts/time_pairs.txt'"
+    - repl: "output_file='~/.config/mpv/time_pairs.txt'"
+    - require:
+      - cmd: mpv_script_cutter_lua
+
 {% for filename, opts in mpv.github_release.items() %}
 {% set mpv_tag = ver.get(opts.repo.split('/')[1] | replace('-', '_'), '') %}
 {{ github_release_to('mpv_script_' ~ (filename | replace('.', '_') | replace('-', '_')), filename, opts.repo, opts.asset, mpv_scripts_dir, tag=mpv_tag if mpv_tag else None, version=mpv_tag if mpv_tag else None, require='mpv_scripts_dir') }}
 {% endfor %}
+
+# mpris.so: v1.2+ is source-only; build with meson (v1.1 binary was libavformat.so.58, system has .so.62)
+mpv_script_mpris_so:
+  cmd.run:
+    - name: |
+        set -eo pipefail
+        _td=$(mktemp -d)
+        trap 'rm -rf "$_td"' EXIT
+        git clone --depth 1 --branch {{ ver.mpv_mpris }} https://github.com/hoyon/mpv-mpris "$_td"
+        cd "$_td"
+        meson setup build
+        meson compile -C build
+        install -m 0644 build/mpris.so {{ mpv_scripts_dir }}/mpris.so
+        mkdir -p {{ ver_dir }} && echo '{{ ver.mpv_mpris }}' > {{ ver_dir }}/mpris.so
+    - runas: {{ user }}
+    - shell: /bin/bash
+    - unless: test -f {{ mpv_scripts_dir }}/mpris.so && test -f {{ ver_dir }}/mpris.so && rg -qx '{{ ver.mpv_mpris }}' {{ ver_dir }}/mpris.so
+    - require:
+      - file: mpv_scripts_dir
+    - retry:
+        attempts: {{ retry_attempts }}
+        interval: {{ retry_interval }}
 
 {% for name, opts in mpv.github_release_zip.items() %}
 {% set _v = ver.get(name, '') %}
