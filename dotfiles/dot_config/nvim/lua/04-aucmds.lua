@@ -8,31 +8,9 @@ local mode_change = gr("mode_change", {clear=true})
 local custom_updates = gr("custom_updates", {clear=true})
 local hi_yank = gr("hi_yank", {clear=true})
 
--- Auto set window-local cwd to project root for reliable gf/path resolution
+-- Auto set window-local cwd to project root for reliable gf/path resolution.
+-- Root detection delegates to utils/nav.lua (cached, unified marker set).
 do
-  local root_markers = { '.git', '.zk', '.obsidian', 'justfile' }
-  local function find_project_root(startpath)
-    if vim.fs and vim.fs.find and vim.fs.dirname then
-      local found = vim.fs.find(root_markers, { path = startpath, upward = true })
-      if #found > 0 then return vim.fs.dirname(found[1]) end
-      return startpath
-    end
-    local function exists(marker, path)
-      if marker:match('/%$') then
-        return vim.fn.findfile(marker, path .. ';') ~= ''
-      else
-        return vim.fn.finddir(marker, path .. ';') ~= ''
-      end
-    end
-    local dir = startpath
-    while dir and dir ~= '/' do
-      for _, m in ipairs(root_markers) do
-        if exists(m, dir) ~= '' then return dir end
-      end
-      dir = vim.fn.fnamemodify(dir, ':h')
-    end
-    return startpath
-  end
   local pr = gr('AutoProjectRoot', { clear = true })
   au({ 'BufEnter', 'BufNewFile' }, {
     group = pr,
@@ -40,24 +18,51 @@ do
       local name = vim.api.nvim_buf_get_name(args.buf)
       if not name or name == '' then return end
       local filedir = vim.fn.fnamemodify(name, ':p:h')
-      local root = find_project_root(filedir)
+      local ok, nav = pcall(require, 'utils.nav')
+      local root = ok and nav.project_root(filedir) or filedir
       if root and vim.fn.getcwd(0) ~= root then pcall(vim.cmd.lcd, root) end
     end,
     desc = 'Auto-set local cwd to project root',
   })
 end
 
--- Ensure user ftplugin for Markdown is applied even when built-in ftplugin is disabled
+-- Ensure user ftplugins are applied even when built-in ftplugin.vim is disabled.
+-- (loaded_ftplugin=1 in 00-settings.lua blocks Neovim's autoload mechanism.)
 do
-  local md = gr('UserFtpluginMarkdown', { clear = true })
+  local function load_ftplugin(ft_file)
+    return function()
+      pcall(dofile, vim.fn.stdpath('config') .. '/ftplugin/' .. ft_file .. '.lua')
+    end
+  end
   au('FileType', {
-    group = md,
+    group = gr('UserFtpluginMarkdown', { clear = true }),
     pattern = 'markdown',
-    callback = function()
-      local cfg = vim.fn.stdpath('config') .. '/ftplugin/markdown.lua'
-      pcall(dofile, cfg)
-    end,
+    callback = load_ftplugin('markdown'),
     desc = 'Load user ftplugin/markdown.lua',
+  })
+  au('FileType', {
+    group = gr('UserFtpluginSh', { clear = true }),
+    pattern = { 'sh', 'bash', 'zsh' },
+    callback = load_ftplugin('sh'),
+    desc = 'Load user ftplugin/sh.lua',
+  })
+  au('FileType', {
+    group = gr('UserFtpluginLua', { clear = true }),
+    pattern = 'lua',
+    callback = load_ftplugin('lua'),
+    desc = 'Load user ftplugin/lua.lua',
+  })
+  au('FileType', {
+    group = gr('UserFtpluginYaml', { clear = true }),
+    pattern = { 'yaml', 'yaml.ansible', 'yaml.docker-compose' },
+    callback = load_ftplugin('yaml'),
+    desc = 'Load user ftplugin/yaml.lua',
+  })
+  au('FileType', {
+    group = gr('UserFtpluginPython', { clear = true }),
+    pattern = 'python',
+    callback = load_ftplugin('python'),
+    desc = 'Load user ftplugin/python.lua',
   })
 end
 
@@ -129,14 +134,23 @@ do
   au({ 'BufEnter', 'BufNewFile' }, {
     group = gfaug,
     callback = function(args)
+      -- Buffer-local guard: suffixesadd only needs to be set once per buffer.
+      -- (suffixesadd is window-local but the extension is constant per file.)
+      if vim.b[args.buf]._gf_suffixes_set then return end
       local name = vim.api.nvim_buf_get_name(args.buf)
       if not name or name == '' then return end
       local ext = vim.fn.fnamemodify(name, ':e')
       if not ext or ext == '' then return end
       local dotext = '.' .. ext
       local cur = vim.opt_local.suffixesadd:get()
-      for _, s in ipairs(cur) do if s == dotext then return end end
+      for _, s in ipairs(cur) do
+        if s == dotext then
+          vim.b[args.buf]._gf_suffixes_set = true
+          return
+        end
+      end
       pcall(function() vim.opt_local.suffixesadd:prepend({ dotext }) end)
+      vim.b[args.buf]._gf_suffixes_set = true
     end,
     desc = 'Prioritize current extension in suffixesadd',
   })
