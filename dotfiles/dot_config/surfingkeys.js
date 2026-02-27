@@ -167,7 +167,7 @@ settings.theme = `
 }
 .sk_tab_title { color: var(--fg) !important; }
 .sk_tab_url   { color: var(--accent) !important; }
-.sk_tab.focused { background: var(--bg-highlight) !important; }
+.sk_tab.active  { background: var(--bg-highlight) !important; }
 `;
 
 // ========== Hints Styling (Shadow DOM) ==========
