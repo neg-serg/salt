@@ -347,20 +347,9 @@ Object.entries(quickmarks).forEach(([key, site]) => {
 settings.blocklistPattern = /mail\.google\.com|docs\.google\.com|discord\.com|app\.slack\.com/i;
 
 // ========== Clipboard Navigation ==========
-// Open URL from system clipboard in current tab
-api.mapkey('p', 'Open clipboard URL in current tab', function() {
-  api.Clipboard.read(function(resp) {
-    const url = resp.data.trim();
-    if (url) window.location.href = url;
-  });
-});
-// Open URL from system clipboard in new tab
-api.mapkey('P', 'Open clipboard URL in new tab', function() {
-  api.Clipboard.read(function(resp) {
-    const url = resp.data.trim();
-    if (url) api.tabOpenLink(url);
-  });
-});
+// Open selected text or clipboard URL in new tab (uses extension Clipboard API internally)
+api.map('p', 'cc');
+// P restores to built-in: scroll full page down (fullPageDown)
 
 // ========== Image Download ==========
 api.mapkey('zi', 'Download image without dialog', function() {
