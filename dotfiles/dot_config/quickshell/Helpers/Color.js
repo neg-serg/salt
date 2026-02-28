@@ -147,7 +147,7 @@ function _hslToRgb(hsl) {
 function toHsl(c) {
     try { var rgb = _toRgb(c); if (!rgb) return null; return _rgbToHsl(rgb); } catch(e){ return null }
 }
-function fromHsl(h, s, l, a) { try { return _hslToRgb({ h: Number(h)/360, s: s, l: l, a: a }); } catch(e){ return c } }
+function fromHsl(h, s, l, a) { try { return _hslToRgb({ h: Number(h)/360, s: s, l: l, a: a }); } catch(e){ return null } }
 
 function lighten(c, t) {
     try {
