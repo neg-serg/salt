@@ -21,10 +21,10 @@ return {
       virtual_text = true,
       signs = {
         text = {
-          [vim.diagnostic.severity.ERROR] = '\xef\x81\x97',
-          [vim.diagnostic.severity.WARN]  = '\xef\x81\xb1',
-          [vim.diagnostic.severity.HINT]  = '\xef\x81\xaa',
-          [vim.diagnostic.severity.INFO]  = '\xef\x84\x89',
+          [vim.diagnostic.severity.ERROR] = '',
+          [vim.diagnostic.severity.WARN]  = '',
+          [vim.diagnostic.severity.HINT]  = '',
+          [vim.diagnostic.severity.INFO]  = '',
         },
       },
       underline = true,
@@ -56,17 +56,18 @@ return {
       capabilities = capabilities,
     }
 
-    local function configure(server, extra)
+    -- configure: set custom config; optionally enable (for non-Mason servers)
+    local function configure(server, extra, enable)
       local resolved = vim.tbl_deep_extend('force', {}, base_config, extra or {})
       vim.lsp.config(server, resolved)
-      vim.lsp.enable(server)
+      if enable then vim.lsp.enable(server) end
     end
 
-    -- System-installed servers (pacman/AUR — not managed by Mason)
-    configure('cmake')
-    configure('systemd_ls')
+    -- System-installed servers (pacman/AUR — not managed by Mason, must enable manually)
+    configure('cmake', nil, true)
+    configure('systemd_ls', nil, true)
 
-    -- Servers with custom config (default-config servers auto-enabled by mason-lspconfig)
+    -- Mason-managed servers: config only, mason-lspconfig handles enable via automatic_enable
     configure('clangd', {
       cmd = { 'clangd', '--background-index', '--clang-tidy', '--completion-style=detailed', '--header-insertion=never' },
       init_options = { clangdFileStatus = true },
@@ -94,7 +95,10 @@ return {
       if clients and #clients > 0 then
         return vim.lsp.buf.hover()
       end
-      vim.cmd('help ' .. vim.fn.expand('<cword>'))
+      local word = vim.fn.expand('<cword>')
+      if word ~= '' then
+        vim.cmd('help ' .. word)
+      end
     end, { desc = 'Hover or :help cword' })
 
     vim.keymap.set('n', 'gd', function()
@@ -105,8 +109,8 @@ return {
       if clients and #clients > 0 then
         return vim.lsp.buf.definition()
       end
-      local ok_fzf, fzf = pcall(require, 'fzf-lua')
-      if ok_fzf and fzf.lsp_definitions then return fzf.lsp_definitions() end
-    end, { desc = 'Go to definition (LSP/fzf-lua)' })
+      -- Fallback: try tag jump when no LSP available
+      pcall(vim.cmd, 'tag ' .. vim.fn.expand('<cword>'))
+    end, { desc = 'Go to definition (LSP/tag)' })
   end,
 }

@@ -88,7 +88,7 @@ return {'folke/noice.nvim', -- better UX
         },
         lsp={
             progress={
-                enabled=true,
+                enabled=false, -- using heirline's lsp_progress component instead
                 format='lsp_progress',
                 format_done='lsp_progress_done',
                 throttle=1000 / 30, -- frequency to update lsp progress message
@@ -97,7 +97,6 @@ return {'folke/noice.nvim', -- better UX
             override={
                 ['vim.lsp.util.convert_input_to_markdown_lines']=true,
                 ['vim.lsp.util.stylize_markdown']=true,
-                ['cmp.entry.get_documentation']=true,
             },
             hover={enabled=false},
             signature={
