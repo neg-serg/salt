@@ -17,9 +17,11 @@ negcd_widget() {
     (*) return 0 ;;
   esac
 
-  (( idx >= 1 && idx <= ${#NEGCD_DIRS} )) || { zle -M "No directory assigned for $idx"; return 0; }
+  (( idx >= 1 && idx <= ${#NEGCD_DIRS} )) || { zle -M "No directory for slot $idx"; return 0; }
+  local dir="${NEGCD_DIRS[idx]}"
+  [[ -n "$dir" ]] || { zle -M "No directory for slot $idx"; return 0; }
 
-  if builtin cd -- "${NEGCD_DIRS[idx]}"; then
+  if builtin cd -- "$dir"; then
     # Tell Powerlevel10k we changed dir and a prompt will be drawn
     (( $+functions[p10k-on-chpwd]  )) && p10k-on-chpwd
     (( $+functions[p10k-on-precmd] )) && p10k-on-precmd
