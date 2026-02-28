@@ -87,7 +87,7 @@ function fetchCoordinates(city, callback, errorCallback, options) {
         if (err) {
             var backoff = (err.retryAfter && err.retryAfter > 0) ? err.retryAfter : 0;
             if (!backoff && (err.status === 429 || (err.status >= 500 && err.status <= 599))) backoff = cfg.errorTtlMs;
-            if (backoff) writeCacheError(_geoCache, key, backoff);
+            if (backoff) _writeCacheError(_geoCache, key, backoff);
         }
         errorCallback && errorCallback("Geocoding error: " + (err.status || err.type || "unknown"));
     }, _ua);
@@ -104,7 +104,7 @@ function fetchWeather(latitude, longitude, callback, errorCallback, options) {
 
     var cacheKey = cfg.cityKey ? String(cfg.cityKey).toLowerCase() : null;
     if (cacheKey) {
-        var cached = readCache(_weatherCache, cacheKey);
+        var cached = _readCache(_weatherCache, cacheKey);
         if (cached) {
             if (cached.error) {
                 errorCallback && errorCallback("Weather temporarily unavailable; retry later");
@@ -117,7 +117,7 @@ function fetchWeather(latitude, longitude, callback, errorCallback, options) {
         }
     }
 
-    var url = buildUrl("https://api.open-meteo.com/v1/forecast", {
+    var url = _buildUrl("https://api.open-meteo.com/v1/forecast", {
         latitude: String(latitude),
         longitude: String(longitude),
         current_weather: "true",
