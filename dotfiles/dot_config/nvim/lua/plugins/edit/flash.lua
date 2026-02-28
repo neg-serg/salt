@@ -3,7 +3,7 @@
 -- └───────────────────────────────────────────────────────────────────────────────────┘
 return {
   "folke/flash.nvim",
-  enabled = true,
+  enabled = false, -- disabled: using leap.nvim + flit.nvim instead
   opts = {},
   keys = {
     {
