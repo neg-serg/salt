@@ -435,42 +435,31 @@
       prompt_neg
   }
   function prompt_neg() {
-    setopt sh_word_split
-    full_path="$PWD"
-    mainc="%(?.%F{4}.%F{4})"
-    tildac="%(?.%F{2}.%F{4})"
-    prompt_end=" %F{25}❯%f"
-    neg_user_pretok="%f"
-    [[ ${UID} -ne 0 ]] && _neg_promptcolor="${tildac}" && _neg_user_pretoken="${mainc}%f"
-    [[ ${UID} -ne 0 ]] && _neg_promptcolor="${tildac}" && _neg_user_token="${mainc}${prompt_end}"
-    dyn_pwd=""
-    tilda_path=${full_path/${HOME}/\~}
-    # write the home directory as a tilda
-    [[ ${tilda_path[2,-1]} == "/" ]] && tilda_path=${tilda_path[2,-1]}
-    # otherwise the first element of split_path would be empty.
-    forward_tilda=${tilda_path//[^["\/"]/}
-    # remove everything that is not a "/"
-    neg_num=$(( $#forward_tilda + 1 ))
-    # we removed the first forward slash, so we need one more element than the number of slashes
-    IFS_="${IFS}"
-    IFS="/"
-    _neg_split_path=(${tilda_path})
-    _neg_start_of_loop=1
-    _neg_end_of_loop=${neg_num}
-    for i in {$_neg_start_of_loop..$_neg_end_of_loop}; do
-        if [[ $i == $_neg_end_of_loop ]]; then
-          to_be_added=$_neg_split_path[i]'/'
-          dyn_pwd=${dyn_pwd}${to_be_added}
-        else
-          to_be_added=${_neg_split_path[i]}
-          to_be_added=${to_be_added}"%F{4}/%F{249}"
-          dyn_pwd=${dyn_pwd}${to_be_added}
-        fi
+    emulate -L zsh
+    local full_path="$PWD"
+    local tildac="%(?.%F{2}.%F{4})"
+    local prompt_end=" %F{25}❯%f"
+    local neg_user_pretok="%f"
+    local _neg_promptcolor _neg_user_token
+    if [[ ${UID} -ne 0 ]]; then
+      _neg_promptcolor="${tildac}"
+      _neg_user_token="%(?.%F{4}.%F{4})${prompt_end}"
+    fi
+    local tilda_path=${full_path/${HOME}/\~}
+    # Strip leading / so split doesn't produce an empty first element
+    [[ ${tilda_path[1]} == "/" ]] && tilda_path=${tilda_path[2,-1]}
+    # Split by / using zsh parameter expansion (no IFS/sh_word_split needed)
+    local -a parts=(${(s:/:)tilda_path})
+    local dyn_pwd="" i
+    for i in {1..${#parts}}; do
+      if [[ $i == ${#parts} ]]; then
+        dyn_pwd+="${parts[i]}/"
+      else
+        dyn_pwd+="${parts[i]}%F{4}/%F{249}"
+      fi
     done
-    IFS=${IFS_}
     [[ ${full_path/${HOME}/\~} != ${full_path} ]] && dyn_pwd=${dyn_pwd/\/~/~}
-    # remove the slash in front of ${HOME}
-    neg_prompt="%F${_neg_promptcolor}${dyn_pwd[0,-2]}%F{0}$_neg_user_token%b%k%f"
+    local neg_prompt="%F${_neg_promptcolor}${dyn_pwd[0,-2]}%F{0}${_neg_user_token}%b%k%f"
     if [[ $full_path = $HOME ]]; then
       p10k segment -f 25 -t "${prompt_end}"
     else
