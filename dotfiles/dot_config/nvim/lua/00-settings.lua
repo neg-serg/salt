@@ -135,6 +135,15 @@ o.directory=home_..'/trash/'               -- Directory for swap files
 o.undodir=home_..'/trash/'                 -- Setup undo dir
 o.undofile=true                              -- Enable undofile
 o.swapfile=false                             -- Do not use swapfiles
+
+-- Disable undofile for sensitive files to prevent leaking secrets via undo history
+vim.api.nvim_create_autocmd('BufReadPre', {
+  pattern = { '*.gpg', '*.asc', '*.env', '*/.env.*', '*/gopass-*', '/dev/shm/*', 'COMMIT_EDITMSG' },
+  callback = function()
+    vim.bo.undofile = false
+    vim.bo.swapfile = false
+  end,
+})
 o.shada=[['1000,<50,s10,h]]                     -- Ultra fast shada settings
 o.cdhome=true                                -- :cd without argument goes to the home directory
 o.completeopt='menu,menuone,noselect'        -- Completion options
