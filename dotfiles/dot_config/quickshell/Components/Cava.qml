@@ -73,8 +73,7 @@ Scope {
             process.stdinEnabled = false;
         }
         onChunk: (data) => {
-            const newValues = Array(count).fill(0);
-            for (let i = 0; i < values.length; i++) newValues[i] = values[i];
+            const newValues = values.slice();
             if (process.index + data.length > count) process.index = 0;
             for (let i = 0; i < data.length; i += 1) {
                 newValues[process.index] = Utils.clamp(data.charCodeAt(i), 0, 128) / 128;

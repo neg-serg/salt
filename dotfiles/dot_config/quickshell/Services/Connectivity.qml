@@ -52,7 +52,7 @@ Item {
     }
     ProcessRunner {
         id: linkProbe
-        cmd: ["dash", "-c", "ip -j -br a"]
+        cmd: ["ip", "-j", "-br", "a"]
         parseJson: true
         autoStart: false
         restartOnExit: false
