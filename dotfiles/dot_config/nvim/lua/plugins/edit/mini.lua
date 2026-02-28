@@ -7,26 +7,27 @@ return {
   'echasnovski/mini.nvim',
   event = 'VeryLazy',
   config = function()
+    local map = vim.keymap.set
     local ok_align, align = pcall(require, 'mini.align')
     if ok_align then
       align.setup()
       -- Use function mappings to mimic EasyAlign UX
-      Map('x', 'ga', function() align.operator(align.gen_spec.input()) end, { desc = 'Align (visual)' })
-      Map('n', 'ga', function() align.operator(align.gen_spec.input()) end, { desc = 'Align (operator)' })
+      map('x', 'ga', function() align.operator(align.gen_spec.input()) end, { desc = 'Align (visual)' })
+      map('n', 'ga', function() align.operator(align.gen_spec.input()) end, { desc = 'Align (operator)' })
     end
     -- Trailing whitespace helper (replaces trim.nvim). No auto-trim on write.
     local ok_ts, trail = pcall(require, 'mini.trailspace')
     if ok_ts then
       trail.setup()
       -- Optional manual trim command example (kept commented to match previous behavior):
-      -- Map('n', '<leader>tw', function() trail.trim() end, { desc = 'Trim trailing whitespace' })
+      -- map('n', '<leader>tw', function() trail.trim() end, { desc = 'Trim trailing whitespace' })
     end
 
     -- Split/Join (replaces treesj): simple toggle on <leader>a
     local ok_sj, sj = pcall(require, 'mini.splitjoin')
     if ok_sj then
       sj.setup()
-      Map('n', '<leader>a', function() sj.toggle() end, { desc = 'Split/Join toggle' })
+      map('n', '<leader>a', function() sj.toggle() end, { desc = 'Split/Join toggle' })
     end
 
     -- Surround (replaces kylechui/nvim-surround) with your preferred keymaps.
@@ -46,9 +47,9 @@ return {
         respect_selection_type = true,
       })
       -- Visual add: keep 'S' (like previous plugin)
-      Map('x', 'S', function() require('mini.surround').add('visual') end, { desc = 'Surround (visual)' })
+      map('x', 'S', function() require('mini.surround').add('visual') end, { desc = 'Surround (visual)' })
       -- Visual line add: 'gS' – promote selection to linewise, then add
-      Map('x', 'gS', function()
+      map('x', 'gS', function()
         vim.cmd('normal! gvV')
         require('mini.surround').add('visual')
       end, { desc = 'Surround (visual line)' })

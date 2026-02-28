@@ -3,6 +3,7 @@
 -- └───────────────────────────────────────────────────────────────────────────────────┘
 return {'sindrets/diffview.nvim', -- diff view for multiple files
     config=function()
+        local map = vim.keymap.set
         local actions = require("diffview.actions")
 
         require('diffview').setup {
@@ -66,16 +67,16 @@ return {'sindrets/diffview.nvim', -- diff view for multiple files
             },
         }
 
-    Map('n', '<C-S-g>', '<Cmd>DiffviewFileHistory<CR>', {desc='Diffview file history'})
-    Map('n', '\\a', '<Cmd>DiffviewOpen<CR>', {desc='Diffview open'})
-    Map('n', '\\c', '<Cmd>DiffviewClose<CR>', {desc='Diffview close'})
-    Map('n', '\\r', '<Cmd>DiffviewRefresh<CR>', {desc='Diffview refresh'})
-    Map('n', '\\f', '<Cmd>DiffviewToggleFiles<CR>', {desc='Diffview toggle files'})
-    Map('n', '\\0', '<Cmd>DiffviewOpen HEAD<CR>', {desc='Diffview HEAD'})
-    Map('n', '\\1', '<Cmd>DiffviewOpen HEAD^<CR>', {desc='Diffview HEAD^'})
-    Map('n', '\\2', '<Cmd>DiffviewOpen HEAD^^<CR>', {desc='Diffview HEAD^^'})
-    Map('n', '\\3', '<Cmd>DiffviewOpen HEAD^^^<CR>', {desc='Diffview HEAD^^^'})
-    Map('n', '\\4', '<Cmd>DiffviewOpen HEAD^^^^<CR>', {desc='Diffview HEAD^^^^'})
+    map('n', '<C-S-g>', '<Cmd>DiffviewFileHistory<CR>', {desc='Diffview file history'})
+    map('n', '\\a', '<Cmd>DiffviewOpen<CR>', {desc='Diffview open'})
+    map('n', '\\c', '<Cmd>DiffviewClose<CR>', {desc='Diffview close'})
+    map('n', '\\r', '<Cmd>DiffviewRefresh<CR>', {desc='Diffview refresh'})
+    map('n', '\\f', '<Cmd>DiffviewToggleFiles<CR>', {desc='Diffview toggle files'})
+    map('n', '\\0', '<Cmd>DiffviewOpen HEAD<CR>', {desc='Diffview HEAD'})
+    map('n', '\\1', '<Cmd>DiffviewOpen HEAD^<CR>', {desc='Diffview HEAD^'})
+    map('n', '\\2', '<Cmd>DiffviewOpen HEAD^^<CR>', {desc='Diffview HEAD^^'})
+    map('n', '\\3', '<Cmd>DiffviewOpen HEAD^^^<CR>', {desc='Diffview HEAD^^^'})
+    map('n', '\\4', '<Cmd>DiffviewOpen HEAD^^^^<CR>', {desc='Diffview HEAD^^^^'})
     end,
     cmd={'DiffviewOpen','DiffviewFileHistory'},
     dependencies={'nvim-tree/nvim-web-devicons','nvim-lua/plenary.nvim'},
