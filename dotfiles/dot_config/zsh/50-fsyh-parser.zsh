@@ -1,77 +1,61 @@
-MAGIC="# 🥟 pie"
-THEME_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/f-sy-h/current_theme.zsh"
+local THEME_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/f-sy-h/current_theme.zsh"
+local INI_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/f-sy-h/neg.ini"
 typeset -gA FAST_HIGHLIGHT_STYLES
-FAST_THEME_NAME="neg"
+local FAST_THEME_NAME="neg"
 
-if [[ -f "$THEME_FILE" ]]; then
-    local _last_line
-    _last_line="${"$(<"$THEME_FILE")"##*$'\n'}"
-    [[ "$_last_line" == "$MAGIC" ]] && { return 0 2>/dev/null || exit 0; }
+# Skip regeneration if theme file is newer than INI source
+if [[ -f "$THEME_FILE" && "$THEME_FILE" -nt "$INI_FILE" ]]; then
+    source "$THEME_FILE"
+    return 0 2>/dev/null || exit 0
 fi
 
-typeset -gA FILE_EXTENSION_STYLES # Global associative array for file extension styles
-section=""
+[[ -r "$INI_FILE" ]] || return 0
 
-# Process each line in the INI file
-INI_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/f-sy-h/neg.ini"
-if [[ -r "$INI_FILE" ]]; then
-    while IFS= read -r line; do
-      # Clean up the line:
-      line="${line%%\;*}" # Remove everything after ;
-      line="${line%%\#*}" # Remove everything after #
-      line="${line#"${line%%[![:space:]]*}"}" # Trim leading whitespace
-      line="${line%"${line##*[![:space:]]}"}" # Trim trailing whitespace
-      [[ -z "$line" ]] && continue # Skip empty lines
+# Parse INI and build styles in memory
+local -A ext_styles
+local section="" line key value rest bg_color new_value
+local -a parts
 
-      # Check for section headers [section-name]
-      if [[ "$line" =~ '^\[(.*)\]$' ]]; then
+while IFS= read -r line; do
+    line="${line%%\;*}"
+    line="${line%%\#*}"
+    line="${line#"${line%%[![:space:]]*}"}"
+    line="${line%"${line##*[![:space:]]}"}"
+    [[ -z "$line" ]] && continue
+
+    if [[ "$line" =~ '^\[(.*)\]$' ]]; then
         section="${match[1]}"
-
-      # Process file-extension styles
-      elif [[ "$section" == "file-extensions" && "$line" =~ '^([a-zA-Z0-9_+-]+)[[:space:]]*=[[:space:]]*(.*)$' ]]; then
+    elif [[ "$section" == "file-extensions" && "$line" =~ '^([a-zA-Z0-9_+-]+)[[:space:]]*=[[:space:]]*(.*)$' ]]; then
         key="${match[1]}"
         value="${match[2]}"
-        value="${value//\"/}" # Remove double quotes
+        value="${value//\"/}"
 
-        # Transform style format for f-sy-h compatibility
         if [[ "$value" == bg:* ]]; then
-          # Handle background styles (bg:color,fg,attributes)
-          rest=${value#bg:} # Remove 'bg:' prefix
-          parts=(${(s:,:)rest}) # Split by commas
-          bg_color=${parts[1]} # First part is background color
-          shift parts # Remove bg color from parts array
-
-          new_value="bg=$bg_color" # Start with background
-
-          # Check if next part is foreground color (numeric)
-          if [[ -n "$parts[1]" && "$parts[1]" =~ '^[0-9]+$' ]]; then
-            new_value+=",fg=$parts[1]" # Add foreground
-            shift parts # Remove fg color
-          fi
-
-          # Add any remaining attributes (bold, underline, etc)
-          [[ ${#parts} -gt 0 ]] && new_value+=",${(j:,:)parts}"
-          value=$new_value
-
+            rest=${value#bg:}
+            parts=(${(s:,:)rest})
+            bg_color=${parts[1]}
+            shift parts
+            new_value="bg=$bg_color"
+            if [[ -n "$parts[1]" && "$parts[1]" =~ '^[0-9]+$' ]]; then
+                new_value+=",fg=$parts[1]"
+                shift parts
+            fi
+            [[ ${#parts} -gt 0 ]] && new_value+=",${(j:,:)parts}"
+            value=$new_value
         else
-          # Handle regular styles (fg=color,attributes)
-          value="fg=$value" # Add fg= prefix
+            value="fg=$value"
         fi
 
-        FILE_EXTENSION_STYLES[$key]="$value"
-      fi
-    done < "$INI_FILE"
+        ext_styles[$key]="$value"
+    fi
+done < "$INI_FILE"
 
-    # Apply styles to fast-syntax-highlighting
-    mkdir -p "$(dirname "$THEME_FILE")"
-    for ext style in "${(@kv)FILE_EXTENSION_STYLES}"; do
-      [[ -n $ext && -n $style ]] || continue
-      FAST_HIGHLIGHT_STYLES[${FAST_THEME_NAME}file-extensions-${ext}]="$style"
-      key_str="${FAST_THEME_NAME}file-extensions-${ext}"
-      line=": \${FAST_HIGHLIGHT_STYLES[${key_str}]:=$style}"
-      # drop old lines for this key (if any), then append the fresh one
-      sed -i "/^: \${FAST_HIGHLIGHT_STYLES\\[${key_str//\//\\/}\\]:=/d}" "$THEME_FILE" 2>/dev/null
-      print -r -- "$line" >> "$THEME_FILE"
+# Set styles in memory and write theme file in a single pass
+mkdir -p "${THEME_FILE:h}"
+{
+    for ext style in "${(@kv)ext_styles}"; do
+        [[ -n $ext && -n $style ]] || continue
+        FAST_HIGHLIGHT_STYLES[${FAST_THEME_NAME}file-extensions-${ext}]="$style"
+        print -r -- ": \${FAST_HIGHLIGHT_STYLES[${FAST_THEME_NAME}file-extensions-${ext}]:=$style}"
     done
-    echo "# 🥟 pie" >> "$THEME_FILE"
-fi
+} > "$THEME_FILE"
