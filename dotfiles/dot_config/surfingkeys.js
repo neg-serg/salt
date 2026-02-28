@@ -309,6 +309,13 @@ api.mapkey('[', 'Decrease video speed', function () {
     api.Front.showBanner("Speed: " + video.playbackRate.toFixed(2) + "x");
   }
 });
+api.mapkey('\\', 'Reset video speed to 1x', function () {
+  const video = document.querySelector('video');
+  if (video) {
+    video.playbackRate = 1;
+    api.Front.showBanner("Speed: 1.00x");
+  }
+});
 
 // ========== Quickmarks (Using Native Tab Open) ==========
 // Since we disabled Omnibar, we just open these directly in new tabs or current tab
@@ -331,11 +338,11 @@ const quickmarks = {
 };
 
 Object.entries(quickmarks).forEach(([key, site]) => {
-  // Open in current tab
-  api.mapkey('o' + key, 'Open ' + site.name, () => {
+  // Open in current tab (go + key)
+  api.mapkey('go' + key, 'Open ' + site.name, () => {
     window.location.href = site.url;
   });
-  // Open in new tab
+  // Open in new tab (gn + key)
   api.mapkey('gn' + key, 'Open ' + site.name + ' in new tab', () => {
     api.tabOpenLink(site.url);
   });
@@ -373,7 +380,7 @@ function getMediaUrl(el) {
             }).sort(function(a, b) { return b.w - a.w; });
             if (best.length && best[0].url) return best[0].url;
         }
-        return el.src;
+        return el.src || el.dataset.src || el.dataset.lazySrc || el.dataset.original;
     }
     // <picture> — grab the best <source> or fall back to inner <img>
     if (el.tagName === 'PICTURE') {
@@ -410,9 +417,9 @@ var mediaSelector = [
     'picture',
     'video',
     'canvas',
-    'a[href$=".jpg"]', 'a[href$=".jpeg"]', 'a[href$=".png"]',
-    'a[href$=".gif"]', 'a[href$=".webp"]', 'a[href$=".avif"]',
-    'a[href$=".svg"]', 'a[href$=".mp4"]',  'a[href$=".webm"]',
+    'a[href$=".jpg" i]', 'a[href$=".jpeg" i]', 'a[href$=".png" i]',
+    'a[href$=".gif" i]', 'a[href$=".webp" i]', 'a[href$=".avif" i]',
+    'a[href$=".svg" i]', 'a[href$=".mp4" i]',  'a[href$=".webm" i]',
     // Common wrappers that contain images
     'figure', 'div[style*="background-image"]',
     '[role="img"]'
