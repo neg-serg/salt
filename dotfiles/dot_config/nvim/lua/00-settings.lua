@@ -13,7 +13,6 @@ local disabled_built_ins={
     'bugreport',
     'compiler',
     'did_load_filetypes',
-    'ftplugin',
     'getscript',
     'getscriptPlugin',
     'gzip',

@@ -26,51 +26,11 @@ do
   })
 end
 
--- Ensure user ftplugins are applied even when built-in ftplugin.vim is disabled.
--- (loaded_ftplugin=1 in 00-settings.lua blocks Neovim's autoload mechanism.)
-do
-  local function load_ftplugin(ft_file)
-    return function()
-      pcall(dofile, vim.fn.stdpath('config') .. '/ftplugin/' .. ft_file .. '.lua')
-    end
-  end
-  au('FileType', {
-    group = gr('UserFtpluginMarkdown', { clear = true }),
-    pattern = 'markdown',
-    callback = load_ftplugin('markdown'),
-    desc = 'Load user ftplugin/markdown.lua',
-  })
-  au('FileType', {
-    group = gr('UserFtpluginSh', { clear = true }),
-    pattern = { 'sh', 'bash', 'zsh' },
-    callback = load_ftplugin('sh'),
-    desc = 'Load user ftplugin/sh.lua',
-  })
-  au('FileType', {
-    group = gr('UserFtpluginLua', { clear = true }),
-    pattern = 'lua',
-    callback = load_ftplugin('lua'),
-    desc = 'Load user ftplugin/lua.lua',
-  })
-  au('FileType', {
-    group = gr('UserFtpluginYaml', { clear = true }),
-    pattern = { 'yaml', 'yaml.ansible', 'yaml.docker-compose' },
-    callback = load_ftplugin('yaml'),
-    desc = 'Load user ftplugin/yaml.lua',
-  })
-  au('FileType', {
-    group = gr('UserFtpluginPython', { clear = true }),
-    pattern = 'python',
-    callback = load_ftplugin('python'),
-    desc = 'Load user ftplugin/python.lua',
-  })
-end
-
 local function restore_cursor()
     au({"FileType"}, { buffer=0, once=true,
         callback = function()
             local types = {"nofile", "fugitive", "gitcommit", "gitrebase", "commit", "rebase", }
-            if vim.fn.expand("%") == "" or types[vim.bo.filetype] ~= nil then
+            if vim.fn.expand("%") == "" or vim.tbl_contains(types, vim.bo.filetype) then
                 return
             end
             local line = vim.fn.line
@@ -81,7 +41,7 @@ local function restore_cursor()
     })
 end
 
-au({'FocusGained','BufEnter','FileChangedShell','WinEnter'}, {command='checktime', group=main})
+au({'FocusGained','FileChangedShell'}, {command='checktime', group=main})
 -- Disables automatic commenting on newline:
 au({'Filetype'}, {
     pattern={'help', 'startuptime', 'qf', 'lspinfo'},
