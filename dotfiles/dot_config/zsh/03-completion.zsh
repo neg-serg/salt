@@ -1,4 +1,3 @@
-zstyle ':acceptline:*' rehash true
 # allow one error for every three characters typed in approximate completer
 zstyle ':completion:*:approximate:' max-errors 'reply=( $((($#PREFIX+$#SUFFIX)/3 )) numeric )'
 # don't complete backup files as executables
@@ -22,8 +21,6 @@ zstyle ':completion:*' matcher-list '' \
   '+m:{[:upper:]}={[:lower:]}' \
   '+m:{_-}={-_}' \
   'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
-# automatically load bash completion functions
-autoload -Uz bashcompinit && bashcompinit
 # separate matches into groups
 zstyle ':completion:*:matches' group 'yes'
 zstyle ':completion:*' group-name ''
@@ -93,6 +90,5 @@ zle -N forward-word-match
 zstyle ':zle:backward-kill-word*' word-style standard
 zstyle ':zle:*kill*' word-chars '*?_-.[]~=&;!#$%^(){}<>'
 
-autoload -Uz add-zsh-hook
 
 # vim: ft=zsh:nowrap

@@ -3,7 +3,6 @@ bindkey -e
 autoload -Uz fg-widget && zle -N fg-widget
 autoload -Uz iren
 autoload -Uz inplace_mk_dirs && zle -N inplace_mk_dirs
-autoload -Uz magic-abbrev-expand && zle -N magic-abbrev-expand
 autoload -Uz rationalise-dot && zle -N rationalise-dot
 autoload -Uz redraw-prompt
 autoload -Uz special-accept-line && zle -N special-accept-line
@@ -59,12 +58,12 @@ zle -N kill_job_current_widget
 bindkey '^S^M' fg_current_widget
 bindkey '^S^K^M' kill_job_current_widget
 for i in {1..9}; do
-    eval "fg_${i}_widget() { zle -I; fg %${i}; }"
-    eval "kill_job_${i}_widget() { kill %${i} && fg %${i}; }"
-    eval "zle -N fg_${i}_widget"
-    eval "zle -N kill_job_${i}_widget"
-    eval "bindkey '^S${i}' fg_${i}_widget"
-    eval "bindkey '^S^K${i}' kill_job_${i}_widget"
+    functions[fg_${i}_widget]="zle -I; fg %${i}"
+    functions[kill_job_${i}_widget]="kill %${i} && fg %${i}"
+    zle -N fg_${i}_widget
+    zle -N kill_job_${i}_widget
+    bindkey "^S${i}" fg_${i}_widget
+    bindkey "^S^K${i}" kill_job_${i}_widget
 done
 
 # zoxide_complete provides the fzf-backed picker
