@@ -86,7 +86,7 @@ return {
     })
 
     -- Global LSP/Help keymaps (replace vim-ref behavior)
-    Map('n', 'K', function()
+    vim.keymap.set('n', 'K', function()
       local clients = {}
       if vim.lsp and vim.lsp.get_clients then
         clients = vim.lsp.get_clients({ bufnr = 0 })
@@ -97,7 +97,7 @@ return {
       vim.cmd('help ' .. vim.fn.expand('<cword>'))
     end, { desc = 'Hover or :help cword' })
 
-    Map('n', 'gd', function()
+    vim.keymap.set('n', 'gd', function()
       local clients = {}
       if vim.lsp and vim.lsp.get_clients then
         clients = vim.lsp.get_clients({ bufnr = 0 })

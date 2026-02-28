@@ -15,7 +15,7 @@ return {'akinsho/toggleterm.nvim', -- better way to toggle term
         })
         local Terminal=require('toggleterm.terminal').Terminal
         local navigator=Terminal:new({cmd='zsh', env={NEOVIM_TERMINAL=1}})
-        Map('n', 'ei', function() navigator:toggle() end, {silent=true, desc='Toggle terminal'})
+        vim.keymap.set('n', 'ei', function() navigator:toggle() end, {silent=true, desc='Toggle terminal'})
     end,
     keys={'ei'},
 }
