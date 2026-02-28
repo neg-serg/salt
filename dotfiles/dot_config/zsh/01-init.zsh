@@ -30,7 +30,7 @@ setopt transient_rprompt # only show the rprompt on the current prompt
 setopt rc_quotes # quotes with ''
 
 # --- Interactive shell settings ---
-export GPG_TTY=$(tty)
+export GPG_TTY=$TTY
 export KEYTIMEOUT=10
 export REPORTTIME=60
 export ESCDELAY=1
@@ -38,10 +38,8 @@ export ESCDELAY=1
 setopt append_history # this is default, but set for share_history
 setopt extended_history # save each command's beginning timestamp and the duration to the history file
 setopt hist_expire_dups_first # when trimming history, lose oldest duplicates first
-setopt histignorealldups # remove command lines from the history list when the first character on the line is a space
-setopt hist_ignore_dups # ignore duplication command history list
-setopt hist_ignore_space # reduce whitespace in history
-setopt histignorespace # remove command lines from the history list when the first character on the line is a space
+setopt hist_ignore_all_dups # remove older duplicates from history
+setopt hist_ignore_space # don't record commands starting with space
 setopt hist_verify # don't execute, just expand history
 setopt share_history # import new commands from the history file also in other zsh-session (implies inc_append_history)
 setopt nohist_beep # Don't beep when a widget tries to access an history entry which isn't there.
@@ -65,13 +63,13 @@ fi
 
 typeset -gx TIMEFMT="[37m[34m⟬[37m[37m%J[34m⟭[39m[34m⟬[37m%U[34m⟭[39m[34m⟬[37muser %S[34m⟭[39m[34m⟬[37msystem %P[34m⟭[39m[34m⟬[37mcpu %*E total[34m⟭[39m[34m[39m[34m⟬[37mMem: %M kb max[34m⟭[39m"
 typeset -gx WORDCHARS='*?_-.[]~=&;!#$%^(){}<>'
-typeset -gx READNULLCMD="wbat"
+typeset -gx READNULLCMD="${commands[bat]:-less}"
 typeset -gx LS_COLORS
 typeset -gx HISTFILE=${XDG_STATE_HOME:-$HOME/.local/state}/zsh/history
 [[ -d ${HISTFILE:h} ]] || mkdir -p -- ${HISTFILE:h}
 typeset -gx SAVEHIST=2000000
-typeset -gx HISTSIZE=$((SAVEHIST * 1.10))
-typeset -gx HISTORY_IGNORE="&:l:ls:[bf]g:exit:reset:clear:cd*:gs:gd"
+typeset -gx HISTSIZE=$((SAVEHIST + SAVEHIST / 10))
+typeset -gx HISTORY_IGNORE="l:ls:[bf]g:exit:reset:clear:cd*:gs:gd"
 
 _zpcompinit_custom() {
     setopt extendedglob local_options
@@ -92,14 +90,12 @@ _zpcompinit_custom() {
 }
 
 zmodload -i zsh/complist
-autoload -Uz -- dircolors_init greynoise
+autoload -Uz -- dircolors_init
 autoload -Uz run-help ${^fpath}/run-help-*(N:t) || return
 (( $+aliases[run-help] )) && unalias run-help # make run-help more useful
 
 
 autoload -Uz fzf-on-tab
-zle -N fzf-on-tab
-
 autoload -Uz chpwd
 autoload -Uz zcompare
 autoload -Uz h
