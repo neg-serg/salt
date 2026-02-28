@@ -2,6 +2,7 @@
 # Uses .git/index size as O(1) proxy for file count (~100 bytes/file).
 # core.untrackedCache is already set globally in ~/.config/git/config.
 
+autoload -Uz add-zsh-hook
 zmodload -i zsh/stat
 typeset -gA _git_fsmonitor_checked  # session cache: abs_git_dir → 1
 

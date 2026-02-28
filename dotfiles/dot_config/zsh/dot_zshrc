@@ -32,6 +32,9 @@ zi light romkatv/powerlevel10k
 zi ice depth'1' lucid
 zi light QuarticCat/zsh-smartcache
 
+# Ensure ~/tmp symlink (survives tmpfs cleanup across reboots)
+[[ -L ~/tmp && -d ~/tmp ]] || ln -fns "$(mktemp -d)" ~/tmp
+
 source "${ZDOTDIR}/00-ulimits.zsh"
 source "${ZDOTDIR}/01-init.zsh"
 

@@ -56,9 +56,3 @@ export VAGRANT_HOME="$XDG_DATA_HOME/vagrant"
 export __GL_VRR_ALLOWED="1"
 export XZ_DEFAULTS="-T 0"
 export LIBSEAT_BACKEND="logind"
-
-# --- Ensure ~/tmp (survives tmpfs cleanup across reboots) ---
-if [[ ! -L ~/tmp || ! -d ~/tmp ]]; then
-  rm -f ~/tmp
-  ln -fs "$(mktemp -d)" ~/tmp
-fi
