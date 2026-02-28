@@ -4,6 +4,7 @@
 -- or `vim.cmd.colorscheme('NeoCyberVim')`.
 return {
   'DonJulve/NeoCyberVim',
+  enabled = false,
   lazy = true,
   priority = 1000, -- allow opting-in before others
   opts = {

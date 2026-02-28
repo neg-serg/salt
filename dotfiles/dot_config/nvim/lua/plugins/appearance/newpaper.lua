@@ -3,6 +3,7 @@
 -- └───────────────────────────────────────────────────────────────────────────────────┘
 return {
   'yorik1984/newpaper.nvim',
+  enabled = false,
   lazy = true,
   priority = 860,
   opts = function()

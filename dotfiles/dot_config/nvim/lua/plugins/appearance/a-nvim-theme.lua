@@ -3,6 +3,7 @@
 -- Enable with :colorscheme neon
 return {
   'Skalyaev/a-nvim-theme',
+  enabled = false,
   lazy = true,
   priority = 1000,
 }

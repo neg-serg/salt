@@ -3,6 +3,7 @@
 -- └───────────────────────────────────────────────────────────────────────────────────┘
 return {
   'Tsuzat/NeoSolarized.nvim',
+  enabled = false,
   lazy = true,
   priority = 870,
   opts = function()

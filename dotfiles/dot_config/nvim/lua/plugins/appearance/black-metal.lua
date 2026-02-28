@@ -3,6 +3,7 @@
 -- Enable with `:colorscheme bathory` (or other band) or require('black-metal').load().
 return {
   'metalelf0/black-metal-theme-neovim',
+  enabled = false,
   lazy = true,
   priority = 1000,
   config = function()

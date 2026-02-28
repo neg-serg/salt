@@ -3,6 +3,7 @@
 -- └───────────────────────────────────────────────────────────────────────────────────┘
 return {
   'craftzdog/solarized-osaka.nvim',
+  enabled = false,
   lazy = true,
   priority = 900,
   opts = function()
