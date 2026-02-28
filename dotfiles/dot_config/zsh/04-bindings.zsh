@@ -52,7 +52,7 @@ zle -N jobs_widget
 bindkey '^S^S' jobs_widget
 
 fg_current_widget() { zle -I; fg %+; }
-kill_job_current_widget() { kill %+ && fg %+; }
+kill_job_current_widget() { zle -I; kill %+ && fg %+; }
 zle -N fg_current_widget
 zle -N kill_job_current_widget
 

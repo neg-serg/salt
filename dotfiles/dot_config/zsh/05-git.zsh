@@ -2,6 +2,7 @@
 # Uses .git/index size as O(1) proxy for file count (~100 bytes/file).
 # core.untrackedCache is already set globally in ~/.config/git/config.
 
+zmodload -i zsh/stat
 typeset -gA _git_fsmonitor_checked  # session cache: abs_git_dir → 1
 
 _git_auto_fsmonitor() {
@@ -19,8 +20,9 @@ _git_auto_fsmonitor() {
   [[ -f "$index" ]] || return
 
   # O(1) size check: 5MB ≈ 50k files (nixpkgs ~5MB, linux ~7MB, typical << 1MB)
-  local index_size
-  index_size=$(stat -c%s "$index" 2>/dev/null) || return
+  local -a index_stat
+  zstat -A index_stat +size "$index" 2>/dev/null || return
+  local index_size=$index_stat[1]
   (( index_size < 5242880 )) && return  # 5MB threshold
 
   # Enable fsmonitor only if not already configured locally
