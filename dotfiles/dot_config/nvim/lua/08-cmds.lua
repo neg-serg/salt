@@ -29,12 +29,8 @@ function! Redir(cmd, rng, start, end)
 endfunction
 ]],{})
 
-vim.api.nvim_cmd({cmd="command", args={'-bang', '-nargs=*', '-complete=file', 'E', 'e<bang>', '<args>'}}, {})
-vim.api.nvim_cmd({cmd="command", args={'-bang', '-nargs=*', '-complete=file', 'Wq', 'wq<bang>', '<args>'}}, {})
-vim.api.nvim_cmd({cmd="command", args={'-bang', '-nargs=*', '-complete=file', 'WQ', 'wq<bang>', '<args>'}}, {})
-vim.api.nvim_cmd({cmd="command", args={'-bang', 'Q', 'q<bang>'}}, {})
-vim.api.nvim_cmd({cmd="command", args={'-bang', 'QA', 'qa<bang>'}}, {})
-vim.api.nvim_cmd({cmd="command", args={'-bang', 'Qa', 'qa<bang>'}}, {})
+-- Command typo corrections are handled by cnoreabbrev in 14-abbr.lua.
+-- Only keep Redir (unique functionality) and paste commands below.
 vim.api.nvim_cmd({cmd="command", args={'-nargs=1', '-complete=command', '-bar', '-range', 'Redir', 'silent', 'call', "Redir(<q-args>, <range>, <line1>, <line2>)"}}, {})
 vim.api.nvim_cmd({cmd="command", args={'-range=%', 'SP', '<line1>,<line2>w', "!curl -F 'sprunge=<-' http://sprunge.us | tr -d ' ' | wl-copy"}}, {})
 vim.api.nvim_cmd({cmd="command", args={'-range=%', 'IX', '<line1>,<line2>w', "!curl -F 'f:1=<-' ix.io | tr -d ' ' | wl-copy"}}, {})
