@@ -18,7 +18,6 @@ if [[ -r "$ZI_HOME/bin/zi.zsh" ]]; then
 fi
 
 fpath=(${ZDOTDIR}/lazyfuncs $fpath)
-([[ -f /etc/NIXOS ]] || command -v nix >/dev/null 2>&1) && fpath=(${XDG_CONFIG_HOME:-$HOME/.config}/zsh-nix $fpath)
 
 zi ice depth'1' lucid
 zi light romkatv/zsh-defer
@@ -46,7 +45,7 @@ if [[ -r "${ZDOTDIR}/99-fix-aliases.zsh" ]]; then
 fi
 
 # F-Sy-H theme parser (populates FAST_HIGHLIGHT_STYLES before F-Sy-H loads)
-zsh-defer source "${ZDOTDIR}/00-fsyh-parser.zsh"
+zsh-defer source "${ZDOTDIR}/50-fsyh-parser.zsh"
 
 # F-Sy-H (must be loaded last to correctly wrap ZLE widgets)
 # We use zsh-defer to ensure it runs after all other widget-defining scripts

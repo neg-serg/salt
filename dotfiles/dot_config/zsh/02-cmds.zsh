@@ -6,7 +6,6 @@ _exists rg && {
 
 _exists sudo && {
     local sudo_list=(chmod chown modprobe umount)
-    local logind_sudo_list=(reboot halt poweroff)
     for c in ${sudo_list[@]}; {_exists "$c" && alias "$c=sudo $c"}
 }
 _exists journalctl && journalctl() {command journalctl "${@:--b}";}

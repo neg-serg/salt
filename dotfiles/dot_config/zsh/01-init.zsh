@@ -35,31 +35,23 @@ export KEYTIMEOUT=10
 export REPORTTIME=60
 export ESCDELAY=1
 
-() {
-    local hist
-    for hist in ~/.zsh_history*~$HISTFILE(N); do
-        fc -RI $hist
-    done
-    setopt append_history # this is default, but set for share_history
-    setopt extended_history # save each command's beginning timestamp and the duration to the history file
-    setopt hist_expire_dups_first # when trimming history, lose oldest duplicates first
-    setopt histignorealldups # remove command lines from the history list when the first character on the line is a space
-    setopt hist_ignore_dups # ignore duplication command history list
-    setopt hist_ignore_space # reduce whitespace in history
-    setopt histignorespace # remove command lines from the history list when the first character on the line is a space
-    setopt hist_verify # don't execute, just expand history
-    setopt inc_append_history # add comamnds as they are typed, don't wait until shell exit
-    setopt share_history # import new commands from the history file also in other zsh-session
-    setopt nohist_beep # Don't beep when a widget tries to access an history entry which isn't there.
-    setopt hist_fcntl_lock # Use the OS's locking mechanism instead of ZSH's
-    setopt hist_find_no_dups # When searching in the history do not show dups multiple times
-    setopt hist_no_store # Don't add the "history" command to the history when it's called
-    setopt hist_reduce_blanks # Don't store blank lines in the history
-}
+setopt append_history # this is default, but set for share_history
+setopt extended_history # save each command's beginning timestamp and the duration to the history file
+setopt hist_expire_dups_first # when trimming history, lose oldest duplicates first
+setopt histignorealldups # remove command lines from the history list when the first character on the line is a space
+setopt hist_ignore_dups # ignore duplication command history list
+setopt hist_ignore_space # reduce whitespace in history
+setopt histignorespace # remove command lines from the history list when the first character on the line is a space
+setopt hist_verify # don't execute, just expand history
+setopt share_history # import new commands from the history file also in other zsh-session (implies inc_append_history)
+setopt nohist_beep # Don't beep when a widget tries to access an history entry which isn't there.
+setopt hist_fcntl_lock # Use the OS's locking mechanism instead of ZSH's
+setopt hist_find_no_dups # When searching in the history do not show dups multiple times
+setopt hist_no_store # Don't add the "history" command to the history when it's called
+setopt hist_reduce_blanks # Don't store blank lines in the history
 
-_exists() { (( $+commands[$1] )) }
+_exists() { (( $+commands[$1] )) }  # used by deferred scripts (02-cmds.zsh etc.)
 typeset -U cdpath fpath manpath # automatically remove duplicates from these arrays
-typeset -gx PATH=$HOME/.local/bin:$PATH
 _exists nvim && typeset -gx MANPAGER="nvim +Man!"
 
 typeset -gx ZSH_CACHE_DIR=${XDG_CACHE_HOME:-$HOME/.cache}/zsh
@@ -77,7 +69,7 @@ typeset -gx READNULLCMD="wbat"
 typeset -gx LS_COLORS
 typeset -gx HISTFILE=${XDG_STATE_HOME:-$HOME/.local/state}/zsh/history
 [[ -d ${HISTFILE:h} ]] || mkdir -p -- ${HISTFILE:h}
-typeset -gx SAVEHIST=10000000
+typeset -gx SAVEHIST=2000000
 typeset -gx HISTSIZE=$((SAVEHIST * 1.10))
 typeset -gx HISTORY_IGNORE="&:l:ls:[bf]g:exit:reset:clear:cd*:gs:gd"
 
@@ -100,7 +92,7 @@ _zpcompinit_custom() {
 }
 
 zmodload -i zsh/complist
-autoload -Uz -- history-search-end split-shell-arguments lookupinit dircolors_init ylock greynoise
+autoload -Uz -- dircolors_init greynoise
 autoload -Uz run-help ${^fpath}/run-help-*(N:t) || return
 (( $+aliases[run-help] )) && unalias run-help # make run-help more useful
 
