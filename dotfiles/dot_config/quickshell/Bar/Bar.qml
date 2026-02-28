@@ -53,6 +53,16 @@ Scope {
         return Color.withAlpha(baseColor, baseAlpha * scale);
     }
 
+    function wedgeWidthNorm(faceWidth, seamWidth) {
+        var ww = Number(Quickshell.env("QS_WEDGE_WIDTH_PCT") || "");
+        if (isFinite(ww) && ww > 0) return Math.max(0.0, Math.min(1.0, ww/100.0));
+        var faceW = Math.max(1, faceWidth);
+        var targetPx = Math.max(1, Math.round(seamWidth));
+        var capPx = Math.round(faceW * 0.35);
+        var wpx = Math.min(targetPx, capPx);
+        return Math.max(0.02, Math.min(0.98, wpx / faceW));
+    }
+
     // Env toggles to hard-disable expensive paths during perf triage
     readonly property bool wedgeClipAllowed: ((Quickshell.env("QS_DISABLE_WEDGE") || "") !== "1")
     readonly property bool trianglesAllowed: ((Quickshell.env("QS_DISABLE_TRIANGLES") || "") !== "1")
@@ -405,7 +415,6 @@ Scope {
                     anchors.right: false
                     implicitWidth: leftPanel.screen ? Math.round(leftPanel.screen.width / 2) : 960
                     visible: monitorEnabled
-                    onVisibleChanged: {}
                     implicitHeight: leftBarBackground.height
                     exclusionMode: ExclusionMode.Ignore
                     exclusiveZone: 0
@@ -534,16 +543,7 @@ Scope {
                                 fragmentShader: Qt.resolvedUrl("../shaders/wedge_clip.frag.qsb")
                                 property var sourceSampler: leftPanelTintSource
                                 property vector4d params0: Qt.vector4d(
-                                    // QS_WEDGE_WIDTH_PCT override; otherwise use panel seamWidth capped to 35% of face.
-                                    (function(){
-                                        var ww = Number(Quickshell.env("QS_WEDGE_WIDTH_PCT") || "");
-                                        if (isFinite(ww) && ww > 0) return Math.max(0.0, Math.min(1.0, ww/100.0));
-                                        var faceW = Math.max(1, leftBarFill.width);
-                                        var targetPx = Math.max(1, Math.round(leftPanel.seamWidth));
-                                        var capPx = Math.round(faceW * 0.35);
-                                        var wpx = Math.min(targetPx, capPx);
-                                        return Math.max(0.02, Math.min(0.98, wpx / faceW));
-                                    })(),
+                                    rootScope.wedgeWidthNorm(leftBarFill.width, leftPanel.seamWidth),
                                     1,
                                     1,
                                     0
@@ -578,15 +578,7 @@ Scope {
                                 property var sourceSampler: leftBarFillSource
                                 // params0: x=wNorm, y=slopeUp, z=side(+1 right edge), w=unused
                                 property vector4d params0: Qt.vector4d(
-                                    (function(){
-                                        var ww = Number(Quickshell.env("QS_WEDGE_WIDTH_PCT") || "");
-                                        if (isFinite(ww) && ww > 0) return Math.max(0.0, Math.min(1.0, ww/100.0));
-                                        var faceW = Math.max(1, leftBarFill.width);
-                                        var targetPx = Math.max(1, Math.round(leftPanel.seamWidth));
-                                        var capPx = Math.round(faceW * 0.35);
-                                        var wpx = Math.min(targetPx, capPx);
-                                        return Math.max(0.02, Math.min(0.98, wpx / faceW));
-                                    })(),
+                                    rootScope.wedgeWidthNorm(leftBarFill.width, leftPanel.seamWidth),
                                     1,
                                     1,
                                     0
@@ -773,7 +765,6 @@ Scope {
                     anchors.left: false
                     implicitWidth: rightPanel.screen ? Math.round(rightPanel.screen.width / 2) : 960
                     visible: monitorEnabled
-                    onVisibleChanged: {}
                     implicitHeight: rightBarBackground.height
                     exclusionMode: ExclusionMode.Ignore
                     exclusiveZone: 0
@@ -922,15 +913,7 @@ Scope {
                                 fragmentShader: Qt.resolvedUrl("../shaders/wedge_clip.frag.qsb")
                                 property var sourceSampler: rightPanelTintSource
                                 property vector4d params0: Qt.vector4d(
-                                    (function(){
-                                        var ww = Number(Quickshell.env("QS_WEDGE_WIDTH_PCT") || "");
-                                        if (isFinite(ww) && ww > 0) return Math.max(0.0, Math.min(1.0, ww/100.0));
-                                        var faceW = Math.max(1, rightBarFill.width);
-                                        var targetPx = Math.max(1, Math.round(rightPanel.seamWidth));
-                                        var capPx = Math.round(faceW * 0.35);
-                                        var wpx = Math.min(targetPx, capPx);
-                                        return Math.max(0.02, Math.min(0.98, wpx / faceW));
-                                    })(),
+                                    rootScope.wedgeWidthNorm(rightBarFill.width, rightPanel.seamWidth),
                                     1,
                                     -1,
                                     0
@@ -965,15 +948,7 @@ Scope {
                                 property var sourceSampler: rightBarFillSource
                                 // params0: x=wNorm, y=slopeUp, z=side(-1 left edge), w=unused
                                 property vector4d params0: Qt.vector4d(
-                                    (function(){
-                                        var ww = Number(Quickshell.env("QS_WEDGE_WIDTH_PCT") || "");
-                                        if (isFinite(ww) && ww > 0) return Math.max(0.0, Math.min(1.0, ww/100.0));
-                                        var faceW = Math.max(1, rightBarFill.width);
-                                        var targetPx = Math.max(1, Math.round(rightPanel.seamWidth));
-                                        var capPx = Math.round(faceW * 0.35);
-                                        var wpx = Math.min(targetPx, capPx);
-                                        return Math.max(0.02, Math.min(0.98, wpx / faceW));
-                                    })(),
+                                    rootScope.wedgeWidthNorm(rightBarFill.width, rightPanel.seamWidth),
                                     1,
                                     -1,
                                     0
@@ -1294,8 +1269,6 @@ Scope {
                         ? (seamPanel.rawGapWidth > 0)
                         : (seamPanel.geometryReady)
                     )
-                    // flag unavailable; keep default
-                    onVisibleChanged: {}
                     exclusionMode: ExclusionMode.Ignore
                     exclusiveZone: 0
                     WlrLayershell.namespace: "quickshell-bar-seam"
