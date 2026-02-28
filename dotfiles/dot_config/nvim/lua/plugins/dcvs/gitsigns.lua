@@ -2,25 +2,19 @@
 -- │ █▓▒░ lewis6991/gitsigns.nvim                                                      │
 -- └───────────────────────────────────────────────────────────────────────────────────┘
 return {'lewis6991/gitsigns.nvim', -- fast git decorations
-    dependencies='plenary.nvim',
     config=function()
-        local status, gitsigns=pcall(require, 'gitsigns')
-        if (not status) then return end
-        gitsigns.setup {
-            current_line_blame=true,
-            current_line_blame_opts={
-                delay=1000,
-                virt_text = true,
-                virt_text_pos = 'right_align',  -- Or 'eol'
-            },
+        require('gitsigns').setup {
             on_attach = function(bufnr)
-                local gs = package.loaded.gitsigns
-                vim.keymap.set('n', '<leader>b', function()
-                    gs.preview_hunk()
-                end, { buffer = bufnr, desc = 'Git: [H]over [B]lame' })
-                vim.keymap.set('n', '<leader>q', function()
-                    gs.blame_line({full=true})
-                end, { buffer=bufnr})
+                local gs = require('gitsigns')
+                local function bmap(mode, lhs, rhs, desc)
+                    vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, silent = true, desc = desc })
+                end
+                bmap('n', '<leader>b', gs.preview_hunk, 'Git: preview hunk')
+                bmap('n', '<leader>q', function() gs.blame_line({full=true}) end, 'Git: blame line (full)')
+                bmap('n', '<leader>gB', gs.blame_line, 'Git: blame line')
+                bmap('n', '<leader>g]', gs.next_hunk, 'Git: next hunk')
+                bmap('n', '<leader>g[', gs.prev_hunk, 'Git: prev hunk')
+                bmap('n', '<leader>g?', gs.preview_hunk, 'Git: preview hunk')
             end,
             signs={
                 add={text='▎', show_count=false},
@@ -35,29 +29,23 @@ return {'lewis6991/gitsigns.nvim', -- fast git decorations
                 [7]  ="₇",  [8]="₈",  [9]="₉",
                 ["+"]="₊",
             },
-            linehl=false, -- toggle with `:Gitsigns toggle_linehl`
-            numhl=false, -- toggle with `:Gitsigns toggle_nunhl`
-            signcolumn=true,  -- toggle with `:Gitsigns toggle_signs`
-            word_diff=false, -- toggle with `:Gitsigns toggle_word_diff`
+            linehl=false,
+            numhl=false,
+            signcolumn=true,
+            word_diff=false,
             watch_gitdir={interval=500, follow_files=true},
             sign_priority=6,
             update_debounce=100,
             max_file_length=40000,
-            status_formatter=nil,
-            diff_opts={ algorithm="patience", internal=true, indent_heuristic=true,},
+            diff_opts={ algorithm="patience", internal=true, indent_heuristic=true },
             attach_to_untracked=true,
-            current_line_blame=false, -- Toggle with `:Gitsigns toggle_current_line_blame`
+            current_line_blame=false,
             current_line_blame_opts={
                 virt_text=true,
-                virt_text_pos='eol', -- 'eol' | 'overlay' | 'right_align'
+                virt_text_pos='eol',
                 delay=1000,
                 ignore_whitespace=false,
             },
         }
-        local opts={silent=true, noremap=true}
-        map('n', '<leader>gB', '<cmd>Gitsigns blame_line<cr>', opts)
-        map('n', '<leader>g]', '<cmd>Gitsigns next_hunk<cr>', opts)
-        map('n', '<leader>g[', '<cmd>Gitsigns prev_hunk<cr>', opts)
-        map('n', '<leader>g?', '<cmd>Gitsigns preview_hunk<cr>', opts)
     end,
-    event={'BufNewFile','BufRead'}} -- async gitsigns
+    event={'BufReadPost','BufNewFile'}}

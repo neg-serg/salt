@@ -33,8 +33,8 @@ return {
 				astyle = { command = "astyle", prepend_args = { "-s2", "-c", "-J", "-n", "-q", "-z2", "-xC80" } },
 				["clang-format"] = { command = "clang-format", prepend_args = { "--style=file", "-i" } },
 				["cmake-format"] = { command = "cmake-format", prepend_args = { "-i" } },
-				prettier = { command = "prettier", prepend_args = { "-w" } },
-				prettierd = { command = "prettierd", prepend_args = { "-w" } },
+				prettier = { command = "prettier" },
+				prettierd = { command = "prettierd" },
 				shfmt = { command = "shfmt", prepend_args = { "-i", "0", "-sr", "-kp" } },
 			},
 		})
