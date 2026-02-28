@@ -22,7 +22,9 @@ settings.theme = `
   --fg-muted:     rgba(240, 241, 255, 0.6);
   --accent:       #89cdd2;
   --border:       #0a3749;
-  --hint-bg:      #001742;
+  --hint-bg:      #002D59;
+  --hint-fg:      #94E1F9;
+  --hint-border:  #006FCC;
 }
 
 /* ── Base ────────────────────────────────────────── */
@@ -84,9 +86,9 @@ settings.theme = `
   font-family: var(--font-mono);
   font-size: var(--font-size);
   font-weight: 600;
-  color: var(--accent) !important;
+  color: var(--hint-fg) !important;
   background: var(--hint-bg) !important;
-  border: 1px solid var(--border) !important;
+  border: 1px solid var(--hint-border) !important;
   border-radius: 0;
   padding: 2px 4px;
   margin: 2px;
@@ -167,8 +169,8 @@ settings.theme = `
 .sk_tab_hint {
   background: var(--hint-bg) !important;
   background-image: none !important;
-  color: var(--accent) !important;
-  border: 1px solid var(--border) !important;
+  color: var(--hint-fg) !important;
+  border: 1px solid var(--hint-border) !important;
   border-radius: 0 !important;
   box-shadow: none !important;
 }
@@ -181,22 +183,22 @@ api.Hints.style(`
     font-size: 0.875rem !important;
     font-weight: 600 !important;
     padding: 2px 4px !important;
-    background: #001742 !important;
+    background: #002D59 !important;
     background-image: none !important;
-    color: #89cdd2 !important;
-    border: 1px solid #0a3749 !important;
+    color: #94E1F9 !important;
+    border: 1px solid #006FCC !important;
     border-radius: 0 !important;
     box-shadow: none !important;
   }
-  
+
   mask {
-    background: rgba(137, 205, 210, 0.3) !important;
-    border: 1px solid #89cdd2 !important;
+    background: rgba(0, 111, 204, 0.3) !important;
+    border: 1px solid #006FCC !important;
   }
 
   mask.activeInput {
-    background: rgba(137, 205, 210, 0.6) !important;
-    border: 2px solid #89cdd2 !important;
+    background: rgba(0, 111, 204, 0.6) !important;
+    border: 2px solid #006FCC !important;
   }
 `);
 
@@ -207,15 +209,15 @@ api.Hints.style(`
     font-size: 0.875rem !important;
     font-weight: 600 !important;
     padding: 2px 4px !important;
-    background: #001742 !important;
+    background: #002D59 !important;
     background-image: none !important;
-    color: #89cdd2 !important;
-    border: 1px solid #0a3749 !important;
+    color: #94E1F9 !important;
+    border: 1px solid #006FCC !important;
     border-radius: 0 !important;
     box-shadow: none !important;
   }
   div.begin {
-    color: #89cdd2 !important;
+    color: #94E1F9 !important;
   }
 `, "text");
 
