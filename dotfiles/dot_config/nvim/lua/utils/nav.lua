@@ -10,6 +10,7 @@ local uv = vim.uv or vim.loop
 -- Superset of the old markers in 04-aucmds.lua and utils/fzf.lua.
 local ROOT_MARKERS = {
   'Cargo.toml', 'pyproject.toml', 'go.mod', 'package.json',
+  'CMakeLists.txt', 'Makefile', 'mix.exs',
   '.zk', '.obsidian', 'justfile',
   '.git', '.hg',
 }

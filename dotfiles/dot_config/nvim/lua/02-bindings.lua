@@ -1,38 +1,38 @@
 vim.g.mapleader = ','
-Map('i', '<C-j>', '<ESC>', {nowait = true})
-Map('v', '<C-j>', '<ESC>', {nowait = true})
+Map('i', '<C-j>', '<ESC>', {nowait = true, desc = 'Escape'})
+Map('v', '<C-j>', '<ESC>', {nowait = true, desc = 'Escape'})
 for _, key in ipairs({ 'j', 'k', 'l', 'h' }) do
-  Map('n', '<leader>' .. key, '<C-w>' .. key, { nowait = true })
+  Map('n', '<leader>' .. key, '<C-w>' .. key, { nowait = true, desc = 'Window ' .. key })
 end
-map('n', '_', "<Cmd>exe 'e ' . getcwd()<CR>")
+Map('n', '_', "<Cmd>exe 'e ' . getcwd()<CR>", {desc = 'Open cwd'})
 
-map('t', '<Esc>', '<C-\\><C-n>', {silent=true}) -- Escape as normal
+Map('t', '<Esc>', '<C-\\><C-n>', {silent=true, desc = 'Terminal escape'})
 
-Map('n', 'Q', 'q', {noremap=true})
+Map('n', 'Q', 'q', {noremap=true, desc = 'Record macro'})
 for _, key in ipairs({ 'q', '<F1>', '<up>', '<down>', '<left>', '<right>' }) do
   Map('', key, '<NOP>')
 end
 
-map('v', '<C-e>', '"+y', {silent=true, noremap=true})
+Map('v', '<C-e>', '"+y', {silent=true, noremap=true, desc = 'Yank to clipboard'})
 
-map('n', 'en', ':normal :<C-u>cnext<CR>', {silent=true})
-map('n', 'ep', ':normal :<C-u>cprevious<CR>', {silent=true})
-map('n', 'eR', ':normal :<C-u>crewind<CR>', {silent=true})
-map('n', 'eN', ':normal :<C-u>cfirst<CR>', {silent=true})
-map('n', 'eP', ':normal :<C-u>clast<CR>', {silent=true})
-map('n', 'el', ':normal :<C-u>clist<CR>', {silent=true})
+Map('n', 'en', '<Cmd>cnext<CR>', {silent=true, desc = 'Quickfix next'})
+Map('n', 'ep', '<Cmd>cprevious<CR>', {silent=true, desc = 'Quickfix prev'})
+Map('n', 'eR', '<Cmd>crewind<CR>', {silent=true, desc = 'Quickfix rewind'})
+Map('n', 'eN', '<Cmd>cfirst<CR>', {silent=true, desc = 'Quickfix first'})
+Map('n', 'eP', '<Cmd>clast<CR>', {silent=true, desc = 'Quickfix last'})
+Map('n', 'el', '<Cmd>clist<CR>', {silent=true, desc = 'Quickfix list'})
 
-map('n', 'ew', ':w!<cr>', {silent=true})
-map('n', 'eW', ':SudaWrite<cr>', {silent=true})
-map('n', 'eS', ':source %<CR>', {silent=true})
-map('n', 'eU', ':Lazy update<CR>', {silent=true})
+Map('n', 'ew', '<Cmd>w!<CR>', {silent=true, desc = 'Force write'})
+Map('n', 'eW', '<Cmd>SudaWrite<CR>', {silent=true, desc = 'Sudo write'})
+Map('n', 'eS', '<Cmd>source %<CR>', {silent=true, desc = 'Source current file'})
+Map('n', 'eU', '<Cmd>Lazy update<CR>', {silent=true, desc = 'Lazy update'})
 Map('n', '<C-c>', '<C-[>')
 Map('i', '<C-c>', '<C-[>')
 -- These create newlines like o and O but stay in normal mode
-Map('n', 'zJ', 'o<Esc>k', {silent=true})
-Map('n', 'zK', 'O<Esc>j', {silent=true})
+Map('n', 'zJ', 'o<Esc>k', {silent=true, desc = 'Newline below (stay normal)'})
+Map('n', 'zK', 'O<Esc>j', {silent=true, desc = 'Newline above (stay normal)'})
 -- Toggle hlsearch for current results, start highlight
-map('n', ',,', ':nohlsearch<cr>:diffupdate<cr>:syntax sync fromstart<CR><C-l>')
+Map('n', ',,', '<Cmd>nohlsearch<CR><Cmd>diffupdate<CR><Cmd>syntax sync fromstart<CR><C-l>', {desc = 'Clear highlights'})
 -- Visual shifting (does not exit Visual mode)
 Map('v', '<', '<gv')
 Map('v', '>', '>gv')
@@ -42,7 +42,7 @@ Map('n', '<C-g>', 'g<C-g>')
 -- column, so swap them
 Map('n', "'", "`")
 Map('n', "`", "'")
-map('n', '<M-w>', ':bd<CR>', {silent=true})
+Map('n', '<M-w>', '<Cmd>bd<CR>', {silent=true, desc = 'Delete buffer'})
 Map('i', '<C-V>', '<C-R>+')
 Map('c', '<C-a>', '<home>', {noremap=true})
 Map('i', '<C-a>', "<C-o>^", {noremap=true})
@@ -60,7 +60,6 @@ Map('o', '<M-b>', '<Left>', {noremap=true})
 Map('o', '<M-e>', '<End>', {noremap=true})
 Map('i', '<C-e>', "<C-o>$", {noremap=true})
 
-map('i', '<C-v>', 'paste#paste_cmd["i"]', {expr=true})
 Map('n', 'et', function() require('75-smart-cd').smart_cd() end, {desc = 'Smart directory change'})
 -- <CR> in normal mode: open bare URL under cursor, NOP otherwise (redundant with j/+)
 Map('n', '<CR>', function()

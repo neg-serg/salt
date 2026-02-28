@@ -18,7 +18,7 @@ if plugin_tasks_ok and plugin_tasks.docs then
             local dst = doc_cache .. "/" .. (self.plugin.name or "plugin")
             vim.fn.mkdir(dst, "p")
             -- copy doc dir into writable state cache to allow helptags
-            if vim.loop.fs_stat(docs) then
+            if vim.uv.fs_stat(docs) then
                 vim.fn.system({ "cp", "-r", docs .. "/.", dst })
             end
             self.plugin.dir = dst -- run helptags in writable cache
@@ -52,7 +52,7 @@ else
     local lazy_present, _ = pcall(require, "lazy")
     
     if not lazy_present then
-        if not vim.loop.fs_stat(lazypath) then
+        if not vim.uv.fs_stat(lazypath) then
             vim.fn.system({
                 "git",
                 "clone",
