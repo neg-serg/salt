@@ -26,6 +26,7 @@ Singleton {
             reload()
         }
         onLoadFailed: function(error) {
+            console.warn("[StateCache] load failed:", error, "— resetting to defaults")
             stateAdapter.lastActivePlayers = []
             writeAdapter()
         }
