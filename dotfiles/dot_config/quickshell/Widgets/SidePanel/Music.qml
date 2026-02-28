@@ -490,28 +490,6 @@ Rectangle {
                                 iconAlignment: Qt.AlignVCenter
                             }
 
-                            // Codec (hidden; included in Quality)
-                            RowLayout {
-                                visible: false
-                                Layout.fillWidth: true
-                                spacing: Math.round(Theme.sidePanelSpacingTight * Theme.scale(screen))
-                                Text {
-                                    text: "Codec"
-                                    color: playerUI.musicTextColor
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: playerUI.musicTextPx
-                                    font.weight: Font.DemiBold
-                                }
-                                Text {
-                                    Layout.fillWidth: true
-                                    text: MusicManager.trackCodecDetail || MusicManager.trackCodec
-                                    color: playerUI.musicTextColor
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: playerUI.musicTextPx
-                                    elide: Text.ElideRight
-                                }
-                            }
-
                             // Quality summary (combined)
                             MusicWidgets.MusicDetailRow {
                                 visible: !!MusicManager.trackQualitySummary
@@ -558,49 +536,6 @@ Rectangle {
                                 iconAlignment: Qt.AlignVCenter
                             }
 
-                            // Bit depth (hidden; included in Quality)
-                            RowLayout {
-                                visible: false
-                                Layout.fillWidth: true
-                                spacing: Math.round(Theme.sidePanelSpacingTight * Theme.scale(screen))
-                                Text {
-                                    text: "Bit depth"
-                                    color: playerUI.musicTextColor
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: playerUI.musicTextPx
-                                    font.weight: Font.DemiBold
-                                }
-                                Text {
-                                    Layout.fillWidth: true
-                                    text: MusicManager.trackBitDepthStr
-                                    color: playerUI.musicTextColor
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: playerUI.musicTextPx
-                                    elide: Text.ElideRight
-                                }
-                            }
-
-                            // Channels (hidden; included in Quality)
-                            RowLayout {
-                                visible: false
-                                Layout.fillWidth: true
-                                spacing: Math.round(Theme.sidePanelSpacingTight * Theme.scale(screen))
-                                Text {
-                                    text: "Channels"
-                                    color: playerUI.musicTextColor
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: playerUI.musicTextPx
-                                    font.weight: Font.DemiBold
-                                }
-                                Text {
-                                    Layout.fillWidth: true
-                                    text: MusicManager.trackChannelsStr
-                                    color: playerUI.musicTextColor
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: playerUI.musicTextPx
-                                    elide: Text.ElideRight
-                                }
-                            }
 
                             // Channel layout (hide when Quality is shown)
                             RowLayout {
@@ -627,69 +562,6 @@ Rectangle {
                                 }
                             }
 
-                            // Bitrate (hidden; included in Quality)
-                            RowLayout {
-                                visible: false
-                                Layout.fillWidth: true
-                                spacing: Math.round(Theme.sidePanelSpacingTight * Theme.scale(screen))
-                                Text {
-                                    text: "Bitrate"
-                                    color: playerUI.musicTextColor
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: playerUI.musicTextPx
-                                    font.weight: Font.DemiBold
-                                }
-                                Text {
-                                    Layout.fillWidth: true
-                                    text: MusicManager.trackBitrateStr
-                                    color: playerUI.musicTextColor
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: playerUI.musicTextPx
-                                    elide: Text.ElideRight
-                                }
-                            }
-
-                            // Track/Disc numbers (hidden by request)
-                            RowLayout {
-                                visible: false
-                                Layout.fillWidth: true
-                                spacing: Math.round(Theme.sidePanelSpacingTight * Theme.scale(screen))
-                                Text {
-                                    text: "Track"
-                                    color: playerUI.musicTextColor
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: playerUI.musicTextPx
-                                    font.weight: Font.DemiBold
-                                }
-                                Text {
-                                    Layout.fillWidth: true
-                                    text: MusicManager.trackNumberStr
-                                    color: playerUI.musicTextColor
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: playerUI.musicTextPx
-                                    elide: Text.ElideRight
-                                }
-                            }
-                            RowLayout {
-                                visible: false
-                                Layout.fillWidth: true
-                                spacing: Math.round(Theme.sidePanelSpacingTight * Theme.scale(screen))
-                                Text {
-                                    text: "Disc"
-                                    color: playerUI.musicTextColor
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: playerUI.musicTextPx
-                                    font.weight: Font.DemiBold
-                                }
-                                Text {
-                                    Layout.fillWidth: true
-                                    text: MusicManager.trackDiscNumberStr
-                                    color: playerUI.musicTextColor
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: playerUI.musicTextPx
-                                    elide: Text.ElideRight
-                                }
-                            }
 
                             // Path (if available)
                             
