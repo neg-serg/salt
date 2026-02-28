@@ -63,7 +63,7 @@ Map('i', '<C-e>', "<C-o>$", {noremap=true})
 map('i', '<C-v>', 'paste#paste_cmd["i"]', {expr=true})
 Map('n', 'et', function() require('75-smart-cd').smart_cd() end, {desc = 'Smart directory change'})
 -- <CR> in normal mode: open bare URL under cursor, NOP otherwise (redundant with j/+)
-map('n', '<CR>', function()
+Map('n', '<CR>', function()
   local line = vim.api.nvim_get_current_line()
   local col  = vim.api.nvim_win_get_cursor(0)[2] + 1
   local i = 1
