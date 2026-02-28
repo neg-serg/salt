@@ -55,13 +55,19 @@ return {'obsidian-nvim/obsidian.nvim', version='*', ft='markdown',
                 vim.keymap.set('n', '<leader>b', '<Cmd>Obsidian backlinks<CR>', opts)
             end
 
+            local notes_dir = vim.fn.expand('~/notes')
             vim.api.nvim_create_autocmd({'BufNewFile','BufRead'}, {
                 pattern='*.md',
                 group=vim.api.nvim_create_augroup('obsidian_only_keymap', {clear=true}),
-                callback=function(ev) set_obsidian_keys(ev.buf) end,
+                callback=function(ev)
+                    local path = vim.api.nvim_buf_get_name(ev.buf)
+                    if path:find(notes_dir, 1, true) then
+                        set_obsidian_keys(ev.buf)
+                    end
+                end,
             })
 
-            if vim.bo.filetype == 'markdown' then
+            if vim.bo.filetype == 'markdown' and vim.fn.expand('%:p'):find(notes_dir, 1, true) then
                 set_obsidian_keys(0)
             end
         end}
