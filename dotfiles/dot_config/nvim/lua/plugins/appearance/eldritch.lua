@@ -3,6 +3,7 @@
 -- └───────────────────────────────────────────────────────────────────────────────────┘
 return {
   'eldritch-theme/eldritch.nvim',
+  enabled = false,
   lazy = true,
   priority = 890,
   opts = function()

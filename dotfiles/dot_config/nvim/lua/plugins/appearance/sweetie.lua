@@ -3,6 +3,7 @@
 -- └───────────────────────────────────────────────────────────────────────────────────┘
 return {
   'NTBBloodbath/sweetie.nvim',
+  enabled = false,
   lazy = true,
   priority = 850,
   config = function()

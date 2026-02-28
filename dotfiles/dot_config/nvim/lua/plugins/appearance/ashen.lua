@@ -3,6 +3,7 @@
 -- └───────────────────────────────────────────────────────────────────────────────────┘
 return {
   'ficd0/ashen.nvim',
+  enabled = false,
   version = '*',
   lazy = true,
   priority = 840,

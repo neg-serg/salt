@@ -3,6 +3,7 @@
 -- └───────────────────────────────────────────────────────────────────────────────────┘
 return {
   'shaunsingh/moonlight.nvim',
+  enabled = false,
   lazy = true,
   priority = 880,
   config = function()
