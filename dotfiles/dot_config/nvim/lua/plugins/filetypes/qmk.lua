@@ -3,7 +3,7 @@
 -- └───────────────────────────────────────────────────────────────────────────────────┘
 return {'codethread/qmk.nvim', -- qmk ft
     config=function()
-        qmk.setup {
+        require('qmk').setup {
             name='LAYOUT_preonic_grid', -- identify your layout name
             layout = {
                 "x x x x x x _ _ x x x x x x",
