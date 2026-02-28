@@ -1,5 +1,5 @@
 local M = {}
-local nav = require('utils.nav')
+local nav  -- lazy-loaded below
 
 -- Smart directory changing function: toggle between project root and file dir
 function M.smart_cd()
@@ -11,6 +11,7 @@ function M.smart_cd()
     return
   end
 
+  nav = nav or require('utils.nav')
   local file_dir = vim.fn.expand('%:p:h')
   local project_root = nav.project_root(file_dir)
 
@@ -38,7 +39,7 @@ function M.smart_cd()
   vim.cmd('cd ' .. vim.fn.fnameescape(target_dir))
   print("Changed directory to " .. reason .. ": " .. target_dir)
 
-  if package.loaded['heirline'] or package.loaded['lualine'] then
+  if package.loaded['heirline'] then
     vim.cmd('redrawstatus')
   end
 end

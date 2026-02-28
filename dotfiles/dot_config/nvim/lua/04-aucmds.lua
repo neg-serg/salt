@@ -52,7 +52,6 @@ au({"BufNewFile","BufRead"}, {
     pattern="**/systemd/**/*.service",
     callback=function() vim.bo.filetype="systemd" end})
 -- Update binds when sxhkdrc is updated.
-au({'BufWritePost'}, {pattern={'*sxhkdrc'}, command='!pkill -USR1 sxhkd', group=main})
 au({'BufEnter'}, {command='set noreadonly', group=main})
 au({'TermOpen'}, {pattern={'term://*'}, command='startinsert | setl nonumber | let &l:stl=" terminal %="', group=main})
 au({'BufLeave'}, {pattern={'term://*'}, command='stopinsert', group=main})
@@ -68,9 +67,6 @@ au({'TextYankPost'}, {
 au({'DirChanged'}, {pattern={'window','tab','tabpage','global'}, callback=function()
     vim.system({'zoxide', 'add', vim.fn.getcwd()}, { detach = true })
     end,group=main})
-if true == false then
-    au({'CursorHold','TextYankPost','FocusGained','FocusLost'}, {pattern={'*'}, command='if exists(":rshada") | rshada | wshada | endif', group=shada})
-end
 au({'BufWritePost'}, {pattern={'*'},
     callback=function()
         if string.match(vim.fn.getline(1), "^#!.*/bin/") then

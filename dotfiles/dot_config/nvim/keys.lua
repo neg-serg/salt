@@ -22,16 +22,6 @@ local utf8 = function(decimal)
   return table.concat(charbytes)
 end
 
--- M.disable = function()
---   vim.cmd.Copilot 'disable'
---   vim.keymap.del('i', xk [[<C-\>]])
---   vim.keymap.del('i', [[^\]])
---   vim.keymap.del('i', [[<M-\>]])
---   vim.keymap.del('i', xk [[<M-S-\>]])
---   vim.keymap.del('i', [[<M-[>]])
---   vim.keymap.del('i', [[<M-]>]])
--- end
-
 -- Extra keys
 -- Configure your terminal emulator to send the unicode codepoint for each
 -- given key sequence
