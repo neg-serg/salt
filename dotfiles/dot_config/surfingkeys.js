@@ -222,8 +222,9 @@ api.Hints.style(`
 `, "text");
 
 // ========== Visual Mode ==========
-api.Visual.style('cursor', 'background-color: #89cdd2; color: #020202;');
-api.Visual.style('marks',  'background-color: rgba(137, 205, 210, 0.3); border-bottom: 1px solid #89cdd2;');
+api.map('V', 'v');  // V → enter visual/caret mode (v is remapped to scroll)
+api.Visual.style('cursor', 'background-color: #006FCC; color: #f0f1ff;');
+api.Visual.style('marks',  'background-color: rgba(0, 111, 204, 0.3); border-bottom: 1px solid #006FCC;');
 
 // ========== Navigation ==========
 
@@ -291,9 +292,7 @@ api.map('F', 'gf'); // Open link in new tab
 // Scroll by ratio:
 //   N%        — scroll to N% of page (50% → middle, 0% → top, 100% → bottom)
 
-// Clipboard
-api.map('yy', 'yy');
-api.map('yl', 'yl');
+// Clipboard — yy (copy URL), yl (copy link) are built-in defaults
 
 // Video speed
 api.mapkey(']', 'Increase video speed', function () {
