@@ -8,12 +8,10 @@ LocalComponents.WidgetCapsule {
     // Defaults tailored for inline SystemTray usage, but overridable.
     property color inlineBackground: Theme.background
     property color inlineBorder: Theme.borderSubtle
-    property string inlineBackgroundKey: "systemTray"
     property real inlinePaddingScale: 1
     property real inlineVerticalPaddingScale: 1
-    property bool clipContents: true
 
-    backgroundKey: inlineBackgroundKey
+    backgroundKey: "systemTray"
     hoverEnabled: false
     backgroundColorOverride: inlineBackground
     borderColorOverride: inlineBorder
@@ -23,5 +21,5 @@ LocalComponents.WidgetCapsule {
     verticalPaddingScale: inlineVerticalPaddingScale
     centerContent: false
     contentYOffset: 0
-    clip: clipContents
+    clip: true
 }
