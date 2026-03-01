@@ -9,21 +9,12 @@ LocalComponents.WidgetCapsule {
     id: root
 
     property string settingsKey: ""
-    property color pillBackground: WidgetBg.color(Settings.settings, settingsKey)
-    property color gradientLow: Theme.panelVolumeLowColor
-    property color gradientHigh: Theme.panelVolumeHighColor
     property string iconOff: "volume_off"
     property string iconLow: "volume_down"
     property string iconHigh: "volume_up"
-    property int iconOffThreshold: Theme.volumeIconOffThreshold
-    property int iconLowThreshold: Theme.volumeIconDownThreshold
-    property int iconHighThreshold: Theme.volumeIconUpThreshold
     property string labelSuffix: "%"
-    property bool autoHideAtFull: true
-    property int fullHideValue: 100
     property bool autoHideWhenMuted: false
     property bool panelHovering: false
-    property bool collapseWhenHidden: true
 
     property int level: 0
     property bool muted: false
@@ -43,8 +34,8 @@ LocalComponents.WidgetCapsule {
     verticalPaddingMin: 0
 
     visible: false
-    width: collapseWhenHidden ? (visible ? implicitWidth : 0) : implicitWidth
-    height: collapseWhenHidden ? (visible ? implicitHeight : 0) : implicitHeight
+    width: visible ? implicitWidth : 0
+    height: visible ? implicitHeight : 0
     Layout.preferredWidth: width
     Layout.preferredHeight: height
     Layout.minimumWidth: width
@@ -56,7 +47,7 @@ LocalComponents.WidgetCapsule {
         interval: Theme.panelVolumeFullHideMs
         repeat: false
         onTriggered: {
-            if (root.autoHideAtFull && root.level === root.fullHideValue) {
+            if (root.level === 100) {
                 root.visible = false;
                 pillIndicator.hide();
             }
@@ -95,17 +86,19 @@ LocalComponents.WidgetCapsule {
 
     function levelColorFor(value) {
         var t = Utils.clamp(value / 100.0, 0, 1);
-        return Qt.rgba(gradientLow.r + (gradientHigh.r - gradientLow.r) * t, gradientLow.g + (gradientHigh.g - gradientLow.g) * t, gradientLow.b + (gradientHigh.b - gradientLow.b) * t, 1);
+        const lo = Theme.panelVolumeLowColor;
+        const hi = Theme.panelVolumeHighColor;
+        return Qt.rgba(lo.r + (hi.r - lo.r) * t, lo.g + (hi.g - lo.g) * t, lo.b + (hi.b - lo.b) * t, 1);
     }
 
     function resolveIconCategory(value, mutedValue) {
         if (mutedValue)
             return "off";
-        if (value <= iconOffThreshold)
+        if (value <= Theme.volumeIconOffThreshold)
             return "off";
-        if (value < iconLowThreshold)
+        if (value < Theme.volumeIconDownThreshold)
             return "down";
-        if (value >= iconHighThreshold)
+        if (value >= Theme.volumeIconUpThreshold)
             return "up";
         return lastIconCategory === "down" ? "down" : "up";
     }
@@ -154,16 +147,16 @@ LocalComponents.WidgetCapsule {
         if (mutedHideTimer.running)
             mutedHideTimer.stop();
 
-        if (!root.visible && (!autoHideAtFull || clamped !== fullHideValue)) {
+        if (!root.visible && clamped !== 100) {
             root.visible = true;
         }
 
-        if (!firstChange || (!autoHideAtFull || clamped !== fullHideValue)) {
+        if (!firstChange || clamped !== 100) {
             pillIndicator.show();
         }
         firstChange = false;
 
-        if (autoHideAtFull && clamped === fullHideValue) {
+        if (clamped === 100) {
             fullHideTimer.restart();
         } else if (fullHideTimer.running) {
             fullHideTimer.stop();
@@ -175,7 +168,7 @@ LocalComponents.WidgetCapsule {
         anchors.centerIn: parent
         icon: iconHigh
         text: "0" + labelSuffix
-        pillColor: pillBackground
+        pillColor: WidgetBg.color(Settings.settings, settingsKey)
         iconCircleColor: levelColorFor(level)
         iconTextColor: Theme.background
         textColor: Theme.textPrimary
