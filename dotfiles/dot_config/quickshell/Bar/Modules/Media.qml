@@ -226,13 +226,11 @@ Item {
                                             mediaControl.accentReady = true;
                                             if (mediaControl._accentCache) mediaControl._accentCache[url] = col;
                                         } else {
-                                            if (mediaControl._accentCache && mediaControl._accentCache[url]) {
-                                                mediaControl.mediaAccent = mediaControl._accentCache[url];
-                                                mediaControl.accentReady = true;
-                                            } else {
-                                                mediaControl.mediaAccent = Theme.accentPrimary;
-                                                mediaControl.accentReady = false;
-                                            }
+                                            var cached = mediaControl._accentCache && mediaControl._accentCache[url];
+                                            var fallback = cached || Theme.accentPrimary;
+                                            mediaControl.mediaAccent = fallback;
+                                            mediaControl.accentReady = !!cached;
+                                            if (mediaControl._accentCache && !cached) mediaControl._accentCache[url] = fallback;
                                         }
                                     } catch (e) { /* ignore */ }
                                 }
