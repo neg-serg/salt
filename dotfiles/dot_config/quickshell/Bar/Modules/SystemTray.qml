@@ -1,9 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import QtQuick.Effects
 import Quickshell.Services.SystemTray
-import Quickshell.Widgets
 import qs.Settings
 import qs.Components
 import qs.Services as Services

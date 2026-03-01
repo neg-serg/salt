@@ -1,9 +1,7 @@
 import QtQuick
-import QtQuick.Controls
 import Quickshell
 import qs.Settings
 import "../Helpers/Utils.js" as Utils
-import "../Helpers/Color.js" as ColorHelpers
 
 Item {
     id: revealPill

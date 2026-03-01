@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Controls
 import qs.Components
 import qs.Settings
 import "../Helpers/Utils.js" as Utils
