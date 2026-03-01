@@ -10,50 +10,33 @@ import "../../Helpers/ConnectivityUi.js" as ConnUi
 ConnectivityCapsule {
     id: root
 
-    property bool vpnVisible: ConnectivityState.vpnConnected
-    
+    property string throughputText: ConnectivityState.throughputText
+    property bool vpnIconRounded: false
+    property bool iconSquare: true
+
+    property color accentBase: Color.saturate(Theme.accentPrimary, Theme.vpnAccentSaturateBoost)
+    property color accentColor: desaturateColor(accentBase, Theme.vpnDesaturateAmount)
+
     Component.onCompleted: {
         if (ConnectivityState) {
             // Initialization verified
         }
     }
-    property bool linkVisible: true
-    property string throughputText: ConnectivityState.throughputText
-    property bool vpnIconRounded: false
-    property bool linkIconRounded: false
-    property bool iconSquare: true
-    property bool iconDebugFrames: false
-    property color iconDebugFrameColor: "#ff0000"
-    property real iconDebugFrameWidth: 1.5
-
-    property real accentSaturateBoost: Theme.vpnAccentSaturateBoost
-    property real accentLightenTowardWhite: Theme.vpnAccentLightenTowardWhite
-    property real desaturateAmount: Theme.vpnDesaturateAmount
-    property color accentBase: Color.saturate(Theme.accentPrimary, accentSaturateBoost)
-    property color accentColor: desaturateColor(accentBase, desaturateAmount)
-    property color vpnOffColor: Theme.textDisabled
-
-    property string linkIconDefault: "lan"
-    property string vpnIconDefault: "verified_user"
-    property string iconConnected: "network_check"
-    property string iconNoInternet: "network_ping"
-    property string iconDisconnected: "link_off"
-    property bool useStatusFallbackIcons: false
 
     readonly property bool vpnConnected: ConnectivityState.vpnConnected
     readonly property bool hasLink: ConnectivityState.hasLink
     readonly property bool hasInternet: ConnectivityState.hasInternet
-    readonly property bool _hasLeading: vpnVisible || linkVisible
+    readonly property bool _hasLeading: true
     readonly property int _baseClusterSpacing: Math.max(0, Theme.networkCapsuleIconSpacing)
     readonly property int _baseIconMargin: Math.max(0, Theme.networkCapsuleIconHorizontalMargin)
     readonly property int _gapTighten: Math.min(Math.max(0, Theme.networkCapsuleGapTightenPx), Math.round(_baseClusterSpacing))
     readonly property int clusterSpacing: Math.max(0, _baseClusterSpacing - _gapTighten)
     readonly property int iconHorizontalMargin: Math.max(0, _baseIconMargin - Math.round(_gapTighten / 2))
-    readonly property color vpnIconColor: vpnConnected ? accentColor : vpnOffColor
+    readonly property color vpnIconColor: vpnConnected ? accentColor : Theme.textDisabled
     readonly property color linkIconColor: (!hasLink)
         ? ConnUi.errorColor(Settings.settings, Theme)
         : (!hasInternet ? ConnUi.warningColor(Settings.settings, Theme) : accentColor)
-    readonly property string currentLinkIconName: useStatusFallbackIcons ? (!hasLink ? iconDisconnected : (!hasInternet ? iconNoInternet : iconConnected)) : linkIconDefault
+    readonly property string currentLinkIconName: "lan"
 
     backgroundKey: "network"
     iconVisible: false
@@ -71,39 +54,31 @@ ConnectivityCapsule {
 
         LocalComponents.ConnectivityIconSlot {
             id: vpnSlot
-            active: root.vpnVisible
+            active: ConnectivityState.vpnConnected
             square: root.iconSquare
             box: root.desiredInnerHeight
             mode: "material"
-            icon: root.vpnIconDefault
+            icon: "verified_user"
             rounded: root.vpnIconRounded
             color: root.vpnIconColor
             screen: root.screen
             labelRef: root.labelItem
             alignTarget: root.labelItem
             outerHorizontalMargin: root.iconHorizontalMargin
-            debugBorderVisible: root.iconDebugFrames
-            debugBorderColor: root.iconDebugFrameColor
-            debugBorderWidth: root.iconDebugFrameWidth
             anchors.verticalCenter: parent.verticalCenter
         }
 
         LocalComponents.ConnectivityIconSlot {
             id: linkSlot
-            active: root.linkVisible
             square: root.iconSquare
             box: root.desiredInnerHeight
             mode: "material"
             icon: root.currentLinkIconName
-            rounded: root.linkIconRounded
             color: root.linkIconColor
             screen: root.screen
             labelRef: root.labelItem
             alignTarget: root.labelItem
             outerHorizontalMargin: root.iconHorizontalMargin
-            debugBorderVisible: root.iconDebugFrames
-            debugBorderColor: root.iconDebugFrameColor
-            debugBorderWidth: root.iconDebugFrameWidth
             anchors.verticalCenter: parent.verticalCenter
         }
     }
