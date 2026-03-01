@@ -12,8 +12,6 @@
     "contrastWarnRatio": 4.5,
     "debugLogs": false,
     "debugNetwork": false,
-    "debugSeamFullWidth": true,
-    "dimPanels": true,
     "enableWedgeClipShader": false,
     "fontSizeMultiplier": 1,
     "hideSystemTrayCapsule": true,
