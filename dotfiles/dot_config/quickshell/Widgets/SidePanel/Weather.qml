@@ -24,11 +24,7 @@ Rectangle {
  
     Component.onCompleted: { if (isVisible) Services.Weather.start() }
  
-    function fetchCityWeather() { Services.Weather.start() }
- 
     function startWeatherFetch() { isVisible = true; Services.Weather.start() }
- 
-    function stopWeatherFetch() { isVisible = false; Services.Weather.stop() }
 
     function warnContrast(bg, fg, label) {
         try {
@@ -182,17 +178,5 @@ Rectangle {
         if (code >= 80 && code <= 82) return "rainy";
         if (code >= 95 && code <= 99) return "thunderstorm";
         return "cloud";
-    }
-    function weatherDescriptionForCode(code) {
-        if (code === 0) return "Clear sky";
-        if (code === 1) return "Mainly clear";
-        if (code === 2) return "Partly cloudy";
-        if (code === 3) return "Overcast";
-        if (code === 45 || code === 48) return "Fog";
-        if (code >= 51 && code <= 67) return "Drizzle";
-        if (code >= 71 && code <= 77) return "Snow";
-        if (code >= 80 && code <= 82) return "Rain showers";
-        if (code >= 95 && code <= 99) return "Thunderstorm";
-        return "Unknown";
     }
 } 

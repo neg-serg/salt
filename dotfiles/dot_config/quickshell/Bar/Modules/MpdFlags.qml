@@ -71,15 +71,6 @@ WidgetCapsule {
         } catch (e) { }
     }
 
-    function isMpd() {
-        try {
-            const p = MusicManager.currentPlayer;
-            if (!p) return false;
-            const n = String(p.identity || p.name || p.id || "").toLowerCase();
-            return /(mpd|mpdris)/.test(n);
-        } catch (e) { return false; }
-    }
-
     // One-shot status parser
     ProcessRunner {
         id: proc
