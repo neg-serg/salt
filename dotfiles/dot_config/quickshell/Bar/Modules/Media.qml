@@ -1,9 +1,4 @@
 import QtQuick
-import "../../Helpers/Utils.js" as Utils
-import QtQuick.Controls
-import QtQuick.Layouts
-// Quickshell.Widgets not needed
-import QtQuick.Effects
 import "../../Helpers/Format.js" as Format
 import "../../Helpers/RichText.js" as Rich
 import "../../Helpers/Time.js" as Time

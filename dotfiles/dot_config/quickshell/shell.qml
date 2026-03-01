@@ -1,8 +1,6 @@
 pragma ComponentBehavior: Bound
 import Quickshell
-import Quickshell.Services.Pipewire
 import QtQuick
-import QtCore
 import qs.Bar
 import qs.Bar.Modules
 import qs.Helpers

@@ -1,7 +1,6 @@
 import QtQuick
 import "../Helpers/Utils.js" as Utils
 import Quickshell
-import Quickshell.Io
 import qs.Services
 import qs.Settings
 

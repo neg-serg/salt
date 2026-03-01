@@ -1,7 +1,6 @@
 
 import QtQuick
 import qs.Components
-import Quickshell.Wayland
 import qs.Settings
 import qs.Widgets.SidePanel
 import qs.Services as Services
