@@ -11,11 +11,6 @@ import "../Helpers/MusicIds.js" as MusicIds
 Item {
     id: manager
 
-    // Identify whether a player is MPD-like (mpd/mpdris/mopidy)
-    function isPlayerMpd(player) {
-        return MusicIds.isPlayerMpd(player || currentPlayer);
-    }
-
     function isCurrentMpdPlayer() { return MusicIds.isPlayerMpd(currentPlayer); }
     MusicPlayers { id: players }
     MusicPosition { id: position; currentPlayer: players.currentPlayer }

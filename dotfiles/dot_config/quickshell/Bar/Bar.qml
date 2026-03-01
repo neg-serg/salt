@@ -46,13 +46,6 @@ Scope {
             val = _defaultPanelAlphaScale;
         return Math.max(0.0, Math.min(1.0, val));
     }
-    function panelBgColor(baseColor) {
-        const scale = panelBgAlphaScale();
-        const hsl = Color.toHsl(baseColor);
-        const baseAlpha = (hsl && hsl.a !== undefined) ? hsl.a : 1.0;
-        return Color.withAlpha(baseColor, baseAlpha * scale);
-    }
-
     function wedgeWidthNorm(faceWidth, seamWidth) {
         var ww = Number(Quickshell.env("QS_WEDGE_WIDTH_PCT") || "");
         if (isFinite(ww) && ww > 0) return Math.max(0.0, Math.min(1.0, ww/100.0));
