@@ -8,6 +8,7 @@ import "../../Helpers/Format.js" as Format
 import "../../Helpers/RichText.js" as Rich
 import "../../Helpers/Time.js" as Time
 import "../../Helpers/Color.js" as Color
+import "../../Helpers/AccentSampler.js" as AccentSampler
 import qs.Settings
 import qs.Services
 import qs.Components
@@ -90,32 +91,30 @@ Item {
     property bool accentReady: false
     readonly property bool mediaBorderless: Settings.settings.mediaIconBorderless !== false
     onMediaAccentChanged: { accentVersion++; }
-    Component.onCompleted: { colorSampler.requestPaint(); accentRetry.restart() }
-    onVisibleChanged: { if (visible) { colorSampler.requestPaint(); accentRetry.restart() } }
+    Component.onCompleted: { _requestSample() }
+    onVisibleChanged: { if (visible) _requestSample() }
+    // Debounce multiple rapid requestPaint() triggers into one
+    Timer { id: sampleDebounce; interval: 60; repeat: false; onTriggered: { colorSampler.requestPaint(); accentRetry.restart() } }
+    function _requestSample() { sampleDebounce.restart() }
+    function _tryRestoreCachedAccent() {
+        try {
+            const url = MusicManager.coverUrl || "";
+            if (mediaControl._accentCache && mediaControl._accentCache[url]) {
+                mediaControl.mediaAccent = mediaControl._accentCache[url];
+                mediaControl.accentReady = true;
+            }
+        } catch (e) { /* ignore */ }
+    }
     // When cover/album changes, reuse cached accent (if any) to avoid UI flicker while sampling
     Connections {
         target: MusicManager
         function onCoverUrlChanged() {
-            try {
-                const url = MusicManager.coverUrl || "";
-                if (mediaControl._accentCache && mediaControl._accentCache[url]) {
-                    mediaControl.mediaAccent = mediaControl._accentCache[url];
-                    mediaControl.accentReady = true;
-                } // else keep previous accent/color and readiness until sampler updates
-            } catch (e) { /* ignore */ }
-            colorSampler.requestPaint();
-            accentRetry.restart();
+            mediaControl._tryRestoreCachedAccent();
+            mediaControl._requestSample();
         }
         function onTrackAlbumChanged() {
-            try {
-                const url = MusicManager.coverUrl || "";
-                if (mediaControl._accentCache && mediaControl._accentCache[url]) {
-                    mediaControl.mediaAccent = mediaControl._accentCache[url];
-                    mediaControl.accentReady = true;
-                } // else keep previous accent/color and readiness until sampler updates
-            } catch (e) { /* ignore */ }
-            colorSampler.requestPaint();
-            accentRetry.restart();
+            mediaControl._tryRestoreCachedAccent();
+            mediaControl._requestSample();
         }
     }
     // Retry sampler a few times while UI/cover settles
@@ -194,15 +193,13 @@ Item {
                                 visible: status === Image.Ready
                                 onStatusChanged: {
                                     if (status === Image.Ready) {
-                                        colorSampler.requestPaint();
                                         mediaControl._accentRetryCount = 0;
-                                        accentRetry.restart();
+                                        mediaControl._requestSample();
                                     }
                                 }
                                 onSourceChanged: {
-                                    colorSampler.requestPaint();
                                     mediaControl._accentRetryCount = 0;
-                                    accentRetry.restart();
+                                    mediaControl._requestSample();
                                 }
                             }
 
@@ -217,41 +214,14 @@ Item {
                                         ctx.clearRect(0, 0, width, height);
                                         var url = MusicManager.coverUrl || "";
                                         if (!cover.visible) {
-                                            if (mediaControl._accentCache && mediaControl._accentCache[url]) {
-                                                mediaControl.mediaAccent = mediaControl._accentCache[url];
-                                                mediaControl.accentReady = true;
-                                            }
+                                            mediaControl._tryRestoreCachedAccent();
                                             return;
                                         }
                                         ctx.drawImage(cover, 0, 0, width, height);
                                         var img = ctx.getImageData(0, 0, width, height);
-                                        var data = img.data;
-                                        var len = data.length;
-                                        var rs = 0, gs = 0, bs = 0, n = 0;
-                                        for (var i = 0; i < len; i += 4) {
-                                            var a = data[i + 3]; if (a < 128) continue;
-                                            var r = data[i], g = data[i + 1], b = data[i + 2];
-                                            var maxv = Math.max(r, g, b), minv = Math.min(r, g, b);
-                                            var sat = maxv - minv; if (sat < 10) continue;
-                                            var lum = (r + g + b) / 3; if (lum < 20 || lum > 235) continue;
-                                            rs += r; gs += g; bs += b; ++n;
-                                        }
-                                        if (n === 0) {
-                                            rs = 0; gs = 0; bs = 0; n = 0;
-                                            for (var j = 0; j < len; j += 4) {
-                                                var a2 = data[j + 3]; if (a2 < 128) continue;
-                                                var r2 = data[j], g2 = data[j + 1], b2 = data[j + 2];
-                                                var max2 = Math.max(r2, g2, b2), min2 = Math.min(r2, g2, b2);
-                                                var sat2 = max2 - min2; if (sat2 < 8) continue;
-                                                var lum2 = (r2 + g2 + b2) / 3; if (lum2 < 20 || lum2 > 240) continue;
-                                                rs += r2; gs += g2; bs += b2; ++n;
-                                            }
-                                        }
-                                        if (n > 0) {
-                                            var rr = Math.min(255, Math.round(rs / n));
-                                            var gg = Math.min(255, Math.round(gs / n));
-                                            var bb = Math.min(255, Math.round(bs / n));
-                                            var col = Qt.rgba(rr / 255.0, gg / 255.0, bb / 255.0, 1);
+                                        var rgb = AccentSampler.sampleAccent(img);
+                                        if (rgb) {
+                                            var col = Qt.rgba(rgb.r / 255.0, rgb.g / 255.0, rgb.b / 255.0, 1);
                                             mediaControl.mediaAccent = col;
                                             mediaControl.accentReady = true;
                                             if (mediaControl._accentCache) mediaControl._accentCache[url] = col;
