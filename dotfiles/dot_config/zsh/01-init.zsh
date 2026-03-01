@@ -96,6 +96,7 @@ autoload -Uz run-help ${^fpath}/run-help-*(N:t) || return
 
 
 autoload -Uz fzf-on-tab
+zle -N fzf-on-tab
 autoload -Uz chpwd
 autoload -Uz zcompare
 autoload -Uz h
