@@ -19,7 +19,6 @@ Scope {
         root.quickshell.shell = root;
     }
 
-    // Overview {}
     Loader {
         active: !root.disableBar
         sourceComponent: Bar { id: bar; shell: root; }
@@ -34,10 +33,4 @@ Scope {
         target: root.quickshell
     }
 
-    Timer {
-        id: reloadTimer
-        interval: 500
-        repeat: false
-        onTriggered: root.quickshell.reload(true)
-    }
 }
