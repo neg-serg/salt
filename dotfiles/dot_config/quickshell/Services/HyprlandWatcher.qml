@@ -31,7 +31,6 @@ Item {
         ? Theme.wsRefreshDebounceMs
         : 120
 
-    signal hyprEvent(string eventName, string payload)
     signal keyboardLayoutEvent(string deviceName, string layoutName)
     signal focusedMonitorEvent()
 
@@ -117,7 +116,6 @@ Item {
         if (sep <= 0) return;
         const eventName = line.substring(0, sep);
         const payload = line.substring(sep + 2);
-        root.hyprEvent(eventName, payload);
         const key = eventName.toLowerCase();
         if (key === "workspacev2") {
             const parts = payload.split(",", 2);
