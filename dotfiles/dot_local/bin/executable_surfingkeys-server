@@ -5,9 +5,23 @@ import socketserver
 import subprocess
 import os
 import sys
+import glob
 
 PORT = 18888
 DIR = os.path.expanduser("~/.config")
+
+
+def hyprland_env():
+    """Build env with the most recent Hyprland socket signature."""
+    hypr_dir = f"/run/user/{os.getuid()}/hypr"
+    sockets = glob.glob(os.path.join(hypr_dir, "*"))
+    if not sockets:
+        return None
+    sockets.sort(key=os.path.getmtime, reverse=True)
+    env = os.environ.copy()
+    env["HYPRLAND_INSTANCE_SIGNATURE"] = os.path.basename(sockets[0])
+    return env
+
 
 class Handler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -17,8 +31,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         print(f"Request: {self.path}", flush=True)
         if self.path.startswith('/focus'):
             try:
-                # Press Ctrl+L using hyprctl (cleaner than wtype)
-                subprocess.run(["hyprctl", "dispatch", "sendshortcut", "CTRL,l,activewindow"])
+                env = hyprland_env()
+                if env is None:
+                    raise RuntimeError("No Hyprland socket found")
+                subprocess.run(
+                    ["hyprctl", "dispatch", "sendshortcut", "CTRL,l,activewindow"],
+                    env=env,
+                )
                 self.send_response(200)
                 self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
