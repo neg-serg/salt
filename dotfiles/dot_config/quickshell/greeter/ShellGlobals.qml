@@ -18,16 +18,6 @@ Singleton {
 		readonly property color separator: "#60ffffff";
 	}
 
-	readonly property var popoutXCurve: EasingCurve {
-		id: xCurve
-		curve.type: Easing.OutQuint
-	}
-
-	readonly property var popoutYCurve: EasingCurve {
-		id: yCurve
-		curve.type: Easing.InQuart
-	}
-
 	function interpolateColors(x: real, a: color, b: color): color {
 		const xa = 1.0 - x;
 		return Qt.rgba(a.r * xa + b.r * x, a.g * xa + b.g * x, a.b * xa + b.b * x, a.a * xa + b.a * x);

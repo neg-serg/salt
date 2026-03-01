@@ -11,7 +11,6 @@ Item {
 	property alias acceptedButtons: mouseArea.acceptedButtons;
 	property alias pressedButtons: mouseArea.pressedButtons;
 	property alias containsMouse: mouseArea.containsMouse;
-	property alias isPressed: mouseArea.pressed;
 
 	signal clicked(event: MouseEvent);
 	signal entered();
