@@ -11,7 +11,6 @@ CenteredCapsuleRow {
     property int wsId: -1
     property string submapName: ""
     property var submapDynamicMap: ({})
-    property bool showWorkspaceGlyph: true
     property bool showLabel: true
     property bool showSubmapIcon: true
     property bool workspaceGlyphDetached: false
@@ -92,7 +91,7 @@ CenteredCapsuleRow {
     labelLeftPaddingOverride: isSpaciousWs ? 12 : Theme.wsLabelLeftPadding
 
     leadingContent: Item {
-        readonly property bool glyphPresent: root.showWorkspaceGlyph && (root.workspaceIconValid || iconGlyph.length > 0)
+        readonly property bool glyphPresent: root.workspaceIconValid || iconGlyph.length > 0)
         readonly property real glyphWidth: Math.max(
             (workspaceSvgIcon.visible && workspaceSvgIcon.implicitWidth > 0) ? workspaceSvgIcon.implicitWidth : 0,
             (workspaceTextIcon.visible && workspaceTextIcon.implicitWidth > 0) ? workspaceTextIcon.implicitWidth : 0

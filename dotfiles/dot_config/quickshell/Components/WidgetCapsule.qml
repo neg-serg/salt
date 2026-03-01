@@ -14,7 +14,6 @@ Rectangle {
     property bool hoverEnabled: true
     property bool borderVisible: true
     property color borderColorOverride: "transparent"
-    property real borderOpacity: Theme.panelCapsuleBorderOpacity
     property real paddingScale: 1.0
     property real minPadding: 4
     property real verticalPaddingScale: 0.6
@@ -23,7 +22,6 @@ Rectangle {
     property bool centerContent: true
     property real cornerRadiusOverride: -1
     property real borderWidthOverride: -1
-    property real borderInset: Theme.panelCapsuleBorderInset
     property real contentYOffset: 0
     property int cursorShape: Qt.ArrowCursor
 
@@ -47,7 +45,7 @@ Rectangle {
             ? borderColorOverride
             : (_borderColorTheme.a > 0
                 ? _borderColorTheme
-                : ColorHelpers.withAlpha(Theme.textPrimary, borderOpacity))
+                : ColorHelpers.withAlpha(Theme.textPrimary, Theme.panelCapsuleBorderOpacity))
 
     implicitWidth: 0
     implicitHeight: forceHeightFromMetrics ? _metrics.height : 0
@@ -92,7 +90,7 @@ Rectangle {
 
     OverlayFrame {
         anchorTarget: root
-        inset: borderInset
+        inset: Theme.panelCapsuleBorderInset
         baseRadius: root.radius
         strokeWidth: borderVisible ? _borderWidth : 0
         strokeColor: borderVisible ? _borderColor : "transparent"

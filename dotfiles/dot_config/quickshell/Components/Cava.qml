@@ -21,7 +21,6 @@ Scope {
     property int gravity: (_vp && _vp.cavaGravity        !== undefined) ? _vp.cavaGravity        : (Settings.settings.cavaGravity        !== undefined ? Settings.settings.cavaGravity        : 20000)
     property bool monstercat: (_vp && _vp.cavaMonstercat     !== undefined) ? _vp.cavaMonstercat     : (Settings.settings.cavaMonstercat     !== undefined ? Settings.settings.cavaMonstercat     : false)
     property string channels: "mono"
-    property string monoOption: "average"
 
     property var config: ({
             general: {
@@ -38,7 +37,7 @@ Scope {
                 method: "raw",
                 bit_format: 8,
                 channels: channels,
-                mono_option: monoOption
+                mono_option: "average"
             }
         })
 

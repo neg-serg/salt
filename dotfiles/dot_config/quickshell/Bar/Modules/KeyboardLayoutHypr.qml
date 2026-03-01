@@ -7,8 +7,6 @@ import qs.Services as Services
 CenteredCapsuleRow {
     id: kb
 
-    property string deviceMatch: ""
-
     // Use text glyph inside the label instead of a separate inline icon
     property bool showKeyboardIcon: false
     property bool showLayoutLabel: true
