@@ -34,8 +34,6 @@ Item {
     readonly property int pillOverlap: iconSize / 2
     readonly property int maxPillWidth: Utils.clamp(textItem.implicitWidth + pillPaddingHorizontal * 2 + pillOverlap, 1, textItem.implicitWidth + pillPaddingHorizontal * 2 + pillOverlap)
 
-    signal shown
-    signal hidden
 
     width: iconSize + (showPill ? maxPillWidth - pillOverlap : 0)
     height: pillHeight
@@ -96,7 +94,7 @@ Item {
         }
         onStopped: {
             delayedHideAnim.start();
-            shown();
+
         }
     }
 
@@ -118,7 +116,7 @@ Item {
         onStopped: {
             showPill = false;
             shouldAnimateHide = false;
-            hidden();
+
         }
     }
 
@@ -129,7 +127,7 @@ Item {
             showTimer.stop();
             delayedHideAnim.stop();
             hideAnim.stop();
-            shown();
+
             return;
         }
         if (!showPill) {
@@ -146,7 +144,7 @@ Item {
             if (showPill) {
                 showPill = false;
                 shouldAnimateHide = false;
-                hidden();
+    
             }
             showTimer.stop();
             delayedHideAnim.stop();
