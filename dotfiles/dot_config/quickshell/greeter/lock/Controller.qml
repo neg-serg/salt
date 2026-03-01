@@ -2,12 +2,10 @@ pragma Singleton
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Controls
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Hyprland
-import Quickshell.Services.Pam
 import qs
 import qs.background
 
