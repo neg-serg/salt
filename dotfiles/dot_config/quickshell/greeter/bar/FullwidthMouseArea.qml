@@ -13,10 +13,7 @@ Item {
 	property alias containsMouse: mouseArea.containsMouse;
 
 	signal clicked(event: MouseEvent);
-	signal entered();
-	signal exited();
 	signal pressed(event: MouseEvent);
-	signal released(event: MouseEvent);
 	signal wheel(event: WheelEvent);
 
 	MouseArea {
@@ -33,7 +30,6 @@ Item {
 
 		Component.onCompleted: {
 			this.clicked.connect(root.clicked);
-			this.released.connect(root.released);
 		}
 
 		// for some reason MouseArea.pressed is both a prop and signal so connect doesn't work
