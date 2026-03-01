@@ -12,9 +12,6 @@ Rectangle {
     property color fallbackColor: "#000000"
     property color backgroundColorOverride: "transparent"
     property bool hoverEnabled: true
-    property color hoverColorOverride: "transparent"
-    property real hoverMixAmount: 0
-    property color hoverMixColor: Qt.rgba(1, 1, 1, 1)
     property bool borderVisible: true
     property color borderColorOverride: "transparent"
     property real borderOpacity: Theme.panelCapsuleBorderOpacity
@@ -42,7 +39,6 @@ Rectangle {
             : WidgetBg.color(Settings.settings, backgroundKey, fallbackColor)
     readonly property int horizontalPadding: Math.max(minPadding, Math.round(_metrics.padding * paddingScale))
     readonly property int verticalPadding: Math.max(verticalPaddingMin, Math.round(_metrics.padding * verticalPaddingScale))
-    readonly property color _hoverColor: ColorHelpers.mix(_baseColor, hoverMixColor, hoverMixAmount)
     readonly property real _borderWidth: borderWidthOverride >= 0
             ? borderWidthOverride
             : Theme.panelCapsuleBorderWidth
@@ -62,9 +58,7 @@ Rectangle {
     antialiasing: true
     border.width: 0
     border.color: "transparent"
-    color: hoverEnabled && hoverTracker.hovered
-        ? (hoverColorOverride.a > 0 ? hoverColorOverride : _hoverColor)
-        : _baseColor
+    color: _baseColor
 
     HoverHandler {
         id: hoverTracker

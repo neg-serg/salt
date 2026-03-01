@@ -11,10 +11,7 @@ LocalComponents.StyledTooltip {
     id: root
 
     property bool visibleWhen: false
-    property bool showAbove: false
     property int delayMs: Theme.tooltipDelayMs
-
-    positionAbove: showAbove
     delay: delayMs
     tooltipVisible: visibleWhen
 }
