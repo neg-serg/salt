@@ -33,45 +33,21 @@ CenteredCapsuleRow {
 
     backgroundKey: "workspaces"
 
-    // RichText helpers are provided by Helpers/RichText.js
-
-    function isPUA(cp) { return cp >= 0xE000 && cp <= 0xF8FF; }          // Private Use Area (icon fonts)
-    function isOldItalic(cp){ return cp >= 0x10300 && cp <= 0x1034F; }
-    // Wrap one char into colored span by category
-    function spanForChar(ch) {
-        const cp = ch.codePointAt(0);
-        if (isPUA(cp)) { return Rich.colorSpan(workspaceGlyphColor, ch); }
-        if (isOldItalic(cp)) { return Rich.colorSpan(gothicColor, ch); }
-        if (ch === "·") return " ";
-        return Rich.esc(ch);
-    }
-
-    // Decorate string with category spans
     function decorateName(name) {
-        if (!name || typeof name !== "string") return Rich.esc(name || "");
-        let out = "";
-        for (let i = 0; i < name.length; ) {
-            const cp = name.codePointAt(i);
-            const ch = String.fromCodePoint(cp);
-            out += spanForChar(ch);
-            i += (cp > 0xFFFF) ? 2 : 1; // handle surrogate pairs
-        }
-        return out;
+        return Rich.decorateGlyphs(name, { pua: workspaceGlyphColor, oldItalic: gothicColor });
     }
 
-    // Split leading PUA icon
     function leadingIcon(name) {
         if (!name || typeof name !== "string" || name.length === 0) return "";
         const cp = name.codePointAt(0);
-        return isPUA(cp) ? String.fromCodePoint(cp) : "";
+        return Rich.isPUA(cp) ? String.fromCodePoint(cp) : "";
     }
 
     function restAfterLeadingIcon(name) {
         if (!name || typeof name !== "string" || name.length === 0) return "";
         const cp = name.codePointAt(0);
-        if (!isPUA(cp)) return name;
+        if (!Rich.isPUA(cp)) return name;
         const skip = (cp > 0xFFFF) ? 2 : 1;
-        // Trim immediate whitespace after icon
         return name.substring(skip).replace(/^\s+/, "");
     }
 

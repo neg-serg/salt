@@ -53,6 +53,35 @@ function colorSpan(colorCss, text) {
     return "<span style='color:" + c + "'>" + esc(text) + "</span>";
 }
 
+// Unicode category helpers
+function isPUA(cp) { return cp >= 0xE000 && cp <= 0xF8FF; }
+function isOldItalic(cp) { return cp >= 0x10300 && cp <= 0x1034F; }
+
+// Decorate a string by colorizing PUA glyphs and replacing middle-dot with space.
+// colorMap: { pua: "css color", oldItalic?: "css color" }
+// Falls back to esc() for all other characters. Handles surrogate pairs.
+function decorateGlyphs(str, colorMap) {
+    if (!str || typeof str !== "string") return esc(str || "");
+    var puaColor = (colorMap && colorMap.pua) || "inherit";
+    var italicColor = (colorMap && colorMap.oldItalic) || null;
+    var out = "";
+    for (var i = 0; i < str.length; ) {
+        var cp = str.codePointAt(i);
+        var ch = String.fromCodePoint(cp);
+        if (isPUA(cp)) {
+            out += colorSpan(puaColor, ch);
+        } else if (italicColor && isOldItalic(cp)) {
+            out += colorSpan(italicColor, ch);
+        } else if (ch === "\u00B7") {
+            out += " ";
+        } else {
+            out += esc(ch);
+        }
+        i += (cp > 0xFFFF) ? 2 : 1;
+    }
+    return out;
+}
+
 // Export functions
 // (QML JavaScript library functions are available by import alias)
 // Also expose a namespaced object for Qt.include usage in other JS libs
@@ -62,5 +91,8 @@ var RichRT = {
     bracketPair: bracketPair,
     bracketSpan: bracketSpan,
     timeSpan: timeSpan,
-    colorSpan: colorSpan
+    colorSpan: colorSpan,
+    isPUA: isPUA,
+    isOldItalic: isOldItalic,
+    decorateGlyphs: decorateGlyphs
 };
