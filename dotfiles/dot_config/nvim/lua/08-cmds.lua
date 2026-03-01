@@ -32,6 +32,6 @@ endfunction
 -- Command typo corrections are handled by cnoreabbrev in 14-abbr.lua.
 -- Only keep Redir (unique functionality) and paste commands below.
 vim.api.nvim_cmd({cmd="command", args={'-nargs=1', '-complete=command', '-bar', '-range', 'Redir', 'silent', 'call', "Redir(<q-args>, <range>, <line1>, <line2>)"}}, {})
-vim.api.nvim_cmd({cmd="command", args={'-range=%', 'SP', '<line1>,<line2>w', "!curl -F 'sprunge=<-' http://sprunge.us | tr -d ' ' | wl-copy"}}, {})
-vim.api.nvim_cmd({cmd="command", args={'-range=%', 'IX', '<line1>,<line2>w', "!curl -F 'f:1=<-' ix.io | tr -d ' ' | wl-copy"}}, {})
+vim.api.nvim_cmd({cmd="command", args={'-range=%', 'IX', '<line1>,<line2>w', "!curl -fsSL -F 'f:1=<-' ix.io | tr -d ' ' | wl-copy"}}, {})
 vim.api.nvim_cmd({cmd="command", args={'-range=%', 'TB', '<line1>,<line2>w', "!nc termbin.com 9999 | tr -d ' ' | wl-copy"}}, {})
+vim.api.nvim_cmd({cmd="command", args={'-range=%', 'ZP', '<line1>,<line2>w', "!curl -fsSL -F 'file=@-' https://0x0.st | tr -d ' ' | wl-copy"}}, {})
