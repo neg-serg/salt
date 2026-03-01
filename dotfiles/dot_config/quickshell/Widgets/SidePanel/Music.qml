@@ -9,6 +9,7 @@ import qs.Services
 import "../../Helpers/Color.js" as Color
 import "../../Helpers/Format.js" as Format
 import "../../Helpers/RichText.js" as Rich
+import "../../Helpers/AccentSampler.js" as AccentSampler
 import "." as MusicWidgets
 
 Rectangle {
@@ -295,33 +296,16 @@ Rectangle {
                                 }
                                 ctx.drawImage(albumArt, 0, 0, width, height);
                                 var img = ctx.getImageData(0, 0, width, height);
-                                var data = img.data; var len = data.length;
-                                var rs=0, gs=0, bs=0, n=0;
-                                for (var i=0; i<len; i+=4) {
-                                    var a = data[i+3]; if (a < 128) continue;
-                                    var r = data[i], g = data[i+1], b = data[i+2];
-                                    var maxv = Math.max(r,g,b), minv = Math.min(r,g,b);
-                                    var sat = maxv - minv; if (sat < Theme.mediaAccentSatMin) continue;
-                                    var lum = (r+g+b)/3; if (lum < Theme.mediaAccentLumMin || lum > Theme.mediaAccentLumMax) continue;
-                                    rs += r; gs += g; bs += b; ++n;
-                                }
-                                if (n === 0) {
-                                    // Relaxed thresholds
-                                    rs=0; gs=0; bs=0; n=0;
-                                    for (var j=0; j<len; j+=4) {
-                                        var a2 = data[j+3]; if (a2 < 128) continue;
-                                        var r2 = data[j], g2 = data[j+1], b2 = data[j+2];
-                                        var max2 = Math.max(r2,g2,b2), min2 = Math.min(r2,g2,b2);
-                                        var sat2 = max2 - min2; if (sat2 < Theme.mediaAccentSatRelax) continue;
-                                        var lum2 = (r2+g2+b2)/3; if (lum2 < Theme.mediaAccentLumRelaxMin || lum2 > Theme.mediaAccentLumRelaxMax) continue;
-                                        rs += r2; gs += g2; bs += b2; ++n;
-                                    }
-                                }
-                                if (n > 0) {
-                                    var rr = Math.min(255, Math.round(rs/n));
-                                    var gg = Math.min(255, Math.round(gs/n));
-                                    var bb = Math.min(255, Math.round(bs/n));
-                                    var col = Qt.rgba(rr/255.0, gg/255.0, bb/255.0, 1);
+                                var rgb = AccentSampler.sampleAccent(img, {
+                                    satMin: Theme.mediaAccentSatMin,
+                                    lumMin: Theme.mediaAccentLumMin,
+                                    lumMax: Theme.mediaAccentLumMax,
+                                    satRelax: Theme.mediaAccentSatRelax,
+                                    lumRelaxMin: Theme.mediaAccentLumRelaxMin,
+                                    lumRelaxMax: Theme.mediaAccentLumRelaxMax
+                                });
+                                if (rgb) {
+                                    var col = Qt.rgba(rgb.r/255.0, rgb.g/255.0, rgb.b/255.0, 1);
                                     detailsCol.musicAccent = col;
                                     detailsCol.musicAccentReady = true;
                                     if (detailsCol._accentCache) detailsCol._accentCache[url] = col;
@@ -334,7 +318,7 @@ Rectangle {
                                         detailsCol.musicAccentReady = false;
                                     }
                                 }
-                                } catch (e) { /* ignore */ }
+                            } catch (e) { /* ignore */ }
                             } }
 
                         Item {
@@ -498,25 +482,7 @@ Rectangle {
                                 iconColor: detailsCol.musicAccentReady ? detailsCol.musicAccent : playerUI.musicTextColor
                                 fontPixelSize: playerUI.musicTextPx
                                 textFormat: Text.RichText
-                                textValue: (function(){
-                                    const raw = String(MusicManager.trackQualitySummary || "");
-                                    if (!raw) return "";
-                                    const accentCss = detailsCol.musicAccentCss;
-                                    let out = "";
-                                    for (let i = 0; i < raw.length; ) {
-                                        const cp = raw.codePointAt(i);
-                                        const ch = String.fromCodePoint(cp);
-                                        if (cp >= 0xE000 && cp <= 0xF8FF) {
-                                            out += Rich.colorSpan(accentCss, ch);
-                                        } else if (ch === "\u00B7") {
-                                            out += " ";
-                                        } else {
-                                            out += Rich.esc(ch);
-                                        }
-                                        i += (cp > 0xFFFF) ? 2 : 1;
-                                    }
-                                    return out;
-                                })()
+                                textValue: Rich.decorateGlyphs(MusicManager.trackQualitySummary || "", { pua: detailsCol.musicAccentCss })
                                 textColor: playerUI.musicTextColor
                                 textAlignment: Qt.AlignVCenter
                                 iconAlignment: Qt.AlignVCenter
