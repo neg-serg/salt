@@ -682,29 +682,10 @@ return function(ctx)
         return true
       end,
       init = function(self)
-        local buf = self._buf or target_buf(); if not buf then self._ca_count = 0; return end
-        local cnt = 0
-        local ok_params, params = pcall(function()
-          local client = vim.lsp.get_clients({ bufnr = buf })[1]
-          local offset_encoding = client and client.offset_encoding or 'utf-16'
-          local p = (vim.lsp.util and vim.lsp.util.make_range_params) and vim.lsp.util.make_range_params(0, offset_encoding) or { textDocument = { uri = vim.uri_from_bufnr(buf) } }
-          p.context = { diagnostics = (vim.diagnostic and vim.diagnostic.get and vim.diagnostic.get(buf, { lnum = (vim.api and vim.api.nvim_win_get_cursor and ((target_win() and vim.api.nvim_win_get_cursor(target_win()) or {1,0})[1] - 1)) }) or {}) }
-          return p
-        end)
-        if ok_params and params and vim.lsp and vim.lsp.buf_request_sync then
-           -- FIXME: buf_request_sync triggers E565 in noice unmount (nui) race condition
-           -- local ok_req, res = pcall(vim.lsp.buf_request_sync, buf, 'textDocument/codeAction', params, 80)
-           local ok_req, res = false, nil 
-           if ok_req and type(res) == 'table' then
-             for _, resp in pairs(res) do
-               local actions = resp and resp.result
-               if type(actions) == 'table' then
-                 for _ in ipairs(actions) do cnt = cnt + 1 end
-               end
-             end
-           end
-        end
-        self._ca_count = cnt
+        -- NOTE: buf_request_sync for code actions is disabled due to E565 race
+        -- condition with noice/nui unmount. The component renders the click handler
+        -- (which opens code_action picker) but does not display a count badge.
+        self._ca_count = 0
       end,
       update = { 'LspAttach', 'LspDetach', 'DiagnosticChanged', 'CursorHold', 'CursorHoldI', 'BufEnter', 'WinEnter' },
       provider = function(self)
