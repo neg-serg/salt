@@ -191,6 +191,9 @@ Item {
         try { return ffprobeProcess.running || mediainfoProcess.running || soxinfoProcess.running; } catch (e) { return false; }
     }
     function startIntrospection(p) {
+        ffprobeProcess.stop();
+        mediainfoProcess.stop();
+        soxinfoProcess.stop();
         _lastPath = p;
         _pendingPath = "";
         _introspectionDone = false;
@@ -244,6 +247,7 @@ Item {
         parseJson: true
         autoStart: false
         onJson: (obj) => {
+            if (targetPath !== root._lastPath) return;
             try {
                 const meta = parseFfprobe(obj);
                 if (meta) { fileAudioMeta = meta; processChainFinished(); return; }
@@ -252,6 +256,7 @@ Item {
             mediainfoProcess.start();
         }
         onExited: (code, status) => {
+            if (targetPath !== root._lastPath) return;
             if (code !== 0) { mediainfoProcess.targetPath = targetPath; mediainfoProcess.start(); }
         }
     }
@@ -262,6 +267,7 @@ Item {
         parseJson: true
         autoStart: false
         onJson: (obj) => {
+            if (targetPath !== root._lastPath) return;
             try {
                 const meta = parseMediainfo(obj);
                 if (meta) { fileAudioMeta = meta; processChainFinished(); return; }
@@ -270,6 +276,7 @@ Item {
             soxinfoProcess.start();
         }
         onExited: (code, status) => {
+            if (targetPath !== root._lastPath) return;
             if (code !== 0) { soxinfoProcess.targetPath = targetPath; soxinfoProcess.start(); }
         }
     }
@@ -280,8 +287,12 @@ Item {
         cmd: ["sox", "--i"]
         autoStart: false
         restartOnExit: false
-        onLine: (s) => { _buf += (s + "\n") }
+        onLine: (s) => {
+            if (targetPath !== root._lastPath) return;
+            _buf += (s + "\n");
+        }
         onExited: (code, status) => {
+            if (targetPath !== root._lastPath) { _buf = ""; return; }
             if (code === 0) {
                 const text = String(_buf || "");
                 const meta = parseSoxInfo(text);
