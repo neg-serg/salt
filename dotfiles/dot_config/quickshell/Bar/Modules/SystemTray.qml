@@ -6,7 +6,6 @@ import Quickshell.Services.SystemTray
 import Quickshell.Widgets
 import qs.Settings
 import qs.Components
-import "../../Helpers/TooltipText.js" as TooltipText
 import qs.Services as Services
 import "../../Helpers/CapsuleMetrics.js" as CapsuleMetrics
 
