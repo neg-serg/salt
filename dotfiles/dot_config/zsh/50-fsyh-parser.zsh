@@ -1,11 +1,15 @@
 local THEME_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/f-sy-h/current_theme.zsh"
+local EXT_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/f-sy-h/current_theme_ext.zsh"
 local INI_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/f-sy-h/neg.ini"
 typeset -gA FAST_HIGHLIGHT_STYLES
 local FAST_THEME_NAME="neg"
 
-# Skip regeneration if theme file is newer than INI source
-if [[ -f "$THEME_FILE" && "$THEME_FILE" -nt "$INI_FILE" ]]; then
-    source "$THEME_FILE"
+# Always source the base theme (60+ base styles + existing file-ext styles)
+[[ -r "$THEME_FILE" ]] && source "$THEME_FILE"
+
+# Skip regeneration if ext cache is newer than INI source
+if [[ -f "$EXT_FILE" && "$EXT_FILE" -nt "$INI_FILE" ]]; then
+    source "$EXT_FILE"
     return 0 2>/dev/null || exit 0
 fi
 
@@ -50,12 +54,12 @@ while IFS= read -r line; do
     fi
 done < "$INI_FILE"
 
-# Set styles in memory and write theme file in a single pass
-mkdir -p "${THEME_FILE:h}"
+# Set styles in memory and write ext file (never touches base theme)
+mkdir -p "${EXT_FILE:h}"
 {
     for ext style in "${(@kv)ext_styles}"; do
         [[ -n $ext && -n $style ]] || continue
         FAST_HIGHLIGHT_STYLES[${FAST_THEME_NAME}file-extensions-${ext}]="$style"
-        print -r -- ": \${FAST_HIGHLIGHT_STYLES[${FAST_THEME_NAME}file-extensions-${ext}]:=$style}"
+        print -r -- "FAST_HIGHLIGHT_STYLES[${FAST_THEME_NAME}file-extensions-${ext}]=$style"
     done
-} > "$THEME_FILE"
+} > "$EXT_FILE"
