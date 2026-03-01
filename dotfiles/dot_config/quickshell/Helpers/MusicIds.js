@@ -1,10 +1,3 @@
-function normalizedPlayerId(player) {
-    try {
-        if (!player) return "";
-        return String(player.service || player.busName || player.name || player.identity || "");
-    } catch (e) { return ""; }
-}
-
 function isPlayerMpd(player) {
     try {
         var p = player;
@@ -18,6 +11,5 @@ function isPlayerMpd(player) {
 }
 
 var MusicIds = {
-    normalizedPlayerId: normalizedPlayerId,
     isPlayerMpd: isPlayerMpd
 };

@@ -19,13 +19,6 @@ function coerceInt(value, deflt) {
     } catch (e) { return (deflt !== undefined ? Math.round(Number(deflt)) : 0); }
 }
 
-function coerceReal(value, deflt) {
-    try {
-        var v = Number(value);
-        return isFinite(v) ? v : (deflt !== undefined ? Number(deflt) : 0);
-    } catch (e) { return (deflt !== undefined ? Number(deflt) : 0); }
-}
-
 // Compute inline font pixel size for compact modules (icons + short text).
 // height: desired component height in px
 // padding: total vertical padding (px) applied to text block (top+bottom)
