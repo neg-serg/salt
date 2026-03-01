@@ -147,38 +147,8 @@ function _hslToRgb(hsl) {
 function toHsl(c) {
     try { var rgb = _toRgb(c); if (!rgb) return null; return _rgbToHsl(rgb); } catch(e){ return null }
 }
-function fromHsl(h, s, l, a) { try { return _hslToRgb({ h: Number(h)/360, s: s, l: l, a: a }); } catch(e){ return null } }
-
-function lighten(c, t) {
-    try {
-        var hsl = toHsl(c); if (!hsl) return c; hsl.l = _clamp01(hsl.l + Number(t)); return _hslToRgb(hsl);
-    } catch(e){ return c }
-}
-function darken(c, t) {
-    try {
-        var hsl = toHsl(c); if (!hsl) return c; hsl.l = _clamp01(hsl.l - Number(t)); return _hslToRgb(hsl);
-    } catch(e){ return c }
-}
 function saturate(c, t) {
     try {
         var hsl = toHsl(c); if (!hsl) return c; hsl.s = _clamp01(hsl.s + Number(t)); return _hslToRgb(hsl);
     } catch(e){ return c }
-}
-function desaturate(c, t) {
-    try {
-        var hsl = toHsl(c); if (!hsl) return c; hsl.s = _clamp01(hsl.s - Number(t)); return _hslToRgb(hsl);
-    } catch(e){ return c }
-}
-function shiftHue(c, deg) {
-    try {
-        var hsl = toHsl(c); if (!hsl) return c; hsl.h = hsl.h + (Number(deg)/360); return _hslToRgb(hsl);
-    } catch(e){ return c }
-}
-
-// OKLCH stubs with HSL fallback to keep API stable
-function toOklch(c) {
-    try { var hsl = toHsl(c); if (!hsl) return null; return { l: hsl.l, c: hsl.s, h: hsl.h*360, a: (hsl.a!==undefined?hsl.a:1) }; } catch(e){ return null }
-}
-function fromOklch(l, c, h, a) {
-    try { return fromHsl(h, Math.max(0, Math.min(1, c)), Math.max(0, Math.min(1, l)), a); } catch(e){ return Qt.rgba(0,0,0,1) }
 }
