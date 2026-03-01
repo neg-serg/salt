@@ -15,8 +15,6 @@ Item {
     property bool mirror: true               // draw above and below center
     property real fillOpacity: Theme.spectrumFillOpacity
     property real peakOpacity: Theme.spectrumPeakOpacity
-    // Simpler look by default: no peak caps
-    property bool showPeaks: false
     // Coloring: default to a neutral/darker theme color (no gradient)
     property bool useGradient: false
     property color barColor: Theme.outline
@@ -62,9 +60,9 @@ Item {
             // Bar value and peak with simple decay
             property real v: (root.values[index] || 0) * root.amplitudeScale
             property real peak: 0
-            onVChanged: if (root.showPeaks && v > peak) peak = v;
+            onVChanged: {}
             Timer {
-                interval: Theme.spectrumPeakDecayIntervalMs; running: root.showPeaks && root.animationsEnabled; repeat: true
+                interval: Theme.spectrumPeakDecayIntervalMs; running: false; repeat: true
                 onTriggered: parent.peak = Utils.clamp(parent.peak - 0.04, 0, 1)
             }
 
@@ -96,7 +94,7 @@ Item {
 
             // Peak indicator (optional)
             Rectangle {
-                visible: root.showPeaks && root.mirror && root.drawTop
+                visible: false
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: parent.width
                 height: Theme.spectrumPeakThickness

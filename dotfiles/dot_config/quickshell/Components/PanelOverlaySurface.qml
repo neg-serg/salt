@@ -21,13 +21,12 @@ Rectangle {
     property color borderColor: Theme.borderSubtle
     property real borderWidth: Theme.uiBorderWidth
     property real borderInset: 0
-    property real radiusBase: Theme.panelOverlayRadius
     property real cornerRadiusOverride: -1
 
     color: backgroundColor
     radius: cornerRadiusOverride >= 0
         ? cornerRadiusOverride
-        : Math.round(radiusBase * overlayScale)
+        : Math.round(Theme.panelOverlayRadius * overlayScale)
 
     implicitWidth: contentHost.implicitWidth
     implicitHeight: contentHost.implicitHeight

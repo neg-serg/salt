@@ -8,8 +8,6 @@ Item {
     id: root
 
     property var currentPlayer: null
-    property bool debugMetaLogging: false
-    property int _recalcSeq: 0
 
     // Public metadata (set imperatively to avoid re-evaluation)
     property string trackGenre: ""
@@ -33,7 +31,6 @@ Item {
     property string trackChannelLayout: ""
     property string trackQualitySummary: ""
 
-    property bool introspectAudioEnabled: true
     property string _lastPath: ""
     property string _pendingPath: ""
     property bool _introspectionDone: false
@@ -52,7 +49,6 @@ Item {
     }
 
     function recalcAll() {
-        var t0 = 0; if (debugMetaLogging) { t0 = Date.now(); ++_recalcSeq; }
         // Compute URL first to trigger introspection when it changes
         var newUrl = computeUrlStr();
         if (trackUrlStr !== newUrl) trackUrlStr = newUrl;
@@ -78,7 +74,7 @@ Item {
         trackDsdRateStr     = computeDsdRateStr();
         // Only update quality summary after introspection completes;
         // keep previous value during the gap to avoid blank flash on track change
-        if (!introspectAudioEnabled || _introspectionDone || !trackUrlStr) {
+        if (_introspectionDone || !trackUrlStr) {
             trackQualitySummary = computeQualitySummary();
         }
         
@@ -210,7 +206,6 @@ Item {
         }
     }
     function introspectCurrentTrack() {
-        if (!introspectAudioEnabled) return;
         const p = pathFromUrl(trackUrlStr);
         if (!p) { resetFileMeta(); _lastPath = ""; _pendingPath = ""; _introspectionDone = true; return; }
         if (p === _lastPath) return; // no change
