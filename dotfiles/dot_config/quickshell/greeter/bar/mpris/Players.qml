@@ -152,32 +152,6 @@ FullwidthMouseArea {
 
 			show: root.containsMouse
 
-			/*ColumnLayout {
-				ColumnLayout {
-					visible: MprisController.activePlayer != null
-
-					Label { text: MprisController.activeTrack?.title ?? "" }
-
-					Label {
-						text: {
-							const artist = MprisController.activeTrack?.artist ?? "";
-							const album = MprisController.activeTrack?.album ?? "";
-
-							return artist + (album ? ` - ${album}` : "");
-						}
-					}
-
-					Label { text: MprisController.activePlayer?.identity ?? "" }
-				}
-
-				Label {
-					visible: MprisController.activePlayer == null
-					text: "No media playing"
-				}
-
-				Rectangle { implicitHeight: 10; color: "white"; Layout.fillWidth: true }
-				}*/
-
 			contentItem.anchors.margins: 0
 
 			Item {
@@ -220,12 +194,6 @@ FullwidthMouseArea {
 					FullheightLabel {
 						visible: MprisController.activePlayer != null
 						text: MprisController.activeTrack?.artist ?? ""
-						/*text: {
-							const artist = MprisController.activeTrack?.artist ?? "";
-							const album = MprisController.activeTrack?.album ?? "";
-
-							return artist + (album ? ` - ${album}` : "");
-						}*/
 					}
 
 					Label {
@@ -659,11 +627,6 @@ FullwidthMouseArea {
 								target: player
 
 								function onPositionChanged() {
-									if (false && player.position == 0 && slider.lastPosition != 0 && !boundAnim.running) {
-										slider.boundAnimStart = slider.lastPosition / slider.lastLength;
-										boundAnim.start();
-									}
-
 									slider.lastPosition = player.position;
 									slider.lastLength = player.length;
 								}

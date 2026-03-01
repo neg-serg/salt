@@ -11,7 +11,7 @@ WrapperMouseArea {
 	id: root
 	required property BluetoothDevice device
 	property bool menuOpen: false
-	readonly property bool showBg: false//pairingContext.attentionRequested //device.connected//menuOpen //|| containsMouse
+	readonly property bool showBg: false
 	hoverEnabled: true
 
 	onClicked: menuOpen = !menuOpen
@@ -58,31 +58,6 @@ WrapperMouseArea {
 					onClicked: root.device.forget()
 				}
 			}
-
-			/*RowLayout {
-				Layout.margins: 3
-				Layout.topMargin: 0
-				visible: root.showBg
-
-				BluetoothPairingContext {
-					id: pairingContext
-					device: root.device
-				}
-
-				Label {
-					text: `Pairing Code: ${pairingContext.pairingCode}`
-				}
-
-				Button {
-					text: "Accept"
-					onClicked: pairingContext.confirmCode(true)
-				}
-
-				Button {
-					text: "Reject"
-					onClicked: pairingContext.confirmCode(false)
-				}
-			}*/
 		}
 	}
 }

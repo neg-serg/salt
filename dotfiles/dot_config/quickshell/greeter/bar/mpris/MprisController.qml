@@ -60,7 +60,6 @@ Singleton {
 		}
 
 		function onTrackArtUrlChanged() {
-			//root.updateTrack();
 			if (root.activePlayer.uniqueId == root.activeTrack.uniqueId && root.activePlayer.trackArtUrl != root.activeTrack.artUrl) {
 				// cantata likes to send cover updates *BEFORE* updating the track info.
 				// as such, art url changes shouldn't be able to break the reverse animation
@@ -75,7 +74,6 @@ Singleton {
 	onActivePlayerChanged: this.updateTrack();
 
 	function updateTrack() {
-		//console.log(`update: ${this.activePlayer?.trackTitle ?? ""} : ${this.activePlayer?.trackArtists}`)
 		this.activeTrack = {
 			uniqueId: this.activePlayer?.uniqueId ?? 0,
 			artUrl: this.activePlayer?.trackArtUrl ?? "",
