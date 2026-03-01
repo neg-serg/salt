@@ -43,8 +43,6 @@ Singleton {
             // Unified logging toggle for low-importance debug logs
             property bool debugLogs: false
             property bool debugNetwork: false
-            // Quickshell bar seam debug overlay: fill full width instead of only the gap
-            property bool debugSeamFullWidth: true
             property bool strictThemeTokens: false
             property bool useFahrenheit: false
             property bool showMediaInBar: false
@@ -61,7 +59,6 @@ Singleton {
             property bool showWeatherInBar: false
             property bool reverseDayMonth: false
             property bool use12HourClock: false
-            property bool dimPanels: true
             property real fontSizeMultiplier: 1.0  // Font size multiplier (1.0 = normal, 1.2 = 20% larger, 0.8 = 20% smaller)
 
             // Media spectrum / CAVA

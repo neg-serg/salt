@@ -62,7 +62,6 @@ Singleton {
     property var _themeManifestEntries: []
     property var _themePartCache: ({})
     property var _themePartLoaded: ({})
-    property var _themePartErrors: ({})
     property string _lastWrittenThemeJson: ""
 
     Timer {
@@ -756,7 +755,6 @@ Singleton {
     property int panelHeight: val('panel.height', 22)
     property int panelSideMargin: val('panel.sideMargin', 18)
     property int panelWidgetSpacing: val('panel.widgetSpacing', 12)
-    property real panelSeparatorOpacity: val('panel.separatorOpacity', 0.88)
     property real panelSeparatorWidthFactor: val('panel.separatorWidthFactor', 1)
     // Panel icon sizing
     property int panelIconSize: val('panel.icons.iconSize', 24)
@@ -950,7 +948,6 @@ Singleton {
     // Values validated by ThemeConstraints in tooling
     property int wsLabelPadding: val('ws.label.padding', 6)
     property int wsLabelLeftPadding: val('ws.label.leftPadding.normal', 6)
-    property int wsLabelLeftPaddingTerminal: val('ws.label.leftPadding.terminal', 6)
     property int wsIconInnerPadding: val('ws.icon.innerPadding', 1)
     // Keyboard capsule spacing tokens mirror workspace defaults unless overridden
     property int keyboardCapsuleIconSpacing: val('keyboard.capsule.iconSpacing', wsIconSpacing)
