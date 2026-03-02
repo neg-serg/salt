@@ -58,6 +58,7 @@ function fetchCoordinates(city, callback, errorCallback, options) {
         }
     }
 
+    // Open-Meteo geocoding API (free, no key required)
     var geoUrl = _buildUrl("https://geocoding-api.open-meteo.com/v1/search", {
         name: city,
         language: "en",
@@ -117,6 +118,7 @@ function fetchWeather(latitude, longitude, callback, errorCallback, options) {
         }
     }
 
+    // Open-Meteo forecast API (free, no key required)
     var url = _buildUrl("https://api.open-meteo.com/v1/forecast", {
         latitude: String(latitude),
         longitude: String(longitude),
