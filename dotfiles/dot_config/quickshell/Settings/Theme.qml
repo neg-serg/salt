@@ -755,6 +755,24 @@ Singleton {
     property int panelHeight: val('panel.height', 22)
     property int panelSideMargin: val('panel.sideMargin', 18)
     property int panelWidgetSpacing: val('panel.widgetSpacing', 12)
+    // Panel layout ratios
+    property real panelInterWidgetRatio: val('panel.interWidgetRatio', 1.35)
+    property real panelSeamWidthRatio: val('panel.seamWidthRatio', 0.85)
+    property int panelSeamMinPx: val('panel.seamMinPx', 8)
+    // Panel seam appearance
+    property real panelSeamTaperTop: val('panel.seam.taperTop', 0.25)
+    property real panelSeamTaperBottom: val('panel.seam.taperBottom', 0.9)
+    property real panelSeamOpacity: val('panel.seam.opacity', 0.55)
+    property real panelSeamColorMixRatio: val('panel.seam.colorMixRatio', 0.45)
+    // Panel tint overlay
+    property color panelTintColor: val('panel.tint.color', "#ff2a36")
+    property real panelTintAlpha: val('panel.tint.alpha', 0.75)
+    property real panelTintStrength: val('panel.tint.strength', 1.0)
+    property real panelTintFeatherTop: val('panel.tint.featherTop', 0.08)
+    property real panelTintFeatherBottom: val('panel.tint.featherBottom', 0.35)
+    // Panel backdrop
+    property color panelBackdropColor: val('panel.backdrop.color', "#000000")
+    property real panelBackdropOpacity: val('panel.backdrop.opacity', 0.65)
     property real panelSeparatorWidthFactor: val('panel.separatorWidthFactor', 1)
     // Panel icon sizing
     property int panelIconSize: val('panel.icons.iconSize', 24)

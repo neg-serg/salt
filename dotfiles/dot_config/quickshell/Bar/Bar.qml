@@ -407,14 +407,14 @@ Scope {
                     ) ? Settings.settings.panelSideMarginPx : Theme.panelSideMargin
                     property int sideMargin: Math.round(_sideMarginBase * s)
                     property int widgetSpacing: Math.round(Theme.panelWidgetSpacing * s)
-                    property int interWidgetSpacing: Math.max(widgetSpacing, Math.round(widgetSpacing * 1.35))
-                    property int seamWidth: Math.max(8, Math.round(widgetSpacing * 0.85))
+                    property int interWidgetSpacing: Math.max(widgetSpacing, Math.round(widgetSpacing * Theme.panelInterWidgetRatio))
+                    property int seamWidth: Math.max(Theme.panelSeamMinPx, Math.round(widgetSpacing * Theme.panelSeamWidthRatio))
                     // Panel background transparency is configurable via Settings:
                     // - panelBgAlphaScale: 0..1 multiplier applied to the base theme alpha
                     property color barBgColor: "transparent"
-                    property real seamTaperTop: 0.25
-                    property real seamTaperBottom: 0.9
-                    property real seamOpacity: 0.55
+                    property real seamTaperTop: Theme.panelSeamTaperTop
+                    property real seamTaperBottom: Theme.panelSeamTaperBottom
+                    property real seamOpacity: Theme.panelSeamOpacity
                     readonly property real seamTiltSign: 1.0
                     readonly property real seamTaperTopClamped: Utils.clamp01(seamTaperTop)
                     readonly property real seamTaperBottomClamped: Utils.clamp01(seamTaperBottom)
@@ -425,15 +425,15 @@ Scope {
                         ? (1.0 - seamTaperBottomClamped)
                         : seamTaperBottomClamped) - seamEdgeBaseTop
                     property color seamFillColor: Color.withAlpha(
-                        Color.mix(Theme.surfaceVariant, Theme.background, 0.45),
+                        Color.mix(Theme.surfaceVariant, Theme.background, Theme.panelSeamColorMixRatio),
                         seamOpacity
                     )
                     readonly property real seamSlackWidth: Math.max(0, leftBarBackground.width - leftBarFill.width)
                     property bool panelTintEnabled: true
-                    property color panelTintColor: Color.withAlpha("#ff2a36", 0.75)
-                    property real panelTintStrength: 1.0
-                    property real panelTintFeatherTop: 0.08
-                    property real panelTintFeatherBottom: 0.35
+                    property color panelTintColor: Color.withAlpha(Theme.panelTintColor, Theme.panelTintAlpha)
+                    property real panelTintStrength: Theme.panelTintStrength
+                    property real panelTintFeatherTop: Theme.panelTintFeatherTop
+                    property real panelTintFeatherBottom: Theme.panelTintFeatherBottom
                     readonly property real contentWidth: Math.max(
                         leftWidgetsRow.width,
                         leftWidgetsRow.implicitWidth || leftWidgetsRow.width || 0
@@ -447,8 +447,8 @@ Scope {
                         id: leftBarBackdrop
                         width: Math.max(1, leftPanel.width)
                         height: leftPanel.barHeightPx
-                        color: "#000000"
-                        opacity: 0.65
+                        color: Theme.panelBackdropColor
+                        opacity: Theme.panelBackdropOpacity
                         anchors.top: parent.top
                         anchors.left: parent.left
                         z: -1
@@ -773,14 +773,14 @@ Scope {
                     ) ? Settings.settings.panelSideMarginPx : Theme.panelSideMargin
                     property int sideMargin: Math.round(_sideMarginBase * s)
                     property int widgetSpacing: Math.round(Theme.panelWidgetSpacing * s)
-                    property int interWidgetSpacing: Math.max(widgetSpacing, Math.round(widgetSpacing * 1.35))
-                    property int seamWidth: Math.max(8, Math.round(widgetSpacing * 0.85))
+                    property int interWidgetSpacing: Math.max(widgetSpacing, Math.round(widgetSpacing * Theme.panelInterWidgetRatio))
+                    property int seamWidth: Math.max(Theme.panelSeamMinPx, Math.round(widgetSpacing * Theme.panelSeamWidthRatio))
                     // Panel background transparency is configurable via Settings:
                     // - panelBgAlphaScale: 0..1 multiplier applied to the base theme alpha
                     property color barBgColor: "transparent"
-                    property real seamTaperTop: 0.25
-                    property real seamTaperBottom: 0.9
-                    property real seamOpacity: 0.55
+                    property real seamTaperTop: Theme.panelSeamTaperTop
+                    property real seamTaperBottom: Theme.panelSeamTaperBottom
+                    property real seamOpacity: Theme.panelSeamOpacity
                     readonly property real seamTiltSign: -1.0
                     readonly property real seamTaperTopClamped: Utils.clamp01(seamTaperTop)
                     readonly property real seamTaperBottomClamped: Utils.clamp01(seamTaperBottom)
@@ -791,15 +791,15 @@ Scope {
                         ? (1.0 - seamTaperBottomClamped)
                         : seamTaperBottomClamped) - seamEdgeBaseTop
                     property color seamFillColor: Color.withAlpha(
-                        Color.mix(Theme.surfaceVariant, Theme.background, 0.45),
+                        Color.mix(Theme.surfaceVariant, Theme.background, Theme.panelSeamColorMixRatio),
                         seamOpacity
                     )
                     readonly property real seamSlackWidth: Math.max(0, rightBarBackground.width - rightBarFill.width)
                     property bool panelTintEnabled: true
-                    property color panelTintColor: Color.withAlpha("#ff2a36", 0.75)
-                    property real panelTintStrength: 1.0
-                    property real panelTintFeatherTop: 0.08
-                    property real panelTintFeatherBottom: 0.35
+                    property color panelTintColor: Color.withAlpha(Theme.panelTintColor, Theme.panelTintAlpha)
+                    property real panelTintStrength: Theme.panelTintStrength
+                    property real panelTintFeatherTop: Theme.panelTintFeatherTop
+                    property real panelTintFeatherBottom: Theme.panelTintFeatherBottom
 
                     readonly property real contentWidth: Math.max(
                         rightWidgetsRow.width,
@@ -814,8 +814,8 @@ Scope {
                         id: rightBarBackdrop
                         width: Math.max(1, rightPanel.width)
                         height: rightPanel.barHeightPx
-                        color: "#000000"
-                        opacity: 0.65
+                        color: Theme.panelBackdropColor
+                        opacity: Theme.panelBackdropOpacity
                         anchors.top: parent.top
                         anchors.right: parent.right
                         z: -1
