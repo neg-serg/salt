@@ -24,7 +24,7 @@ Singleton {
                 if (isFinite(raw) && raw > 0)
                     return raw * base;
             }
-        } catch (e) {}
+        } catch (e) { console.warn("[Theme.scale]", e) }
         return base;
     }
 
@@ -151,7 +151,7 @@ Singleton {
         onAdapterUpdated: {
             try {
                 root._checkDeprecatedTokens();
-            } catch (e) {}
+            } catch (e) { /* checked on load */ }
             root._themeLoaded = true;
         }
         onLoadFailed: function (error) {
@@ -237,7 +237,7 @@ Singleton {
                     continue;
                 out.push(name);
             }
-        } catch (e) {}
+        } catch (e) { console.warn("[Theme._listAvailableThemeFiles]", e) }
         out.sort();
         return out;
     }
@@ -604,7 +604,7 @@ Singleton {
                     }
                 }
             }
-        } catch (e) {}
+        } catch (e) { console.warn("[Theme.val]", e) }
         return fallback;
     }
 
@@ -667,7 +667,7 @@ Singleton {
                         continue; // nested groups (already covered)
                     flats.push(k);
                 }
-            } catch (e) {}
+            } catch (e) { console.warn("[Theme._checkDeprecatedTokens]", e) }
             if (flats.length > 0) {
                 var warnKey = 'flat::detected';
                 if (!root._strictWarned[warnKey]) {
@@ -676,7 +676,7 @@ Singleton {
                     root._strictWarned[warnKey] = true;
                 }
             }
-        } catch (e) {}
+        } catch (e) { console.warn("[Theme._checkDeprecatedTokens]", e) }
     }
 
     // Initial deprecated check
@@ -684,7 +684,7 @@ Singleton {
         _refreshThemeParts("startup");
         try {
             root._checkDeprecatedTokens();
-        } catch (e) {}
+        } catch (e) { /* checked on load */ }
     }
 
     // Map string or numeric to a QML Easing.Type

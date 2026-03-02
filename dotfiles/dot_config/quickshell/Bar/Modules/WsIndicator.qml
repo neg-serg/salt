@@ -148,8 +148,8 @@ CenteredCapsuleRow {
                 dyn[n] = submapIconName(n);
             }
             submapDynamicMap = dyn;
-            try { const _ = Object.keys(dyn); } catch (_) {}
-        } catch (e) {}
+            try { const _ = Object.keys(dyn); } catch (_) { /* dynamic binding probe */ }
+        } catch (e) { console.warn("[WsIndicator]", e) }
     }
 
     Connections {

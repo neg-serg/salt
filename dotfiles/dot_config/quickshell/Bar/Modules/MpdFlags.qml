@@ -68,7 +68,7 @@ WidgetCapsule {
     function refresh() {
         try {
             if (!proc.running) proc.running = true
-        } catch (e) { }
+        } catch (e) { console.warn("[MpdFlags]", e) }
     }
 
     // One-shot status parser

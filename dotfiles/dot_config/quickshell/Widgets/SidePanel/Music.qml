@@ -25,7 +25,7 @@ Rectangle {
             var ratio = Color.contrastRatio(bg, fg);
             var th = (Settings.settings && Settings.settings.contrastWarnRatio) ? Settings.settings.contrastWarnRatio : 4.5;
             if (ratio < th) console.debug('[Music] Low contrast', label || 'text', ratio.toFixed(2));
-        } catch (e) {}
+        } catch (e) { console.warn("[Music.warnContrast]", e) }
     }
 
         Rectangle {
@@ -115,9 +115,7 @@ Rectangle {
                         }
                         playerSelector.currentIndex = idx;
                     }
-                } catch (e) {
-                    // ignore
-                }
+                } catch (e) { console.warn("[Music.dedupePlayers]", e) }
             }
             // Refresh list periodically and on player change (centralized timer)
             Connections { target: Timers; function onTick2s() { playerUI.dedupePlayers() } }
@@ -137,9 +135,9 @@ Rectangle {
                             MusicManager.selectedPlayerIndex = playerUI.uniquePlayers[index].idx;
                             MusicManager.updateCurrentPlayer();
                         }
-                    } catch (e) { /* ignore */ }
+                    } catch (e) { console.warn("[Music.playerSelector]", e) }
                 }
-            
+
                 background: Rectangle {
                     implicitWidth: Math.round(Theme.sidePanelSelectorMinWidth * Theme.scale(screen))
                     implicitHeight: Math.round(Theme.uiControlHeight * Theme.scale(screen))
@@ -267,7 +265,7 @@ Rectangle {
                                         } else {
                                             detailsCol.musicAccentReady = false;
                                         }
-                                    } catch (e) { /* ignore */ }
+                                    } catch (e) { console.warn("[Music.albumArt]", e) }
                                     detailsCol._accentRetryCount = 0;
                                     accentSampler.requestPaint();
                                     musicAccentRetry.restart();
@@ -318,7 +316,7 @@ Rectangle {
                                         detailsCol.musicAccentReady = false;
                                     }
                                 }
-                            } catch (e) { /* ignore */ }
+                            } catch (e) { console.warn("[Music.accentSampler]", e) }
                             } }
 
                         Item {

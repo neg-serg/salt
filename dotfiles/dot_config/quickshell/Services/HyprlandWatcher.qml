@@ -54,7 +54,7 @@ Item {
             try {
                 if (typeof obj.id === "number") root.activeWorkspaceId = obj.id;
                 if (obj.name !== undefined) root.activeWorkspaceName = obj.name || "";
-            } catch (e) { }
+            } catch (e) { console.warn("[HyprlandWatcher.activeWs]", e) }
         }
     }
 
@@ -68,7 +68,7 @@ Item {
         onJson: arr => {
             try {
                 root.binds = Array.isArray(arr) ? arr : [];
-            } catch (e) { }
+            } catch (e) { console.warn("[HyprlandWatcher.binds]", e) }
         }
     }
 
@@ -83,7 +83,7 @@ Item {
             try {
                 const list = Array.isArray(obj?.keyboards) ? obj.keyboards : [];
                 root.keyboardDevices = list;
-            } catch (e) { }
+            } catch (e) { console.warn("[HyprlandWatcher.devices]", e) }
         }
     }
 

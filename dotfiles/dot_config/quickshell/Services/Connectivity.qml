@@ -68,7 +68,7 @@ Item {
                     if (state === "UP" || (state === "UNKNOWN" && addrs.length > 0)) { up = true; break }
                 }
                 root.hasLink = up
-            } catch (e) { /* ignore */ }
+            } catch (e) { console.warn("[Connectivity.linkProbe]", e) }
         }
     }
 
@@ -102,7 +102,7 @@ Item {
             try {
                 if (typeof data.rx_kib_s === "number") root.rxKiBps = data.rx_kib_s
                 if (typeof data.tx_kib_s === "number") root.txKiBps = data.tx_kib_s
-            } catch (e) { /* ignore */ }
+            } catch (e) { console.warn("[Connectivity.rsStream]", e) }
         }
     }
 

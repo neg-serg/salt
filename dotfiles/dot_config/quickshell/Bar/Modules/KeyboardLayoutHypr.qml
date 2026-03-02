@@ -321,6 +321,6 @@ CenteredCapsuleRow {
                 if (txt && txt !== kb.layoutText)
                     kb.layoutText = txt;
             }
-        } catch (e) {}
+        } catch (e) { console.warn("[KeyboardLayoutHypr]", e) }
     }
 }
