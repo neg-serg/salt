@@ -193,6 +193,9 @@ CenteredCapsuleRow {
         autoStart: false
         restartOnExit: false
         env: Services.HyprlandWatcher.hyprEnvObject
+        onExited: (code, status) => {
+            if (code !== 0) console.warn("[KeyboardLayoutHypr.switchProc] exited with code", code)
+        }
     }
 
     function norm(s) {
