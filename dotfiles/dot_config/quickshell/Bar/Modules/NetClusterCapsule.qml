@@ -15,7 +15,7 @@ ConnectivityCapsule {
     property bool iconSquare: true
 
     property color accentBase: Color.saturate(Theme.accentPrimary, Theme.vpnAccentSaturateBoost)
-    property color accentColor: desaturateColor(accentBase, Theme.vpnDesaturateAmount)
+    property color accentColor: Color.desaturate(accentBase, Theme.vpnDesaturateAmount)
 
     Component.onCompleted: {
         if (ConnectivityState) {
@@ -83,25 +83,11 @@ ConnectivityCapsule {
         }
     }
 
-    function mixColor(a, b, t) {
-        return Qt.rgba(a.r * (1 - t) + b.r * t, a.g * (1 - t) + b.g * t, a.b * (1 - t) + b.b * t, a.a * (1 - t) + b.a * t);
-    }
-
-    function grayOf(c) {
-        const y = 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
-        return Qt.rgba(y, y, y, c.a);
-    }
-
-    function desaturateColor(c, amount) {
-        const clamped = Math.min(1, Math.max(0, amount || 0));
-        return mixColor(c, grayOf(c), clamped);
-    }
-
     function vpnAccentColor() {
         const boost = Theme.vpnAccentSaturateBoost || 0;
         const desat = Theme.vpnDesaturateAmount || 0;
         const base = Color.saturate(Theme.accentPrimary, boost);
-        return desaturateColor(base, desat);
+        return Color.desaturate(base, desat);
     }
 
     readonly property color slashAccentColor: (function() {
