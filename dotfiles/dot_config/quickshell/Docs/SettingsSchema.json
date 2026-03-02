@@ -11,15 +11,35 @@
     "debugLogs": { "type": "boolean", "default": false, "description": "Enable low-importance debug logs" },
     "debugNetwork": { "type": "boolean", "default": false, "description": "Enable extra network debug logs" },
     "strictThemeTokens": { "type": "boolean", "default": false, "description": "Warn on missing/deprecated Theme tokens" },
+    "reducedMotion": { "type": "boolean", "default": false, "description": "Disable non-essential animations (accessibility)" },
 
     "useFahrenheit": { "type": "boolean", "default": false, "description": "Use Fahrenheit temperatures" },
     "showMediaInBar": { "type": "boolean", "default": false, "description": "Show media block in bar" },
     "showWeatherInBar": { "type": "boolean", "default": false, "description": "Show weather button in bar" },
-    
+
     "reverseDayMonth": { "type": "boolean", "default": false, "description": "Flip day and month order" },
     "use12HourClock": { "type": "boolean", "default": false, "description": "12-hour time format" },
-    "dimPanels": { "type": "boolean", "default": true, "description": "Dim panel appearance" },
     "fontSizeMultiplier": { "type": "number", "default": 1.0, "minimum": 0.5, "maximum": 2.5, "description": "Global font size multiplier" },
+
+    "panelBgAlphaScale": { "type": "number", "default": 0.2, "minimum": 0, "maximum": 1, "description": "Panel background alpha multiplier (0 = transparent, 1 = opaque)" },
+    "enableWedgeClipShader": { "type": "boolean", "default": false, "description": "Enable wedge clip ShaderEffect path" },
+
+    "mediaIconStretchMode": { "type": "string", "default": "compact", "enum": ["compact", "stretch", "panel"], "description": "Media icon display mode" },
+    "mediaIconMinWidthPx": { "type": "integer", "default": 0, "minimum": 0, "description": "Media icon minimum width (0 = auto)" },
+    "mediaIconMaxWidthPx": { "type": "integer", "default": 0, "minimum": 0, "description": "Media icon maximum width (0 = unlimited)" },
+    "mediaIconPreferredWidthPx": { "type": "integer", "default": 0, "minimum": 0, "description": "Media icon preferred width (0 = auto)" },
+    "mediaIconStretchShare": { "type": "number", "default": 1.0, "minimum": 0, "maximum": 1, "description": "Fraction of available space for stretched media icon" },
+    "mediaIconOverlayPaddingPx": { "type": "integer", "default": 0, "minimum": 0, "description": "Padding around media icon overlay" },
+    "mediaIconPanelOverlayPaddingPx": { "type": "integer", "default": 12, "minimum": 0, "description": "Padding around panel-mode media overlay" },
+    "mediaIconPanelOverlayWidthShare": { "type": "number", "default": 0.45, "minimum": 0, "maximum": 1, "description": "Width share of panel overlay relative to icon" },
+    "mediaIconPanelOverlayBgOpacity": { "type": "number", "default": 0.65, "minimum": 0, "maximum": 1, "description": "Panel overlay background opacity" },
+    "mediaIconBorderless": { "type": "boolean", "default": false, "description": "Render media capsule without borders/contrasting background" },
+
+    "mediaPanelButtonBorderless": { "type": "boolean", "default": true, "description": "Remove panel-mode play/pause button border" },
+    "mediaPanelButtonLargerIcon": { "type": "boolean", "default": true, "description": "Prefer enlarged borderless button in panel mode" },
+
+    "hideSystemTrayCapsule": { "type": "boolean", "default": true, "description": "Hide inline tray capsule (hover menu still accessible)" },
+    "systemTrayTightSpacing": { "type": "boolean", "default": true, "description": "Align inline tray contents flush with capsule edges" },
 
     "cavaBars": { "type": "integer", "default": 86, "minimum": 8, "maximum": 512, "description": "CAVA bars count" },
     "cavaFramerate": { "type": "integer", "default": 24, "minimum": 1, "description": "CAVA framerate (FPS)" },
@@ -84,8 +104,7 @@
 
     "pinnedPlayers": { "type": "array", "items": { "type": "string" }, "default": [] },
     "ignoredPlayers": { "type": "array", "items": { "type": "string" }, "default": [] },
-    "lastActivePlayers": { "type": "array", "items": { "type": "string" }, "default": [] },
-    
+
 
     "showMediaVisualizer": { "type": "boolean", "default": false },
 
@@ -103,6 +122,7 @@
     "musicPopupEdgeMargin": { "type": "integer", "default": 4, "minimum": 0, "description": "Horizontal margin between popup and screen edge (logical px)" },
 
     "networkPingIntervalMs": { "type": "integer", "default": 30000, "minimum": 1000, "maximum": 600000, "description": "Network ping interval (ms)" },
+    "networkPingTarget": { "type": "string", "default": "8.8.8.8", "description": "Host to ping for internet reachability check" },
     "networkNoInternetColor": { "type": "string", "default": "#FF6E00", "description": "No-internet status color" },
     "networkNoLinkColor": { "type": "string", "default": "#D81B60", "description": "No-link status color" }
   }
