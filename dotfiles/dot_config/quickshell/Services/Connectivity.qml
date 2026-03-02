@@ -92,6 +92,7 @@ Item {
     }
 
     // --- rsmetrx streaming (JSON lines: { rx_kib_s, tx_kib_s })
+    property bool _rsmetrxWarned: false
     ProcessRunner {
         id: rsStream
         cmd: ["rsmetrx"]
@@ -103,6 +104,12 @@ Item {
                 if (typeof data.rx_kib_s === "number") root.rxKiBps = data.rx_kib_s
                 if (typeof data.tx_kib_s === "number") root.txKiBps = data.tx_kib_s
             } catch (e) { console.warn("[Connectivity.rsStream]", e) }
+        }
+        onExited: (code, status) => {
+            if (code !== 0 && !root._rsmetrxWarned) {
+                console.warn("[Connectivity] rsmetrx exited with code", code, "— throughput metrics unavailable. Install rsmetrx for network rate monitoring.")
+                root._rsmetrxWarned = true
+            }
         }
     }
 
