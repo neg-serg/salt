@@ -12,6 +12,8 @@ function clamp(value, min, max) {
     } catch (e) { console.warn("[Utils.clamp]", e); return min; }
 }
 
+function clamp01(value) { return clamp(value, 0, 1); }
+
 function coerceInt(value, deflt) {
     try {
         var v = Math.round(Number(value));

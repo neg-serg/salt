@@ -11,6 +11,7 @@ import qs.Services
 import qs.Settings
 import qs.Widgets.SidePanel
 import "../Helpers/Color.js" as Color
+import "../Helpers/Utils.js" as Utils
 import "../Helpers/WidgetBg.js" as WidgetBg
 
 Scope {
@@ -30,11 +31,11 @@ Scope {
         let val = Number(raw);
         if (!isFinite(val))
             val = _defaultPanelAlphaScale;
-        return Math.max(0.0, Math.min(1.0, val));
+        return Utils.clamp01(val);
     }
     function wedgeWidthNorm(faceWidth, seamWidth) {
         var ww = Number(Quickshell.env("QS_WEDGE_WIDTH_PCT") || "");
-        if (isFinite(ww) && ww > 0) return Math.max(0.0, Math.min(1.0, ww/100.0));
+        if (isFinite(ww) && ww > 0) return Utils.clamp01(ww/100.0);
         var faceW = Math.max(1, faceWidth);
         var targetPx = Math.max(1, Math.round(seamWidth));
         var capPx = Math.round(faceW * 0.35);
@@ -64,7 +65,7 @@ Scope {
             if (w <= 0 || h <= 0) {
                 return;
             }
-            var coverage = Math.max(0.0, Math.min(1.0, xCoverage));
+            var coverage = Utils.clamp01(xCoverage);
             var span = Math.max(1, w * coverage);
             span = Math.min(span, w);
             var xBase = flipX ? w : 0;
@@ -235,7 +236,7 @@ Scope {
                 var h = height;
                 if (w <= 0 || h <= 0)
                     return;
-                var cov = Math.max(0.0, Math.min(1.0, coverage));
+                var cov = Utils.clamp01(coverage);
                 var span = Math.max(1, Math.min(w, w * cov));
                 var drawFlipX = useMirror ? parent.mirrorFlipX : parent.primaryFlipX;
                 var drawFlipY = useMirror ? !parent.triangleFlipY : parent.triangleFlipY;
@@ -415,8 +416,8 @@ Scope {
                     property real seamTaperBottom: 0.9
                     property real seamOpacity: 0.55
                     readonly property real seamTiltSign: 1.0
-                    readonly property real seamTaperTopClamped: Math.max(0.0, Math.min(1.0, seamTaperTop))
-                    readonly property real seamTaperBottomClamped: Math.max(0.0, Math.min(1.0, seamTaperBottom))
+                    readonly property real seamTaperTopClamped: Utils.clamp01(seamTaperTop)
+                    readonly property real seamTaperBottomClamped: Utils.clamp01(seamTaperBottom)
                     readonly property real seamEdgeBaseTop: (seamTiltSign > 0)
                         ? (1.0 - seamTaperTopClamped)
                         : seamTaperTopClamped
@@ -781,8 +782,8 @@ Scope {
                     property real seamTaperBottom: 0.9
                     property real seamOpacity: 0.55
                     readonly property real seamTiltSign: -1.0
-                    readonly property real seamTaperTopClamped: Math.max(0.0, Math.min(1.0, seamTaperTop))
-                    readonly property real seamTaperBottomClamped: Math.max(0.0, Math.min(1.0, seamTaperBottom))
+                    readonly property real seamTaperTopClamped: Utils.clamp01(seamTaperTop)
+                    readonly property real seamTaperBottomClamped: Utils.clamp01(seamTaperBottom)
                     readonly property real seamEdgeBaseTop: (seamTiltSign > 0)
                         ? (1.0 - seamTaperTopClamped)
                         : seamTaperTopClamped
@@ -1266,9 +1267,8 @@ Scope {
                     property color seamBaseColor: Theme.background
                     property real seamBaseOpacityTop: 0.5
                     property real seamBaseOpacityBottom: 0.65
-                    function seamClamp01(v) { return Math.max(0.0, Math.min(1.0, v)); }
                     function seamEdgeBaseForTilt(tiltSign, frac) {
-                        var f = seamClamp01(frac);
+                        var f = Utils.clamp01(frac);
                         return (tiltSign > 0) ? (1.0 - f) : f;
                     }
                     function seamEdgeParamsFor(tiltSign) {
