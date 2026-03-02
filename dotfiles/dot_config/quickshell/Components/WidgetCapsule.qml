@@ -9,7 +9,7 @@ Rectangle {
 
     property var screen: null
     property string backgroundKey: ""
-    property color fallbackColor: "#000000"
+    property color fallbackColor: Theme.surface
     property color backgroundColorOverride: "transparent"
     property bool hoverEnabled: true
     property bool borderVisible: true
