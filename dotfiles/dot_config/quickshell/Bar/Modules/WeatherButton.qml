@@ -16,8 +16,8 @@ OverlayToggleCapsule {
     capsuleVisible: true
     autoToggleOnTap: false
     overlayNamespace: "sideleft-weather"
-    onOpened: { try { Services.Weather.start(); } catch (e) {} }
-    onDismissed: { try { Services.Weather.stop(); } catch (e) {} }
+    onOpened: { try { Services.Weather.start(); } catch (e) { /* service call guard */ } }
+    onDismissed: { try { Services.Weather.stop(); } catch (e) { /* service call guard */ } }
 
     PanelIconButton {
         id: weatherBtn
@@ -27,7 +27,7 @@ OverlayToggleCapsule {
         onClicked: root.toggle("weather")
         hoverEnabled: true
         onEntered: {
-            try { weather.startWeatherFetch(); } catch (e) {}
+            try { weather.startWeatherFetch(); } catch (e) { /* service call guard */ }
         }
     }
 

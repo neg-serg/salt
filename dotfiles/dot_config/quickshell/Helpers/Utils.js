@@ -9,14 +9,14 @@ function clamp(value, min, max) {
         if (!isFinite(b)) b = v;
         if (a > b) { var t = a; a = b; b = t; }
         return Math.min(b, Math.max(a, v));
-    } catch (e) { return min; }
+    } catch (e) { console.warn("[Utils.clamp]", e); return min; }
 }
 
 function coerceInt(value, deflt) {
     try {
         var v = Math.round(Number(value));
         return isFinite(v) ? v : (deflt !== undefined ? Math.round(Number(deflt)) : 0);
-    } catch (e) { return (deflt !== undefined ? Math.round(Number(deflt)) : 0); }
+    } catch (e) { console.warn("[Utils.coerceInt]", e); return (deflt !== undefined ? Math.round(Number(deflt)) : 0); }
 }
 
 // Compute inline font pixel size for compact modules (icons + short text).
@@ -33,6 +33,7 @@ function computedInlineFontPx(height, padding, scaleToken) {
         // Clamp to a sane range to avoid extremes on misconfig
         return clamp(Math.round(inner * scale), 8, 4096);
     } catch (e) {
+        console.warn("[Utils.computedInlineFontPx]", e);
         return 12;
     }
 }

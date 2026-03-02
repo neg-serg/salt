@@ -1,4 +1,4 @@
-try { Qt.include("./HttpCache.js"); } catch (e) { }
+try { Qt.include("./HttpCache.js"); } catch (e) { /* HttpCache.js not available in this context */ }
 var __httpCache = (typeof HttpCache === "object") ? HttpCache : null;
 var _httpGetJson = __httpCache && __httpCache.httpGetJson ? __httpCache.httpGetJson : function(url, timeoutMs, success, fail, userAgent) {
     fail && fail({ type: 'exception', message: 'HttpCache helper missing' });

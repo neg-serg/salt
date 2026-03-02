@@ -45,7 +45,7 @@ Item {
 
     Connections {
         target: Settings.settings
-        function onWeatherCityChanged() { try { root.city = Settings.settings.weatherCity || ""; root.lastFetchTime = 0; if (enabled) fetchNow(); } catch (e) {} }
+        function onWeatherCityChanged() { try { root.city = Settings.settings.weatherCity || ""; root.lastFetchTime = 0; if (enabled) fetchNow(); } catch (e) { console.warn("[Weather.onCityChanged]", e) } }
     }
 
     // Periodic TTL check using consolidated timers

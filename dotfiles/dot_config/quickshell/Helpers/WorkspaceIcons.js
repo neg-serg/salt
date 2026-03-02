@@ -15,6 +15,7 @@ function slugify(value) {
         lower = lower.replace(/^-+/, "").replace(/-+$/, "");
         return lower;
     } catch (e) {
+        console.warn("[WorkspaceIcons.slugify]", e);
         return "";
     }
 }
