@@ -4,6 +4,11 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 
+// NOTE: The greeter runs as an isolated QML module with its own qmldir.
+// It does NOT import qs.Settings or Theme — the greeter must work without
+// the user's config (e.g. on first boot, locked screen with no session).
+// Colors are hardcoded below. To theme the greeter, a separate
+// GreeterTheme singleton would need to be created within this module.
 Singleton {
 	id: root
 	readonly property string rtpath: "/tmp/quickshell-greeter"
