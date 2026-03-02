@@ -25,6 +25,11 @@ daemon:
         --config-dir .salt_runtime \
         --log-level warning
 
+# Regenerate Claude Code knowledge base indexes
+index:
+    python scripts/index-qml.py
+    python scripts/index-salt.py
+
 # Lint Salt states and Python scripts
 lint:
     .venv/bin/ruff check .
