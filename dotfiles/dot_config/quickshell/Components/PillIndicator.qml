@@ -1,5 +1,4 @@
 import QtQuick
-import Quickshell
 import qs.Settings
 import "../Helpers/Utils.js" as Utils
 
@@ -23,8 +22,6 @@ Item {
     property int autoHidePauseMs: Theme.panelPillAutoHidePauseMs
     // Optional override for how long to wait before showing the pill
     property int showDelayMs: Theme.panelPillShowDelayMs
-    // Global switch to disable animations for perf testing
-    property bool animationsEnabled: ((Quickshell.env("QS_DISABLE_ANIMATIONS") || "") !== "1")
 
     // Internal state
     property bool showPill: false
@@ -73,7 +70,7 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         anchors.right: parent.right
 
-        Behavior on color { enabled: revealPill.animationsEnabled; ColorFastInOutBehavior {} }
+        Behavior on color { enabled: Theme.animationsEnabled; ColorFastInOutBehavior {} }
 
         MaterialIcon {
             anchors.centerIn: parent
@@ -121,7 +118,7 @@ Item {
     }
 
     function show() {
-        if (!animationsEnabled) {
+        if (!Theme.animationsEnabled) {
             showPill = true;
             shouldAnimateHide = autoHide;
             showTimer.stop();
@@ -140,7 +137,7 @@ Item {
     }
 
     function hide() {
-        if (!animationsEnabled) {
+        if (!Theme.animationsEnabled) {
             if (showPill) {
                 showPill = false;
                 shouldAnimateHide = false;
@@ -158,7 +155,7 @@ Item {
     }
 
     function showDelayed() {
-        if (!animationsEnabled) {
+        if (!Theme.animationsEnabled) {
             show();
             return;
         }

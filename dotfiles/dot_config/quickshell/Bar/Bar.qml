@@ -429,7 +429,7 @@ Scope {
                         seamOpacity
                     )
                     Behavior on seamFillColor {
-                        enabled: Theme._themeLoaded
+                        enabled: Theme._themeLoaded && Theme.animationsEnabled
                         ColorAnimation { duration: Theme.panelAnimFastMs }
                     }
                     readonly property real seamSlackWidth: Math.max(0, leftBarBackground.width - leftBarFill.width)
@@ -803,7 +803,7 @@ Scope {
                         seamOpacity
                     )
                     Behavior on seamFillColor {
-                        enabled: Theme._themeLoaded
+                        enabled: Theme._themeLoaded && Theme.animationsEnabled
                         ColorAnimation { duration: Theme.panelAnimFastMs }
                     }
                     readonly property real seamSlackWidth: Math.max(0, rightBarBackground.width - rightBarFill.width)
@@ -1277,7 +1277,7 @@ Scope {
                     property real seamEffectOpacity: 0.85
                     property color seamFillColor: Color.mix(Theme.surfaceVariant, Theme.background, 0.35)
                     Behavior on seamFillColor {
-                        enabled: Theme._themeLoaded
+                        enabled: Theme._themeLoaded && Theme.animationsEnabled
                         ColorAnimation { duration: Theme.panelAnimFastMs }
                     }
                     property bool seamTintEnabled: true
