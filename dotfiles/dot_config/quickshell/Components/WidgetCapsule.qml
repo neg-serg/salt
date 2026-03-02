@@ -58,7 +58,7 @@ Rectangle {
     border.color: "transparent"
     color: _baseColor
     Behavior on color {
-        enabled: Theme._themeLoaded
+        enabled: Theme._themeLoaded && Theme.animationsEnabled
         ColorFastInOutBehavior {}
     }
 
