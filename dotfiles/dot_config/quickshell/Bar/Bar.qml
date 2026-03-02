@@ -428,9 +428,17 @@ Scope {
                         Color.mix(Theme.surfaceVariant, Theme.background, Theme.panelSeamColorMixRatio),
                         seamOpacity
                     )
+                    Behavior on seamFillColor {
+                        enabled: Theme._themeLoaded
+                        ColorAnimation { duration: Theme.panelAnimFastMs }
+                    }
                     readonly property real seamSlackWidth: Math.max(0, leftBarBackground.width - leftBarFill.width)
                     property bool panelTintEnabled: true
                     property color panelTintColor: Color.withAlpha(Theme.panelTintColor, Theme.panelTintAlpha)
+                    Behavior on panelTintColor {
+                        enabled: Theme._themeLoaded
+                        ColorAnimation { duration: Theme.panelAnimFastMs }
+                    }
                     property real panelTintStrength: Theme.panelTintStrength
                     property real panelTintFeatherTop: Theme.panelTintFeatherTop
                     property real panelTintFeatherBottom: Theme.panelTintFeatherBottom
@@ -794,9 +802,17 @@ Scope {
                         Color.mix(Theme.surfaceVariant, Theme.background, Theme.panelSeamColorMixRatio),
                         seamOpacity
                     )
+                    Behavior on seamFillColor {
+                        enabled: Theme._themeLoaded
+                        ColorAnimation { duration: Theme.panelAnimFastMs }
+                    }
                     readonly property real seamSlackWidth: Math.max(0, rightBarBackground.width - rightBarFill.width)
                     property bool panelTintEnabled: true
                     property color panelTintColor: Color.withAlpha(Theme.panelTintColor, Theme.panelTintAlpha)
+                    Behavior on panelTintColor {
+                        enabled: Theme._themeLoaded
+                        ColorAnimation { duration: Theme.panelAnimFastMs }
+                    }
                     property real panelTintStrength: Theme.panelTintStrength
                     property real panelTintFeatherTop: Theme.panelTintFeatherTop
                     property real panelTintFeatherBottom: Theme.panelTintFeatherBottom
@@ -1260,9 +1276,17 @@ Scope {
                     property real seamTaperBottom: 0.65
                     property real seamEffectOpacity: 0.85
                     property color seamFillColor: Color.mix(Theme.surfaceVariant, Theme.background, 0.35)
+                    Behavior on seamFillColor {
+                        enabled: Theme._themeLoaded
+                        ColorAnimation { duration: Theme.panelAnimFastMs }
+                    }
                     property bool seamTintEnabled: true
                     // Use theme accent for seam tint to avoid hardcoded red
                     property color seamTintColor: Theme.accentPrimary
+                    Behavior on seamTintColor {
+                        enabled: Theme._themeLoaded
+                        ColorAnimation { duration: Theme.panelAnimFastMs }
+                    }
                     property real seamTintOpacity: 0.9
                     property color seamBaseColor: Theme.background
                     property real seamBaseOpacityTop: 0.5

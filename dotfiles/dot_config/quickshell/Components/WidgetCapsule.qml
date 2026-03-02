@@ -57,6 +57,10 @@ Rectangle {
     border.width: 0
     border.color: "transparent"
     color: _baseColor
+    Behavior on color {
+        enabled: Theme._themeLoaded
+        ColorFastInOutBehavior {}
+    }
 
     HoverHandler {
         id: hoverTracker
