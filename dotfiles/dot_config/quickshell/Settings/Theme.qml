@@ -12,6 +12,9 @@ Singleton {
     id: root
     // Set true after Theme/.theme.json is loaded/applied at least once
     property bool _themeLoaded: false
+    // Centralized animation toggle: respects Settings.reducedMotion and QS_DISABLE_ANIMATIONS env
+    property bool animationsEnabled: !Settings.settings.reducedMotion
+        && ((Quickshell.env("QS_DISABLE_ANIMATIONS") || "") !== "1")
     // Per-monitor UI scaling (defaults to theme global scale)
     function scale(currentScreen) {
         var base = Number(Theme.panelScaleFactor);
@@ -877,6 +880,7 @@ Singleton {
     // Side-panel popup spacing (between inner items)
     property int sidePanelPopupSpacing: val('sidePanel.popup.spacing', 0)
     // Media dominant-accent sampler/logic (extract hardcoded tuning)
+    property int mediaArtDebounceMs: val('media.artDebounceMs', 60)
     property int mediaAccentSamplerPx: val('media.accent.samplerPx', 48)
     property int mediaAccentRetryMs: val('media.accent.retryMs', 120)
     property int mediaAccentRetryMax: val('media.accent.retryMax', 5)

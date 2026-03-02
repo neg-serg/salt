@@ -89,7 +89,7 @@ Item {
     Component.onCompleted: { _requestSample() }
     onVisibleChanged: { if (visible) _requestSample() }
     // Debounce multiple rapid requestPaint() triggers into one
-    Timer { id: sampleDebounce; interval: 60; repeat: false; onTriggered: { colorSampler.requestPaint(); accentRetry.restart() } }
+    Timer { id: sampleDebounce; interval: Theme.mediaArtDebounceMs; repeat: false; onTriggered: { colorSampler.requestPaint(); accentRetry.restart() } }
     function _requestSample() { sampleDebounce.restart() }
     function _tryRestoreCachedAccent() {
         try {
