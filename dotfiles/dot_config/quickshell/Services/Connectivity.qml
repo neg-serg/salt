@@ -6,7 +6,7 @@ import qs.Components
 
 // Connectivity: shared networking signals/state
 // - hasLink: any non-loopback interface up (or UNKNOWN with address)
-// - hasInternet: ping 1.1.1.1 reachable
+// - hasInternet: ping reachable (target from Settings.networkPingTarget)
 // - interfaces: last JSON array from `ip -j -br a`
 // - rxKiBps / txKiBps: live rates from `rsmetrx` stream
 Item {
@@ -85,7 +85,7 @@ Item {
     }
     ProcessRunner {
         id: inetProbe
-        cmd: ["dash", "-c", "ping -n -c1 -W1 8.8.8.8 >/dev/null && echo OK || echo FAIL"]
+        cmd: ["dash", "-c", "ping -n -c1 -W1 " + Settings.settings.networkPingTarget + " >/dev/null && echo OK || echo FAIL"]
         autoStart: false
         restartOnExit: false
         onLine: (line) => { const ok = String(line||"").trim().indexOf("OK") !== -1; root.hasInternet = ok }

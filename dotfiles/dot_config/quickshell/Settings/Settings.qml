@@ -44,6 +44,8 @@ Singleton {
             property bool debugLogs: false
             property bool debugNetwork: false
             property bool strictThemeTokens: false
+            // Accessibility: disable all non-essential animations
+            property bool reducedMotion: false
             property bool useFahrenheit: false
             property bool showMediaInBar: false
             property string mediaIconStretchMode: "compact"
@@ -144,6 +146,7 @@ Singleton {
             property int musicPopupEdgeMargin:4  // logical px, scaled (distance from screen edge/panel)
 
             property int networkPingIntervalMs:30000
+            property string networkPingTarget: "8.8.8.8"
             property string networkNoInternetColor: "#FF6E00"
             property string networkNoLinkColor: "#D81B60"
         }
