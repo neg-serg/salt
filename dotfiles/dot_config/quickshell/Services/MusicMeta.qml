@@ -234,6 +234,9 @@ Item {
     // Update fields when file introspection updates land
     onFileAudioMetaChanged: scheduleRecalc()
 
+    // Which introspection tool last succeeded (for diagnostics)
+    property string introspectionTool: ""
+
     // Process chain: ffprobe → mediainfo → sox --i
     ProcessRunner {
         id: ffprobeProcess
@@ -245,7 +248,7 @@ Item {
             if (targetPath !== root._lastPath) return;
             try {
                 const meta = parseFfprobe(obj);
-                if (meta) { fileAudioMeta = meta; processChainFinished(); return; }
+                if (meta) { root.introspectionTool = "ffprobe"; fileAudioMeta = meta; processChainFinished(); return; }
             } catch (e) { console.warn("[MusicMeta.ffprobe.onJson]", e) }
             mediainfoProcess.targetPath = targetPath;
             mediainfoProcess.start();
@@ -265,7 +268,7 @@ Item {
             if (targetPath !== root._lastPath) return;
             try {
                 const meta = parseMediainfo(obj);
-                if (meta) { fileAudioMeta = meta; processChainFinished(); return; }
+                if (meta) { root.introspectionTool = "mediainfo"; fileAudioMeta = meta; processChainFinished(); return; }
             } catch (e) { console.warn("[MusicMeta.mediainfo.onJson]", e) }
             soxinfoProcess.targetPath = targetPath;
             soxinfoProcess.start();
@@ -291,7 +294,7 @@ Item {
             if (code === 0) {
                 const text = String(_buf || "");
                 const meta = parseSoxInfo(text);
-                if (meta) { fileAudioMeta = meta; processChainFinished(); _buf = ""; return; }
+                if (meta) { root.introspectionTool = "sox"; fileAudioMeta = meta; processChainFinished(); _buf = ""; return; }
             }
             _buf = "";
             resetFileMeta();
