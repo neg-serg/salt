@@ -4,6 +4,8 @@
 // mix(a,b,t): linear blend between two colors, t in [0,1]
 // towardsBlack(color,t): mix color toward black by t
 // towardsWhite(color,t): mix color toward white by t
+// saturate(c, t): increase HSL saturation by t
+// desaturate(c, amount): blend toward grayscale by amount [0,1]
 
 function _toRgb(obj) {
     try {
@@ -152,4 +154,13 @@ function saturate(c, t) {
     try {
         var hsl = toHsl(c); if (!hsl) return c; hsl.s = _clamp01(hsl.s + Number(t)); return _hslToRgb(hsl);
     } catch(e){ console.warn("[Color.saturate]", e); return c }
+}
+function desaturate(c, amount) {
+    try {
+        var rgb = _toRgb(c);
+        if (!rgb) return c;
+        var clamped = _clamp01(Number(amount) || 0);
+        var y = 0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b;
+        return mix(c, Qt.rgba(y, y, y, rgb.a), clamped);
+    } catch(e) { console.warn("[Color.desaturate]", e); return c }
 }

@@ -18,25 +18,11 @@ Scope {
     property var shell
     property alias visible: barRootItem.visible
     property real barHeight: 0 // Expose current bar height for other components (e.g. window mirroring)
-    function mixColor(a, b, t) {
-        return Qt.rgba(a.r * (1 - t) + b.r * t,
-                       a.g * (1 - t) + b.g * t,
-                       a.b * (1 - t) + b.b * t,
-                       a.a * (1 - t) + b.a * t);
-    }
-    function grayOf(c) {
-        const y = 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
-        return Qt.rgba(y, y, y, c.a);
-    }
-    function desaturateColor(c, amount) {
-        const clamped = Math.min(1, Math.max(0, amount || 0));
-        return mixColor(c, grayOf(c), clamped);
-    }
     function vpnAccentColor() {
         const boost = Theme.vpnAccentSaturateBoost || 0;
         const desat = Theme.vpnDesaturateAmount || 0;
         const base = Color.saturate(Theme.accentPrimary, boost);
-        return desaturateColor(base, desat);
+        return Color.desaturate(base, desat);
     }
     readonly property real _defaultPanelAlphaScale: 0.2
     function panelBgAlphaScale() {
