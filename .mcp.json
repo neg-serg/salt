@@ -1,0 +1,154 @@
+{
+  "mcpServers": {
+    "serena": {
+      "type": "stdio",
+      "command": "/home/neg/.local/bin/uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/oraios/serena",
+        "serena",
+        "start-mcp-server",
+        "--context",
+        "claude-code",
+        "--project",
+        "/home/neg/src/salt"
+      ],
+      "env": {}
+    },
+    "ollama": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@rawveg/ollama-mcp"
+      ],
+      "env": {}
+    },
+    "arch-linux": {
+      "type": "stdio",
+      "command": "/home/neg/.local/bin/uvx",
+      "args": [
+        "arch-ops-server"
+      ],
+      "env": {}
+    },
+    "neovim": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-neovim-server"
+      ],
+      "env": {
+        "NVIM_SOCKET_PATH": "/tmp/nvim",
+        "ALLOW_SHELL_COMMANDS": "true"
+      }
+    },
+    "spreadsheet": {
+      "type": "stdio",
+      "command": "/home/neg/.local/share/cargo/bin/spreadsheet-mcp",
+      "args": [
+        "--transport",
+        "stdio"
+      ],
+      "env": {}
+    },
+    "ast-grep": {
+      "type": "stdio",
+      "command": "/home/neg/.local/bin/uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/ast-grep/ast-grep-mcp",
+        "ast-grep-server"
+      ],
+      "env": {}
+    },
+    "arxiv": {
+      "type": "stdio",
+      "command": "/home/neg/.local/bin/uvx",
+      "args": [
+        "arxiv-mcp-server",
+        "--storage-path",
+        "/home/neg/.arxiv-mcp-server/papers"
+      ],
+      "env": {}
+    },
+    "qdrant": {
+      "type": "stdio",
+      "command": "/home/neg/.local/bin/uvx",
+      "args": [
+        "mcp-server-qdrant"
+      ],
+      "env": {
+        "QDRANT_URL": "http://localhost:6333",
+        "COLLECTION_NAME": "salt-project",
+        "EMBEDDING_MODEL": "sentence-transformers/all-MiniLM-L6-v2"
+      }
+    },
+    "ffmpeg": {
+      "type": "stdio",
+      "command": "/home/neg/.local/bin/uvx",
+      "args": [
+        "ffmpeg-mcp-lite"
+      ],
+      "env": {
+        "FFMPEG_OUTPUT_DIR": "/home/neg/vid"
+      }
+    },
+    "blender": {
+      "type": "stdio",
+      "command": "/home/neg/.local/bin/uvx",
+      "args": [
+        "blender-mcp"
+      ],
+      "env": {}
+    },
+    "nmap": {
+      "type": "stdio",
+      "command": "podman",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "--cap-add=NET_RAW",
+        "nmap-mcp:latest"
+      ],
+      "env": {}
+    },
+    "nuclei": {
+      "type": "stdio",
+      "command": "podman",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "nuclei-mcp:latest"
+      ],
+      "env": {}
+    },
+    "semgrep": {
+      "type": "stdio",
+      "command": "podman",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "semgrep-mcp:latest"
+      ],
+      "env": {}
+    },
+    "gitleaks": {
+      "type": "stdio",
+      "command": "podman",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-v",
+        "/home/neg/src:/app/target:ro",
+        "gitleaks-mcp:latest"
+      ],
+      "env": {}
+    }
+  }
+}
