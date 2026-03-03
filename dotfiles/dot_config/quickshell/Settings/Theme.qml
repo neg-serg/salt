@@ -722,7 +722,7 @@ Singleton {
     // Backgrounds
     property color background: val('colors.background', "#ef000000")
     // Surfaces & Elevation
-    property color surface: val('colors.surface', "#000000")
+    property color surface: val('colors.surface', "#181C25")
     property color surfaceVariant: val('colors.surfaceVariant', "#242A35")
     // Text Colors
     property color textPrimary: val('colors.text.primary', "#CBD6E5")
