@@ -242,10 +242,11 @@ install_{{ name | replace('-', '_') }}:
    Usage: {{ firefox_extension(ext, floorp_profile, require='floorp_extensions_dir') }}
 #}
 {%- macro firefox_extension(ext, profile, require=None, user=_user) -%}
+{%- set _xpi = profile ~ '/extensions/' ~ ext.id ~ '.xpi' -%}
 floorp_ext_{{ ext.slug | replace('-', '_') }}:
   cmd.run:
-    - name: curl -fsSL -o '{{ profile }}/extensions/{{ ext.id }}.xpi' 'https://addons.mozilla.org/firefox/downloads/latest/{{ ext.slug }}/latest.xpi'
-    - creates: {{ profile }}/extensions/{{ ext.id }}.xpi
+    - name: curl -fsSL -o '{{ _xpi }}.tmp' 'https://addons.mozilla.org/firefox/downloads/latest/{{ ext.slug }}/latest.xpi' && mv -f '{{ _xpi }}.tmp' '{{ _xpi }}'
+    - creates: {{ _xpi }}
     - runas: {{ user }}
     - parallel: True
 {%- if require %}

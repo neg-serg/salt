@@ -94,7 +94,7 @@ qmk_udev_rules:
 {% for filename, url in mpv.raw.items() %}
 mpv_script_{{ filename | replace('.', '_') | replace('-', '_') }}:
   cmd.run:
-    - name: curl -fsSL '{{ url }}' -o '{{ mpv_scripts_dir }}/{{ filename }}'
+    - name: curl -fsSL '{{ url }}' -o '{{ mpv_scripts_dir }}/{{ filename }}.tmp' && mv -f '{{ mpv_scripts_dir }}/{{ filename }}.tmp' '{{ mpv_scripts_dir }}/{{ filename }}'
     - runas: {{ user }}
     - creates: {{ mpv_scripts_dir }}/{{ filename }}
     - require:
