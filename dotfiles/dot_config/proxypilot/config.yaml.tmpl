@@ -1,0 +1,23 @@
+# ProxyPilot — local AI proxy
+# Docs: https://github.com/Finesssee/ProxyPilot
+
+host: "127.0.0.1"
+port: 8317
+
+auth-dir: "~/.cli-proxy-api"
+
+# Local API key — clients use this to auth to the proxy
+api-keys:
+  - "{{ gopass "api/proxypilot-local" }}"
+
+debug: false
+logging-to-file: false
+request-retry: 3
+
+# Routing: round-robin across credentials
+routing:
+  strategy: "round-robin"
+
+quota-exceeded:
+  switch-project: true
+  switch-preview-model: true
