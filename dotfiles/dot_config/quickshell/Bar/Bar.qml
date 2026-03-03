@@ -425,7 +425,7 @@ Scope {
                         ? (1.0 - seamTaperBottomClamped)
                         : seamTaperBottomClamped) - seamEdgeBaseTop
                     property color seamFillColor: Color.withAlpha(
-                        Color.mix(Theme.surfaceVariant, Theme.background, Theme.panelSeamColorMixRatio),
+                        Color.mix(Theme.surface, Theme.background, Theme.panelSeamColorMixRatio),
                         seamOpacity
                     )
                     Behavior on seamFillColor {
@@ -799,7 +799,7 @@ Scope {
                         ? (1.0 - seamTaperBottomClamped)
                         : seamTaperBottomClamped) - seamEdgeBaseTop
                     property color seamFillColor: Color.withAlpha(
-                        Color.mix(Theme.surfaceVariant, Theme.background, Theme.panelSeamColorMixRatio),
+                        Color.mix(Theme.surface, Theme.background, Theme.panelSeamColorMixRatio),
                         seamOpacity
                     )
                     Behavior on seamFillColor {
@@ -1275,7 +1275,7 @@ Scope {
                     property real seamTaperTop: 0.12
                     property real seamTaperBottom: 0.65
                     property real seamEffectOpacity: 0.85
-                    property color seamFillColor: Color.mix(Theme.surfaceVariant, Theme.background, 0.35)
+                    property color seamFillColor: Color.mix(Theme.surface, Theme.background, 0.35)
                     Behavior on seamFillColor {
                         enabled: Theme._themeLoaded && Theme.animationsEnabled
                         ColorAnimation { duration: Theme.panelAnimFastMs }
