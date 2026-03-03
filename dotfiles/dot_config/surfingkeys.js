@@ -348,10 +348,6 @@ Object.entries(quickmarks).forEach(([key, site]) => {
   });
 });
 
-// ========== Site-specific ==========
-
-settings.blocklistPattern = /mail\.google\.com|docs\.google\.com|discord\.com|app\.slack\.com/i;
-
 // ========== Clipboard Navigation ==========
 // Open selected text or clipboard URL in new tab (uses extension Clipboard API internally)
 api.map('p', 'cc');
@@ -436,4 +432,451 @@ api.mapkey(';i', 'Download media without dialog', function() {
         }
     });
 });
+
+// ========== Site Blocklist ==========
+
+settings.blocklistPattern = /mail\.google\.com|docs\.google\.com|discord\.com|app\.slack\.com/i;
+
+// ========== Site-Specific Mappings ==========
+// Adapted from https://github.com/b0o/surfingkeys-conf
+// Domain-scoped blocks MUST come after global mappings so they can override (e.g. ;i)
+// ========== Site-Specific Helpers ==========
+// Adapted from https://github.com/b0o/surfingkeys-conf
+
+const _hostname = window.location.hostname;
+
+function _isInViewport(el) {
+  const r = el.getBoundingClientRect();
+  return r.top >= 0 && r.left >= 0
+    && r.bottom <= (window.innerHeight || document.documentElement.clientHeight)
+    && r.right <= (window.innerWidth || document.documentElement.clientWidth);
+}
+
+// ========== Global Utilities ==========
+
+api.mapkey('yM', 'Copy page as Markdown link', () => {
+  api.Clipboard.write(`[${document.title}](${window.location.href})`);
+  api.Front.showBanner('Copied Markdown link');
+});
+
+api.mapkey('yI', 'Copy image URL', () => {
+  api.Hints.create('img', (el) => {
+    api.Clipboard.write(el.src);
+    api.Front.showBanner('Copied: ' + el.src.substring(0, 60));
+  });
+});
+
+api.mapkey('g.', 'Go to parent domain', () => {
+  const parts = window.location.host.split('.');
+  const parent = (parts.length > 2 ? parts.slice(1) : parts).join('.');
+  window.location.href = window.location.protocol + '//' + parent;
+});
+
+api.mapkey('=a', 'View on Wayback Machine', () => {
+  api.RUNTIME('openLink', {
+    tab: { tabbed: true, active: true },
+    url: 'https://web.archive.org/web/*/' + window.location.href,
+  });
+});
+
+api.mapkey('=d', 'View DNS info for domain', () => {
+  api.RUNTIME('openLink', {
+    tab: { tabbed: true, active: true },
+    url: 'http://centralops.net/co/DomainDossier.aspx?dom_dns=true&addr=' + _hostname,
+  });
+});
+
+api.mapkey('=s', 'View social discussions for page', () => {
+  api.RUNTIME('openLink', {
+    tab: { tabbed: true, active: true },
+    url: 'https://discu.eu/?q=' + encodeURIComponent(window.location.href),
+  });
+});
+
+api.mapkey('ye', 'Copy last URL path segment', () => {
+  const seg = window.location.pathname.split('/').filter(s => s).pop() || '';
+  api.Clipboard.write(decodeURIComponent(seg));
+  api.Front.showBanner('Copied: ' + decodeURIComponent(seg));
+});
+
+api.mapkey('yu', 'Copy URL without query/hash', () => {
+  const clean = window.location.origin + window.location.pathname;
+  api.Clipboard.write(clean);
+  api.Front.showBanner('Copied: ' + clean.substring(0, 60));
+});
+
+api.mapkey('yT', 'Duplicate tab (background)', () => {
+  api.RUNTIME('openLink', {
+    tab: { tabbed: true, active: false },
+    url: window.location.href,
+  });
+});
+
+api.map('gxE', 'gxt');  // Close tab to left
+api.map('gxR', 'gxT');  // Close tab to right
+
+// ========== GitHub ==========
+
+if (/github\.com$/.test(_hostname)) {
+  const _ghRepo = () => {
+    const p = window.location.pathname.split('/').filter(s => s);
+    return p.length >= 2 ? { user: p[0], repo: p[1], base: '/' + p[0] + '/' + p[1] } : null;
+  };
+  const _ghPage = (path) => { const r = _ghRepo(); if (r) window.location.href = r.base + path; };
+
+  // Repo navigation
+  api.mapkey(';A', 'GitHub: Actions',       () => _ghPage('/actions'));
+  api.mapkey(';C', 'GitHub: Commits',       () => _ghPage('/commits'));
+  api.mapkey(';I', 'GitHub: Issues',        () => _ghPage('/issues'));
+  api.mapkey(';N', 'GitHub: Notifications', () => { window.location.href = '/notifications'; });
+  api.mapkey(';P', 'GitHub: Pull Requests', () => _ghPage('/pulls'));
+  api.mapkey(';R', 'GitHub: Repo root',     () => _ghPage('/'));
+  api.mapkey(';S', 'GitHub: Settings',      () => _ghPage('/settings'));
+  api.mapkey(';W', 'GitHub: Wiki',          () => _ghPage('/wiki'));
+
+  // Link hints — filtered by type
+  api.mapkey(';a', 'GitHub: View repo', () => {
+    const links = [...document.querySelectorAll('a[href]')].filter(a =>
+      a.hostname === 'github.com' && /^\/[^/]+\/[^/]+\/?$/.test(a.pathname));
+    if (links.length) api.Hints.create(links);
+  });
+  api.mapkey(';f', 'GitHub: View file',   () => api.Hints.create('a[href*="/blob/"], a[href*="/tree/"]'));
+  api.mapkey(';i', 'GitHub: View issue',  () => api.Hints.create('a[href*="/issues/"]'));
+  api.mapkey(';p', 'GitHub: View PR',     () => api.Hints.create('a[href*="/pull/"]'));
+  api.mapkey(';c', 'GitHub: View commit', () => api.Hints.create('a[href*="/commit/"]'));
+  api.mapkey(';e', 'GitHub: External link', () => api.Hints.create('a[rel=nofollow]'));
+
+  // Actions
+  api.mapkey(';s', 'GitHub: Toggle star', () => {
+    const containers = [...document.querySelectorAll('div.starring-container')]
+      .filter(e => window.getComputedStyle(e).display !== 'none');
+    if (!containers.length) return;
+    const c = containers[0];
+    const starred = c.classList.contains('on');
+    const btn = c.querySelector(starred
+      ? '.starred button, button.starred'
+      : '.unstarred button, button.unstarred');
+    if (btn) btn.click();
+    api.Front.showBanner(starred ? '☆ Unstarred' : '★ Starred');
+  });
+
+  api.mapkey(';y', 'GitHub: Copy project path', () => {
+    const r = _ghRepo();
+    if (r) {
+      api.Clipboard.write(r.user + '/' + r.repo);
+      api.Front.showBanner('Copied: ' + r.user + '/' + r.repo);
+    }
+  });
+
+  api.mapkey(';l', 'GitHub: Toggle language stats', () => {
+    const el = document.querySelector('.repository-lang-stats-graph');
+    if (el) el.click();
+  });
+
+  // Smart go-parent (overrides default gu on GitHub)
+  api.mapkey('gu', 'GitHub: Go up one path', () => {
+    const parts = window.location.pathname.split('/').filter(s => s);
+    if (parts.length <= 1) return;
+    if (parts.length === 4 && (parts[2] === 'blob' || parts[2] === 'tree')) {
+      window.location.href = '/' + parts[0] + '/' + parts[1];
+    } else if (parts.length === 4 && parts[2] === 'pull') {
+      window.location.href = '/' + parts[0] + '/' + parts[1] + '/pulls';
+    } else {
+      window.location.href = '/' + parts.slice(0, -1).join('/');
+    }
+  });
+}
+
+// ========== raw.githubusercontent.com ==========
+
+if (_hostname === 'raw.githubusercontent.com') {
+  api.mapkey(';R', 'Raw: Open repo page', () => {
+    const p = window.location.pathname.split('/').filter(s => s);
+    if (p.length >= 2) {
+      api.RUNTIME('openLink', {
+        tab: { tabbed: true, active: true },
+        url: 'https://github.com/' + p[0] + '/' + p[1],
+      });
+    }
+  });
+  api.mapkey(';F', 'Raw: Open source file on GitHub', () => {
+    const p = window.location.pathname.split('/');
+    const parts = p.filter(s => s);
+    if (parts.length >= 3) {
+      const url = 'https://github.com/' + [parts[0], parts[1], 'tree', ...parts.slice(2)].join('/');
+      api.RUNTIME('openLink', { tab: { tabbed: true, active: true }, url });
+    }
+  });
+}
+
+// ========== GitHub Pages (*.github.io) ==========
+
+if (/\.github\.io$/.test(_hostname)) {
+  api.mapkey(';R', 'GH Pages: Open repo on GitHub', () => {
+    const user = _hostname.split('.')[0];
+    const repo = window.location.pathname.split('/')[1] || '';
+    api.RUNTIME('openLink', {
+      tab: { tabbed: true, active: true },
+      url: 'https://github.com/' + user + '/' + repo,
+    });
+  });
+}
+
+// ========== YouTube ==========
+
+if (/youtube\.com$/.test(_hostname)) {
+  api.mapkey(';A', 'YouTube: Open video (new tab)', () => {
+    api.Hints.create('*[id="video-title"]', (el) => {
+      const a = el.closest('a') || el;
+      api.RUNTIME('openLink', { tab: { tabbed: true, active: true }, url: a.href });
+    });
+  });
+
+  api.mapkey(';C', 'YouTube: Open channel', () => {
+    api.Hints.create('*[id="byline"]');
+  });
+
+  api.mapkey(';H', 'YouTube: Subscriptions feed', () => {
+    window.location.href = 'https://www.youtube.com/feed/subscriptions';
+  });
+
+  const _ytTimestampLink = () => {
+    const el = document.querySelector('#ytd-player .ytp-time-current');
+    if (!el) return null;
+    const [ss, mm, hh = 0] = el.innerText.split(':').reverse().map(Number);
+    const secs = (hh * 3600) + (mm * 60) + ss;
+    const v = new URLSearchParams(window.location.search).get('v');
+    return v ? 'https://youtu.be/' + v + '?t=' + secs : null;
+  };
+
+  api.mapkey(';t', 'YouTube: Copy timestamp link', () => {
+    const link = _ytTimestampLink();
+    if (link) {
+      api.Clipboard.write(link);
+      api.Front.showBanner('Copied: ' + link);
+    } else {
+      api.Front.showBanner('No video playing');
+    }
+  });
+
+  api.mapkey(';m', 'YouTube: Copy timestamp markdown link', () => {
+    const link = _ytTimestampLink();
+    if (link) {
+      const md = '[' + document.title + '](' + link + ')';
+      api.Clipboard.write(md);
+      api.Front.showBanner('Copied markdown link');
+    } else {
+      api.Front.showBanner('No video playing');
+    }
+  });
+}
+
+// ========== Reddit (old.reddit.com) ==========
+
+if (/reddit\.com$/.test(_hostname)) {
+  api.mapkey(';x', 'Reddit: Collapse comment (hints)', () => {
+    api.Hints.create('.expand');
+  });
+
+  api.mapkey(';X', 'Reddit: Collapse next visible comment', () => {
+    const comments = [...document.querySelectorAll('.noncollapsed.comment')]
+      .filter(_isInViewport);
+    if (comments.length) comments[0].querySelector('.expand').click();
+  });
+
+  api.mapkey(';s', 'Reddit: Upvote', () => api.Hints.create('.arrow.up'));
+  api.mapkey(';S', 'Reddit: Downvote', () => api.Hints.create('.arrow.down'));
+  api.mapkey(';e', 'Reddit: Expand', () => api.Hints.create('.expando-button'));
+
+  api.mapkey(';a', 'Reddit: Open post', () => api.Hints.create('.title'));
+  api.mapkey(';A', 'Reddit: Open post (new tab)', () => {
+    api.Hints.create('.title', (el) => {
+      const a = el.closest('a') || el;
+      api.RUNTIME('openLink', { tab: { tabbed: true, active: false }, url: a.href });
+    });
+  });
+  api.mapkey(';c', 'Reddit: Open comments', () => api.Hints.create('.comments'));
+}
+
+// ========== Hacker News ==========
+
+if (/news\.ycombinator\.com$/.test(_hostname)) {
+  api.mapkey(';x', 'HN: Collapse comment (hints)', () => api.Hints.create('.togg'));
+
+  api.mapkey(';X', 'HN: Collapse next visible comment', () => {
+    const toggles = [...document.querySelectorAll('a.togg')]
+      .filter(e => e.innerText === '[–]' && _isInViewport(e));
+    if (toggles.length) toggles[0].click();
+  });
+
+  api.mapkey(';s', 'HN: Upvote', () => api.Hints.create(".votearrow[title='upvote']"));
+
+  api.mapkey(';a', 'HN: Open post link', () => api.Hints.create('.titleline>a'));
+  api.mapkey(';A', 'HN: Open link + comments', () => {
+    api.Hints.create('.athing', (el) => {
+      const linkUrl = el.querySelector('.titleline>a').href;
+      const commEl = el.nextElementSibling.querySelector("a[href^='item']:not(.titlelink)");
+      if (commEl) api.RUNTIME('openLink', { tab: { tabbed: true, active: false }, url: commEl.href });
+      api.RUNTIME('openLink', { tab: { tabbed: true, active: true }, url: linkUrl });
+    });
+  });
+  api.mapkey(';c', 'HN: Open comments', () => api.Hints.create(".subline>a[href^='item']"));
+
+  api.mapkey('gp', 'HN: Go to parent', () => {
+    const par = document.querySelector(".navs>a[href^='item']");
+    if (par) window.location.href = par.href;
+  });
+
+  api.mapkey(']]', 'HN: Next page', () => {
+    const u = new URL(window.location.href);
+    const page = parseInt(u.searchParams.get('p') || '1', 10);
+    if (!isNaN(page)) { u.searchParams.set('p', page + 1); window.location.href = u.href; }
+  });
+  api.mapkey('[[', 'HN: Previous page', () => {
+    const u = new URL(window.location.href);
+    const page = parseInt(u.searchParams.get('p') || '1', 10);
+    if (!isNaN(page) && page > 1) { u.searchParams.set('p', page - 1); window.location.href = u.href; }
+  });
+}
+
+// ========== Google Search ==========
+
+if (/google\.com$/.test(_hostname)) {
+  const _gResultSel = ['a h3', 'h3 a', '.isv-r > a:first-child', '.WlydOe'].join(',');
+
+  api.mapkey(';a', 'Google: Open search result', () => api.Hints.create(_gResultSel));
+  api.mapkey(';A', 'Google: Open result (new tab)', () => {
+    api.Hints.create(_gResultSel, (el) => {
+      const a = el.closest('a') || el;
+      api.RUNTIME('openLink', { tab: { tabbed: true, active: false }, url: a.href });
+    });
+  });
+
+  api.mapkey(';d', 'Google: Same search in DuckDuckGo', () => {
+    const u = new URL(window.location.href);
+    const q = u.searchParams.get('q');
+    if (!q) return;
+    const ddg = new URL('https://duckduckgo.com');
+    ddg.searchParams.set('q', q);
+    const tbm = u.searchParams.get('tbm');
+    if (tbm === 'isch') { ddg.searchParams.set('ia', 'images'); ddg.searchParams.set('iax', 'images'); }
+    else if (tbm === 'vid') { ddg.searchParams.set('ia', 'videos'); ddg.searchParams.set('iax', 'videos'); }
+    else if (tbm === 'nws') { ddg.searchParams.set('ia', 'news'); ddg.searchParams.set('iar', 'news'); }
+    else { ddg.searchParams.set('ia', 'web'); }
+    window.location.href = ddg.href;
+  });
+}
+
+// ========== DuckDuckGo ==========
+
+if (/duckduckgo\.com$/.test(_hostname)) {
+  const _ddgSel = [
+    "a[rel=noopener][target=_self]:not([data-testid=result-extras-url-link])",
+    ".js-images-show-more",
+    ".module--images__thumbnails__link",
+  ].join(',');
+
+  api.mapkey(';a', 'DDG: Open search result', () => api.Hints.create(_ddgSel));
+  api.mapkey(';A', 'DDG: Open result (new tab)', () => {
+    api.Hints.create(_ddgSel, (el) => {
+      const a = el.closest('a') || el;
+      api.RUNTIME('openLink', { tab: { tabbed: true, active: false }, url: a.href });
+    });
+  });
+
+  api.mapkey(']]', 'DDG: Show more results', () => {
+    const btn = document.querySelector('.result--more__btn');
+    if (btn) btn.click();
+  });
+
+  api.mapkey(';g', 'DDG: Same search in Google', () => {
+    const u = new URL(window.location.href);
+    const q = u.searchParams.get('q');
+    if (!q) return;
+    const goog = new URL('https://google.com/search');
+    goog.searchParams.set('q', q);
+    const iax = u.searchParams.get('iax');
+    const iar = u.searchParams.get('iar');
+    const iaxm = u.searchParams.get('iaxm');
+    if (iax === 'images') goog.searchParams.set('tbm', 'isch');
+    else if (iax === 'videos') goog.searchParams.set('tbm', 'vid');
+    else if (iar === 'news') goog.searchParams.set('tbm', 'nws');
+    else if (iaxm === 'maps') goog.pathname = '/maps';
+    window.location.href = goog.href;
+  });
+
+  // Site-scoped search toggles
+  api.mapkey(';sgh', 'DDG: Toggle site:github.com', () => {
+    const u = new URL(window.location.href);
+    const q = u.searchParams.get('q') || '';
+    const site = 'site:github.com';
+    u.searchParams.set('q', q.includes(site) ? q.replace(site, '').trim() : q + ' ' + site);
+    window.location.href = u.href;
+  });
+  api.mapkey(';sre', 'DDG: Toggle site:reddit.com', () => {
+    const u = new URL(window.location.href);
+    const q = u.searchParams.get('q') || '';
+    const site = 'site:reddit.com';
+    u.searchParams.set('q', q.includes(site) ? q.replace(site, '').trim() : q + ' ' + site);
+    window.location.href = u.href;
+  });
+}
+
+// ========== Wikipedia / ArchWiki ==========
+
+if (/wikipedia\.org$|wiktionary\.org$|wikimedia\.org$|wiki\.archlinux\.org$/.test(_hostname)) {
+  api.mapkey(';s', 'Wiki: Toggle simple/standard version', () => {
+    const u = new URL(window.location.href);
+    const parts = u.hostname.split('.');
+    if (parts[0] === 'simple') parts.shift();
+    else parts.unshift('simple');
+    u.hostname = parts.join('.');
+    window.location.href = u.href;
+  });
+
+  api.mapkey(';a', 'Wiki: Article link (hints)', () => {
+    api.Hints.create('#bodyContent :not(sup):not(.mw-editsection) > a:not([rel=nofollow])');
+  });
+  api.mapkey(';e', 'Wiki: External link (hints)', () => api.Hints.create('a[rel=nofollow]'));
+
+  api.mapkey(';y', 'Wiki: Copy summary as Markdown', () => {
+    const el = document.querySelector('#mw-content-text p:not([class]):not([id])');
+    if (!el) { api.Front.showBanner('No summary found'); return; }
+    const clone = el.cloneNode(true);
+    clone.querySelectorAll('sup').forEach(e => e.remove());
+    clone.querySelectorAll('b').forEach(e => { e.innerText = '**' + e.innerText + '**'; });
+    clone.querySelectorAll('i').forEach(e => { e.innerText = '_' + e.innerText + '_'; });
+    const md = '> ' + clone.innerText.trim() + '\n\n\u2014 [' + document.title + '](' + window.location.href + ')';
+    api.Clipboard.write(md);
+    api.Front.showBanner('Summary copied as Markdown');
+  });
+
+  api.mapkey(';R', 'Wiki: View WikiRank', () => {
+    const h = _hostname.split('.');
+    const lang = h.length > 2 && h[0] !== 'www' ? h[0] : 'en';
+    const p = window.location.pathname.split('/');
+    if (p.length < 3 || p[1] !== 'wiki') return;
+    api.RUNTIME('openLink', {
+      tab: { tabbed: true, active: true },
+      url: 'https://wikirank.net/' + lang + '/' + p.slice(2).join('/'),
+    });
+  });
+}
+
+// ========== StackOverflow / StackExchange ==========
+
+if (/stackoverflow\.com$|stackexchange\.com$|serverfault\.com$|superuser\.com$|askubuntu\.com$/.test(_hostname)) {
+  api.mapkey(';a', 'SO: View question', () => {
+    api.Hints.create('a.question-hyperlink, a.s-link');
+  });
+}
+
+// ========== AUR ==========
+
+if (/aur\.archlinux\.org$/.test(_hostname)) {
+  api.mapkey(';a', 'AUR: View package', () => {
+    api.Hints.create("a[href^='/packages/'][href$='/']");
+  });
+}
+
 
