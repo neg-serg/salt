@@ -27,9 +27,11 @@ unit_files:
   - {id: surfingkeys_server_service, filename: surfingkeys-server.service}
   - {id: pic_dirs_list_service, filename: pic-dirs-list.service}
   - {id: vicinae_service, filename: vicinae.service}
+  - {id: proxypilot_service, filename: proxypilot.service}
 
 # Services/sockets to enable (systemctl --user enable)
 enable_services:
+  - proxypilot.service
   - imapnotify-gmail.service
   - surfingkeys-server.service
   - pic-dirs-list.service

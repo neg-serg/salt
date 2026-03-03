@@ -25,6 +25,9 @@ essentia: "2.1_beta2"
 # --- VPN ---
 amnezia_vpn: "2.1.2"
 
+# --- Proxy ---
+proxypilot: "0.3.0-dev-0.39"
+
 # --- Desktop apps ---
 droidcam: "2.1.3"
 nyxt: "4.0.0"

@@ -1,0 +1,21 @@
+[Unit]
+Description=ProxyPilot local AI proxy
+Documentation=https://github.com/Finesssee/ProxyPilot
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=%h/.config/proxypilot/config.yaml
+
+[Service]
+ExecStart=%h/.local/bin/proxypilot -config %h/.config/proxypilot/config.yaml
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+ProtectSystem=strict
+PrivateTmp=yes
+PrivateDevices=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+LockPersonality=yes
+
+[Install]
+WantedBy=default.target
