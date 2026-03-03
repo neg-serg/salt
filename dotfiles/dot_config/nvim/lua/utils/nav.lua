@@ -35,7 +35,7 @@ function M.open_url(url)
   if not (url:match('^https?://') or url:match('^file://')) then return end
   local cmd = vim.fn.has('mac') == 1 and { 'open', url }
            or vim.fn.has('wsl') == 1 and { 'wslview', url }
-           or { 'xdg-open', url }
+           or { 'handlr', 'open', url }
   vim.fn.jobstart(cmd, { detach = true })
 end
 
