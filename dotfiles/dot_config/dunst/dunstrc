@@ -73,5 +73,3 @@ appname=Telegram Desktop
 word_wrap=true
 background="#000000"
 foreground="#BFCAD0"
-
-include = ~/.cache/wallust/dunstrc

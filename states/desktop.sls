@@ -1,4 +1,4 @@
-# Desktop environment: services, SSH, wallust defaults, dconf themes
+# Desktop environment: services, SSH, dconf themes
 {% from '_imports.jinja' import host, user, home %}
 {% from '_macros_pkg.jinja' import pacman_install, paru_install %}
 {% from '_macros_service.jinja' import ensure_dir, service_stopped %}
@@ -62,22 +62,6 @@ pcscd_socket_enabled:
 # --- SSH directory setup ---
 {{ ensure_dir('ssh_dir', home ~ '/.ssh', mode='0700') }}
 
-# --- Wallust cache defaults (prevents hyprland source errors on first boot) ---
-{{ ensure_dir('wallust_cache_dir', home ~ '/.cache/wallust', mode='0755') }}
-
-wallust_hyprland_defaults:
-  file.managed:
-    - name: {{ home }}/.cache/wallust/hyprland.conf
-    - user: {{ user }}
-    - group: {{ user }}
-    - mode: '0644'
-    - replace: false
-    - contents: |
-        $col_border_active_base = rgba(00285981)
-        $col_border_inactive   = rgba(00000000)
-        $shadow_color          = rgba(005fafaa)
-    - require:
-      - file: wallust_cache_dir
 
 # --- dconf: GTK/icon/font theme for Wayland apps ---
 dconf_themes:

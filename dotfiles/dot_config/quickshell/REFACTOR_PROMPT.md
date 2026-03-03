@@ -558,7 +558,7 @@ This is a convention-setting action — document the rules, then apply increment
 ### AG9: Add Color Transition on Theme Change
 
 <problem>
-When the user edits `.theme.json` (or the theme auto-reloads from wallust), all colors snap
+When the user edits `.theme.json` (or the theme auto-reloads), all colors snap
 instantly. This is jarring — a 200ms cross-fade would feel significantly more polished.
 
 The Theme.qml singleton already has a `_themeLoaded` flag and a `themeMergeTimer` (80ms debounce).
@@ -587,7 +587,7 @@ The infrastructure for detecting theme changes exists.
 4. **In Bar.qml**, add Behavior on `barBgColor` and `seamFillColor` for both panels.
 
 5. **Test edge cases**:
-   - Rapid theme changes (wallust cycling) — should not queue up, latest wins
+   - Rapid theme changes — should not queue up, latest wins
    - Initial load — should NOT animate (would flash from default to theme)
    - Components created after theme load — should get final color immediately
 </actions>

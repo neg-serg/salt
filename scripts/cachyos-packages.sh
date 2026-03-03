@@ -441,7 +441,6 @@ AUR_PKGS=(
 
     # --- Former custom RPMs now in AUR ---
     lutgen-bin          # color palette LUT generator
-    wallust             # wallpaper-based colorscheme generator
     carapace-bin        # multi-shell completion engine
     doggo               # DNS client (dig alternative)
     massren             # bulk file rename with editor
