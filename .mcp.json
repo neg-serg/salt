@@ -40,7 +40,7 @@
         "mcp-neovim-server"
       ],
       "env": {
-        "NVIM_SOCKET_PATH": "/tmp/nvim",
+        "NVIM_SOCKET_PATH": "/tmp/nvim.sock",
         "ALLOW_SHELL_COMMANDS": "true"
       }
     },
