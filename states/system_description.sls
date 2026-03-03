@@ -72,6 +72,7 @@ include:
   - mpd
   - ollama
   - llama_embed
+  - opencode
   - steam
 
   # Services, monitoring, user units, snapshots
