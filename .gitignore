@@ -22,4 +22,5 @@ salt_config/var/
 
 # Tools
 .claude/
+.serena/
 tt
