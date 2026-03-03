@@ -10,15 +10,17 @@
 #}
 {%- macro curl_bin(name, url, version=None, hash=None, user=_user, home=_home) -%}
 {%- set _creates = home ~ '/.local/bin/' ~ name -%}
+{%- set _tmp = home ~ '/.local/bin/' ~ name ~ '.tmp' -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: |
         set -eo pipefail
-        curl -fsSL '{{ url }}' -o ~/.local/bin/{{ name }}
+        curl -fsSL '{{ url }}' -o {{ _tmp }}
 {%- if hash %}
-        echo '{{ hash }}  {{ home }}/.local/bin/{{ name }}' | sha256sum -c --strict
+        echo '{{ hash }}  {{ _tmp }}' | sha256sum -c --strict
 {%- endif %}
-        chmod +x ~/.local/bin/{{ name }}
+        chmod +x {{ _tmp }}
+        mv -f {{ _tmp }} {{ _creates }}
 {%- if version %}
         mkdir -p {{ _ver_dir }} && echo '{{ version }}' > {{ _ver_dir }}/{{ name }}
 {%- endif %}
