@@ -1,15 +1,12 @@
-[backend]
+# wallust v3
+
 backend = "kmeans"
 color_space = "lab"
 palette = "dark16"
 threshold = 20
+check_contrast = true
 
 [templates]
-hyprland.template = "hyprland.conf"
-hyprland.target = "~/.cache/wallust/hyprland.conf"
-
-catppuccin.template = "kitty.conf"
-catppuccin.target = "~/.cache/wallust/kitty.conf"
-
-dunst.template = "dunstrc"
-dunst.target = "~/.cache/wallust/dunstrc"
+hyprland = { template = 'hyprland.conf', target = '~/.cache/wallust/hyprland.conf' }
+kitty = { template = 'kitty.conf', target = '~/.cache/wallust/kitty.conf' }
+dunst = { template = 'dunstrc', target = '~/.cache/wallust/dunstrc' }
