@@ -374,8 +374,8 @@ Scope {
                                 ? (seamPanel.gapStart + seamPanel.gapEnd) / 2 / _mw : 0.0
                             readonly property real _gapHalf: seamPanel.geometryReady
                                 ? Math.max(0, seamPanel.gapEnd - seamPanel.gapStart) / 2 / _mw : 0.0
-                            property vector4d params1: Qt.vector4d(0.0, 0.0, 0.93, _gapCenter)
-                            property vector4d params2: Qt.vector4d(_gapHalf, 0.0, 0.0, 0.0)
+                            property vector4d params1: Qt.vector4d(0.0, 0.0, 1.0, _gapCenter)
+                            property vector4d params2: Qt.vector4d(_gapHalf, Theme.panelSeamGapOpacity, 0.0, 0.0)
                             fragmentShader: Qt.resolvedUrl("../shaders/diag.frag.qsb")
                         }
 
@@ -460,7 +460,7 @@ Scope {
 
                     Rectangle {
                         id: leftBarBackdrop
-                        width: Math.max(1, leftPanel.width)
+                        width: Math.max(1, leftBarFill.width - leftPanel.seamWidth)
                         height: leftPanel.barHeightPx
                         color: Theme.panelBackdropColor
                         opacity: Theme.panelBackdropOpacity
@@ -835,7 +835,7 @@ Scope {
 
                     Rectangle {
                         id: rightBarBackdrop
-                        width: Math.max(1, rightPanel.width)
+                        width: Math.max(1, rightBarFill.width - rightPanel.seamWidth)
                         height: rightPanel.barHeightPx
                         color: Theme.panelBackdropColor
                         opacity: Theme.panelBackdropOpacity

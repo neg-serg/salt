@@ -6,7 +6,7 @@ layout(std140, binding = 0) uniform qt_ubuf {
     vec4 accentColor;
     vec4 params0; // x=accentEnabled, y=accentOnRight, z=accentRatio, w=topInset
     vec4 params1; // x=bottomInset, y=tiltNorm, z=opacity, w=gapCenter
-    vec4 params2; // x=gapHalfWidth
+    vec4 params2; // x=gapHalfWidth, y=gapOpacity
 };
 
 void main() {
@@ -19,11 +19,15 @@ void main() {
     float effectOpacity = params1.z;
     float gapCenter = params1.w;
     float gapHalfWidth = params2.x;
+    float gapOpacity = params2.y;
 
     float x = clamp(qt_TexCoord0.x, 0.0, 1.0);
 
-    // Discard pixels inside the center gap (seam region)
-    if (gapHalfWidth > 0.0 && abs(x - gapCenter) < gapHalfWidth) discard;
+    // Render seam gap at reduced opacity
+    if (gapHalfWidth > 0.0 && abs(x - gapCenter) < gapHalfWidth) {
+        fragColor = baseColor * gapOpacity;
+        return;
+    }
 
     float y = clamp(qt_TexCoord0.y, 0.0, 1.0);
     float inset = clamp(mix(topInset, bottomInset, y), 0.0, 0.49);
