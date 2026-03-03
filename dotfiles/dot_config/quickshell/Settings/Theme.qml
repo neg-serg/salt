@@ -227,8 +227,7 @@ Singleton {
                 return out;
             var total = listing.count || 0;
             for (var i = 0; i < total; i++) {
-                var entry = listing.get(i);
-                var name = entry && entry.fileName ? String(entry.fileName) : "";
+                var name = String(listing.get(i, "fileName") || "");
                 if (!name)
                     continue;
                 if (name === "manifest.json")
