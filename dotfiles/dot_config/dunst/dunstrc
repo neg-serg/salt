@@ -1,6 +1,6 @@
 [global]
 alignment=left
-browser=xdg-open
+browser=handlr open
 corner_radius=4
 ellipsize=end
 follow=mouse
