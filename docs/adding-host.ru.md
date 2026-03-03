@@ -121,11 +121,14 @@ defaults  ←──  hosts['your_host']  ←──  derived fields
 | `features.network.xray` | bool | False | Xray-прокси |
 | `features.network.singbox` | bool | False | sing-box прокси |
 | `features.network.wifi` | bool | False | Беспроводная сеть |
+| `features.user_services.mail` | bool | True | Сервис синхронизации почты |
+| `features.user_services.vdirsyncer` | bool | True | Синхронизация CalDAV/CardDAV |
 | `features.amnezia` | bool | True | AmneziaVPN |
 | `features.steam` | bool | True | Steam + игровой стек |
 | `features.mpd` | bool | True | Music Player Daemon |
 | `features.ollama` | bool | True | Локальная LLM |
 | `features.floorp` | bool | True | Браузер Floorp |
+| `features.llama_embed` | bool | True | Сервер эмбеддингов llama.cpp |
 | `features.kanata` | bool | True | Переназначение клавиш |
 
 ## Доступные поля хоста
@@ -144,6 +147,7 @@ defaults  ←──  hosts['your_host']  ←──  derived fields
 | `kvm_module` | str | 'kvm_amd' | Модуль ядра KVM |
 | `display` | str | '' | Строка разрешения (`WxH@Hz`) |
 | `primary_output` | str | '' | Имя видеовыхода |
+| `greetd_vt` | int | 1 | Виртуальный терминал для greetd |
 | `greetd_scale` | int | 1 | Масштаб экрана входа |
 | `timezone` | str | 'Europe/Moscow' | Часовой пояс системы |
 | `locale` | str | 'en_US.UTF-8' | Локаль системы |

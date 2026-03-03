@@ -118,7 +118,7 @@ echo '/dev/mapper/argon-zero /mnt/zero xfs  noatime  0  0' | sudo tee -a /etc/fs
 - Резервный DNS: `cat /etc/resolv.conf` (1.1.1.1, 8.8.8.8)
 
 **Кастомные пакеты (автоматизировано через Salt)**
-- 5 пакетов собираются из PKGBUILDs в `build/pkgbuilds/` через Salt states:
-  raise, neg-pretty-printer, richcolors, albumdetails (custom_pkgs.sls),
-  iosevka-neg-fonts (iosevka.sls)
+- 6 пакетов собираются из PKGBUILDs в `build/pkgbuilds/` через Salt states:
+  raise, neg-pretty-printer, richcolors, albumdetails, duf (custom_pkgs.sls),
+  iosevka-neg-fonts (fonts.sls)
 - Собираются автоматически при запуске `scripts/salt-apply.sh`

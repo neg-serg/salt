@@ -119,7 +119,7 @@ After bootstrap, everything needed for deploy lives on XFS:
 - DNS fallback: `cat /etc/resolv.conf` (1.1.1.1, 8.8.8.8)
 
 **Custom packages (automated by Salt)**
-- 5 packages built from PKGBUILDs in `build/pkgbuilds/` via Salt states:
-  raise, neg-pretty-printer, richcolors, albumdetails (custom_pkgs.sls),
-  iosevka-neg-fonts (iosevka.sls)
+- 6 packages built from PKGBUILDs in `build/pkgbuilds/` via Salt states:
+  raise, neg-pretty-printer, richcolors, albumdetails, duf (custom_pkgs.sls),
+  iosevka-neg-fonts (fonts.sls)
 - Built automatically during `scripts/salt-apply.sh`

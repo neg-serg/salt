@@ -121,11 +121,14 @@ The alias resolves before the merge, so the correct host config applies even bef
 | `features.network.xray` | bool | False | Xray proxy |
 | `features.network.singbox` | bool | False | sing-box proxy |
 | `features.network.wifi` | bool | False | Wireless networking |
+| `features.user_services.mail` | bool | True | Mail sync service |
+| `features.user_services.vdirsyncer` | bool | True | CalDAV/CardDAV sync |
 | `features.amnezia` | bool | True | AmneziaVPN |
 | `features.steam` | bool | True | Steam + gaming stack |
 | `features.mpd` | bool | True | Music Player Daemon |
 | `features.ollama` | bool | True | Local LLM |
 | `features.floorp` | bool | True | Floorp browser |
+| `features.llama_embed` | bool | True | llama.cpp embedding server |
 | `features.kanata` | bool | True | Keyboard remapping |
 
 ## Available Host Fields
@@ -144,6 +147,7 @@ The alias resolves before the merge, so the correct host config applies even bef
 | `kvm_module` | str | 'kvm_amd' | KVM kernel module |
 | `display` | str | '' | Resolution string (`WxH@Hz`) |
 | `primary_output` | str | '' | Display output name |
+| `greetd_vt` | int | 1 | Virtual terminal for greetd |
 | `greetd_scale` | int | 1 | Login screen scale factor |
 | `timezone` | str | 'Europe/Moscow' | System timezone |
 | `locale` | str | 'en_US.UTF-8' | System locale |
