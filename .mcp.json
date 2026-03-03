@@ -153,6 +153,102 @@
         "gitleaks-mcp:latest"
       ],
       "env": {}
+    },
+    "mpd": {
+      "type": "stdio",
+      "command": "/home/neg/.local/bin/mpd-mcp-server",
+      "args": [],
+      "env": {}
+    },
+    "hyprland": {
+      "type": "stdio",
+      "command": "/home/neg/.local/bin/uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/alderban107/hyprland-mcp",
+        "hyprland-mcp"
+      ],
+      "env": {}
+    },
+    "json-yaml-toml": {
+      "type": "stdio",
+      "command": "/home/neg/.local/bin/uvx",
+      "args": [
+        "mcp-json-yaml-toml"
+      ],
+      "env": {}
+    },
+    "pandoc": {
+      "type": "stdio",
+      "command": "/home/neg/.local/bin/uvx",
+      "args": [
+        "mcp-pandoc"
+      ],
+      "env": {}
+    },
+    "pdf": {
+      "type": "stdio",
+      "command": "/home/neg/.local/bin/uvx",
+      "args": [
+        "pdf-mcp"
+      ],
+      "env": {}
+    },
+    "nettools": {
+      "type": "stdio",
+      "command": "/home/neg/.local/bin/uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/dkruyt/mcp-nettools",
+        "mcp-nettools"
+      ],
+      "env": {}
+    },
+    "text-toolkit": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@cicatriz/text-toolkit@latest"
+      ],
+      "env": {}
+    },
+    "language-server": {
+      "type": "stdio",
+      "command": "/home/neg/.local/bin/mcp-language-server",
+      "args": [
+        "--workspace",
+        "/home/neg/src/salt",
+        "--lsp",
+        "lua-language-server"
+      ],
+      "env": {}
+    },
+    "color-convert": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-color-convert@latest"
+      ],
+      "env": {}
+    },
+    "openapi": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@reapi/mcp-openapi@latest"
+      ],
+      "env": {}
+    },
+    "wireshark": {
+      "type": "stdio",
+      "command": "/home/neg/.local/bin/uvx",
+      "args": [
+        "mcp-wireshark"
+      ],
+      "env": {}
     }
   }
 }
