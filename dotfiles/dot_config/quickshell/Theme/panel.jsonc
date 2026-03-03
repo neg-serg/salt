@@ -69,6 +69,12 @@
       "borderOpacity": 0.08,
       "borderColor": "#000000"
     },
-    "computedFontScale": 0.6
+    "computedFontScale": 0.6,
+    "seam": {
+      "opacity": 0
+    },
+    "backdrop": {
+      "opacity": 0.88
+    }
   }
 }
