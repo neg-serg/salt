@@ -116,10 +116,11 @@ install_{{ name | replace('-', '_') }}:
 {%- endif %}
         unzip -qo "$_td/archive.zip" -d {{ dest }}
 {%- else %}
-        curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o '{{ dest }}/{{ name }}'
+        curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o '{{ dest }}/{{ name }}.tmp'
 {%- if hash %}
-        echo '{{ hash }}  {{ dest }}/{{ name }}' | sha256sum -c --strict
+        echo '{{ hash }}  {{ dest }}/{{ name }}.tmp' | sha256sum -c --strict
 {%- endif %}
+        mv -f '{{ dest }}/{{ name }}.tmp' '{{ dest }}/{{ name }}'
 {%- endif %}
 {%- if version %}
         mkdir -p {{ _ver_dir }} && echo '{{ version }}' > {{ _ver_dir }}/{{ name }}
