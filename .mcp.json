@@ -20,9 +20,11 @@
       "command": "npx",
       "args": [
         "-y",
-        "@rawveg/ollama-mcp"
+        "ollama-mcp-server"
       ],
-      "env": {}
+      "env": {
+        "OLLAMA_HOST": "http://localhost:11434"
+      }
     },
     "arch-linux": {
       "type": "stdio",
@@ -77,10 +79,12 @@
       "type": "stdio",
       "command": "/home/neg/.local/bin/uvx",
       "args": [
+        "--python",
+        "3.13",
         "mcp-server-qdrant"
       ],
       "env": {
-        "QDRANT_URL": "http://localhost:6333",
+        "QDRANT_URL": "http://127.0.0.1:6333",
         "COLLECTION_NAME": "salt-project",
         "EMBEDDING_MODEL": "sentence-transformers/all-MiniLM-L6-v2"
       }
