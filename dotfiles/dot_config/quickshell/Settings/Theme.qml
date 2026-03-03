@@ -729,22 +729,11 @@ Singleton {
     property color textPrimary: val('colors.text.primary', "#CBD6E5")
     property color textSecondary: val('colors.text.secondary', "#AEB9C8")
     property color textDisabled: val('colors.text.disabled', "#6B718A")
-    // Accent Colors — wallpaper-derived accent overrides theme default
-    property color _themeAccent: val('colors.accent.primary', "#006FCC")
-    property color accentPrimary: _wallpaperAccentOrTheme()
-    function _wallpaperAccentOrTheme() {
-        try {
-            if (typeof WallpaperAccent !== "undefined" && WallpaperAccent.hasAccent)
-                return WallpaperAccent.wallpaperAccent;
-        } catch(e) {}
-        return _themeAccent;
-    }
-    // Re-evaluate when wallpaper accent changes
-    property Connections _wpConn: Connections {
-        target: typeof WallpaperAccent !== "undefined" ? WallpaperAccent : null
-        function onWallpaperAccentChanged() { root.accentPrimary = root._wallpaperAccentOrTheme(); }
-        function onHasAccentChanged() { root.accentPrimary = root._wallpaperAccentOrTheme(); }
-    }
+    // Accent Colors — wallpaper-derived accent overrides theme default when available
+    // WallpaperAccent is in qs.Services; we read it via _wpAccent to avoid circular import
+    property color _wpAccent: "#000000"
+    property bool _wpHasAccent: false
+    property color accentPrimary: _wpHasAccent ? _wpAccent : val('colors.accent.primary', "#006FCC")
     // Error state
     property color error: val('colors.status.error', "#FF6B81")
     // Highlights & Focus
