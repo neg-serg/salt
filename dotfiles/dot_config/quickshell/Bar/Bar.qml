@@ -475,7 +475,7 @@ Scope {
                     // Canvas draws the shape directly — no ShaderEffect needed.
                     Canvas {
                         id: leftBarBackdrop
-                        width: Math.max(1, leftBarFill.width)
+                        width: Math.max(1, leftBarFill.width - leftPanel.interWidgetSpacing + leftPanel.seamWidth)
                         height: leftPanel.barHeightPx
                         anchors.top: parent.top
                         anchors.left: parent.left
@@ -483,6 +483,8 @@ Scope {
                         readonly property int sw: leftPanel.seamWidth
                         readonly property color bgColor: Theme.panelBackdropColor
                         readonly property real bgOpacity: Theme.panelBackdropOpacity
+                        readonly property real topInset: Math.round(sw * 0.25)
+                        readonly property real bottomInset: Math.round(sw * 2.0)
                         onPaint: {
                             var ctx = getContext('2d');
                             ctx.reset();
@@ -491,8 +493,8 @@ Scope {
                             ctx.fillStyle = bgColor.toString();
                             ctx.beginPath();
                             ctx.moveTo(0, 0);
-                            ctx.lineTo(width, 0);
-                            ctx.lineTo(Math.max(0, width - sw), height);
+                            ctx.lineTo(Math.max(0, width - topInset), 0);
+                            ctx.lineTo(Math.max(0, width - bottomInset), height);
                             ctx.lineTo(0, height);
                             ctx.closePath();
                             ctx.fill();
@@ -500,6 +502,8 @@ Scope {
                         onWidthChanged: requestPaint()
                         onHeightChanged: requestPaint()
                         onSwChanged: requestPaint()
+                        onTopInsetChanged: requestPaint()
+                        onBottomInsetChanged: requestPaint()
                         onBgColorChanged: requestPaint()
                         onBgOpacityChanged: requestPaint()
                     }
@@ -751,7 +755,7 @@ Scope {
                                 triangleEnabled: true
                                 triangleWidthFactor: 0.75
                                 mirrorTriangle: false
-                                widthScale: 2.0
+                                widthScale: 0.75
                                 backgroundKey: "network"
                             }
                             LocalMods.WeatherButton {
@@ -883,7 +887,7 @@ Scope {
                     // Inner backdrop: trapezoid with bottom-left triangle cut off (mirrored).
                     Canvas {
                         id: rightBarBackdrop
-                        width: Math.max(1, rightBarFill.width)
+                        width: Math.max(1, rightBarFill.width - rightPanel.interWidgetSpacing + rightPanel.seamWidth)
                         height: rightPanel.barHeightPx
                         anchors.top: parent.top
                         anchors.right: parent.right
@@ -892,6 +896,8 @@ Scope {
                         readonly property int sw: rightPanel.seamWidth
                         readonly property color bgColor: Theme.panelBackdropColor
                         readonly property real bgOpacity: Theme.panelBackdropOpacity
+                        readonly property real topInset: Math.round(sw * 0.25)
+                        readonly property real bottomInset: Math.round(sw * 2.0)
                         onPaint: {
                             var ctx = getContext('2d');
                             ctx.reset();
@@ -899,16 +905,18 @@ Scope {
                             ctx.globalAlpha = bgOpacity;
                             ctx.fillStyle = bgColor.toString();
                             ctx.beginPath();
-                            ctx.moveTo(0, 0);
+                            ctx.moveTo(Math.min(width, topInset), 0);
                             ctx.lineTo(width, 0);
                             ctx.lineTo(width, height);
-                            ctx.lineTo(Math.min(width, sw), height);
+                            ctx.lineTo(Math.min(width, bottomInset), height);
                             ctx.closePath();
                             ctx.fill();
                         }
                         onWidthChanged: requestPaint()
                         onHeightChanged: requestPaint()
                         onSwChanged: requestPaint()
+                        onTopInsetChanged: requestPaint()
+                        onBottomInsetChanged: requestPaint()
                         onBgColorChanged: requestPaint()
                         onBgOpacityChanged: requestPaint()
                     }
