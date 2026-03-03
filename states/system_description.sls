@@ -60,10 +60,11 @@ include:
   - network
   - amnezia
 
-  # Packages: CLI tools, desktop apps, themes, custom PKGBUILDs
+  # Packages: CLI tools, desktop apps, themes, custom PKGBUILDs, flatpak
   - installers
   - installers_desktop
   - installers_themes
+  - flatpak
   - custom_pkgs
 
   # Applications

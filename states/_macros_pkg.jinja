@@ -141,3 +141,20 @@ install_{{ name | replace('-', '_') }}:
         attempts: {{ _retry_attempts }}
         interval: {{ _retry_interval }}
 {%- endmacro -%}
+
+{# Install a Flatpak app from Flathub (user-level).
+   Usage: {{ flatpak_install('md.obsidian.Obsidian') }}
+#}
+{%- macro flatpak_install(app_id, user=_user) -%}
+{%- set safe = app_id | replace('.', '_') | replace('-', '_') -%}
+install_flatpak_{{ safe }}:
+  cmd.run:
+    - name: sudo -u {{ user }} flatpak install -y --user flathub {{ app_id }}
+    - unless: sudo -u {{ user }} flatpak list --user --app --columns=application | rg -q '^{{ app_id }}$'
+    - parallel: True
+    - retry:
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
+    - require:
+      - cmd: flatpak_flathub_remote
+{%- endmacro -%}
