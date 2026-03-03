@@ -98,6 +98,7 @@ rename() {
     album="$(extract_field 'Album')"
 
     generate_convert_table
+    year=$(trim "$year")
     year=${year%% *}
     year=${year//$year/$conv_table[$year]}
 
