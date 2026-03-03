@@ -4,8 +4,6 @@
       "type": "stdio",
       "command": "/home/neg/.local/bin/uvx",
       "args": [
-        "--from",
-        "git+https://github.com/oraios/serena",
         "serena",
         "start-mcp-server",
         "--context",
@@ -57,12 +55,8 @@
     },
     "ast-grep": {
       "type": "stdio",
-      "command": "/home/neg/.local/bin/uvx",
-      "args": [
-        "--from",
-        "git+https://github.com/ast-grep/ast-grep-mcp",
-        "ast-grep-server"
-      ],
+      "command": "/home/neg/.local/bin/ast-grep-server",
+      "args": [],
       "env": {}
     },
     "arxiv": {
@@ -162,12 +156,8 @@
     },
     "hyprland": {
       "type": "stdio",
-      "command": "/home/neg/.local/bin/uvx",
-      "args": [
-        "--from",
-        "git+https://github.com/alderban107/hyprland-mcp",
-        "hyprland-mcp"
-      ],
+      "command": "/home/neg/.local/bin/hyprland-mcp",
+      "args": [],
       "env": {}
     },
     "json-yaml-toml": {
@@ -196,12 +186,8 @@
     },
     "nettools": {
       "type": "stdio",
-      "command": "/home/neg/.local/bin/uvx",
-      "args": [
-        "--from",
-        "git+https://github.com/dkruyt/mcp-nettools",
-        "mcp-nettools"
-      ],
+      "command": "/home/neg/.local/bin/mcp-nettools",
+      "args": [],
       "env": {}
     },
     "text-toolkit": {
@@ -209,7 +195,7 @@
       "command": "npx",
       "args": [
         "-y",
-        "@cicatriz/text-toolkit@latest"
+        "@cicatriz/text-toolkit@1.0.0"
       ],
       "env": {}
     },
@@ -229,7 +215,7 @@
       "command": "npx",
       "args": [
         "-y",
-        "mcp-color-convert@latest"
+        "mcp-color-convert@0.1.3"
       ],
       "env": {}
     },
@@ -238,7 +224,7 @@
       "command": "npx",
       "args": [
         "-y",
-        "@reapi/mcp-openapi@latest"
+        "@reapi/mcp-openapi@0.0.4"
       ],
       "env": {}
     },
