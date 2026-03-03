@@ -767,7 +767,7 @@ Singleton {
     // Panel seam appearance
     property real panelSeamTaperTop: val('panel.seam.taperTop', 0.25)
     property real panelSeamTaperBottom: val('panel.seam.taperBottom', 0.9)
-    property real panelSeamOpacity: val('panel.seam.opacity', 1.0)
+    property real panelSeamOpacity: val('panel.seam.opacity', 0.55)
     property real panelSeamColorMixRatio: val('panel.seam.colorMixRatio', 0.45)
     // Panel tint overlay
     property color panelTintColor: val('panel.tint.color', "#ff2a36")
