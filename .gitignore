@@ -23,4 +23,5 @@ salt_config/var/
 # Tools
 .claude/
 .serena/
+_catalog/
 tt
