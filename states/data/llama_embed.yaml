@@ -1,0 +1,18 @@
+# Qwen3-Embedding-8B GGUF model for llama.cpp embedding server
+# Changing the model is a YAML-only edit.
+#
+# ── Schema ────────────────────────────────────────────────────────────
+#
+# repo:       HuggingFace repo (org/model)
+# file:       GGUF filename to download
+# context:    context window size (tokens)
+# gpu_layers: layers to offload to GPU (99 = all)
+# pooling:    embedding pooling strategy (last, mean, cls)
+#
+# ─────────────────────────────────────────────────────────────────────
+
+repo: Qwen/Qwen3-Embedding-8B-GGUF
+file: Qwen3-Embedding-8B-Q5_K_M.gguf
+context: 8192
+gpu_layers: 99
+pooling: last

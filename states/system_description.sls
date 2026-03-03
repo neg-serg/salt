@@ -71,6 +71,7 @@ include:
   - kanata
   - mpd
   - ollama
+  - llama_embed
   - steam
 
   # Services, monitoring, user units, snapshots
