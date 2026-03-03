@@ -368,7 +368,14 @@ Scope {
                             property color baseColor: Theme.panelPillColor
                             property color accentColor: Theme.panelPillColor
                             property vector4d params0: Qt.vector4d(0.0, 0.0, 0.0, 0.0)
-                            property vector4d params1: Qt.vector4d(0.0, 0.0, 0.93, 0.0)
+                            // params1.w = gap center (normalized), params2.x = gap half-width (normalized)
+                            readonly property real _mw: Math.max(1, seamPanel.monitorWidth)
+                            readonly property real _gapCenter: seamPanel.geometryReady
+                                ? (seamPanel.gapStart + seamPanel.gapEnd) / 2 / _mw : 0.0
+                            readonly property real _gapHalf: seamPanel.geometryReady
+                                ? Math.max(0, seamPanel.gapEnd - seamPanel.gapStart) / 2 / _mw : 0.0
+                            property vector4d params1: Qt.vector4d(0.0, 0.0, 0.93, _gapCenter)
+                            property vector4d params2: Qt.vector4d(_gapHalf, 0.0, 0.0, 0.0)
                             fragmentShader: Qt.resolvedUrl("../shaders/diag.frag.qsb")
                         }
 
