@@ -60,6 +60,7 @@ curl_bin:
     hash: "8f2b18318fed2110c46c99c6710067ed361c114dcfb06db954692dd49b4e92c7"
 
 paru_install:
+  antigravity: antigravity
   overskride: overskride-bin
   roomeqwizard: roomeqwizard
   bottles: bottles
