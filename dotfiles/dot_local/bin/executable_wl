@@ -27,3 +27,6 @@ let pick = ($pics | shuffle | first)
 
 # Keep greeter wallpaper in sync (read by quickshell greeter on boot)
 cp -f $pick $"($env.HOME)/.cache/greeter-wallpaper"
+
+# Notify quickshell of wallpaper path (WallpaperAccent service watches this file)
+$pick | save -f $"($env.HOME)/.cache/quickshell-wallpaper-path"
