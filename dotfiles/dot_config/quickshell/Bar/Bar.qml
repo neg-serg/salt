@@ -1249,7 +1249,7 @@ Scope {
                 PanelLayer {
                     id: seamPanel
                     screen: modelData
-                    color: "#000000"
+                    color: "transparent"
                     anchors.bottom: true
                     anchors.left: true
                     anchors.right: true
@@ -1274,13 +1274,13 @@ Scope {
                     property int seamHeightPx: Math.round(Theme.panelHeight * s)
                     property real seamTaperTop: 0.12
                     property real seamTaperBottom: 0.65
-                    property real seamEffectOpacity: 1.0
+                    property real seamEffectOpacity: 0.85
                     property color seamFillColor: Color.mix(Theme.surface, Theme.background, 0.35)
                     Behavior on seamFillColor {
                         enabled: Theme._themeLoaded && Theme.animationsEnabled
                         ColorAnimation { duration: Theme.panelAnimFastMs }
                     }
-                    property bool seamTintEnabled: false
+                    property bool seamTintEnabled: true
                     // Use theme accent for seam tint to avoid hardcoded red
                     property color seamTintColor: Theme.accentPrimary
                     Behavior on seamTintColor {
@@ -1289,8 +1289,8 @@ Scope {
                     }
                     property real seamTintOpacity: 0.9
                     property color seamBaseColor: Theme.background
-                    property real seamBaseOpacityTop: 1.0
-                    property real seamBaseOpacityBottom: 1.0
+                    property real seamBaseOpacityTop: 0.5
+                    property real seamBaseOpacityBottom: 0.65
                     function seamEdgeBaseForTilt(tiltSign, frac) {
                         var f = Utils.clamp01(frac);
                         return (tiltSign > 0) ? (1.0 - f) : f;
