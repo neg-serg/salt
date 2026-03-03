@@ -14,7 +14,6 @@ Packages installed via pacman/paru outside Salt; Salt handles configuration mana
 | `states/system_description.sls` | Top-level orchestrator: locale, timezone, hostname, include list |
 | `states/_macros_*.jinja` | Reusable Jinja macros: common, github, install, pkg, service |
 | `states/host_config.jinja` | Per-host config map keyed by `grains['host']` |
-| `states/data/packages.yaml` | Package reference lists (not consumed by states) |
 | `states/data/floorp.yaml` | Floorp browser extensions (consumed by floorp.sls) |
 | `states/configs/` | External config files served via `salt://configs/` |
 | `states/units/` | Systemd unit files served via `salt://units/` |
@@ -22,10 +21,10 @@ Packages installed via pacman/paru outside Salt; Salt handles configuration mana
 | `build/iosevka-neg.toml` | Custom Iosevka font build config |
 | `dotfiles/` | Chezmoi source dir (dot_ prefix = . in paths) |
 | `docs/` | Documentation (migration tracking, secrets, setup guides) |
-| `states/data/` | YAML data files (installer definitions) loaded via `import_yaml` |
+| `states/data/` | YAML data files (installers, services, fonts, models, etc.) loaded via `import_yaml` |
 | `scripts/` | Utility scripts (linting, tool updates) |
 
-## Salt State Modules (31 files)
+## Salt State Modules (32 files)
 
 | Module | Purpose |
 |---|---|
@@ -41,7 +40,7 @@ Packages installed via pacman/paru outside Salt; Salt handles configuration mana
 | `installers_themes.sls` | Themes/icons: matugen, kora, Flight GTK |
 | `kanata.sls` | Kanata keyboard remapper: uinput-based, udev rules, user service |
 | `user_services.sls` | User systemd services: chezmoi, mail, vdirsyncer, GPG agent |
-| `custom_pkgs.sls` | Build raise, neg-pretty-printer, richcolors, albumdetails from PKGBUILDs |
+| `custom_pkgs.sls` | Data-driven PKGBUILD builds from `data/custom_pkgs.yaml` (raise, duf, richcolors, etc.) |
 | `dns.sls` | Unbound, AdGuardHome, Avahi |
 | `monitoring.sls` | Sysstat, vnstat, netdata, Loki/Promtail/Grafana stack |
 | `services.sls` | Samba, Jellyfin, Bitcoind, DuckDNS |
@@ -50,6 +49,7 @@ Packages installed via pacman/paru outside Salt; Salt handles configuration mana
 | `amnezia.sls` | AmneziaVPN build and deploy |
 | `greetd.sls` | greetd login manager (replaces SDDM) |
 | `ollama.sls` | Ollama LLM service + model pulls |
+| `llama_embed.sls` | llama.cpp embedding server (Qwen3-Embedding via Vulkan) |
 | `floorp.sls` | Floorp browser configs + extensions |
 | `hardware.sls` | Fan control, GPU, hardware-specific setup |
 | `network.sls` | VM bridge, xray, sing-box |
