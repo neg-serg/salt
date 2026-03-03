@@ -19,5 +19,6 @@
     'loki':     {'port': 3100, 'healthcheck': '/ready'},
     'promtail': {'port': 9080, 'healthcheck': '/ready'},
     'grafana':  {'port': 3030, 'healthcheck': '/api/health'},
-    'ollama':   {'port': 11434, 'healthcheck': '/api/tags'},
+    'ollama':       {'port': 11434, 'healthcheck': '/api/tags'},
+    'llama_embed':  {'port': 11435, 'healthcheck': '/health'},
 } -%}
