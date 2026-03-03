@@ -374,8 +374,9 @@ Scope {
                                 ? (seamPanel.gapStart + seamPanel.gapEnd) / 2 / _mw : 0.0
                             readonly property real _gapHalf: seamPanel.geometryReady
                                 ? Math.max(0, seamPanel.gapEnd - seamPanel.gapStart) / 2 / _mw : 0.0
-                            property vector4d params1: Qt.vector4d(0.0, 0.0, 1.0, _gapCenter)
-                            property vector4d params2: Qt.vector4d(_gapHalf, Theme.panelSeamGapOpacity, 0.0, 0.0)
+                            // Shadow panel disabled: outer backdrops handle seam opacity
+                            property vector4d params1: Qt.vector4d(0.0, 0.0, 0.0, _gapCenter)
+                            property vector4d params2: Qt.vector4d(_gapHalf, 0.0, 0.0, 0.0)
                             fragmentShader: Qt.resolvedUrl("../shaders/diag.frag.qsb")
                         }
 
@@ -458,15 +459,49 @@ Scope {
                             id: leftPanelContent
                             anchors.fill: parent
 
+                    // Outer backdrop: covers full panel width at seam opacity
+                    // (semi-transparent — lets wallpaper show through in seam/gap area)
                     Rectangle {
-                        id: leftBarBackdrop
-                        width: Math.max(1, leftBarFill.width - leftPanel.seamWidth)
+                        id: leftBarBackdropOuter
+                        width: Math.max(1, leftPanel.width)
                         height: leftPanel.barHeightPx
                         color: Theme.panelBackdropColor
-                        opacity: Theme.panelBackdropOpacity
+                        opacity: Theme.panelSeamOpacity
+                        anchors.top: parent.top
+                        anchors.left: parent.left
+                        z: -2
+                    }
+                    // Inner backdrop: trapezoid with bottom-right triangle cut off.
+                    // Canvas draws the shape directly — no ShaderEffect needed.
+                    Canvas {
+                        id: leftBarBackdrop
+                        width: Math.max(1, leftBarFill.width)
+                        height: leftPanel.barHeightPx
                         anchors.top: parent.top
                         anchors.left: parent.left
                         z: -1
+                        readonly property int sw: leftPanel.seamWidth
+                        readonly property color bgColor: Theme.panelBackdropColor
+                        readonly property real bgOpacity: Theme.panelBackdropOpacity
+                        onPaint: {
+                            var ctx = getContext('2d');
+                            ctx.reset();
+                            ctx.clearRect(0, 0, width, height);
+                            ctx.globalAlpha = bgOpacity;
+                            ctx.fillStyle = bgColor.toString();
+                            ctx.beginPath();
+                            ctx.moveTo(0, 0);
+                            ctx.lineTo(width, 0);
+                            ctx.lineTo(Math.max(0, width - sw), height);
+                            ctx.lineTo(0, height);
+                            ctx.closePath();
+                            ctx.fill();
+                        }
+                        onWidthChanged: requestPaint()
+                        onHeightChanged: requestPaint()
+                        onSwChanged: requestPaint()
+                        onBgColorChanged: requestPaint()
+                        onBgOpacityChanged: requestPaint()
                     }
                     Rectangle {
                         id: leftBarBackground
@@ -833,16 +868,49 @@ Scope {
                             id: rightPanelContent
                             anchors.fill: parent
 
+                    // Outer backdrop: covers full panel width at seam opacity
                     Rectangle {
-                        id: rightBarBackdrop
-                        width: Math.max(1, rightBarFill.width - rightPanel.seamWidth)
+                        id: rightBarBackdropOuter
+                        width: Math.max(1, rightPanel.width)
                         height: rightPanel.barHeightPx
                         color: Theme.panelBackdropColor
-                        opacity: Theme.panelBackdropOpacity
+                        opacity: Theme.panelSeamOpacity
+                        anchors.top: parent.top
+                        anchors.right: parent.right
+                        z: -2
+                        visible: rightPanel.baseFillVisible
+                    }
+                    // Inner backdrop: trapezoid with bottom-left triangle cut off (mirrored).
+                    Canvas {
+                        id: rightBarBackdrop
+                        width: Math.max(1, rightBarFill.width)
+                        height: rightPanel.barHeightPx
                         anchors.top: parent.top
                         anchors.right: parent.right
                         z: -1
                         visible: rightPanel.baseFillVisible
+                        readonly property int sw: rightPanel.seamWidth
+                        readonly property color bgColor: Theme.panelBackdropColor
+                        readonly property real bgOpacity: Theme.panelBackdropOpacity
+                        onPaint: {
+                            var ctx = getContext('2d');
+                            ctx.reset();
+                            ctx.clearRect(0, 0, width, height);
+                            ctx.globalAlpha = bgOpacity;
+                            ctx.fillStyle = bgColor.toString();
+                            ctx.beginPath();
+                            ctx.moveTo(0, 0);
+                            ctx.lineTo(width, 0);
+                            ctx.lineTo(width, height);
+                            ctx.lineTo(Math.min(width, sw), height);
+                            ctx.closePath();
+                            ctx.fill();
+                        }
+                        onWidthChanged: requestPaint()
+                        onHeightChanged: requestPaint()
+                        onSwChanged: requestPaint()
+                        onBgColorChanged: requestPaint()
+                        onBgOpacityChanged: requestPaint()
                     }
                     Rectangle {
                         id: rightBarBackground

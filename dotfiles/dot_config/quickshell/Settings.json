@@ -12,7 +12,7 @@
     "contrastWarnRatio": 4.5,
     "debugLogs": false,
     "debugNetwork": false,
-    "enableWedgeClipShader": false,
+    "enableWedgeClipShader": true,
     "fontSizeMultiplier": 1,
     "hideSystemTrayCapsule": true,
     "ignoredPlayers": [],
