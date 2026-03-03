@@ -134,7 +134,6 @@ package_checks:
     - wlogout
     - carapace-bin
     - doggo
-    - wallust
     - pipemixer
     - newsraft
     - salt

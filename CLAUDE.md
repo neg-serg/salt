@@ -34,7 +34,7 @@ Packages installed via pacman/paru outside Salt; Salt handles configuration mana
 | `zsh.sls` | Zsh: system-wide config, ZDOTDIR, user dotfiles |
 | `audio.sls` | PipeWire audio stack: pipewire-audio, wireplumber, pulse/alsa/jack |
 | `mounts.sls` | Disk mounts (/mnt/zero, /mnt/one), btrfs compression |
-| `desktop.sls` | Desktop: system services, SSH, wallust defaults, dconf themes |
+| `desktop.sls` | Desktop: system services, SSH, dconf themes |
 | `fonts.sls` | All fonts: pacman, Iosevka PKGBUILD, FiraCode, downloaded fonts |
 | `installers.sls` | CLI tools: data-driven from `data/installers.yaml` + custom installs |
 | `installers_desktop.sls` | Desktop apps: RoomEQ, Throne, Overskride, Nyxt, DroidCam |
