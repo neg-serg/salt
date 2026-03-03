@@ -399,7 +399,8 @@ alias:
   - name: emptydir
     value: emptydir
   - name: qe
-    value: qe
+    value: cd "$(command qe "$@")"
+    type: function
 
   # rlwrap REPLs
   - name: bb
