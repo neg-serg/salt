@@ -1,6 +1,6 @@
 {% from '_imports.jinja' import user, home, retry_attempts, retry_interval, ver_dir %}
 {% from '_macros_service.jinja' import ensure_dir %}
-{% from '_macros_install.jinja' import curl_bin, pip_pkg, cargo_pkg, curl_extract_tar, curl_extract_zip, git_clone_deploy %}
+{% from '_macros_install.jinja' import curl_bin, pip_pkg, cargo_pkg, curl_extract_tar, curl_extract_zip, git_clone_deploy, http_file %}
 {% from '_macros_github.jinja' import github_tar, github_release_to %}
 {% import_yaml 'data/installers.yaml' as tools %}
 {% import_yaml 'data/versions.yaml' as ver %}
@@ -51,10 +51,13 @@
 {% endfor %}
 
 # --- tar.gz archive extractions ---
+{% set skip_tar_installs = ['essentia'] %}
 {% for name, opts in tools.get('curl_extract_tar', {}).items() %}
+{% if name not in skip_tar_installs %}
 {% set _v = ver.get(name, '') %}
 {% set resolved_url = opts.url | replace('${VER}', _v) %}
 {{ curl_extract_tar(name, resolved_url, binary_pattern=opts.binary_pattern, bin=opts.get('bin'), hash=opts.get('hash'), version=_v if _v else None) }}
+{% endif %}
 {% endfor %}
 
 # ===========================================================================
@@ -92,17 +95,7 @@ qmk_udev_rules:
 {{ ensure_dir('mpv_scripts_dir', mpv_scripts_dir) }}
 
 {% for filename, url in mpv.raw.items() %}
-mpv_script_{{ filename | replace('.', '_') | replace('-', '_') }}:
-  cmd.run:
-    - name: curl -fsSL '{{ url }}' -o '{{ mpv_scripts_dir }}/{{ filename }}.tmp' && mv -f '{{ mpv_scripts_dir }}/{{ filename }}.tmp' '{{ mpv_scripts_dir }}/{{ filename }}'
-    - runas: {{ user }}
-    - creates: {{ mpv_scripts_dir }}/{{ filename }}
-    - require:
-      - file: mpv_scripts_dir
-    - retry:
-        attempts: {{ retry_attempts }}
-        interval: {{ retry_interval }}
-    - parallel: True
+{{ http_file('mpv_script_' ~ (filename | replace('.', '_') | replace('-', '_')), url, mpv_scripts_dir ~ '/' ~ filename, user=user, require=['file: mpv_scripts_dir']) }}
 {% endfor %}
 
 # cutter.lua writes time_pairs.txt to scripts/ by default; mpv tries to load it as a script

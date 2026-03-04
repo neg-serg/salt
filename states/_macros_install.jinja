@@ -1,5 +1,6 @@
 {# Download/install macros: curl_bin, pip_pkg, cargo_pkg, curl_extract_tar,
-   curl_extract_zip, firefox_extension, download_font_zip, git_clone_deploy #}
+   curl_extract_zip, firefox_extension, download_font_zip, git_clone_deploy,
+   http_file #}
 
 {% from '_macros_common.jinja' import user as _user, home as _home, retry_attempts as _retry_attempts, retry_interval as _retry_interval, ver_dir as _ver_dir, sys_ver_dir as _sys_ver_dir %}
 
@@ -11,6 +12,7 @@
 {%- macro curl_bin(name, url, version=None, hash=None, user=_user, home=_home) -%}
 {%- set _creates = home ~ '/.local/bin/' ~ name -%}
 {%- set _tmp = home ~ '/.local/bin/' ~ name ~ '.tmp' -%}
+{%- set _vd = _ver_dir if user else _sys_ver_dir -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: |
@@ -22,12 +24,12 @@ install_{{ name | replace('-', '_') }}:
         chmod +x {{ _tmp }}
         mv -f {{ _tmp }} {{ _creates }}
 {%- if version %}
-        mkdir -p {{ _ver_dir }} && echo '{{ version }}' > {{ _ver_dir }}/{{ name }}
+        mkdir -p {{ _vd }} && echo '{{ version }}' > {{ _vd }}/{{ name }}
 {%- endif %}
     - runas: {{ user }}
     - shell: /bin/bash
 {%- if version %}
-    - unless: test -f {{ _creates }} && test -f {{ _ver_dir }}/{{ name }} && rg -qx '{{ version }}' {{ _ver_dir }}/{{ name }}
+    - unless: test -f {{ _creates }} && test -f {{ _vd }}/{{ name }} && rg -qx '{{ version }}' {{ _vd }}/{{ name }}
 {%- else %}
     - creates: {{ _creates }}
 {%- endif %}
@@ -185,6 +187,7 @@ install_{{ name | replace('-', '_') }}:
 {%- macro curl_extract_zip(name, url, binary_path=None, binaries=None, bin=None, chmod=False, dest=None, symlink=None, creates=None, hash=None, version=None, user=_user, home=_home) -%}
 {%- set out_name = bin or (binaries[0] if binaries else (binary_path.rsplit('/', 1)[-1] if binary_path else name)) -%}
 {%- set _creates = creates or ((dest | replace('~', home)) if dest else home ~ '/.local/bin/' ~ out_name) -%}
+{%- set _vd = _ver_dir if user else _sys_ver_dir -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: |
@@ -219,12 +222,12 @@ install_{{ name | replace('-', '_') }}:
 {%- endif %}
 {%- endif %}
 {%- if version %}
-        mkdir -p {{ _ver_dir }} && echo '{{ version }}' > {{ _ver_dir }}/{{ name }}
+        mkdir -p {{ _vd }} && echo '{{ version }}' > {{ _vd }}/{{ name }}
 {%- endif %}
     - runas: {{ user }}
     - shell: /bin/bash
 {%- if version %}
-    - unless: test -e {{ _creates }} && test -f {{ _ver_dir }}/{{ name }} && rg -qx '{{ version }}' {{ _ver_dir }}/{{ name }}
+    - unless: test -e {{ _creates }} && test -f {{ _vd }}/{{ name }} && rg -qx '{{ version }}' {{ _vd }}/{{ name }}
 {%- else %}
     - creates: {{ _creates }}
 {%- endif %}
@@ -338,4 +341,34 @@ install_{{ name | replace('-', '_') }}:
     - retry:
         attempts: {{ _retry_attempts }}
         interval: {{ _retry_interval }}
+{%- endmacro -%}
+
+{# Download a single file via curl and install to destination with optional mode.
+   Creates parent directories automatically via install -D and honors retry/parallel.
+   Usage: {{ http_file('mpv_script_stats', 'https://example/script.lua', home ~ '/.config/mpv/scripts/stats.lua', require=['file: mpv_scripts_dir']) }}
+#}
+{%- macro http_file(name, url, dest, mode='0644', user=_user, creates=None, require=None, parallel=True) -%}
+{{ name }}:
+  cmd.run:
+    - name: |
+        set -eo pipefail
+        tmp='{{ dest }}.tmp'
+        curl -fsSL '{{ url }}' -o "$tmp"
+        install -m {{ mode }} -D "$tmp" '{{ dest }}'
+        rm -f "$tmp"
+    - runas: {{ user }}
+    - shell: /bin/bash
+    - creates: {{ creates or dest }}
+{%- if parallel %}
+    - parallel: True
+{%- endif %}
+    - retry:
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
+{%- if require %}
+    - require:
+{%- for req in require %}
+      - {{ req }}
+{%- endfor %}
+{%- endif %}
 {%- endmacro -%}
