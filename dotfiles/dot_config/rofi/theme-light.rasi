@@ -1,0 +1,19 @@
+* {
+    maincolor: #0055A0;
+    highlight: bold underline #004D7A;
+    urgentcolor: #A02E60;
+
+    blackwidget: #E0E5ED88;
+    mainbg: #F2F4F8CC;
+
+    fgwhite: #2D3E4F;
+    fggrey: #506478;
+    blackdarkest: #E8ECF2DD;
+    selectcolor: #C8D4E2;
+    darkgray: #4A7088;
+    ultra: #0055A088;
+
+    font: "Iosevka Medium 17";
+    background-color: @blackdarkest;
+    text-color: @fgwhite;
+}
