@@ -2,10 +2,19 @@
 {% from '_macros_pkg.jinja' import npm_pkg %}
 {% from '_macros_service.jinja' import ensure_dir %}
 {% set _proxypilot_cfg = home ~ '/.config/proxypilot/config.yaml' %}
-{% set _gopass_cmd = salt['cmd.run_all']('gopass show -o api/proxypilot-local 2>/dev/null', runas=user, python_shell=True, ignore_retcode=True) %}
-{% set _gopass_key = _gopass_cmd['stdout'].strip() if _gopass_cmd.get('retcode', 1) == 0 else '' %}
-{% set _file_key = salt['cmd.run_stdout']("awk '/^api-keys:/{getline; sub(/^[[:space:]]*-[[:space:]]*\"?/, \"\"); sub(/\"?[[:space:]]*$/, \"\"); print; exit}' " ~ _proxypilot_cfg ~ " 2>/dev/null || true", runas=user).strip() %}
-{% set _codex_api_key = _gopass_key or _file_key %}
+{% set _gopass_api_cmd = salt['cmd.run_all']('gopass show -o api/proxypilot-local 2>/dev/null', runas=user, python_shell=True, ignore_retcode=True) %}
+{% if _gopass_api_cmd.get('retcode', 1) == 0 %}
+{% set _proxypilot_api_key = _gopass_api_cmd['stdout'].strip() %}
+{% else %}
+{% set _proxypilot_api_key = salt['cmd.run_stdout']("awk '/^api-keys:/{getline; sub(/^[[:space:]]*-[[:space:]]*\"?/, \"\"); sub(/\"?[[:space:]]*$/, \"\"); print; exit}' " ~ _proxypilot_cfg ~ " 2>/dev/null || true", runas=user).strip() %}
+{% endif %}
+{% set _gopass_mgmt_cmd = salt['cmd.run_all']('gopass show -o api/proxypilot-management 2>/dev/null', runas=user, python_shell=True, ignore_retcode=True) %}
+{% if _gopass_mgmt_cmd.get('retcode', 1) == 0 %}
+{% set _proxypilot_mgmt_key = _gopass_mgmt_cmd['stdout'].strip() %}
+{% else %}
+{% set _proxypilot_mgmt_key = salt['cmd.run_stdout']("awk '/^[[:space:]]*secret-key:[[:space:]]*/{sub(/^[[:space:]]*secret-key:[[:space:]]*\"?/, \"\"); sub(/\"?[[:space:]]*$/, \"\"); print; exit}' " ~ _proxypilot_cfg ~ " 2>/dev/null || true", runas=user).strip() %}
+{% endif %}
+{% set _codex_api_key = _proxypilot_api_key %}
 
 {%- macro user_file_recurse(state_id, path, source) -%}
 {{ state_id }}:
@@ -30,6 +39,8 @@ proxypilot_config:
     - context:
         user: {{ user }}
         home: {{ home }}
+        api_key: {{ _proxypilot_api_key | tojson }}
+        mgmt_key: {{ _proxypilot_mgmt_key | tojson }}
     - require:
       - file: proxypilot_config_dir
 {{ ensure_dir('codex_config_dir', home ~ '/.codex') }}
@@ -63,6 +74,7 @@ restart_proxypilot_on_config_change:
     - env:
       - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
       - DBUS_SESSION_BUS_ADDRESS: unix:path={{ host.runtime_dir }}/bus
+    - onlyif: systemctl --user is-active proxypilot.service >/dev/null 2>&1
     - onchanges:
       - file: proxypilot_config
 
