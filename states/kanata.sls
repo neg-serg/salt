@@ -52,5 +52,5 @@ kanata_config:
 
 # --- Systemd user service ---
 {{ user_service_file('kanata_service', 'kanata.service') }}
-{{ user_service_enable('kanata_enabled', ['kanata.service'], daemon_reload=True, requires=['cmd: install_kanata', 'file: kanata_config', 'file: kanata_service', 'cmd: kanata_user_groups', 'kmod: kanata_load_uinput']) }}
+{{ user_service_enable('kanata_enabled', ['kanata.service'], requires=['cmd: install_kanata', 'file: kanata_config', 'file: kanata_service', 'cmd: kanata_service_daemon_reload', 'cmd: kanata_user_groups', 'kmod: kanata_load_uinput']) }}
 {% endif %}
