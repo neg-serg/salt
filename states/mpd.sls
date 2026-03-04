@@ -7,6 +7,24 @@
 include:
   - bind_mounts
 
+{% set mpdris2_installed = salt['file.search'](pkg_list, '^mpdris2$', flags='m') %}
+{% set mpdas_installed = salt['file.search'](pkg_list, '^mpdas$', flags='m') %}
+{%- set companion_units = [] -%}
+{%- if mpdris2_installed -%}
+{%-   do companion_units.append('mpDris2.service') -%}
+{%- endif -%}
+{%- if mpdas_installed -%}
+{%-   do companion_units.append('mpdas.service') -%}
+{%- endif -%}
+{%- set companion_reqs = ['cmd: mpd_enabled', 'cmd: mpdas_config'] -%}
+{%- if mpdris2_installed -%}
+{%-   do companion_reqs.append('cmd: mpdris2_user_service_daemon_reload') -%}
+{%- endif -%}
+{%- if mpdas_installed -%}
+{%-   do companion_reqs.append('file: mpdas_service_file') -%}
+{%-   do companion_reqs.append('cmd: mpdas_service_file_daemon_reload') -%}
+{%- endif -%}
+
 # --- MPD directories ---
 mpd_directories:
   file.directory:
@@ -76,29 +94,11 @@ mpdas_config:
 # --- Deploy mpdas systemd user service ---
 {{ user_service_file('mpdas_service_file', 'mpdas.service', source='salt://dotfiles/dot_config/systemd/user/mpdas.service') }}
 
-# --- Enable mpd companion services (mpdris2 + mpdas) in a single systemctl call ---
+{% if companion_units %}
+{{ user_service_enable('mpd_companion_services', start_now=companion_units, check='active', requires=companion_reqs) }}
+{% else %}
 mpd_companion_services:
-  cmd.run:
-    - name: |
-        C={{ pkg_list }}
-        {% raw %}
-        services=()
-        rg -qx 'mpdris2' "$C" && ! systemctl --user is-enabled mpDris2.service 2>/dev/null && services+=(mpDris2.service)
-        rg -qx 'mpdas' "$C" && ! systemctl --user is-enabled mpdas.service 2>/dev/null && services+=(mpdas.service)
-        if [ ${#services[@]} -gt 0 ]; then
-          systemctl --user enable --now "${services[@]}"
-        fi
-        {% endraw %}
-    - runas: {{ user }}
-    - env:
-      - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
-      - DBUS_SESSION_BUS_ADDRESS: unix:path={{ host.runtime_dir }}/bus
-    - shell: /bin/bash
-    - require:
-      - cmd: mpd_enabled
-      - cmd: mpdas_config
-      - file: mpdas_service_file
-    - unless: |
-        (! rg -qx 'mpdris2' {{ pkg_list }} || systemctl --user is-enabled mpDris2.service 2>/dev/null) &&
-        (! rg -qx 'mpdas' {{ pkg_list }} || systemctl --user is-enabled mpdas.service 2>/dev/null)
+  test.nop:
+    - comment: 'No MPD companion services to enable'
+{% endif %}
 {% endif %}

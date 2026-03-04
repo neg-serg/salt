@@ -204,6 +204,16 @@
     - group: {{ user }}
     - mode: '0644'
     - makedirs: True
+
+{{ name }}_daemon_reload:
+  cmd.run:
+    - name: systemctl --user daemon-reload
+    - runas: {{ user }}
+    - env:
+      - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
+      - DBUS_SESSION_BUS_ADDRESS: unix:path={{ host.runtime_dir }}/bus
+    - onchanges:
+      - file: {{ name }}
 {%- endmacro -%}
 
 {# Deploy systemd user unit drop-in override + trigger daemon-reload on change.
@@ -257,25 +267,73 @@
 {%- set svc_list = services if services else [] -%}
 {%- set now_list = start_now if start_now else [] -%}
 {%- set all_units = svc_list + now_list -%}
-{%- set multi_cmd = daemon_reload or (svc_list and now_list) -%}
 {{ name }}:
   cmd.run:
     - name: |
-{%- if multi_cmd %}
-        set -eo pipefail
+{%- if not all_units and not daemon_reload %}
+        /usr/bin/true
+{%- else %}
+        python3 - <<'PY'
+        import os
+        import subprocess
+
+        enable_only = {{ svc_list | tojson }}
+        start_units = {{ now_list | tojson }}
+        check = "{{ check }}"
+        start_check = 'active' if check == 'enabled' else check
+        env = os.environ.copy()
+        env['XDG_RUNTIME_DIR'] = '{{ host.runtime_dir }}'
+        env['DBUS_SESSION_BUS_ADDRESS'] = 'unix:path={{ host.runtime_dir }}/bus'
+
+        def run(cmd):
+            subprocess.run(cmd, check=True, env=env)
+
+        def list_units(mode):
+            commands = {
+                'enabled': ['systemctl', '--user', 'list-unit-files', '--state=enabled', '--no-legend', '--plain'],
+                'active': ['systemctl', '--user', 'list-units', '--state=active', '--no-legend', '--plain'],
+            }
+            cmd = commands.get(mode)
+            if not cmd:
+                return None
+            proc = subprocess.run(cmd, env=env, check=False, capture_output=True, text=True)
+            if proc.returncode not in (0, 1):
+                proc.check_returncode()
+            names = set()
+            for line in proc.stdout.splitlines():
+                parts = line.split()
+                if parts:
+                    names.add(parts[0])
+            return names
+
+        enable_cache = list_units(check)
+        start_cache = enable_cache if start_check == check else list_units(start_check)
+
+        def missing(units, cache, mode):
+            missing_units = []
+            for unit in units:
+                if not unit:
+                    continue
+                if cache is not None:
+                    present = unit in cache
+                else:
+                    present = subprocess.run(['systemctl', '--user', f'is-{mode}', unit], env=env).returncode == 0
+                if not present:
+                    missing_units.append(unit)
+            return missing_units
+
+        if {{ 'True' if daemon_reload else 'False' }}:
+            run(['systemctl', '--user', 'daemon-reload'])
+
+        pending_enable = missing(enable_only, enable_cache, check)
+        pending_start = missing(start_units, start_cache, start_check)
+
+        for batch, args in ((pending_enable, ['enable']), (pending_start, ['enable', '--now'])):
+            if batch:
+                run(['systemctl', '--user', *args, *batch])
+        PY
 {%- endif %}
-{%- if daemon_reload %}
-        systemctl --user daemon-reload
-{%- endif %}
-{%- if svc_list %}
-        systemctl --user enable {{ svc_list | join(' ') }}
-{%- endif %}
-{%- if now_list %}
-        systemctl --user enable --now {{ now_list | join(' ') }}
-{%- endif %}
-{%- if multi_cmd %}
     - shell: /bin/bash
-{%- endif %}
     - runas: {{ user }}
     - env:
       - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
@@ -283,10 +341,6 @@
 {%- if onlyif %}
     - onlyif: {{ onlyif }}
 {%- endif %}
-    - unless: |
-{%- for unit in all_units %}
-        systemctl --user is-{{ check }} {{ unit }} 2>/dev/null{{ ' &&' if not loop.last else '' }}
-{%- endfor %}
 {%- if requires %}
     - require:
 {%- for req in requires %}

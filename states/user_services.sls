@@ -11,15 +11,30 @@
 {% set mail_enable = ['imapnotify-gmail.service'] %}
 {% set mail_timers = ['mbsync-gmail.timer'] %}
 {% set vdirsyncer_timers = ['vdirsyncer.timer'] %}
-{%- macro disable_user_service(state_id, units, guard_unit) -%}
+{%- macro disable_user_service(state_id, units) -%}
 {{ state_id }}:
   cmd.run:
-    - name: systemctl --user disable --now {{ units }} 2>/dev/null; true
+    - name: systemctl --user disable --now {{ units | join(' ') }} 2>/dev/null; true
     - runas: {{ user }}
     - env:
       - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
       - DBUS_SESSION_BUS_ADDRESS: unix:path={{ host.runtime_dir }}/bus
-    - onlyif: systemctl --user is-enabled {{ guard_unit }} 2>/dev/null
+    - onlyif: |
+        runuser -u {{ user }} -- python3 - <<'PY'
+        import os
+        import subprocess
+        import sys
+
+        units = {{ units | tojson }}
+        env = os.environ.copy()
+        env['XDG_RUNTIME_DIR'] = '{{ host.runtime_dir }}'
+        env['DBUS_SESSION_BUS_ADDRESS'] = 'unix:path={{ host.runtime_dir }}/bus'
+
+        for unit in units:
+            if unit and subprocess.run(['systemctl', '--user', 'is-enabled', unit], env=env).returncode == 0:
+                sys.exit(0)
+        sys.exit(1)
+        PY
 {%- endmacro -%}
 # --- Systemd user services for media ---
 # Drop-in override for mpDris2.service: adds MPD ordering
@@ -81,6 +96,7 @@ mail_directories:
 {% if not skip %}
 {{ user_service_file(unit.id, unit.filename) }}
 {%- do _unit_reqs.append('file: ' ~ unit.id) -%}
+{%- do _unit_reqs.append('cmd: ' ~ unit.id ~ '_daemon_reload') -%}
 {% endif %}
 {% endfor %}
 
@@ -101,12 +117,12 @@ mail_directories:
 {%- endfor -%}
 
 # --- Enable user services: single daemon-reload + batch enable ---
-{{ user_service_enable('enable_user_services', filtered_services, start_now=filtered_timers, daemon_reload=True, requires=_unit_reqs) }}
+{{ user_service_enable('enable_user_services', filtered_services, start_now=filtered_timers, requires=_unit_reqs) }}
 
 # --- Disable services for disabled features ---
 {% if not svc.mail %}
-{{ disable_user_service('disable_mail_services', 'mbsync-gmail.timer imapnotify-gmail.service', 'mbsync-gmail.timer') }}
+{{ disable_user_service('disable_mail_services', ['mbsync-gmail.timer', 'imapnotify-gmail.service']) }}
 {% endif %}
 {% if not svc.vdirsyncer %}
-{{ disable_user_service('disable_vdirsyncer_services', 'vdirsyncer.timer', 'vdirsyncer.timer') }}
+{{ disable_user_service('disable_vdirsyncer_services', ['vdirsyncer.timer']) }}
 {% endif %}
