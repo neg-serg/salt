@@ -1,0 +1,84 @@
+@define-color foreground rgba(45, 62, 79, 0.95);       /* dark text */
+@define-color background rgba(235, 240, 245, 0.60);    /* cold light bg */
+@define-color color1 #0055A0;                           /* primary blue */
+@define-color select rgba(200, 212, 226, 0.85);         /* light selection */
+
+/* reset */
+#window,
+#box,
+#aiScroll,
+#aiList,
+#search,
+#password,
+#input,
+#prompt,
+#clear,
+#typeahead,
+#list,
+child,
+scrollbar,
+slider,
+#item,
+#text,
+#label,
+#bar,
+#sub,
+#activationlabel {
+  all: unset;
+}
+
+#window { color: @foreground; }
+
+#box {
+  background: @background;
+  border-radius: 4px;
+  padding: 12px;               /* compact */
+  border: 1px solid alpha(@color1, 0.30);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.10), 0 8px 8px rgba(0,0,0,0.06);
+}
+
+#search {
+  background: alpha(@background, 0.9);
+  padding: 6px;                /* compact */
+  border-radius: 3px;
+}
+
+#prompt {
+  margin-left: 6px;
+  margin-right: 8px;
+  color: @color1;
+  opacity: 0.9;
+}
+
+#clear { color: @foreground; opacity: 0.8; }
+
+#input { background: none; }
+
+#typeahead { color: @foreground; opacity: 0.65; }
+
+#input placeholder { opacity: 0.5; }
+
+#list { }
+
+child {
+  padding: 6px 10px;           /* compact */
+  border-radius: 4px;
+}
+
+child:selected,
+child:hover {
+  background: @select;
+}
+
+#icon { margin-right: 8px; }
+
+#label { font-weight: 500; }
+
+#value { opacity: 0.75; }
+
+/* tiny, unobtrusive scrollbars */
+scrollbar slider { background: alpha(@foreground, 0.15); border-radius: 1px; }
+scrollbar { background: alpha(@foreground, 0.04); border-radius: 1px; }
+
+/* font – mirror rofi "Iosevka Medium 14" */
+* { font-family: "Iosevka"; font-weight: 500; font-size: 14px; }
