@@ -1,0 +1,43 @@
+# Synthetic hosts used for feature-matrix rendering/linting.
+# Each entry overlay is merged with defaults from states/data/hosts.yaml.
+# `name` must be a valid hostname value — referenced via grains['host'].
+
+- name: matrix-monitoring
+  description: Full monitoring stack (Loki/Promtail/Grafana)
+  overrides:
+    hostname: matrix-monitoring
+    features:
+      monitoring:
+        loki: true
+        promtail: true
+        grafana: true
+
+- name: matrix-services
+  description: Home-server services (DNS + Samba/Jellyfin/DuckDNS/Transmission)
+  overrides:
+    hostname: matrix-services
+    features:
+      dns:
+        unbound: true
+        adguardhome: true
+      services:
+        samba: true
+        jellyfin: true
+        duckdns: true
+        transmission: true
+
+- name: matrix-laptop-wifi
+  description: Laptop profile with WiFi and no heavy services
+  overrides:
+    hostname: matrix-laptop-wifi
+    is_laptop: true
+    cpu_vendor: intel
+    kvm_module: kvm_intel
+    display: 2560x1600@165
+    primary_output: eDP-1
+    features:
+      network:
+        wifi: true
+      steam: false
+      ollama: false
+      llama_embed: false

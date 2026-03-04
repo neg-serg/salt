@@ -1,0 +1,85 @@
+defaults:
+  user: neg
+  home: /home/neg
+  uid: 1000
+  mnt_zero: /mnt/zero
+  mnt_one: /mnt/one
+  is_laptop: false
+  cursor_theme: Alkano-aio
+  cursor_size: 23
+  cpu_vendor: amd
+  kvm_module: kvm_amd
+  display: ""
+  primary_output: ""
+  greetd_vt: 1
+  greetd_scale: 1
+  timezone: Europe/Moscow
+  locale: en_US.UTF-8
+  floorp_profile: ""
+  hostname: "{{ grains['host'] }}"
+  extra_kargs: []
+  extra_modules: []
+  features:
+    monitoring:
+      sysstat: true
+      vnstat: true
+      netdata: true
+      loki: false
+      promtail: false
+      grafana: false
+    fancontrol: false
+    kernel:
+      variant: lto
+    dns:
+      unbound: false
+      adguardhome: false
+      avahi: true
+    services:
+      samba: false
+      jellyfin: false
+      bitcoind: false
+      duckdns: false
+      transmission: false
+    network:
+      vm_bridge: false
+      xray: false
+      singbox: false
+      wifi: false
+    user_services:
+      mail: true
+      vdirsyncer: true
+    amnezia: true
+    steam: true
+    mpd: true
+    ollama: true
+    llama_embed: true
+    floorp: true
+    kanata: true
+    flatpak: true
+    music_analysis: false
+
+hosts:
+  telfir:
+    display: 3840x2160@240
+    primary_output: DP-2
+    greetd_scale: 2
+    floorp_profile: c85pjaxk.default-default
+    hostname: telfir
+    extra_modules:
+      - ec_sys
+      - asus_ec_sensors
+    features:
+      fancontrol: true
+      monitoring:
+        loki: true
+        promtail: true
+        grafana: true
+      services:
+        transmission: true
+      user_services:
+        mail: false
+        vdirsyncer: false
+      music_analysis: true
+
+aliases:
+  cachyos: telfir

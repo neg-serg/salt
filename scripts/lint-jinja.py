@@ -2,7 +2,6 @@
 """Lint Salt state files: Jinja2 syntax, YAML validity, duplicate state IDs,
 naming conventions, unused imports, require resolution, dangling includes."""
 
-import ast
 import collections
 import getpass
 import glob
@@ -88,6 +87,10 @@ class _MockSalt:
     def __getitem__(self, key):
         if key == "slsutil.merge":
             return self._merge
+        if key == "cmd.run_all":
+            return lambda *a, **kw: {"retcode": 1, "stdout": ""}
+        if key == "cmd.run_stdout":
+            return lambda *a, **kw: ""
         return lambda *a, **kw: ""
 
     @staticmethod
@@ -107,30 +110,41 @@ def _fallback_host():
     return {"user": user, "home": home, "pkg_list": "/var/cache/salt/pacman_installed.txt"}
 
 
+_HOSTS_YAML_PATH = os.path.join("states", "data", "hosts.yaml")
+_GRAINS_HOSTNAME_SENTINEL = "{{ grains['host'] }}"
+
+
+def _load_hosts_yaml():
+    """Load states/data/hosts.yaml (defaults, host overrides, aliases)."""
+    try:
+        with open(_HOSTS_YAML_PATH) as fh:
+            data = yaml.safe_load(fh) or {}
+    except FileNotFoundError:
+        return {}
+    except yaml.YAMLError:
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    return data
+
+
 def _build_lint_host():
     """Build a synthetic host config with all features enabled for linting.
 
-    Parses defaults from host_config.jinja, enables all feature flags, and
+    Loads defaults from states/data/hosts.yaml, enables all feature flags, and
     adds derived fields.  This is needed because macros in _macros_pkg.jinja
     and _macros_service.jinja reference ``host`` directly (not via import).
     """
-    try:
-        with open("states/host_config.jinja") as fh:
-            source = fh.read()
-    except FileNotFoundError:
-        return _fallback_host()
-    defaults_src = _extract_dict_literal(source, "defaults")
-    if not defaults_src:
-        return _fallback_host()
-    defaults_src = re.sub(r"grains\[.*?\]", "'lint-check'", defaults_src)
-    try:
-        defaults = ast.literal_eval(defaults_src)
-    except (ValueError, SyntaxError):
+    data = _load_hosts_yaml()
+    defaults = data.get("defaults")
+    if not isinstance(defaults, dict):
         return _fallback_host()
     host = _enable_all_features(defaults)
+    host = _recursive_merge(host, {})
     host["runtime_dir"] = f"/run/user/{host['uid']}"
     host["pkg_list"] = "/var/cache/salt/pacman_installed.txt"
     host["project_dir"] = host["home"] + "/src/salt"
+    host["hostname"] = "lint-check"
     return host
 
 
@@ -234,23 +248,6 @@ def check_state_id_naming(sls_files, rendered_ids):
     return errors
 
 
-def _extract_dict_literal(source, var_name):
-    """Extract a dict literal from {% set var_name = {...} %}."""
-    m = re.search(rf"\{{%-?\s*set\s+{var_name}\s*=\s*", source)
-    if not m:
-        return None
-    start = source.index("{", m.end())
-    depth = 0
-    for i in range(start, len(source)):
-        if source[i] == "{":
-            depth += 1
-        elif source[i] == "}":
-            depth -= 1
-            if depth == 0:
-                return source[start : i + 1]
-    return None
-
-
 def _recursive_merge(base, override):
     """Recursive dict merge mimicking slsutil.merge(strategy='recurse')."""
     result = base.copy()
@@ -281,35 +278,20 @@ _DISPLAY_RE = re.compile(r"^\d+x\d+@\d+$")
 
 
 def check_host_config():
-    """Validate host_config.jinja: field types, allowed values, unknown keys."""
-    try:
-        with open("states/host_config.jinja") as fh:
-            source = fh.read()
-    except FileNotFoundError:
+    """Validate host configuration YAML: field types, allowed values, unknown keys."""
+    data = _load_hosts_yaml()
+    defaults = data.get("defaults")
+    hosts = data.get("hosts", {})
+    if not isinstance(defaults, dict):
         return 0
-
-    defaults_src = _extract_dict_literal(source, "defaults")
-    hosts_src = _extract_dict_literal(source, "hosts")
-    if not defaults_src or not hosts_src:
-        print("\033[31mHost config: cannot locate defaults/hosts dicts\033[0m")
-        return 1
-
-    # Replace non-literal expressions so ast.literal_eval works
-    defaults_src = re.sub(r"grains\[.*?\]", "'__grains__'", defaults_src)
-
-    try:
-        defaults = ast.literal_eval(defaults_src)
-    except (ValueError, SyntaxError) as e:
-        print(f"\033[31mHost config: cannot parse defaults: {e}\033[0m")
-        return 1
-    try:
-        hosts = ast.literal_eval(hosts_src)
-    except (ValueError, SyntaxError) as e:
-        print(f"\033[31mHost config: cannot parse hosts: {e}\033[0m")
-        return 1
 
     errors = 0
     for hostname, config in hosts.items():
+        if not isinstance(config, dict):
+            msg = type(config).__name__
+            print(f"\033[31mHost config: '{hostname}': expected mapping, got {msg}\033[0m")
+            errors += 1
+            continue
         merged = _recursive_merge(defaults, config)
 
         # Unknown keys (typo protection)
@@ -345,7 +327,7 @@ def check_host_config():
 
         # hostname field should match dict key
         h = merged.get("hostname")
-        if h not in (hostname, "__grains__"):
+        if h not in (hostname, "__grains__", _GRAINS_HOSTNAME_SENTINEL):
             print(
                 f"\033[31mHost config: '{hostname}':"
                 f" hostname field '{h}' doesn't match dict key\033[0m"

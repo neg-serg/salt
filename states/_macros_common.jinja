@@ -3,7 +3,7 @@
     Usage (macros):  {% from '_macros_common.jinja' import user as _user, home as _home, ... %}
     Usage (states):  {% from '_imports.jinja' import host, user, home, ... %}
 -#}
-{%- import 'host_config.jinja' as _hc -%}
+{%- import 'host_config.jinja' as _hc with context -%}
 {%- set host = _hc.host -%}
 {%- set user = host.user -%}
 {%- set home = host.home -%}
