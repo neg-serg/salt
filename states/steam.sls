@@ -1,11 +1,13 @@
 {% from '_imports.jinja' import host, user, home, pkg_list, retry_attempts, retry_interval %}
 {% from '_macros_service.jinja' import ensure_dir %}
 {% from '_macros_pkg.jinja' import pacman_install %}
+{% from '_macros_install.jinja' import curl_extract_7z %}
 {% import_yaml 'data/versions.yaml' as ver %}
 # Steam + gaming tools (native pacman install)
 # Requires multilib repo for lib32 dependencies;
 # --ask 4 resolves CachyOS lib32-mesa-git vs multilib lib32-mesa conflict.
 {% if host.features.steam %}
+{% set modern_skin_version = ver.get('modern_steam', '') %}
 
 multilib_repo:
   cmd.run:
@@ -46,25 +48,7 @@ steam_pkg:
 
 {{ pacman_install('p7zip', '7zip') }}
 
-modern_steam_skin:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        _td=$(mktemp -d)
-        trap 'rm -rf "$_td"' EXIT
-        curl -fsSL https://github.com/SleepDaemon/Modern-Steam/releases/download/v{{ ver.get('modern_steam', '') }}/SteamDarkMode.7z -o "$_td/SteamDarkMode.7z"
-        7z x -aoa "$_td/SteamDarkMode.7z" -o{{ home }}/.local/share/Steam/skins/
-    - runas: {{ user }}
-    - shell: /bin/bash
-    - timeout: 600
-    - creates: {{ home }}/.local/share/Steam/skins/steamui
-    - retry:
-        attempts: {{ retry_attempts }}
-        interval: {{ retry_interval }}
-    - parallel: True
-    - require:
-      - cmd: install_p7zip
-      - file: steam_skins_dir
+{{ curl_extract_7z('modern_steam_skin', 'https://github.com/SleepDaemon/Modern-Steam/releases/download/v' ~ modern_skin_version ~ '/SteamDarkMode.7z', home ~ '/.local/share/Steam/skins', creates=home ~ '/.local/share/Steam/skins/steamui', version=modern_skin_version if modern_skin_version else None, user=user, require=['cmd: install_p7zip', 'file: steam_skins_dir']) }}
 
 dxvk_resolution_fix:
   cmd.script:
