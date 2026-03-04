@@ -191,7 +191,7 @@ Local proxy for AI coding tools (Claude Code, OpenCode). Routes requests to prov
 | Component | Path / Detail |
 |---|---|
 | Binary | `~/.local/bin/proxypilot` (downloaded via `curl_bin` macro) |
-| Config (chezmoi) | `dotfiles/private_dot_config/proxypilot/config.yaml.tmpl` |
+| Config (chezmoi) | `dotfiles/dot_config/proxypilot/config.yaml.tmpl` |
 | Service | `states/units/user/proxypilot.service` (systemd user, always enabled) |
 | Listen | `127.0.0.1:8317` |
 | Auth tokens | `~/.cli-proxy-api/` (OAuth tokens for Gemini, Antigravity) |
