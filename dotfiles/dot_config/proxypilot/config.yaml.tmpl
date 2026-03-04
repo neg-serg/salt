@@ -89,6 +89,24 @@ oauth-model-alias:
     - name: "gemini-2.5-flash-lite"
       alias: "haiku"
       fork: true
+  codex:
+    # OpenCode/Codex CLI use OpenAI-style prefixes (openai/*).
+    # Map them to the upstream Codex model IDs so ProxyPilot routes correctly.
+    - name: "gpt-5-codex"
+      alias: "openai/gpt-5-codex"
+      fork: true
+    - name: "gpt-5.2"
+      alias: "openai/gpt-5.2"
+      fork: true
+    - name: "gpt-5.2-codex"
+      alias: "openai/gpt-5.2-codex"
+      fork: true
+    - name: "gpt-5.3-codex"
+      alias: "openai/gpt-5.3-codex"
+      fork: true
+    - name: "gpt-5.3-codex-spark"
+      alias: "openai/gpt-5.3-codex-spark"
+      fork: true
 
 # ── Payload rules ───────────────────────────────────────────────────
 # Default thinking budget for Gemini models (when not set by client)
