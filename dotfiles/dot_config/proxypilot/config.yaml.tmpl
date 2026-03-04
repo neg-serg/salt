@@ -95,6 +95,13 @@ oauth-model-alias:
 
 payload:
   default:
+    # OpenCode sends reasoning.effort=minimal for title generation.
+    # Proxy backend supports only low|medium|high, so normalize it.
+    - models:
+        - name: "gpt-5*"
+          protocol: "openai"
+      params:
+        "reasoning.effort": "low"
     - models:
         - name: "gemini-*"
           protocol: "gemini"
