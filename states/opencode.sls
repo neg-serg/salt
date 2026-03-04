@@ -2,7 +2,8 @@
 {% from '_macros_pkg.jinja' import npm_pkg %}
 {% from '_macros_service.jinja' import ensure_dir %}
 {% set _proxypilot_cfg = home ~ '/.config/proxypilot/config.yaml' %}
-{% set _gopass_key = salt['cmd.run_stdout']('gopass show -o api/proxypilot-local 2>/dev/null || true', runas=user).strip() %}
+{% set _gopass_cmd = salt['cmd.run_all']('gopass show -o api/proxypilot-local 2>/dev/null', runas=user, python_shell=True) %}
+{% set _gopass_key = _gopass_cmd['stdout'].strip() if _gopass_cmd.get('retcode', 1) == 0 else '' %}
 {% set _file_key = salt['cmd.run_stdout']("awk '/^api-keys:/{getline; sub(/^[[:space:]]*-[[:space:]]*\"?/, \"\"); sub(/\"?[[:space:]]*$/, \"\"); print; exit}' " ~ _proxypilot_cfg ~ " 2>/dev/null || true", runas=user).strip() %}
 {% set _codex_api_key = _gopass_key or _file_key %}
 
