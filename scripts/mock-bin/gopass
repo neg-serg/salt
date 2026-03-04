@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+# Minimal gopass mock for CI/testing. Supports: gopass show [-o] secret/path
+
+set -euo pipefail
+
+usage() {
+    cat <<'EOF'
+mock-gopass supports:
+  gopass show [-o|--password] <path>
+Overrides:
+  MOCK_GOPASS_DEFAULT   Default value (default: mock-secret)
+  MOCK_GOPASS_SECRETS   Comma-separated key=value pairs
+  MOCK_GOPASS_FILE      File with key=value per line
+EOF
+}
+
+declare -A MOCK_SECRETS
+
+if [[ -n "${MOCK_GOPASS_FILE:-}" && -f "${MOCK_GOPASS_FILE}" ]]; then
+    while IFS='=' read -r key value; do
+        [[ -z "$key" || "$key" =~ ^# ]] && continue
+        MOCK_SECRETS["$key"]="$value"
+    done <"${MOCK_GOPASS_FILE}"
+fi
+
+if [[ -n "${MOCK_GOPASS_SECRETS:-}" ]]; then
+    IFS=',' read -ra pairs <<<"${MOCK_GOPASS_SECRETS}"
+    for pair in "${pairs[@]}"; do
+        key=${pair%%=*}
+        value=${pair#*=}
+        [[ -z "$key" ]] && continue
+        MOCK_SECRETS["$key"]="$value"
+    done
+fi
+
+default_value=${MOCK_GOPASS_DEFAULT:-mock-secret}
+
+lookup_secret() {
+    local path=$1
+    if [[ -n "${MOCK_SECRETS[$path]:-}" ]]; then
+        printf '%s\n' "${MOCK_SECRETS[$path]}"
+    else
+        printf '%s\n' "$default_value"
+    fi
+}
+
+command=${1:-}
+if [[ -z "$command" ]]; then
+    usage >&2
+    exit 1
+fi
+shift
+
+case "$command" in
+    show)
+        while [[ $# -gt 0 && $1 == -* ]]; do
+            case "$1" in
+                -o|--password|-q|--quiet)
+                    shift
+                    ;;
+                *)
+                    shift
+                    ;;
+            esac
+        done
+        secret_path=${1:-}
+        if [[ -z "$secret_path" ]]; then
+            echo "mock-gopass: missing secret path" >&2
+            exit 1
+        fi
+        lookup_secret "$secret_path"
+        ;;
+    --help|-h)
+        usage
+        ;;
+    *)
+        echo "mock-gopass: unsupported command '$command'" >&2
+        exit 0
+        ;;
+esac

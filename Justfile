@@ -19,6 +19,10 @@ help:
 test STATE="system_description":
     scripts/salt-apply.sh {{STATE}} --test
 
+# Run CachyOS VM smoke test inside Podman
+vm-smoke ROOTFS="/mnt/one/cachyos-root":
+    sudo scripts/vm-smoke.sh {{ROOTFS}}
+
 # Start the salt daemon (keeps running, speeds up subsequent applies)
 daemon:
     sudo scripts/salt-daemon.py \
@@ -122,3 +126,29 @@ daemon-health:
 # Remove generated runtime files (venv and salt runtime config)
 clean:
     rm -rf __pycache__ .salt_runtime .venv
+
+# Render all states for every feature-matrix scenario (template smoke test)
+render-matrix:
+    python3 scripts/render-matrix.py
+
+# Profile Salt state durations from the latest log (or provided LOG)
+profile LOG="":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    log="{{LOG}}"
+    if [ -z "$log" ]; then
+        log=$(ls -t logs/*.log 2>/dev/null | head -1)
+    fi
+    if [ -z "$log" ]; then
+        echo "No logs found" >&2
+        exit 1
+    fi
+    python3 scripts/state-profiler.py "$log"
+
+# Prune log files older than N days (default 14)
+logs-prune DAYS="14" DRY_RUN="":
+    if [ "{{DRY_RUN}}" = "1" ]; then \
+        python3 scripts/cleanup-logs.py --days {{DAYS}} --dry-run; \
+    else \
+        python3 scripts/cleanup-logs.py --days {{DAYS}}; \
+    fi
