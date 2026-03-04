@@ -394,10 +394,13 @@ install_{{ name | replace('-', '_') }}:
 {%- endmacro -%}
 
 {# Download a single file via curl and install to destination with optional mode.
+   Supports sha256 hash verification, cached downloads, and version markers to trigger updates.
    Creates parent directories automatically via install -D and honors retry/parallel.
    Usage: {{ http_file('mpv_script_stats', 'https://example/script.lua', home ~ '/.config/mpv/scripts/stats.lua', require=['file: mpv_scripts_dir']) }}
+          {{ http_file('qmk_rules', 'https://.../50-qmk.rules', '/etc/udev/rules.d/50-qmk.rules', user=None, hash='sha256:...') }}
 #}
-{%- macro http_file(name, url, dest, mode='0644', user=_user, creates=None, require=None, parallel=True) -%}
+{%- macro http_file(name, url, dest, mode='0644', user=_user, creates=None, require=None, parallel=True, hash=None, version=None) -%}
+{%- set _vd = _ver_dir if user else _sys_ver_dir -%}
 {{ name }}:
   cmd.run:
     - name: |
@@ -407,12 +410,27 @@ install_{{ name | replace('-', '_') }}:
         cache="$cache_dir/{{ name }}"
         if [ ! -f "$cache" ]; then
           curl -fsSL '{{ url }}' -o "$cache.tmp"
+{%- if hash %}
+          echo '{{ hash }}  '"$cache.tmp" | sha256sum -c --strict
+{%- endif %}
           mv -f "$cache.tmp" "$cache"
         fi
+{%- if hash and not version %}
+        echo '{{ hash }}  '"$cache" | sha256sum -c --strict
+{%- endif %}
         install -m {{ mode }} -D "$cache" '{{ dest }}'
+{%- if version %}
+        mkdir -p {{ _vd }} && echo '{{ version }}' > {{ _vd }}/{{ name }}
+{%- endif %}
+{%- if user %}
     - runas: {{ user }}
+{%- endif %}
     - shell: /bin/bash
+{%- if version %}
+    - unless: test -f '{{ dest }}' && test -f {{ _vd }}/{{ name }} && rg -qx '{{ version }}' {{ _vd }}/{{ name }}
+{%- else %}
     - creates: {{ creates or dest }}
+{%- endif %}
 {%- if parallel %}
     - parallel: True
 {%- endif %}

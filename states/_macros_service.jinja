@@ -349,6 +349,63 @@
 {%- endif %}
 {%- endmacro -%}
 
+{# Restart a systemd user service with proper environment wiring.
+   Usage: {{ user_service_restart('restart_proxypilot', 'proxypilot.service', onlyif='systemctl --user is-active proxypilot.service >/dev/null 2>&1', requires=['file: proxypilot_config']) }}
+#}
+{%- macro user_service_restart(name, service, onlyif=None, requires=None, onchanges=None, user=_user) -%}
+{{ name }}:
+  cmd.run:
+    - name: systemctl --user restart {{ service }}
+    - runas: {{ user }}
+    - env:
+      - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
+      - DBUS_SESSION_BUS_ADDRESS: unix:path={{ host.runtime_dir }}/bus
+{%- if onlyif %}
+    - onlyif: {{ onlyif }}
+{%- endif %}
+{%- if requires %}
+    - require:
+{%- for req in requires %}
+      - {{ req }}
+{%- endfor %}
+{%- endif %}
+{%- if onchanges %}
+    - onchanges:
+{%- for change in onchanges %}
+      - {{ change }}
+{%- endfor %}
+{%- endif %}
+{%- endmacro -%}
+
+{# Disable (and stop) systemd user services only when currently enabled.
+   Usage: {{ user_service_disable('disable_mail_services', ['mbsync-gmail.timer', 'imapnotify-gmail.service']) }}
+#}
+{%- macro user_service_disable(name, units, user=_user) -%}
+{{ name }}:
+  cmd.run:
+    - name: systemctl --user disable --now {{ units | join(' ') }} 2>/dev/null || true
+    - runas: {{ user }}
+    - env:
+      - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
+      - DBUS_SESSION_BUS_ADDRESS: unix:path={{ host.runtime_dir }}/bus
+    - onlyif: |
+        runuser -u {{ user }} -- python3 - <<'PY'
+        import os
+        import subprocess
+        import sys
+
+        units = {{ units | tojson }}
+        env = os.environ.copy()
+        env['XDG_RUNTIME_DIR'] = '{{ host.runtime_dir }}'
+        env['DBUS_SESSION_BUS_ADDRESS'] = 'unix:path={{ host.runtime_dir }}/bus'
+
+        for unit in units:
+            if unit and subprocess.run(['systemctl', '--user', 'is-enabled', unit], env=env).returncode == 0:
+                sys.exit(0)
+        sys.exit(1)
+        PY
+{%- endmacro -%}
+
 {# Deploy systemd unit file + manage service (file + daemon-reload + enable/disable + optional running).
    unit_type: 'service' (default) | 'timer' | 'socket' | etc.
    running: True (default False) to add reset_failed + service.running with watch for auto-restart.
