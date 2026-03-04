@@ -1,7 +1,10 @@
-{% from '_imports.jinja' import host, user, home, retry_attempts, retry_interval %}
+{% from '_imports.jinja' import host, user, home %}
 {% from '_macros_pkg.jinja' import npm_pkg %}
+{% from '_macros_service.jinja' import ensure_dir %}
 # OpenCode AI coding agent: TUI config + neg custom theme
 # Codex CLI (OpenAI): routed through ProxyPilot
+
+{{ ensure_dir('opencode_config_dir', home ~ '/.config/opencode') }}
 
 opencode_config:
   file.recurse:
@@ -10,6 +13,8 @@ opencode_config:
     - user: {{ user }}
     - group: {{ user }}
     - makedirs: True
+
+{{ ensure_dir('proxypilot_config_dir', home ~ '/.config/proxypilot', mode='0700') }}
 
 proxypilot_config:
   file.managed:
@@ -20,6 +25,8 @@ proxypilot_config:
     - group: {{ user }}
     - mode: '0600'
     - makedirs: True
+
+{{ ensure_dir('codex_config_dir', home ~ '/.codex', mode='0700') }}
 
 codex_config:
   file.recurse:
