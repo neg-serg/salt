@@ -95,3 +95,6 @@ jobs:
         env:
           SALT_LOG_FILE: /tmp/salt-ci.log
         run: just test
+
+      - name: Render feature matrix templates
+        run: .venv/bin/python3 scripts/render-matrix.py
