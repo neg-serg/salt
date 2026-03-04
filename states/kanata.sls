@@ -3,7 +3,6 @@
 {% from '_macros_service.jinja' import udev_rule, ensure_dir, user_service_file, user_service_enable %}
 # Kanata: software keyboard remapper (uinput-based)
 {% if host.features.kanata %}
-
 # --- Install kanata binary from GitHub release ---
 # Binary inside the zip is named kanata_linux_x64, not kanata
 {{ curl_extract_zip('kanata', 'https://github.com/jtroo/kanata/releases/latest/download/linux-binaries-x64.zip', 'kanata_linux_x64', bin='kanata', chmod=True) }}
@@ -40,7 +39,6 @@ kanata_user_groups:
 
 # --- Config ---
 {{ ensure_dir('kanata_config_dir', home ~ '/.config/kanata') }}
-
 kanata_config:
   file.managed:
     - name: {{ home }}/.config/kanata/config.kbd
@@ -54,6 +52,5 @@ kanata_config:
 
 # --- Systemd user service ---
 {{ user_service_file('kanata_service', 'kanata.service') }}
-
 {{ user_service_enable('kanata_enabled', ['kanata.service'], daemon_reload=True, requires=['cmd: install_kanata', 'file: kanata_config', 'file: kanata_service', 'cmd: kanata_user_groups', 'kmod: kanata_load_uinput']) }}
 {% endif %}

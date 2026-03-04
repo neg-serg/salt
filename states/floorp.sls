@@ -4,48 +4,25 @@
 # Floorp browser: user.js + userChrome.css + userContent.css + extensions
 {% if host.features.floorp %}
 {% import_yaml 'data/floorp.yaml' as floorp %}
-
 {% set floorp_profile = home ~ '/.floorp/' ~ host.floorp_profile %}
-
-floorp_user_js:
+{%- macro floorp_profile_file(state_id, relpath, source) -%}
+{{ state_id }}:
   file.managed:
-    - name: {{ floorp_profile }}/user.js
-    - source: salt://dotfiles/dot_config/floorp/user.js
+    - name: {{ floorp_profile }}/{{ relpath }}
+    - source: {{ source }}
     - user: {{ user }}
     - group: {{ user }}
     - makedirs: True
-
-floorp_userchrome:
-  file.managed:
-    - name: {{ floorp_profile }}/chrome/userChrome.css
-    - source: salt://dotfiles/dot_config/floorp/userChrome.css
-    - user: {{ user }}
-    - group: {{ user }}
-    - makedirs: True
-
-floorp_usercontent:
-  file.managed:
-    - name: {{ floorp_profile }}/chrome/userContent.css
-    - source: salt://dotfiles/dot_config/floorp/userContent.css
-    - user: {{ user }}
-    - group: {{ user }}
-    - makedirs: True
-
-floorp_custom_userchrome:
-  file.managed:
-    - name: {{ floorp_profile }}/chrome/custom/userChrome.css
-    - source: salt://dotfiles/dot_config/floorp/custom/userChrome.css
-    - user: {{ user }}
-    - group: {{ user }}
-    - makedirs: True
-
-floorp_custom_usercontent:
-  file.managed:
-    - name: {{ floorp_profile }}/chrome/custom/userContent.css
-    - source: salt://dotfiles/dot_config/floorp/custom/userContent.css
-    - user: {{ user }}
-    - group: {{ user }}
-    - makedirs: True
+{%- endmacro -%}
+{% for state_id, relpath, source in [
+  ('floorp_user_js', 'user.js', 'salt://dotfiles/dot_config/floorp/user.js'),
+  ('floorp_userchrome', 'chrome/userChrome.css', 'salt://dotfiles/dot_config/floorp/userChrome.css'),
+  ('floorp_usercontent', 'chrome/userContent.css', 'salt://dotfiles/dot_config/floorp/userContent.css'),
+  ('floorp_custom_userchrome', 'chrome/custom/userChrome.css', 'salt://dotfiles/dot_config/floorp/custom/userChrome.css'),
+  ('floorp_custom_usercontent', 'chrome/custom/userContent.css', 'salt://dotfiles/dot_config/floorp/custom/userContent.css'),
+] %}
+{{ floorp_profile_file(state_id, relpath, source) }}
+{% endfor %}
 
 {{ git_clone_deploy('neptune_theme', 'https://github.com/yiiyahui/Neptune-Firefox.git', floorp_profile ~ '/chrome', items=['chrome/neptune'], creates=floorp_profile ~ '/chrome/neptune/theme/main.css') }}
 
