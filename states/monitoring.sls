@@ -84,7 +84,7 @@ promtail_config:
 
 # --- Grafana: dashboard with Loki datasource ---
 {% if mon.grafana %}
-{{ simple_service('grafana', 'grafana', service='grafana-server', requires=['file: grafana_config', 'file: grafana_loki_datasource']) }}
+{{ simple_service('grafana', 'grafana', service='grafana', requires=['file: grafana_config', 'file: grafana_loki_datasource']) }}
 
 grafana_config_dir:
   file.directory:
@@ -112,16 +112,13 @@ grafana_loki_datasource:
 
 grafana_config:
   file.managed:
-    - name: /etc/grafana/grafana.ini
-    - makedirs: True
+    - name: /etc/grafana.ini
     - mode: '0640'
     - source: salt://configs/grafana.ini.j2
     - template: jinja
     - context:
         hostname: {{ host.hostname }}
         grafana_port: {{ service_ports.grafana.port }}
-    - require:
-      - file: grafana_config_dir
 
 grafana_dashboards_provider_dir:
   file.directory:
@@ -153,7 +150,7 @@ grafana_proxypilot_dashboard:
     - require:
       - file: grafana_dashboards_json_dir
 
-{{ ensure_running('grafana', service='grafana-server', watch=['file: grafana_config', 'file: grafana_loki_datasource', 'file: grafana_dashboards_provider', 'file: grafana_proxypilot_dashboard']) }}
+{{ ensure_running('grafana', service='grafana', watch=['file: grafana_config', 'file: grafana_loki_datasource', 'file: grafana_dashboards_provider', 'file: grafana_proxypilot_dashboard']) }}
 
-{{ service_with_healthcheck('grafana_start', 'grafana-server', 'curl -sf http://127.0.0.1:' ~ service_ports.grafana.port ~ service_ports.grafana.healthcheck ~ ' >/dev/null 2>&1', requires=['service: grafana_enabled']) }}
+{{ service_with_healthcheck('grafana_start', 'grafana', 'curl -sf http://127.0.0.1:' ~ service_ports.grafana.port ~ service_ports.grafana.healthcheck ~ ' >/dev/null 2>&1', requires=['service: grafana_enabled']) }}
 {% endif %}
