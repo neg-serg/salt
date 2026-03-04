@@ -113,7 +113,35 @@ grafana_config:
         hostname: {{ host.hostname }}
         grafana_port: {{ service_ports.grafana.port }}
 
-{{ ensure_running('grafana', service='grafana-server', watch=['file: grafana_config', 'file: grafana_loki_datasource']) }}
+grafana_dashboards_provider_dir:
+  file.directory:
+    - name: /etc/grafana/provisioning/dashboards
+    - makedirs: True
+
+grafana_dashboards_json_dir:
+  file.directory:
+    - name: /etc/grafana/provisioning/dashboards/json
+    - makedirs: True
+    - require:
+      - file: grafana_dashboards_provider_dir
+
+grafana_dashboards_provider:
+  file.managed:
+    - name: /etc/grafana/provisioning/dashboards/dashboards.yaml
+    - mode: '0644'
+    - source: salt://configs/grafana-dashboards-provider.yaml
+    - require:
+      - file: grafana_dashboards_provider_dir
+
+grafana_proxypilot_dashboard:
+  file.managed:
+    - name: /etc/grafana/provisioning/dashboards/json/proxypilot.json
+    - mode: '0644'
+    - source: salt://configs/grafana-dashboard-proxypilot.json
+    - require:
+      - file: grafana_dashboards_json_dir
+
+{{ ensure_running('grafana', service='grafana-server', watch=['file: grafana_config', 'file: grafana_loki_datasource', 'file: grafana_dashboards_provider', 'file: grafana_proxypilot_dashboard']) }}
 
 {{ service_with_healthcheck('grafana_start', 'grafana-server', 'curl -sf http://127.0.0.1:' ~ service_ports.grafana.port ~ service_ports.grafana.healthcheck ~ ' >/dev/null 2>&1', requires=['service: grafana_enabled']) }}
 {% endif %}

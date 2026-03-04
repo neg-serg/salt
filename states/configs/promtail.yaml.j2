@@ -16,6 +16,10 @@ scrape_configs:
     relabel_configs:
       - source_labels: ["__journal__systemd_unit"]
         target_label: unit
+      - source_labels: ["__journal__systemd_user_unit"]
+        target_label: user_unit
+      - source_labels: ["__journal_syslog_identifier"]
+        target_label: syslog_identifier
       - source_labels: ["__journal_priority"]
         target_label: priority
       - source_labels: ["__journal__hostname"]

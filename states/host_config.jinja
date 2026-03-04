@@ -88,6 +88,11 @@
         'extra_modules':  ['ec_sys', 'asus_ec_sensors'],
         'features': {
             'fancontrol':   True,
+            'monitoring': {
+                'loki':     True,
+                'promtail': True,
+                'grafana':  True,
+            },
             'services': {
                 'transmission': True,
             },
