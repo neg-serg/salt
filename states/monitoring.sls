@@ -86,10 +86,17 @@ promtail_config:
 {% if mon.grafana %}
 {{ simple_service('grafana', 'grafana', service='grafana-server', requires=['file: grafana_config', 'file: grafana_loki_datasource']) }}
 
+grafana_config_dir:
+  file.directory:
+    - name: /etc/grafana
+    - makedirs: True
+
 grafana_provisioning_dir:
   file.directory:
     - name: /etc/grafana/provisioning/datasources
     - makedirs: True
+    - require:
+      - file: grafana_config_dir
 
 grafana_loki_datasource:
   file.managed:
@@ -106,17 +113,22 @@ grafana_loki_datasource:
 grafana_config:
   file.managed:
     - name: /etc/grafana/grafana.ini
+    - makedirs: True
     - mode: '0640'
     - source: salt://configs/grafana.ini.j2
     - template: jinja
     - context:
         hostname: {{ host.hostname }}
         grafana_port: {{ service_ports.grafana.port }}
+    - require:
+      - file: grafana_config_dir
 
 grafana_dashboards_provider_dir:
   file.directory:
     - name: /etc/grafana/provisioning/dashboards
     - makedirs: True
+    - require:
+      - file: grafana_config_dir
 
 grafana_dashboards_json_dir:
   file.directory:
