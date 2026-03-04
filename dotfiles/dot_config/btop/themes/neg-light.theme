@@ -1,0 +1,85 @@
+# Theme: neg-light
+# By: neg-serg (Light variant — cold blue-tinted)
+# Description: Light background with same accent hues as neg dark theme.
+
+# Main background (cold off-white with blue tint)
+theme[main_bg]="#F2F4F8"
+
+# Main text color (dark blue-gray)
+theme[main_fg]="#2D3E4F"
+
+# Title color for boxes (very dark)
+theme[title]="#1A2B3D"
+
+# Highlight color for keyboard shortcuts (blue)
+theme[hi_fg]="#0062B8"
+
+# Background color of selected item in processes box (deep blue)
+theme[selected_bg]="#0055A0"
+
+# Foreground color of selected item in processes box (light)
+theme[selected_fg]="#F2F4F8"
+
+# Color of inactive/disabled text (medium gray)
+theme[inactive_fg]="#9CA8B8"
+
+# Color of text appearing on top of graphs
+theme[graph_text]="#2D3E4F"
+
+# Misc colors for processes box
+theme[proc_misc]="#6B52A3"
+
+# Cpu box outline color (purple)
+theme[cpu_box]="#6B52A3"
+
+# Memory box outline color (teal)
+theme[mem_box]="#1E6060"
+
+# Net box outline color (blue)
+theme[net_box]="#0055A0"
+
+# Processes box outline color (magenta)
+theme[proc_box]="#A02E60"
+
+# Box divider line and small boxes line color
+theme[div_line]="#BCC8D6"
+
+# Temperature graph colors (teal -> blue)
+theme[temp_start]="#3D8A8A"
+theme[temp_mid]="#0055A0"
+theme[temp_end]="#003080"
+
+# CPU graph colors (purple -> dark blue)
+theme[cpu_start]="#A06CB0"
+theme[cpu_mid]="#6B52A3"
+theme[cpu_end]="#003080"
+
+# Mem/Disk free meter (teal -> green)
+theme[free_start]="#1E6060"
+theme[free_mid]="#1E8060"
+theme[free_end]="#3D8A6A"
+
+# Mem/Disk cached meter (blue -> cyan)
+theme[cached_start]="#004D7A"
+theme[cached_mid]="#0068A0"
+theme[cached_end]="#0062B8"
+
+# Mem/Disk available meter (teal)
+theme[available_start]="#1E7070"
+theme[available_mid]="#2D8A8A"
+theme[available_end]="#3D8A8A"
+
+# Mem/Disk used meter (magenta -> red)
+theme[used_start]="#8A1E50"
+theme[used_mid]="#A02E60"
+theme[used_end]="#C83030"
+
+# Download graph colors (blue -> deep blue)
+theme[download_start]="#4A80AA"
+theme[download_mid]="#0068C0"
+theme[download_end]="#003070"
+
+# Upload graph colors (purple -> deep magenta)
+theme[upload_start]="#6B52A3"
+theme[upload_mid]="#7A00D0"
+theme[upload_end]="#6A0050"
