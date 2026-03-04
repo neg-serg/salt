@@ -12,14 +12,19 @@ Create a dedicated Salt state (`music_analysis.sls` or extend `installers.sls`) 
 3. Guards both with idempotency checks
 
 
-## ProxyPilot: Claude OAuth broken
+## ProxyPilot: Claude OAuth broken + tui flag panic
 
-`proxypilot -claude-login` — OAuth callback never completes (token not saved to `~/.cli-proxy-api/`).
-Gemini OAuth works fine. Re-test after ProxyPilot update.
+`proxypilot --claude-login` — OAuth callback never completes (token not saved to `~/.cli-proxy-api/`).
+`proxypilot --help` and all `--*-login` flags panic with `flag redefined: tui`.
+Gemini and Antigravity OAuth work fine (tokens added manually before the bug appeared).
 
-- Binary: `~/.local/bin/proxypilot` (built from source, fixed duplicate `tui` flag registration)
+**Workaround**: Claude models available through Antigravity provider (`claude-sonnet-4-6`, `claude-opus-4-6-thinking`).
+Both Claude Code and OpenCode are routed through ProxyPilot via `ANTHROPIC_BASE_URL`.
+
+- Binary: `~/.local/bin/proxypilot` v0.3.0-dev-0.39 (latest release still has the tui flag bug)
 - Config: `~/.config/proxypilot/config.yaml`
 - Repo: https://github.com/Finesssee/ProxyPilot
+- Re-test `--claude-login` and `--gemini-cli-login` after next ProxyPilot release
 
 
 ## Nyxt browser packaging
