@@ -11,33 +11,47 @@
 {%- set _mgmt_key = _gopass_mgmt_key or _file_mgmt_key %}
 host: "127.0.0.1"
 port: 8317
+
 auth-dir: "~/.cli-proxy-api"
+
 # ── Authentication ──────────────────────────────────────────────────
+
 # Local API key — clients use this to auth to the proxy
 api-keys:
   - "{{ _api_key }}"
+
 # ── Management API ──────────────────────────────────────────────────
+
 remote-management:
   allow-remote: false
   secret-key: "{{ _mgmt_key }}"
   disable-control-panel: false
+
 # ── Routing & failover ──────────────────────────────────────────────
+
 routing:
   strategy: "round-robin"
+
 request-retry: 3
 max-retry-credentials: 3
 max-retry-interval: 30
+
 quota-exceeded:
   switch-project: true
   switch-preview-model: true
+
 # ── Streaming ───────────────────────────────────────────────────────
+
 # Keepalive for long-running requests (coding agent sessions)
 streaming:
   keepalive-seconds: 15
   bootstrap-retries: 1
+
 # Prevent idle timeouts on non-streaming requests
 nonstream-keepalive-interval: 30
+
 # ── Caching ─────────────────────────────────────────────────────────
+
 # Response cache — dedup identical requests during dev iterations
 response-cache:
   enabled: true
@@ -45,20 +59,26 @@ response-cache:
   ttl-seconds: 180
   exclude-models:
     - "*-thinking"
+
 # Prompt cache — track repeated system prompts, estimate token savings
 prompt-cache:
   enabled: true
   max-size: 200
   ttl-seconds: 1800
+
 # ── Statistics & logging ────────────────────────────────────────────
+
 usage-statistics-enabled: true
+
 debug: false
 logging-to-file: false
 logs-max-total-size-mb: 100
 error-logs-max-files: 10
+
 # ── Model aliases ───────────────────────────────────────────────────
 # Claude Code sends versioned model names (claude-sonnet-4-6-20250514).
 # Map them to the actual models available through Antigravity OAuth.
+
 oauth-model-alias:
   antigravity:
     # Claude Code model names → Antigravity models
@@ -77,8 +97,10 @@ oauth-model-alias:
     - name: "gemini-2.5-flash-lite"
       alias: "haiku"
       fork: true
+
 # ── Payload rules ───────────────────────────────────────────────────
 # Default thinking budget for Gemini models (when not set by client)
+
 payload:
   default:
     # OpenCode sends reasoning.effort=minimal for title generation.
