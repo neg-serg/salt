@@ -281,6 +281,58 @@ install_{{ name | replace('-', '_') }}:
 
 {%- endmacro -%}
 
+{# Download and extract a .7z archive to a destination directory using 7z.
+   Useful for Steam skins and other 7z-distributed bundles.
+   Usage: {{ curl_extract_7z('modern_steam_skin', 'https://.../SteamDarkMode.7z', home ~ '/.local/share/Steam/skins', creates=home ~ '/.local/share/Steam/skins/steamui', version=ver.modern_steam, require=['cmd: install_p7zip']) }}
+#}
+{%- macro curl_extract_7z(name, url, dest, creates=None, hash=None, version=None, user=_user, home=_home, require=None) -%}
+{%- set _dest = dest | replace('~', home) -%}
+{%- set _vd = _ver_dir if user else _sys_ver_dir -%}
+{%- set _creates = creates or _dest -%}
+{%- set _cache_key = name ~ '-' ~ (version if version else 'latest') -%}
+{%- set _cache_path = _download_cache ~ '/' ~ _cache_key ~ '.7z' -%}
+install_{{ name | replace('-', '_') }}:
+  cmd.run:
+    - name: |
+        set -eo pipefail
+        cache='{{ _cache_path }}'
+        mkdir -p "$(dirname "$cache")"
+        if [ ! -f "$cache" ]; then
+          curl -fsSL '{{ url }}' -o "$cache.tmp"
+{%- if hash %}
+          echo '{{ hash }}  '"$cache.tmp" | sha256sum -c --strict
+{%- endif %}
+          mv -f "$cache.tmp" "$cache"
+        fi
+        _td=$(mktemp -d)
+        trap 'rm -rf "$_td"' EXIT
+        cp "$cache" "$_td/archive.7z"
+        mkdir -p '{{ _dest }}'
+        7z x -aoa "$_td/archive.7z" -o'{{ _dest }}'
+{%- if version %}
+        mkdir -p {{ _vd }} && echo '{{ version }}' > {{ _vd }}/{{ name }}
+{%- endif %}
+{%- if user %}
+    - runas: {{ user }}
+{%- endif %}
+    - shell: /bin/bash
+{%- if version %}
+    - unless: test -e {{ _creates }} && test -f {{ _vd }}/{{ name }} && rg -qx '{{ version }}' {{ _vd }}/{{ name }}
+{%- else %}
+    - creates: {{ _creates }}
+{%- endif %}
+    - parallel: True
+    - retry:
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
+{%- if require %}
+    - require:
+{%- for req in require %}
+      - {{ req }}
+{%- endfor %}
+{%- endif %}
+{%- endmacro -%}
+
 {# Download Firefox/Floorp extension .xpi from addons.mozilla.org.
    ext: dict with 'id' (extension GUID) and 'slug' (AMO slug).
    profile: path to browser profile directory.
@@ -399,12 +451,14 @@ install_{{ name | replace('-', '_') }}:
    Usage: {{ http_file('mpv_script_stats', 'https://example/script.lua', home ~ '/.config/mpv/scripts/stats.lua', require=['file: mpv_scripts_dir']) }}
           {{ http_file('qmk_rules', 'https://.../50-qmk.rules', '/etc/udev/rules.d/50-qmk.rules', user=None, hash='sha256:...') }}
 #}
-{%- macro http_file(name, url, dest, mode='0644', user=_user, creates=None, require=None, parallel=True, hash=None, version=None) -%}
+{%- macro http_file(name, url, dest, mode='0644', user=_user, creates=None, require=None, parallel=True, hash=None, version=None, cache=True) -%}
 {%- set _vd = _ver_dir if user else _sys_ver_dir -%}
 {{ name }}:
   cmd.run:
     - name: |
         set -eo pipefail
+        src=""
+{%- if cache %}
         cache_dir='{{ _download_cache }}'
         mkdir -p "$cache_dir"
         cache="$cache_dir/{{ name }}"
@@ -415,10 +469,16 @@ install_{{ name | replace('-', '_') }}:
 {%- endif %}
           mv -f "$cache.tmp" "$cache"
         fi
-{%- if hash and not version %}
-        echo '{{ hash }}  '"$cache" | sha256sum -c --strict
+        src="$cache"
+{%- else %}
+        src=$(mktemp)
+        trap 'rm -f "$src"' EXIT
+        curl -fsSL '{{ url }}' -o "$src"
 {%- endif %}
-        install -m {{ mode }} -D "$cache" '{{ dest }}'
+{%- if hash %}
+        echo '{{ hash }}  '"$src" | sha256sum -c --strict
+{%- endif %}
+        install -m {{ mode }} -D "$src" '{{ dest }}'
 {%- if version %}
         mkdir -p {{ _vd }} && echo '{{ version }}' > {{ _vd }}/{{ name }}
 {%- endif %}

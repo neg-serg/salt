@@ -11,6 +11,15 @@
 apply STATE="system_description":
     scripts/salt-apply.sh {{STATE}}
 
+apply-opencode:
+    scripts/salt-apply.sh opencode
+
+apply-user-services:
+    scripts/salt-apply.sh user_services
+
+apply-installers:
+    scripts/salt-apply.sh installers
+
 # List available recipes
 help:
     @just --list
