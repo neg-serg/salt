@@ -7,147 +7,31 @@
         ...laptop-specific states...
       {% endif %}
 
-    To add a new host, create a new entry in the `hosts` dict.
-    Any key not specified inherits from `defaults`.
+    Data lives in states/data/hosts.yaml — defaults + host overrides + aliases.
+    Add a new machine by editing that YAML file; values fall back to defaults.
 #}
 
-{% set defaults = {
-    'user':           'neg',
-    'home':           '/home/neg',
-    'uid':            1000,
-    'mnt_zero':       '/mnt/zero',
-    'mnt_one':        '/mnt/one',
-    'is_laptop':      False,
-    'cursor_theme':   'Alkano-aio',
-    'cursor_size':    23,
-    'cpu_vendor':     'amd',
-    'kvm_module':     'kvm_amd',
-    'display':        '',
-    'primary_output': '',
-    'greetd_vt':      1,
-    'greetd_scale':   1,
-    'timezone':       'Europe/Moscow',
-    'locale':         'en_US.UTF-8',
-    'floorp_profile': '',
-    'hostname':       grains['host'],
-    'extra_kargs':    [],
-    'extra_modules':  [],
-    'features': {
-        'monitoring': {
-            'sysstat':  True,
-            'vnstat':   True,
-            'netdata':  True,
-            'loki':     False,
-            'promtail': False,
-            'grafana':  False,
-        },
-        'fancontrol':   False,
-        'kernel': {
-            'variant':  'lto',
-        },
-        'dns': {
-            'unbound':      False,
-            'adguardhome':  False,
-            'avahi':        True,
-        },
-        'services': {
-            'samba':        False,
-            'jellyfin':     False,
-            'bitcoind':     False,
-            'duckdns':      False,
-            'transmission': False,
-        },
-        'network': {
-            'vm_bridge': False,
-            'xray':      False,
-            'singbox':   False,
-            'wifi':      False,
-        },
-        'user_services': {
-            'mail':       True,
-            'vdirsyncer': True,
-        },
-        'amnezia':      True,
-        'steam':        True,
-        'mpd':          True,
-        'ollama':       True,
-        'llama_embed':  True,
-        'floorp':       True,
-        'kanata':       True,
-        'flatpak':      True,
-    },
-} %}
+{% import_yaml 'data/hosts.yaml' as hosts_data %}
+{% set defaults = hosts_data.defaults %}
+{% set hosts = hosts_data.get('hosts', {}) %}
+{% set aliases = hosts_data.get('aliases', {}) %}
+{% import_yaml 'data/feature_matrix.yaml' as feature_matrix %}
 
-{% set hosts = {
-    'telfir': {
-        'display':        '3840x2160@240',
-        'primary_output': 'DP-2',
-        'greetd_scale':   2,
-        'floorp_profile': 'c85pjaxk.default-default',
-        'hostname':       'telfir',
-        'extra_modules':  ['ec_sys', 'asus_ec_sensors'],
-        'features': {
-            'fancontrol':   True,
-            'monitoring': {
-                'loki':     True,
-                'promtail': True,
-                'grafana':  True,
-            },
-            'services': {
-                'transmission': True,
-            },
-            'user_services': {
-                'mail':       False,
-                'vdirsyncer': False,
-            },
-        },
-    },
-} %}
-
-{#  ── Example hosts (copy into hosts dict above) ──────────────
-
-    Laptop with Intel CPU and WiFi:
-
-    'balmora': {
-        'is_laptop':      True,
-        'cpu_vendor':     'intel',
-        'kvm_module':     'kvm_intel',
-        'display':        '2560x1600@165',
-        'primary_output': 'eDP-1',
-        'hostname':       'balmora',
-        'features': {
-            'network': { 'wifi': True },
-            'steam':    False,
-            'ollama':   False,
-        },
-    },
-
-    Media/home server:
-
-    'caldera': {
-        'display':        '1920x1080@60',
-        'primary_output': 'HDMI-A-1',
-        'hostname':       'caldera',
-        'features': {
-            'monitoring': { 'loki': True, 'promtail': True, 'grafana': True },
-            'dns':        { 'unbound': True, 'adguardhome': True },
-            'services':   { 'samba': True, 'jellyfin': True, 'duckdns': True },
-            'steam':    False,
-            'mpd':      False,
-            'kanata':   False,
-        },
-    },
-
-    See docs/adding-host.md for full guide.
-#}
+{# Inject feature-matrix scenarios as synthetic hosts (lint/render only). #}
+{% for scenario in feature_matrix or [] %}
+{%- if scenario.overrides is mapping %}
+{%- set overrides = scenario.overrides %}
+{%- if 'hostname' not in overrides %}
+{%-   do overrides.update({'hostname': scenario.name}) %}
+{%- endif %}
+{%-   do hosts.update({scenario.name: overrides}) %}
+{%- endif %}
+{% endfor %}
 
 {# Hostname aliases for migration (e.g. first run before rename) #}
-{% set aliases = {
-    'cachyos': 'telfir',
-} %}
+{% set current_host = aliases.get(grains['host'], grains['host']) %}
 
 {# Build merged host config: host-specific values override defaults (recursive deep merge) #}
-{% set current_host = aliases.get(grains['host'], grains['host']) %}
 {% set host = salt['slsutil.merge'](defaults, hosts.get(current_host, {}), strategy='recurse') %}
 {# Derived fields (depend on merged values, so computed after merge) #}
 {% do host.update({'runtime_dir': '/run/user/' ~ host.uid|string}) %}
