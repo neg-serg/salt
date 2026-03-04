@@ -1,14 +1,5 @@
 # ProxyPilot — local AI proxy
 # Docs: https://github.com/Finesssee/ProxyPilot
-{% set _cfg_path = home ~ '/.config/proxypilot/config.yaml' -%}
-{% set _gopass_api_cmd = salt['cmd.run_all']('gopass show -o api/proxypilot-local 2>/dev/null', runas=user, python_shell=True, ignore_retcode=True) -%}
-{% set _gopass_api_key = _gopass_api_cmd['stdout'].strip() if _gopass_api_cmd.get('retcode', 1) == 0 else '' -%}
-{% set _file_api_key = salt['cmd.run_stdout']("awk '/^api-keys:/{getline; sub(/^[[:space:]]*-[[:space:]]*\"?/, \"\"); sub(/\"?[[:space:]]*$/, \"\"); print; exit}' " ~ _cfg_path ~ " 2>/dev/null || true", runas=user).strip() -%}
-{% set _api_key = _gopass_api_key or _file_api_key -%}
-{% set _gopass_mgmt_cmd = salt['cmd.run_all']('gopass show -o api/proxypilot-management 2>/dev/null', runas=user, python_shell=True, ignore_retcode=True) -%}
-{% set _gopass_mgmt_key = _gopass_mgmt_cmd['stdout'].strip() if _gopass_mgmt_cmd.get('retcode', 1) == 0 else '' -%}
-{% set _file_mgmt_key = salt['cmd.run_stdout']("awk '/^[[:space:]]*secret-key:[[:space:]]*/{sub(/^[[:space:]]*secret-key:[[:space:]]*\"?/, \"\"); sub(/\"?[[:space:]]*$/, \"\"); print; exit}' " ~ _cfg_path ~ " 2>/dev/null || true", runas=user).strip() -%}
-{% set _mgmt_key = _gopass_mgmt_key or _file_mgmt_key %}
 host: "127.0.0.1"
 port: 8317
 
@@ -18,13 +9,13 @@ auth-dir: "~/.cli-proxy-api"
 
 # Local API key — clients use this to auth to the proxy
 api-keys:
-  - "{{ _api_key }}"
+  - "{{ api_key }}"
 
 # ── Management API ──────────────────────────────────────────────────
 
 remote-management:
   allow-remote: false
-  secret-key: "{{ _mgmt_key }}"
+  secret-key: "{{ mgmt_key }}"
   disable-control-panel: false
 
 # ── Routing & failover ──────────────────────────────────────────────
