@@ -1,0 +1,16 @@
+###############################################################################
+# Codex CLI — routed through ProxyPilot local AI proxy
+# Docs: https://developers.openai.com/codex/config-reference
+###############################################################################
+
+model = "gpt-5-codex"
+model_provider = "proxypilot"
+approval_policy = "on-request"
+
+[model_providers]
+
+  [model_providers.proxypilot]
+  name = "ProxyPilot"
+  base_url = "http://127.0.0.1:8317/v1"
+  env_key = "OPENAI_API_KEY"
+  wire_api = "responses"
