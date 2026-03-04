@@ -44,6 +44,7 @@ GITHUB_REPOS = {
     "nyxt": "atlas-engineer/nyxt",
     "modern_steam": "SleepDaemon/Modern-Steam",
     "fira_code_nerd": "ryanoasis/nerd-fonts",
+    "proxypilot": "Finesssee/ProxyPilot",
 }
 
 # Custom (non-YAML) tools from installers.sls: name -> (guard_path, sls_name)
