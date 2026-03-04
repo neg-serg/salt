@@ -6,18 +6,97 @@ port: 8317
 
 auth-dir: "~/.cli-proxy-api"
 
+# ── Authentication ──────────────────────────────────────────────────
+
 # Local API key — clients use this to auth to the proxy
 api-keys:
   - "{{ gopass "api/proxypilot-local" }}"
 
-debug: false
-logging-to-file: false
-request-retry: 3
+# ── Management API ──────────────────────────────────────────────────
 
-# Routing: round-robin across credentials
+remote-management:
+  allow-remote: false
+  secret-key: "{{ gopass "api/proxypilot-management" }}"
+  disable-control-panel: false
+
+# ── Routing & failover ──────────────────────────────────────────────
+
 routing:
   strategy: "round-robin"
+
+request-retry: 3
+max-retry-credentials: 0
+max-retry-interval: 30
 
 quota-exceeded:
   switch-project: true
   switch-preview-model: true
+
+# ── Streaming ───────────────────────────────────────────────────────
+
+# Keepalive for long-running requests (coding agent sessions)
+streaming:
+  keepalive-seconds: 15
+  bootstrap-retries: 1
+
+# Prevent idle timeouts on non-streaming requests
+nonstream-keepalive-interval: 30
+
+# ── Caching ─────────────────────────────────────────────────────────
+
+# Response cache — dedup identical requests during dev iterations
+response-cache:
+  enabled: true
+  max-size: 500
+  ttl-seconds: 180
+  exclude-models:
+    - "*-thinking"
+
+# Prompt cache — track repeated system prompts, estimate token savings
+prompt-cache:
+  enabled: true
+  max-size: 200
+  ttl-seconds: 1800
+
+# ── Statistics & logging ────────────────────────────────────────────
+
+usage-statistics-enabled: true
+
+debug: false
+logging-to-file: false
+logs-max-total-size-mb: 100
+error-logs-max-files: 10
+
+# ── Model aliases ───────────────────────────────────────────────────
+# Claude Code sends versioned model names (claude-sonnet-4-6-20250514).
+# Map them to the actual models available through Antigravity OAuth.
+
+oauth-model-alias:
+  antigravity:
+    # Claude Code model names → Antigravity models
+    - name: "claude-sonnet-4-6"
+      alias: "claude-sonnet-4-6-20250514"
+      fork: true
+    - name: "claude-opus-4-6-thinking"
+      alias: "claude-opus-4-6-20251022"
+      fork: true
+    - name: "claude-opus-4-6-thinking"
+      alias: "opus"
+      fork: true
+    - name: "claude-sonnet-4-6"
+      alias: "sonnet"
+      fork: true
+    - name: "gemini-2.5-flash-lite"
+      alias: "haiku"
+      fork: true
+
+# ── Payload rules ───────────────────────────────────────────────────
+# Default thinking budget for Gemini models (when not set by client)
+
+payload:
+  default:
+    - models:
+        - name: "gemini-*"
+          protocol: "gemini"
+      params:
+        "generationConfig.thinkingConfig.thinkingBudget": 16384
