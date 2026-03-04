@@ -1,18 +1,20 @@
 {% from '_imports.jinja' import host, user, home %}
 {% from '_macros_pkg.jinja' import npm_pkg %}
 {% from '_macros_service.jinja' import ensure_dir %}
-# OpenCode AI coding agent: TUI config + neg custom theme
-# Codex CLI (OpenAI): routed through ProxyPilot
 
-{{ ensure_dir('opencode_config_dir', home ~ '/.config/opencode') }}
-
-opencode_config:
+{%- macro user_file_recurse(state_id, path, source) -%}
+{{ state_id }}:
   file.recurse:
-    - name: {{ home }}/.config/opencode
-    - source: salt://dotfiles/dot_config/opencode
+    - name: {{ path }}
+    - source: {{ source }}
     - user: {{ user }}
     - group: {{ user }}
     - makedirs: True
+{%- endmacro -%}
+
+{{ ensure_dir('opencode_config_dir', home ~ '/.config/opencode') }}
+
+{{ user_file_recurse('opencode_config', home ~ '/.config/opencode', 'salt://dotfiles/dot_config/opencode') }}
 
 {{ ensure_dir('proxypilot_config_dir', home ~ '/.config/proxypilot', mode='0700') }}
 
@@ -28,15 +30,9 @@ proxypilot_config:
 
 {{ ensure_dir('codex_config_dir', home ~ '/.codex', mode='0700') }}
 
-codex_config:
-  file.recurse:
-    - name: {{ home }}/.codex
-    - source: salt://dotfiles/dot_codex
-    - user: {{ user }}
-    - group: {{ user }}
-    - makedirs: True
+{{ user_file_recurse('codex_config', home ~ '/.codex', 'salt://dotfiles/dot_codex') }}
 
-# Auth key stored in gopass, written to ~/.codex/auth.json
+# Keep Codex auth in Salt state; value is resolved from gopass at apply time.
 codex_auth:
   file.managed:
     - name: {{ home }}/.codex/auth.json
@@ -52,6 +48,7 @@ restart_proxypilot_on_config_change:
   cmd.run:
     - name: systemctl --user restart proxypilot.service
     - runas: {{ user }}
+    # systemctl --user requires explicit user bus env in non-interactive Salt runs.
     - env:
       - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
       - DBUS_SESSION_BUS_ADDRESS: unix:path={{ host.runtime_dir }}/bus
