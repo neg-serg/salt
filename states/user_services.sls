@@ -1,5 +1,5 @@
 {% from '_imports.jinja' import host, user, home %}
-{% from '_macros_service.jinja' import user_service_file, user_unit_override, user_service_enable %}
+{% from '_macros_service.jinja' import user_service_file, user_unit_override, user_service_enable, user_service_disable %}
 {% import_yaml 'data/user_services.yaml' as us %}
 # Systemd user services: mail, calendar, chezmoi, media, surfingkeys
 
@@ -11,31 +11,6 @@
 {% set mail_enable = ['imapnotify-gmail.service'] %}
 {% set mail_timers = ['mbsync-gmail.timer'] %}
 {% set vdirsyncer_timers = ['vdirsyncer.timer'] %}
-{%- macro disable_user_service(state_id, units) -%}
-{{ state_id }}:
-  cmd.run:
-    - name: systemctl --user disable --now {{ units | join(' ') }} 2>/dev/null; true
-    - runas: {{ user }}
-    - env:
-      - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
-      - DBUS_SESSION_BUS_ADDRESS: unix:path={{ host.runtime_dir }}/bus
-    - onlyif: |
-        runuser -u {{ user }} -- python3 - <<'PY'
-        import os
-        import subprocess
-        import sys
-
-        units = {{ units | tojson }}
-        env = os.environ.copy()
-        env['XDG_RUNTIME_DIR'] = '{{ host.runtime_dir }}'
-        env['DBUS_SESSION_BUS_ADDRESS'] = 'unix:path={{ host.runtime_dir }}/bus'
-
-        for unit in units:
-            if unit and subprocess.run(['systemctl', '--user', 'is-enabled', unit], env=env).returncode == 0:
-                sys.exit(0)
-        sys.exit(1)
-        PY
-{%- endmacro -%}
 # --- Systemd user services for media ---
 # Drop-in override for mpDris2.service: adds MPD ordering
 {% set mpdris2_override %}
@@ -121,8 +96,8 @@ mail_directories:
 
 # --- Disable services for disabled features ---
 {% if not svc.mail %}
-{{ disable_user_service('disable_mail_services', ['mbsync-gmail.timer', 'imapnotify-gmail.service']) }}
+{{ user_service_disable('disable_mail_services', ['mbsync-gmail.timer', 'imapnotify-gmail.service']) }}
 {% endif %}
 {% if not svc.vdirsyncer %}
-{{ disable_user_service('disable_vdirsyncer_services', ['vdirsyncer.timer']) }}
+{{ user_service_disable('disable_vdirsyncer_services', ['vdirsyncer.timer']) }}
 {% endif %}

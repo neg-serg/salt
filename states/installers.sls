@@ -76,14 +76,14 @@
 # --- cargo: tailray (needs dbus headers, has onlyif guards) ---
 {{ cargo_pkg('tailray', git='https://github.com/NotAShelf/tailray', version=ver.tailray, onlyif=['pkg-config --exists dbus-1', 'command -v cargo']) }}
 
-qmk_udev_rules:
+{{ http_file('qmk_udev_rules', 'https://raw.githubusercontent.com/qmk/qmk_firmware/master/util/udev/50-qmk.rules', '/etc/udev/rules.d/50-qmk.rules', mode='0644', user=None, parallel=False) }}
+
+qmk_udev_rules_reload:
   cmd.run:
-    - name: curl -fsSL https://raw.githubusercontent.com/qmk/qmk_firmware/master/util/udev/50-qmk.rules -o /etc/udev/rules.d/50-qmk.rules && udevadm control --reload-rules
-    - creates: /etc/udev/rules.d/50-qmk.rules
-    - parallel: True
-    - retry:
-        attempts: {{ retry_attempts }}
-        interval: {{ retry_interval }}
+    - name: udevadm control --reload-rules
+    - onlyif: command -v udevadm >/dev/null 2>&1
+    - onchanges:
+      - cmd: qmk_udev_rules
 
 # --- blesh (Bash Line Editor) ---
 {{ curl_extract_tar('blesh', 'https://github.com/akinomyoga/ble.sh/releases/download/nightly/ble-nightly.tar.xz', archive_ext='tar.xz', dest='~/.local/share', strip_components=1, creates=home ~ '/.local/share/ble.sh', user=user, home=home) }}

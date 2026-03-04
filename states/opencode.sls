@@ -1,6 +1,6 @@
 {% from '_imports.jinja' import host, user, home %}
 {% from '_macros_pkg.jinja' import npm_pkg %}
-{% from '_macros_service.jinja' import ensure_dir %}
+{% from '_macros_service.jinja' import ensure_dir, user_service_restart %}
 {% set _proxypilot_cfg = home ~ '/.config/proxypilot/config.yaml' %}
 {% set _gopass_api_cmd = salt['cmd.run_all']('gopass show -o api/proxypilot-local 2>/dev/null', runas=user, python_shell=True, ignore_retcode=True) %}
 {% if _gopass_api_cmd.get('retcode', 1) == 0 %}
@@ -66,16 +66,6 @@ codex_auth:
     - require:
       - file: codex_config
 
-restart_proxypilot_on_config_change:
-  cmd.run:
-    - name: systemctl --user restart proxypilot.service
-    - runas: {{ user }}
-    # systemctl --user requires explicit user bus env in non-interactive Salt runs.
-    - env:
-      - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
-      - DBUS_SESSION_BUS_ADDRESS: unix:path={{ host.runtime_dir }}/bus
-    - onlyif: systemctl --user is-active proxypilot.service >/dev/null 2>&1
-    - onchanges:
-      - file: proxypilot_config
+{{ user_service_restart('restart_proxypilot_on_config_change', 'proxypilot.service', onlyif='systemctl --user is-active proxypilot.service >/dev/null 2>&1', onchanges=['file: proxypilot_config']) }}
 
 {{ npm_pkg('codex', pkg='@openai/codex') }}
