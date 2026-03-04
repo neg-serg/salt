@@ -36,6 +36,22 @@ system_hostname:
     - name: /etc/hostname
     - contents: {{ host.hostname }}
 
+user_version_cache_dir:
+  file.directory:
+    - name: {{ host.home }}/.cache/salt-versions
+    - user: {{ user }}
+    - group: {{ user }}
+    - mode: '0755'
+    - makedirs: True
+
+system_version_cache_dir:
+  file.directory:
+    - name: /var/cache/salt/versions
+    - user: root
+    - group: root
+    - mode: '0755'
+    - makedirs: True
+
 include:
   # Core: user accounts, shell, disk mounts — foundations for everything else
   - users
@@ -71,6 +87,7 @@ include:
   - floorp
   - kanata
   - mpd
+  - music_analysis
   - ollama
   - llama_embed
   - opencode

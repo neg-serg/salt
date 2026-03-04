@@ -1,7 +1,7 @@
 # Desktop environment: services, SSH, dconf themes
 {% from '_imports.jinja' import host, user, home %}
 {% from '_macros_pkg.jinja' import pacman_install, paru_install %}
-{% from '_macros_service.jinja' import ensure_dir, service_stopped %}
+{% from '_macros_service.jinja' import ensure_dir, service_stopped, service_with_unit %}
 {% import_yaml 'data/desktop.yaml' as desktop %}
 
 # --- Pacman hook: regenerate installed-package cache after every transaction ---
@@ -84,17 +84,8 @@ dconf_themes:
 {% endfor %}
 
 # --- Salt daemon systemd unit ---
-salt_daemon_service:
-  file.managed:
-    - name: /etc/systemd/system/salt-daemon.service
-    - source: salt://units/salt-daemon.service.j2
-    - template: jinja
-    - context:
-        project_dir: {{ host.project_dir }}
-    - mode: '0644'
+salt_daemon_venv_ready:
+  file.exists:
+    - name: {{ host.project_dir }}/.venv/bin/python3
 
-salt_daemon_reload:
-  cmd.run:
-    - name: systemctl daemon-reload
-    - onchanges:
-      - file: salt_daemon_service
+{{ service_with_unit('salt-daemon', 'salt://units/salt-daemon.service.j2', template='jinja', context={'project_dir': host.project_dir}, running=True, requires=['file: salt_daemon_venv_ready']) }}
