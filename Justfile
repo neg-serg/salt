@@ -42,6 +42,7 @@ lint:
     .venv/bin/python3 scripts/lint-dotfiles.py
     .venv/bin/python3 scripts/lint-units.py
     .venv/bin/python3 scripts/lint-qml.py
+    .venv/bin/python3 scripts/render-matrix.py
     shellcheck scripts/*.sh states/scripts/*.sh
     yamllint states/data/*.yaml states/configs/*.yaml .github/workflows/*.yaml
     taplo check $(find . -name '*.toml' -not -path './.venv/*' -not -path './.salt_runtime/*' 2>/dev/null)
