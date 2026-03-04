@@ -1,6 +1,10 @@
 {% from '_imports.jinja' import host, user, home %}
 {% from '_macros_pkg.jinja' import npm_pkg %}
 {% from '_macros_service.jinja' import ensure_dir %}
+{% set _proxypilot_cfg = home ~ '/.config/proxypilot/config.yaml' %}
+{% set _gopass_key = salt['cmd.run_stdout']('gopass show -o api/proxypilot-local 2>/dev/null || true', runas=user).strip() %}
+{% set _file_key = salt['cmd.run_stdout']("awk '/^api-keys:/{getline; sub(/^[[:space:]]*-[[:space:]]*\"?/, \"\"); sub(/\"?[[:space:]]*$/, \"\"); print; exit}' " ~ _proxypilot_cfg ~ " 2>/dev/null || true", runas=user).strip() %}
+{% set _codex_api_key = _gopass_key or _file_key %}
 
 {%- macro user_file_recurse(state_id, path, source) -%}
 {{ state_id }}:
@@ -25,6 +29,7 @@ proxypilot_config:
     - makedirs: True
     - context:
         user: {{ user }}
+        home: {{ home }}
 {{ ensure_dir('codex_config_dir', home ~ '/.codex', mode='0700') }}
 {{ user_file_recurse('codex_config', home ~ '/.codex', 'salt://dotfiles/dot_codex') }}
 
@@ -36,7 +41,7 @@ codex_auth:
     - group: {{ user }}
     - mode: '0600'
     - contents: |
-        {"auth_mode":"apikey","OPENAI_API_KEY":"{{ salt['cmd.run']('gopass show -o api/proxypilot-local', runas=user) }}"}
+        {"auth_mode":"apikey","OPENAI_API_KEY":{{ _codex_api_key | tojson }}}
     - require:
       - file: codex_config
 
