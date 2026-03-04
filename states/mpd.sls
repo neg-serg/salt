@@ -4,7 +4,6 @@
 # MPD Native Deployment
 # Salt state for setting up MPD with systemd user service and pipewire output
 {% if host.features.mpd %}
-
 include:
   - bind_mounts
 
@@ -20,7 +19,6 @@ mpd_directories:
 
 # --- Deploy rmpc config ---
 {{ ensure_dir('rmpc_config_dir', home ~ '/.config/rmpc') }}
-
 rmpc_config:
   file.recurse:
     - name: {{ home }}/.config/rmpc

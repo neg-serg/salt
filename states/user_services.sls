@@ -11,7 +11,16 @@
 {% set mail_enable = ['imapnotify-gmail.service'] %}
 {% set mail_timers = ['mbsync-gmail.timer'] %}
 {% set vdirsyncer_timers = ['vdirsyncer.timer'] %}
-
+{%- macro disable_user_service(state_id, units, guard_unit) -%}
+{{ state_id }}:
+  cmd.run:
+    - name: systemctl --user disable --now {{ units }} 2>/dev/null; true
+    - runas: {{ user }}
+    - env:
+      - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
+      - DBUS_SESSION_BUS_ADDRESS: unix:path={{ host.runtime_dir }}/bus
+    - onlyif: systemctl --user is-enabled {{ guard_unit }} 2>/dev/null
+{%- endmacro -%}
 # --- Systemd user services for media ---
 # Drop-in override for mpDris2.service: adds MPD ordering
 {% set mpdris2_override %}
@@ -96,23 +105,8 @@ mail_directories:
 
 # --- Disable services for disabled features ---
 {% if not svc.mail %}
-disable_mail_services:
-  cmd.run:
-    - name: systemctl --user disable --now mbsync-gmail.timer imapnotify-gmail.service 2>/dev/null; true
-    - runas: {{ user }}
-    - env:
-      - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
-      - DBUS_SESSION_BUS_ADDRESS: unix:path={{ host.runtime_dir }}/bus
-    - onlyif: systemctl --user is-enabled mbsync-gmail.timer 2>/dev/null
+{{ disable_user_service('disable_mail_services', 'mbsync-gmail.timer imapnotify-gmail.service', 'mbsync-gmail.timer') }}
 {% endif %}
-
 {% if not svc.vdirsyncer %}
-disable_vdirsyncer_services:
-  cmd.run:
-    - name: systemctl --user disable --now vdirsyncer.timer 2>/dev/null; true
-    - runas: {{ user }}
-    - env:
-      - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
-      - DBUS_SESSION_BUS_ADDRESS: unix:path={{ host.runtime_dir }}/bus
-    - onlyif: systemctl --user is-enabled vdirsyncer.timer 2>/dev/null
+{{ disable_user_service('disable_vdirsyncer_services', 'vdirsyncer.timer', 'vdirsyncer.timer') }}
 {% endif %}

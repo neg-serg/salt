@@ -11,25 +11,21 @@
     - group: {{ user }}
     - makedirs: True
 {%- endmacro -%}
-
 {{ ensure_dir('opencode_config_dir', home ~ '/.config/opencode') }}
-
 {{ user_file_recurse('opencode_config', home ~ '/.config/opencode', 'salt://dotfiles/dot_config/opencode') }}
-
 {{ ensure_dir('proxypilot_config_dir', home ~ '/.config/proxypilot', mode='0700') }}
-
 proxypilot_config:
   file.managed:
     - name: {{ home }}/.config/proxypilot/config.yaml
-    - source: salt://dotfiles/dot_config/proxypilot/config.yaml.tmpl
+    - source: salt://configs/proxypilot.yaml.j2
     - template: jinja
     - user: {{ user }}
     - group: {{ user }}
     - mode: '0600'
     - makedirs: True
-
+    - context:
+        user: {{ user }}
 {{ ensure_dir('codex_config_dir', home ~ '/.codex', mode='0700') }}
-
 {{ user_file_recurse('codex_config', home ~ '/.codex', 'salt://dotfiles/dot_codex') }}
 
 # Keep Codex auth in Salt state; value is resolved from gopass at apply time.
@@ -40,7 +36,7 @@ codex_auth:
     - group: {{ user }}
     - mode: '0600'
     - contents: |
-        {"auth_mode":"apikey","OPENAI_API_KEY":"{{ salt['cmd.run']('gopass show -o api/proxypilot-local') }}"}
+        {"auth_mode":"apikey","OPENAI_API_KEY":"{{ salt['cmd.run']('gopass show -o api/proxypilot-local', runas=user) }}"}
     - require:
       - file: codex_config
 
