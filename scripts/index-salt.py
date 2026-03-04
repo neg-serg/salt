@@ -11,6 +11,7 @@ Outputs markdown to memory/generated/salt-macros.md, salt-states.md, salt-data.m
 
 import glob
 import importlib.util
+import json
 import os
 import re
 import sys
@@ -22,13 +23,14 @@ import yaml
 SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
 _lint_path = os.path.join(SCRIPTS_DIR, "lint-jinja.py")
 _spec = importlib.util.spec_from_file_location("lint_jinja", _lint_path)
+if not _spec or not _spec.loader:  # pragma: no cover - defensive
+    raise ImportError("Cannot load lint-jinja.py")
 _lint_jinja = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(_lint_jinja)
+_spec.loader.exec_module(_lint_jinja)  # type: ignore[attr-defined]
 
 SaltTagExtension = _lint_jinja.SaltTagExtension
 _make_render_env = _lint_jinja._make_render_env
 _resolve_import_yaml = _lint_jinja._resolve_import_yaml
-_extract_dict_literal = _lint_jinja._extract_dict_literal
 _build_lint_host = _lint_jinja._build_lint_host
 _enable_all_features = _lint_jinja._enable_all_features
 
@@ -36,6 +38,7 @@ STATES_DIR = "states"
 MEMORY_DIR = os.path.join(
     os.path.expanduser("~"), ".claude", "projects", "-home-neg-src-salt", "memory", "generated"
 )
+DOCS_DIR = "docs"
 
 _ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 HEADER = (
@@ -58,6 +61,8 @@ REQUISITE_KEYS = frozenset(
         "onfail_in",
     }
 )
+
+IMPORT_YAML_RE = re.compile(r"\{%-?\s*import_yaml\s+['\"]([^'\"]+)['\"]\s+as\s+\w+")
 
 # --- Macro parsing ---
 
@@ -208,6 +213,102 @@ def generate_states_md(state_results):
     return "\n".join(lines) + "\n"
 
 
+def build_state_graph(state_results):
+    graph = {}
+    reverse = {}
+    guards_map = {}
+    for rel, _, includes, _, guards in state_results:
+        name = os.path.basename(rel).replace(".sls", "")
+        clean_includes = [inc.strip() for inc in includes if inc]
+        graph[name] = clean_includes
+        guards_map[name] = guards
+        for inc in clean_includes:
+            reverse.setdefault(inc, []).append(name)
+        reverse.setdefault(name, reverse.get(name, []))
+    return graph, reverse, guards_map
+
+
+def generate_state_map_docs(graph, reverse, guards_map):
+    eng = [
+        HEADER,
+        "# Salt State Dependency Map\n",
+        "Generated from `include:` statements in `states/*.sls`.\n",
+    ]
+    rus = [
+        HEADER,
+        "# Карта зависимостей Salt\n",
+        "Сгенерировано из блоков `include:` в `states/*.sls`.\n",
+    ]
+
+    def fmt_list(items, empty):
+        return ", ".join(f"`{item}`" for item in sorted(set(items))) if items else empty
+
+    for state in sorted(graph):
+        includes = graph[state]
+        parents = reverse.get(state, [])
+        guards = guards_map.get(state, [])
+
+        eng.append(f"\n## `{state}`")
+        eng.append(f"**Includes:** {fmt_list(includes, '_None_')}\n")
+        eng.append(f"**Included by:** {fmt_list(parents, '_Root_')}\n")
+        if guards:
+            eng.append(f"**Feature guards:** {fmt_list(guards, '_None_')}\n")
+
+        rus.append(f"\n## `{state}`")
+        rus.append(f"**Включает:** {fmt_list(includes, '_Нет_')}\n")
+        rus.append(f"**Используется в:** {fmt_list(parents, '_Корень_')}\n")
+        if guards:
+            rus.append(f"**Фичи:** {fmt_list(guards, '_Нет_')}\n")
+
+    return "\n".join(eng) + "\n", "\n".join(rus) + "\n"
+
+
+def write_knowledge_base(macros, state_results, summaries):
+    kb_path = os.path.join(MEMORY_DIR, "salt-knowledge.jsonl")
+    with open(kb_path, "w") as fh:
+        for name, params, src, doc in macros:
+            json.dump(
+                {
+                    "type": "macro",
+                    "name": name,
+                    "file": src,
+                    "params": params,
+                    "doc": doc,
+                },
+                fh,
+            )
+            fh.write("\n")
+
+        for rel, state_ids, includes, requires, guards in state_results:
+            fh.write(
+                json.dumps(
+                    {
+                        "type": "state",
+                        "name": os.path.basename(rel).replace(".sls", ""),
+                        "file": rel,
+                        "state_ids": state_ids,
+                        "includes": includes,
+                        "requires": requires,
+                        "feature_guards": guards,
+                    }
+                )
+                + "\n"
+            )
+
+        for rel, info in summaries:
+            fh.write(
+                json.dumps(
+                    {
+                        "type": "data",
+                        "file": rel,
+                        "info": info,
+                    }
+                )
+                + "\n"
+            )
+    print(f"Wrote {kb_path}")
+
+
 # --- Data file summaries ---
 
 
@@ -264,12 +365,69 @@ def generate_data_md(summaries):
     return "\n".join(lines) + "\n"
 
 
+def collect_data_usage():
+    usage = {}
+    for path in glob.glob(os.path.join(STATES_DIR, "*.sls")):
+        with open(path) as f:
+            content = f.read()
+        for match in IMPORT_YAML_RE.finditer(content):
+            rel = match.group(1)
+            if not rel.startswith("data/"):
+                continue
+            full = os.path.join(STATES_DIR, rel)
+            usage.setdefault(full, set()).add(os.path.basename(path))
+    return {k: sorted(v) for k, v in usage.items()}
+
+
+def _fmt_list(items, empty_text):
+    return ", ".join(f"`{item}`" for item in sorted(set(items))) if items else empty_text
+
+
+def generate_data_inventory_docs(summaries, usage):
+    info_map = {rel: info for rel, info in summaries}
+    eng = [
+        HEADER,
+        "# Data Inventory\n",
+        "Mapping of `states/data/*.yaml` sections to consumer states.\n",
+    ]
+    rus = [
+        HEADER,
+        "# Инвентарь data-файлов\n",
+        "Связь `states/data/*.yaml` и состояний, которые их импортируют.\n",
+    ]
+
+    for rel in sorted(info_map):
+        consumers = usage.get(rel, [])
+        sections = info_map[rel]
+
+        eng.append(f"\n## `{rel}`")
+        eng.append(f"**Used by:** {_fmt_list(consumers, '_Unused_')}\n")
+        if isinstance(sections, str):
+            eng.append(f"_{sections}_\n")
+        else:
+            for section in sections:
+                eng.append(f"- {section}")
+            eng.append("")
+
+        rus.append(f"\n## `{rel}`")
+        rus.append(f"**Используют:** {_fmt_list(consumers, '_Не используется_')}\n")
+        if isinstance(sections, str):
+            rus.append(f"_{sections}_\n")
+        else:
+            for section in sections:
+                rus.append(f"- {section}")
+            rus.append("")
+
+    return "\n".join(eng) + "\n", "\n".join(rus) + "\n"
+
+
 def main():
     if not os.path.isdir(STATES_DIR):
         print(f"Error: {STATES_DIR} not found. Run from project root.", file=sys.stderr)
         sys.exit(1)
 
     os.makedirs(MEMORY_DIR, exist_ok=True)
+    os.makedirs(DOCS_DIR, exist_ok=True)
 
     # 1. Macros
     jinja_files = sorted(glob.glob(os.path.join(STATES_DIR, "_macros_*.jinja")))
@@ -298,6 +456,29 @@ def main():
     with open(data_path, "w") as f:
         f.write(data_md)
     print(f"Wrote {data_path} ({len(summaries)} files, {data_md.count(chr(10))} lines)")
+
+    usage = collect_data_usage()
+    eng_inventory, rus_inventory = generate_data_inventory_docs(summaries, usage)
+    inventory_path = os.path.join(DOCS_DIR, "data-inventory.md")
+    inventory_ru_path = os.path.join(DOCS_DIR, "data-inventory.ru.md")
+    with open(inventory_path, "w") as f:
+        f.write(eng_inventory)
+    with open(inventory_ru_path, "w") as f:
+        f.write(rus_inventory)
+    print(f"Wrote {inventory_path} and {inventory_ru_path}")
+
+    # 4. State dependency map docs
+    graph, reverse, guards_map = build_state_graph(state_results)
+    eng_map, rus_map = generate_state_map_docs(graph, reverse, guards_map)
+    eng_path = os.path.join(DOCS_DIR, "state-map.md")
+    rus_path = os.path.join(DOCS_DIR, "state-map.ru.md")
+    with open(eng_path, "w") as f:
+        f.write(eng_map)
+    with open(rus_path, "w") as f:
+        f.write(rus_map)
+    print(f"Wrote {eng_path} and {rus_path}")
+
+    write_knowledge_base(macros, state_results, summaries)
 
 
 if __name__ == "__main__":
