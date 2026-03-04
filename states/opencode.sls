@@ -17,7 +17,7 @@
 {%- endmacro -%}
 {{ ensure_dir('opencode_config_dir', home ~ '/.config/opencode') }}
 {{ user_file_recurse('opencode_config', home ~ '/.config/opencode', 'salt://dotfiles/dot_config/opencode') }}
-{{ ensure_dir('proxypilot_config_dir', home ~ '/.config/proxypilot', mode='0700') }}
+{{ ensure_dir('proxypilot_config_dir', home ~ '/.config/proxypilot') }}
 proxypilot_config:
   file.managed:
     - name: {{ home }}/.config/proxypilot/config.yaml
@@ -26,12 +26,21 @@ proxypilot_config:
     - user: {{ user }}
     - group: {{ user }}
     - mode: '0600'
-    - makedirs: True
     - context:
         user: {{ user }}
         home: {{ home }}
-{{ ensure_dir('codex_config_dir', home ~ '/.codex', mode='0700') }}
-{{ user_file_recurse('codex_config', home ~ '/.codex', 'salt://dotfiles/dot_codex') }}
+    - require:
+      - file: proxypilot_config_dir
+{{ ensure_dir('codex_config_dir', home ~ '/.codex') }}
+codex_config:
+  file.recurse:
+    - name: {{ home }}/.codex
+    - source: salt://dotfiles/dot_codex
+    - user: {{ user }}
+    - group: {{ user }}
+    - makedirs: True
+    - require:
+      - file: codex_config_dir
 
 # Keep Codex auth in Salt state; value is resolved from gopass at apply time.
 codex_auth:
