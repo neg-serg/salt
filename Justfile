@@ -43,7 +43,8 @@ lint:
     .venv/bin/python3 scripts/lint-units.py
     .venv/bin/python3 scripts/lint-qml.py
     .venv/bin/python3 scripts/render-matrix.py
-    shellcheck scripts/*.sh states/scripts/*.sh
+    # ShellCheck only understands sh/bash; skip zsh scripts.
+    bash -c 'set -euo pipefail; files=(); while IFS= read -r -d "" path; do first=$(head -n1 "$path"); case "$first" in ("#!/usr/bin/env bash"*|"#!/bin/bash"*|"#!/usr/bin/env sh"*|"#!/bin/sh"*|"#!/usr/bin/env dash"*|"#!/bin/dash"*) files+=("$path");; esac; done < <(find scripts states/scripts -maxdepth 1 -name "*.sh" -print0); if [ ${#files[@]} -gt 0 ]; then shellcheck -e SC2129 "${files[@]}"; else echo "No bash scripts for shellcheck"; fi'
     yamllint states/data/*.yaml states/configs/*.yaml .github/workflows/*.yaml
     taplo check $(find . -name '*.toml' -not -path './.venv/*' -not -path './.salt_runtime/*' 2>/dev/null)
 
