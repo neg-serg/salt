@@ -1,0 +1,19 @@
+#!/usr/bin/env zsh
+set -euo pipefail
+
+CLAUDE_PROXY_URL=${CLAUDE_PROXY_URL:-http://127.0.0.1:8317}
+
+if [[ -z ${PROXYPILOT_API_KEY:-} ]]; then
+  print -u2 -- "PROXYPILOT_API_KEY is not set; run chezmoi apply or source secrets first."
+  exit 1
+fi
+
+if ! command -v claude >/dev/null 2>&1; then
+  print -u2 -- "claude CLI is not installed or not on PATH."
+  exit 1
+fi
+
+exec env \
+  ANTHROPIC_BASE_URL="${CLAUDE_PROXY_URL}" \
+  ANTHROPIC_API_KEY="${PROXYPILOT_API_KEY}" \
+  claude "$@"
