@@ -74,7 +74,7 @@
 {{ pip_pkg('dr14_tmeter', pkg='git+https://github.com/simon-r/dr14_t.meter.git', env='GIT_CONFIG_GLOBAL=/dev/null') }}
 
 # --- cargo: tailray (needs dbus headers, has onlyif guards) ---
-{{ cargo_pkg('tailray', git='https://github.com/NotAShelf/tailray', onlyif=['pkg-config --exists dbus-1', 'command -v cargo']) }}
+{{ cargo_pkg('tailray', git='https://github.com/NotAShelf/tailray', version=ver.tailray, onlyif=['pkg-config --exists dbus-1', 'command -v cargo']) }}
 
 qmk_udev_rules:
   cmd.run:
