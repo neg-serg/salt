@@ -1,0 +1,19 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "autoupdate": false,
+  "compaction": {
+    "auto": true,
+    "prune": true
+  },
+  "provider": {
+    "anthropic": {
+      "options": {
+        "baseURL": "http://127.0.0.1:8317",
+        "timeout": 600000
+      }
+    }
+  },
+  "model": "anthropic/claude-sonnet-4-6",
+  "small_model": "anthropic/haiku",
+  "enabled_providers": ["anthropic"]
+}

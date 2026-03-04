@@ -184,6 +184,29 @@ Every `cmd.run`/`cmd.script` state must have a guard to prevent re-running:
 - **Standard paths**: `/home/neg` for user home, `/mnt/one` and `/mnt/zero` for external storage
 - **Kernel params**: Managed via `/boot/limine.conf` (Limine bootloader)
 
+## ProxyPilot — AI API Proxy
+
+Local proxy for AI coding tools (Claude Code, OpenCode). Routes requests to providers via OAuth tokens.
+
+| Component | Path / Detail |
+|---|---|
+| Binary | `~/.local/bin/proxypilot` (downloaded via `curl_bin` macro) |
+| Config (chezmoi) | `dotfiles/dot_config/proxypilot/config.yaml.tmpl` |
+| Service | `states/units/user/proxypilot.service` (systemd user, always enabled) |
+| Listen | `127.0.0.1:8317` |
+| Auth tokens | `~/.cli-proxy-api/` (OAuth tokens for Gemini, Antigravity) |
+| Version | Pinned in `states/data/versions.yaml` |
+
+**How AI tools connect:**
+- `ANTHROPIC_BASE_URL=http://127.0.0.1:8317` + `ANTHROPIC_API_KEY` from gopass (`api/proxypilot-local`)
+- Claude Code: configured via `~/.claude/settings.json` `env` block + shell env
+- OpenCode: configured via `dotfiles/dot_config/opencode/opencode.json` provider baseURL + shell env
+- Management API: `api/proxypilot-management` key in gopass, localhost-only
+
+**Secrets used:**
+- `api/proxypilot-local` — client API key for auth to the proxy
+- `api/proxypilot-management` — management API key for dashboard/stats
+
 ## Secrets
 
 Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full design.
