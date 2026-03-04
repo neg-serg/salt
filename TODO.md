@@ -19,7 +19,7 @@ Create a dedicated Salt state (`music_analysis.sls` or extend `installers.sls`) 
 Gemini and Antigravity OAuth work fine (tokens added manually before the bug appeared).
 
 **Workaround**: Claude models available through Antigravity provider (`claude-sonnet-4-6`, `claude-opus-4-6-thinking`).
-Both Claude Code and OpenCode are routed through ProxyPilot via `ANTHROPIC_BASE_URL`.
+Developer tools stay proxied (Claude Code/OpenCode configs + `claude-proxy` wrapper), while the stock `claude` CLI now uses Anthropic directly.
 
 - Binary: `~/.local/bin/proxypilot` v0.3.0-dev-0.39 (latest release still has the tui flag bug)
 - Config: `~/.config/proxypilot/config.yaml`

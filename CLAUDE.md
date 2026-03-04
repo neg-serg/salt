@@ -198,7 +198,7 @@ Local proxy for AI coding tools (Claude Code, OpenCode). Routes requests to prov
 | Version | Pinned in `states/data/versions.yaml` |
 
 **How AI tools connect:**
-- `ANTHROPIC_BASE_URL=http://127.0.0.1:8317` + `ANTHROPIC_API_KEY` from gopass (`api/proxypilot-local`)
+- Official Claude CLI talks to Anthropic directly. Use the `claude-proxy` wrapper to export `ANTHROPIC_BASE_URL=http://127.0.0.1:8317` + `ANTHROPIC_API_KEY` (from gopass `api/proxypilot-local`) when you explicitly want ProxyPilot.
 - Claude Code: configured via `~/.claude/settings.json` `env` block + shell env
 - OpenCode: configured via `dotfiles/dot_config/opencode/opencode.json` provider baseURL + shell env
 - Management API: `api/proxypilot-management` key in gopass, localhost-only
