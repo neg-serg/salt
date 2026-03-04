@@ -6,15 +6,15 @@
     "prune": true
   },
   "provider": {
-    "anthropic": {
+    "openai": {
       "options": {
         "baseURL": "http://127.0.0.1:8317/v1",
-        "apiKey": "{env:ANTHROPIC_API_KEY}",
+        "apiKey": "{env:OPENAI_API_KEY}",
         "timeout": 600000
       }
     }
   },
-  "model": "anthropic/claude-sonnet-4-6",
-  "small_model": "anthropic/haiku",
-  "enabled_providers": ["anthropic"]
+  "model": "openai/gpt-5-codex",
+  "small_model": "openai/gpt-5.2",
+  "enabled_providers": ["openai"]
 }
