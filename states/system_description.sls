@@ -52,6 +52,14 @@ system_version_cache_dir:
     - mode: '0755'
     - makedirs: True
 
+download_cache_dir:
+  file.directory:
+    - name: /var/cache/salt/downloads
+    - user: {{ user }}
+    - group: {{ user }}
+    - mode: '0755'
+    - makedirs: True
+
 include:
   # Core: user accounts, shell, disk mounts — foundations for everything else
   - users

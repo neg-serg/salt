@@ -2,7 +2,7 @@
    curl_extract_zip, firefox_extension, download_font_zip, git_clone_deploy,
    http_file #}
 
-{% from '_macros_common.jinja' import user as _user, home as _home, retry_attempts as _retry_attempts, retry_interval as _retry_interval, ver_dir as _ver_dir, sys_ver_dir as _sys_ver_dir %}
+{% from '_macros_common.jinja' import user as _user, home as _home, retry_attempts as _retry_attempts, retry_interval as _retry_interval, ver_dir as _ver_dir, sys_ver_dir as _sys_ver_dir, download_cache as _download_cache %}
 
 {# Download binary directly to ~/.local/bin/ and chmod +x.
    version: when set, enables update-on-version-bump via version file.
@@ -13,12 +13,23 @@
 {%- set _creates = home ~ '/.local/bin/' ~ name -%}
 {%- set _tmp = home ~ '/.local/bin/' ~ name ~ '.tmp' -%}
 {%- set _vd = _ver_dir if user else _sys_ver_dir -%}
+{%- set _cache_key = name ~ '-' ~ (version if version else 'latest') -%}
+{%- set _cache_path = _download_cache ~ '/' ~ _cache_key -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: |
         set -eo pipefail
-        curl -fsSL '{{ url }}' -o {{ _tmp }}
+        cache='{{ _cache_path }}'
+        mkdir -p "$(dirname "$cache")"
+        if [ ! -f "$cache" ]; then
+          curl -fsSL '{{ url }}' -o "$cache.tmp"
 {%- if hash %}
+          echo '{{ hash }}  '"$cache.tmp" | sha256sum -c --strict
+{%- endif %}
+          mv -f "$cache.tmp" "$cache"
+        fi
+        cp "$cache" {{ _tmp }}
+{%- if hash and not version %}
         echo '{{ hash }}  {{ _tmp }}' | sha256sum -c --strict
 {%- endif %}
         chmod +x {{ _tmp }}
@@ -64,18 +75,31 @@ install_{{ name | replace('-', '_') }}:
 {# cargo install (crates.io or git).
    env: shell env prefix string (e.g. 'FOO=bar BAZ=1'); supports shell expansion.
    onlyif: list of guard commands — all must succeed for install to run.
+   version: optional version marker to avoid re-running cargo when unchanged.
    Usage: {{ cargo_pkg('handlr', pkg='handlr-regex') }}
           {{ cargo_pkg('agg', git='https://github.com/asciinema/agg') }}
           {{ cargo_pkg('pzip', bin='pz') }}
           {{ cargo_pkg('wiremix', env='BINDGEN_EXTRA_CLANG_ARGS="..."') }}
-          {{ cargo_pkg('tailray', git='https://...', onlyif=['pkg-config --exists dbus-1', 'command -v cargo']) }}
+          {{ cargo_pkg('tailray', git='https://...', version=ver.tailray, onlyif=['pkg-config --exists dbus-1', 'command -v cargo']) }}
 #}
-{%- macro cargo_pkg(name, pkg=None, bin=None, git=None, env=None, onlyif=None, user=_user, home=_home) -%}
+{%- macro cargo_pkg(name, pkg=None, bin=None, git=None, env=None, onlyif=None, version=None, user=_user, home=_home) -%}
+{%- set _marker_dir = _ver_dir if user == _user else _sys_ver_dir -%}
+{%- set _marker = _marker_dir ~ '/' ~ name -%}
+{%- set _bin_path = home ~ '/.local/share/cargo/bin/' ~ (bin or name) -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
-    - name: {{ env ~ ' ' if env else '' }}cargo install {{ '--git ' ~ git if git else pkg or name }}
+    - name: |
+        {{ env ~ ' ' if env else '' }}cargo install {{ '--git ' ~ git if git else pkg or name }}
+{%- if version %}
+        mkdir -p {{ _marker_dir }}
+        echo '{{ version }}' > {{ _marker }}
+{%- endif %}
     - runas: {{ user }}
-    - creates: {{ home }}/.local/share/cargo/bin/{{ bin or name }}
+{%- if version %}
+    - unless: runuser -u {{ user }} -- /bin/sh -c "test -x '{{ _bin_path }}' && test -f '{{ _marker }}' && grep -qx '{{ version }}' '{{ _marker }}'"
+{%- else %}
+    - creates: {{ _bin_path }}
+{%- endif %}
 {%- if onlyif %}
     - onlyif:
 {%- for check in onlyif %}
@@ -109,6 +133,8 @@ install_{{ name | replace('-', '_') }}:
 {%- set target_dir = bin_dest or '~/.local/bin' -%}
 {%- set _creates = creates or ((dest | replace('~', home)) if dest else (bin_dest or home ~ '/.local/bin') ~ '/' ~ (bin or (binaries[0] if binaries else binary_pattern.rsplit('/', 1)[-1]))) -%}
 {%- set _vd = _ver_dir if user else _sys_ver_dir -%}
+{%- set _cache_key = name ~ '-' ~ (version if version else 'latest') -%}
+{%- set _cache_path = _download_cache ~ '/' ~ _cache_key ~ '.' ~ archive_ext -%}
 {%- if fetch_tag %}
 {%- if '/api.github.com/repos/' in url %}
 {%- set repo_path = url.split('/repos/')[1].split('/')[0:2] | join('/') %}
@@ -122,16 +148,24 @@ install_{{ name | replace('-', '_') }}:
         set -eo pipefail
         _td=$(mktemp -d)
         trap 'rm -rf "$_td"' EXIT
+        cache_dir='{{ _download_cache }}'
+        mkdir -p "$cache_dir"
+        cache='{{ _cache_path }}'
 {%- if fetch_tag %}
         TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ repo_path }}/releases/latest | rg -oP '[^/]+$')
 {%- if strip_v %}
         VER=${TAG#v}
 {%- endif %}
+        cache="$cache_dir/{{ name }}-${TAG:-latest}.{{ archive_ext }}"
 {%- endif %}
-        curl -fsSL "{{ url }}" -o "$_td/archive.{{ archive_ext }}"
+        if [ ! -f "$cache" ]; then
+          curl -fsSL "{{ url }}" -o "$cache.tmp"
 {%- if hash %}
-        echo '{{ hash }}  '"$_td/archive.{{ archive_ext }}" | sha256sum -c --strict
+          echo '{{ hash }}  '"$cache.tmp" | sha256sum -c --strict
 {%- endif %}
+          mv -f "$cache.tmp" "$cache"
+        fi
+        cp "$cache" "$_td/archive.{{ archive_ext }}"
 {%- if dest %}
         mkdir -p {{ dest }}
         tar -x{{ ext_flag }}f "$_td/archive.{{ archive_ext }}" -C {{ dest }}{{ ' --strip-components=' ~ strip_components if strip_components }}
@@ -188,16 +222,24 @@ install_{{ name | replace('-', '_') }}:
 {%- set out_name = bin or (binaries[0] if binaries else (binary_path.rsplit('/', 1)[-1] if binary_path else name)) -%}
 {%- set _creates = creates or ((dest | replace('~', home)) if dest else home ~ '/.local/bin/' ~ out_name) -%}
 {%- set _vd = _ver_dir if user else _sys_ver_dir -%}
+{%- set _cache_key = name ~ '-' ~ (version if version else 'latest') -%}
+{%- set _cache_path = _download_cache ~ '/' ~ _cache_key ~ '.zip' -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: |
         set -eo pipefail
         _td=$(mktemp -d)
         trap 'rm -rf "$_td"' EXIT
-        curl -fsSL "{{ url }}" -o "$_td/archive.zip"
+        cache='{{ _cache_path }}'
+        mkdir -p "$(dirname "$cache")"
+        if [ ! -f "$cache" ]; then
+          curl -fsSL "{{ url }}" -o "$cache.tmp"
 {%- if hash %}
-        echo '{{ hash }}  '"$_td/archive.zip" | sha256sum -c --strict
+          echo '{{ hash }}  '"$cache.tmp" | sha256sum -c --strict
 {%- endif %}
+          mv -f "$cache.tmp" "$cache"
+        fi
+        cp "$cache" "$_td/archive.zip"
 {%- if dest %}
         mkdir -p {{ dest }}
         unzip -o "$_td/archive.zip" -d {{ dest }}
@@ -269,6 +311,8 @@ floorp_ext_{{ ext.slug | replace('-', '_') }}:
 #}
 {%- macro download_font_zip(name, url, subdir, hash=None, version=None, user=_user, home=_home) -%}
 {%- set fonts_dir = home ~ '/.local/share/fonts' -%}
+{%- set _cache_key = name ~ '-' ~ (version if version else 'latest') -%}
+{%- set _cache_path = _download_cache ~ '/' ~ _cache_key ~ '.zip' -%}
 {{ name }}_font_dir:
   file.directory:
     - name: {{ fonts_dir }}/{{ subdir }}
@@ -282,10 +326,16 @@ install_{{ name }}:
         set -eo pipefail
         _td=$(mktemp -d)
         trap 'rm -rf "$_td"' EXIT
-        curl -fsSL '{{ url }}' -o "$_td/archive.zip"
+        cache='{{ _cache_path }}'
+        mkdir -p "$(dirname "$cache")"
+        if [ ! -f "$cache" ]; then
+          curl -fsSL '{{ url }}' -o "$cache.tmp"
 {%- if hash %}
-        echo '{{ hash }}  '"$_td/archive.zip" | sha256sum -c --strict
+          echo '{{ hash }}  '"$cache.tmp" | sha256sum -c --strict
 {%- endif %}
+          mv -f "$cache.tmp" "$cache"
+        fi
+        cp "$cache" "$_td/archive.zip"
         unzip -o "$_td/archive.zip" -d {{ fonts_dir }}/{{ subdir }}
         fc-cache -f {{ fonts_dir }}/{{ subdir }}
 {%- if version %}
@@ -352,10 +402,14 @@ install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: |
         set -eo pipefail
-        tmp='{{ dest }}.tmp'
-        curl -fsSL '{{ url }}' -o "$tmp"
-        install -m {{ mode }} -D "$tmp" '{{ dest }}'
-        rm -f "$tmp"
+        cache_dir='{{ _download_cache }}'
+        mkdir -p "$cache_dir"
+        cache="$cache_dir/{{ name }}"
+        if [ ! -f "$cache" ]; then
+          curl -fsSL '{{ url }}' -o "$cache.tmp"
+          mv -f "$cache.tmp" "$cache"
+        fi
+        install -m {{ mode }} -D "$cache" '{{ dest }}'
     - runas: {{ user }}
     - shell: /bin/bash
     - creates: {{ creates or dest }}
