@@ -76,10 +76,9 @@ duckdns_script:
 # --- Transmission: ensure watch directory access + auto-add settings ---
 {% if svc.transmission %}
 {% set transmission_cfg = '/var/lib/transmission/.config/transmission-daemon/settings.json' %}
-{% set transmission_watch_dir_root = home ~ '/dw' %}
-{% set transmission_watch_dir = transmission_watch_dir_root ~ '/' %}
+{% set transmission_watch_dir = home ~ '/dw' %}
 
-{{ ensure_dir('transmission_watch_dir_path', transmission_watch_dir_root) }}
+{{ ensure_dir('transmission_watch_dir_path', transmission_watch_dir) }}
 
 transmission_watch_acl_home:
   cmd.run:
@@ -92,11 +91,9 @@ transmission_watch_acl_dir:
   cmd.run:
     - name: |
         set -eo pipefail
-        setfacl -m u:transmission:rwX {{ home }}/dw
-        setfacl -d -m u:transmission:rwX {{ home }}/dw
-    - unless: |
-        getfacl -p {{ home }}/dw | rg -q '^user:transmission:rwx$' && getfacl -d {{ home }}/dw | rg -q '^default:user:transmission:rwx$'
-    - onlyif: test -d {{ home }}/dw
+        setfacl -m u:transmission:rwX {{ transmission_watch_dir }}
+        setfacl -d -m u:transmission:rwX {{ transmission_watch_dir }}
+    - unless: /bin/bash -c "getfacl -p {{ transmission_watch_dir }} | rg -q '^user:transmission:rwx$' && getfacl -d {{ transmission_watch_dir }} | rg -q '^default:user:transmission:rwx$'"
     - require:
       - cmd: install_transmission
       - cmd: transmission_watch_acl_home
@@ -120,12 +117,7 @@ transmission_watch_dir:
         rm -f "$tmp"
     - shell: /bin/bash
     - onlyif: test -f {{ transmission_cfg }}
-    - unless: python3 - <<'PY'
-        import json, sys
-        cfg = "{{ transmission_cfg }}"
-        data = json.load(open(cfg))
-        sys.exit(0 if data.get("watch-dir") == "{{ transmission_watch_dir }}" and data.get("watch-dir-enabled") is True else 1)
-        PY
+    - unless: python3 -c "import json, sys; cfg='{{ transmission_cfg }}'; data=json.load(open(cfg)); sys.exit(0 if data.get('watch-dir') == '{{ transmission_watch_dir }}' and data.get('watch-dir-enabled') is True else 1)"
     - require:
       - cmd: install_transmission
       - cmd: transmission_watch_acl_dir
