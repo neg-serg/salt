@@ -51,21 +51,15 @@ amneziawg_tools_bin:
       - cmd: amnezia_build
 
 # Symlinks for sudo access
-amneziawg_go_symlink:
+{% for bin_name, bin_state in [('amneziawg-go', 'amneziawg_go_bin'), ('awg', 'amneziawg_tools_bin')] %}
+{{ bin_name | replace('-', '_') }}_symlink:
   file.symlink:
-    - name: /usr/local/bin/amneziawg-go
-    - target: {{ home }}/.local/bin/amneziawg-go
+    - name: /usr/local/bin/{{ bin_name }}
+    - target: {{ home }}/.local/bin/{{ bin_name }}
     - force: True
     - require:
-      - file: amneziawg_go_bin
-
-awg_symlink:
-  file.symlink:
-    - name: /usr/local/bin/awg
-    - target: {{ home }}/.local/bin/awg
-    - force: True
-    - require:
-      - file: amneziawg_tools_bin
+      - file: {{ bin_state }}
+{% endfor %}
 
 amnezia_vpn_bin:
   file.managed:
@@ -78,23 +72,17 @@ amnezia_vpn_bin:
       - cmd: amnezia_build
 
 # Verification (only runs when the binary actually changed)
-amneziawg_go_verify:
+{% for state_id, cmd, bin_state in [
+  ('amneziawg_go', home ~ '/.local/bin/amneziawg-go --version', 'amneziawg_go_bin'),
+  ('awg', home ~ '/.local/bin/awg --version', 'amneziawg_tools_bin'),
+  ('amnezia_vpn', 'ldd ' ~ home ~ '/.local/bin/AmneziaVPN', 'amnezia_vpn_bin'),
+] %}
+{{ state_id }}_verify:
   cmd.run:
-    - name: {{ home }}/.local/bin/amneziawg-go --version
+    - name: {{ cmd }}
     - onchanges:
-      - file: amneziawg_go_bin
-
-awg_verify:
-  cmd.run:
-    - name: {{ home }}/.local/bin/awg --version
-    - onchanges:
-      - file: amneziawg_tools_bin
-
-amnezia_vpn_verify:
-  cmd.run:
-    - name: ldd {{ home }}/.local/bin/AmneziaVPN
-    - onchanges:
-      - file: amnezia_vpn_bin
+      - file: {{ bin_state }}
+{% endfor %}
 
 {{ ensure_dir('amnezia_apps_dir', home ~ '/.local/share/applications') }}
 

@@ -2,10 +2,6 @@
 # On Arch/CachyOS, pipewire is a bare daemon; audio modules are separate packages
 {% from '_macros_pkg.jinja' import pacman_install %}
 
-{{ pacman_install('pipewire-audio', 'pipewire-audio', check='pipewire-audio') }}
-{{ pacman_install('wireplumber', 'wireplumber') }}
-{{ pacman_install('pipewire-pulse', 'pipewire-pulse') }}
-{{ pacman_install('pipewire-alsa', 'pipewire-alsa') }}
-{{ pacman_install('pipewire-jack', 'pipewire-jack') }}
-{{ pacman_install('alsa-utils', 'alsa-utils') }}
-{{ pacman_install('playerctl', 'playerctl') }}
+{% for pkg in ['pipewire-audio', 'wireplumber', 'pipewire-pulse', 'pipewire-alsa', 'pipewire-jack', 'alsa-utils', 'playerctl'] %}
+{{ pacman_install(pkg, pkg) }}
+{% endfor %}
