@@ -66,4 +66,5 @@ paru_install:
   bottles: bottles
   proton-ge: proton-ge-custom-bin
   xwaylandvideobridge: xwaylandvideobridge
+  yandex-browser: yandex-browser
   # rofi-file-browser-extended: moved to installers_desktop.sls (needs CMAKE_POLICY_VERSION_MINIMUM for CMake 4.0)
