@@ -22,7 +22,7 @@ echo "=== Moving data ==="
 if [ -d "$src" ] && [ "$(ls -A "$src" 2>/dev/null)" ]; then
     mv "$src"/* "$dst/"
     chown -R "$user:$user" "$dst"
-    echo "Moved $(ls "$dst" | wc -l) items"
+    echo "Moved $(find "$dst" -maxdepth 1 -mindepth 1 | wc -l) items"
 else
     echo "(nothing to move)"
 fi
