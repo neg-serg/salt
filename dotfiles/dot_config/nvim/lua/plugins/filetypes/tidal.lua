@@ -3,7 +3,7 @@
 -- └───────────────────────────────────────────────────────────────────────────────────┘
 return {
     'grddavies/tidal.nvim',
-    ft = 'tidal',
+    event = { 'BufRead *.tidal', 'BufNewFile *.tidal' },
     opts = {
         boot = {
             tidal = {
