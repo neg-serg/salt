@@ -28,3 +28,12 @@ disks:
 btrfs_compress:
   - /home
   - /var
+
+# btrfs nocow: disable copy-on-write for high-churn directories.
+# Reduces fragmentation and write amplification for caches, databases, containers.
+# chattr +C only affects new files in existing dirs; existing files keep CoW.
+btrfs_nocow:
+  - /var/lib/bitcoind
+  - /var/lib/containers
+  - /var/lib/jellyfin
+  - /var/log
