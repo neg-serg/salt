@@ -73,12 +73,14 @@ duckdns_script:
 {{ service_with_unit('duckdns-update', 'salt://units/duckdns-update.timer', unit_type='timer', enabled=False, companion='salt://units/duckdns-update.service') }}
 {% endif %}
 
-# --- Transmission: ensure watch directory access + auto-add settings ---
+# --- Transmission: directories, ACLs, settings ---
 {% if svc.transmission %}
 {% set transmission_cfg = '/var/lib/transmission/.config/transmission-daemon/settings.json' %}
 {% set transmission_watch_dir = home ~ '/dw' %}
+{% set transmission_download_dir = home ~ '/torrent/data' %}
 
 {{ ensure_dir('transmission_watch_dir', transmission_watch_dir) }}
+{{ ensure_dir('transmission_download_dir', transmission_download_dir) }}
 
 transmission_watch_acl_home:
   cmd.run:
@@ -87,7 +89,7 @@ transmission_watch_acl_home:
     - require:
       - cmd: install_transmission
 
-transmission_watch_acl_dir:
+transmission_acl_watch:
   cmd.run:
     - name: |
         set -e
@@ -98,6 +100,29 @@ transmission_watch_acl_dir:
       - cmd: install_transmission
       - cmd: transmission_watch_acl_home
 
+transmission_acl_download:
+  cmd.run:
+    - name: |
+        set -e
+        setfacl -m u:transmission:rx {{ home }}/torrent
+        setfacl -m u:transmission:rwX {{ transmission_download_dir }}
+        setfacl -d -m u:transmission:rwX {{ transmission_download_dir }}
+    - unless: getfacl -p {{ transmission_download_dir }} | rg -q '^user:transmission:rwx$' && getfacl -d {{ transmission_download_dir }} | rg -q '^default:user:transmission:rwx$'
+    - require:
+      - cmd: install_transmission
+      - cmd: transmission_watch_acl_home
+      - file: transmission_download_dir
+
+transmission_download_dir_setting:
+  file.replace:
+    - name: {{ transmission_cfg }}
+    - pattern: '^\s*"download-dir"\s*:\s*".*"(?P<suffix>,?)'
+    - repl: '    "download-dir": "{{ transmission_download_dir }}"\g<suffix>'
+    - flags: MULTILINE
+    - require:
+      - cmd: install_transmission
+      - cmd: transmission_acl_download
+
 transmission_watch_dir_setting:
   file.replace:
     - name: {{ transmission_cfg }}
@@ -106,7 +131,7 @@ transmission_watch_dir_setting:
     - flags: MULTILINE
     - require:
       - cmd: install_transmission
-      - cmd: transmission_watch_acl_dir
+      - cmd: transmission_acl_watch
 
 transmission_watch_dir_enabled:
   file.replace:
@@ -117,17 +142,19 @@ transmission_watch_dir_enabled:
     - require:
       - file: transmission_watch_dir_setting
 
-transmission_stop_before_watchdir_change:
+transmission_stop_before_settings_change:
   service.dead:
     - name: transmission
     - prereq:
+      - file: transmission_download_dir_setting
       - file: transmission_watch_dir_setting
       - file: transmission_watch_dir_enabled
 
-transmission_restart_after_watchdir_change:
+transmission_restart_after_settings_change:
   service.running:
     - name: transmission
     - watch:
+      - file: transmission_download_dir_setting
       - file: transmission_watch_dir_setting
       - file: transmission_watch_dir_enabled
     - require:
