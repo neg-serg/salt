@@ -95,7 +95,7 @@ transmission_acl_watch:
         set -e
         setfacl -m u:transmission:rwX {{ transmission_watch_dir }}
         setfacl -d -m u:transmission:rwX {{ transmission_watch_dir }}
-    - unless: getfacl -p {{ transmission_watch_dir }} | rg -q '^user:transmission:rwx$' && getfacl -d {{ transmission_watch_dir }} | rg -q '^default:user:transmission:rwx$'
+    - unless: getfacl -p {{ transmission_watch_dir }} | rg -q '^user:transmission:rwx$' && getfacl -d {{ transmission_watch_dir }} | rg -q '^user:transmission:rwx$'
     - require:
       - cmd: install_transmission
       - cmd: transmission_watch_acl_home
@@ -107,7 +107,7 @@ transmission_acl_download:
         setfacl -m u:transmission:rx {{ home }}/torrent
         setfacl -m u:transmission:rwX {{ transmission_download_dir }}
         setfacl -d -m u:transmission:rwX {{ transmission_download_dir }}
-    - unless: getfacl -p {{ transmission_download_dir }} | rg -q '^user:transmission:rwx$' && getfacl -d {{ transmission_download_dir }} | rg -q '^default:user:transmission:rwx$'
+    - unless: getfacl -p {{ transmission_download_dir }} | rg -q '^user:transmission:rwx$' && getfacl -d {{ transmission_download_dir }} | rg -q '^user:transmission:rwx$'
     - require:
       - cmd: install_transmission
       - cmd: transmission_watch_acl_home
