@@ -169,6 +169,39 @@ Every `cmd.run`/`cmd.script` state must have a guard to prevent re-running:
 - Short one-liners or simple pipes (firewall rules, group membership, config checks).
 - Inline content that is clearer in context than as a separate file.
 
+**Examples from this codebase:**
+
+```yaml
+# cmd.run ✓ — one-liner, guard via onchanges (sysctl.sls)
+sysctl_apply:
+  cmd.run:
+    - name: sysctl --system
+    - onchanges:
+      - file: sysctl_config
+
+# cmd.run ✓ — single command, unless guard (users.sls)
+neg_groups:
+  cmd.run:
+    - name: usermod -aG wheel,libvirt,plugdev {{ user }}
+    - unless: id -nG {{ user }} | tr ' ' '\n' | rg -qx plugdev
+
+# cmd.script ✓ — 83-line parallel podman build (amnezia.sls → scripts/amnezia-build.sh)
+amnezia_build:
+  cmd.script:
+    - source: salt://scripts/amnezia-build.sh
+    - shell: /bin/bash
+    - timeout: 3600
+    - unless: test -f {{ cache }}/amneziawg-go-bin && ...
+    - retry: {attempts: 3, interval: 10}
+
+# cmd.script ✓ — 72-line awk/sed config parsing (kernel_params_limine.sls → scripts/limine-restructure.sh)
+limine_flat_boot_entries:
+  cmd.script:
+    - source: salt://scripts/limine-restructure.sh
+    - shell: /bin/bash
+    - unless: rg -q '^/CachyOS LTS' /boot/limine.conf
+```
+
 ## Conventions
 
 - **Chezmoi naming**: `dot_config/foo/bar` deploys to `~/.config/foo/bar`
