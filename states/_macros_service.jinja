@@ -338,6 +338,63 @@
     - env:
       - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
       - DBUS_SESSION_BUS_ADDRESS: unix:path={{ host.runtime_dir }}/bus
+    - unless: |
+        python3 - <<'PY'
+        import os
+        import subprocess
+        import sys
+
+        enable_only = {{ svc_list | tojson }}
+        start_units = {{ now_list | tojson }}
+        check = "{{ check }}"
+        start_check = 'active' if check == 'enabled' else check
+        env = os.environ.copy()
+        env['XDG_RUNTIME_DIR'] = '{{ host.runtime_dir }}'
+        env['DBUS_SESSION_BUS_ADDRESS'] = 'unix:path={{ host.runtime_dir }}/bus'
+
+        def list_units(mode):
+            commands = {
+                'enabled': ['systemctl', '--user', 'list-unit-files', '--state=enabled', '--no-legend', '--plain'],
+                'active': ['systemctl', '--user', 'list-units', '--state=active', '--no-legend', '--plain'],
+            }
+            cmd = commands.get(mode)
+            if not cmd:
+                return None
+            proc = subprocess.run(cmd, env=env, check=False, capture_output=True, text=True)
+            if proc.returncode not in (0, 1):
+                proc.check_returncode()
+            names = set()
+            for line in proc.stdout.splitlines():
+                parts = line.split()
+                if parts:
+                    names.add(parts[0])
+            return names
+
+        enable_cache = list_units(check)
+        start_cache = enable_cache if start_check == check else list_units(start_check)
+
+        def missing(units, cache, mode):
+            missing_units = []
+            if not units:
+                return missing_units
+            for unit in units:
+                if not unit:
+                    continue
+                if cache is not None:
+                    present = unit in cache
+                else:
+                    present = subprocess.run(['systemctl', '--user', f'is-{mode}', unit], env=env).returncode == 0
+                if not present:
+                    missing_units.append(unit)
+            return missing_units
+
+        pending_enable = missing(enable_only, enable_cache, check)
+        pending_start = missing(start_units, start_cache, start_check)
+
+        if not pending_enable and not pending_start:
+            sys.exit(0)
+        sys.exit(1)
+        PY
 {%- if onlyif %}
     - onlyif: {{ onlyif }}
 {%- endif %}
@@ -389,7 +446,7 @@
       - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
       - DBUS_SESSION_BUS_ADDRESS: unix:path={{ host.runtime_dir }}/bus
     - onlyif: |
-        runuser -u {{ user }} -- python3 - <<'PY'
+        python3 - <<'PY'
         import os
         import subprocess
         import sys
