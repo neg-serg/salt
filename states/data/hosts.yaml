@@ -57,6 +57,7 @@ defaults:
     kanata: true
     flatpak: true
     music_analysis: false
+    tidal: false
 
 hosts:
   telfir:
@@ -80,6 +81,7 @@ hosts:
         mail: false
         vdirsyncer: false
       music_analysis: true
+      tidal: true
 
 aliases:
   cachyos: telfir
