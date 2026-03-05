@@ -1,4 +1,4 @@
-{% from '_imports.jinja' import host, user %}
+{% from '_imports.jinja' import host, user, home %}
 {% from '_macros_service.jinja' import ensure_dir, system_daemon_user, service_with_unit, service_stopped %}
 {% from '_macros_install.jinja' import curl_extract_tar %}
 {% from '_macros_pkg.jinja' import pacman_install, simple_service %}
@@ -71,4 +71,69 @@ duckdns_script:
 
 # Timer disabled by default — enable after creating /etc/duckdns.env
 {{ service_with_unit('duckdns-update', 'salt://units/duckdns-update.timer', unit_type='timer', enabled=False, companion='salt://units/duckdns-update.service') }}
+{% endif %}
+
+# --- Transmission: ensure watch directory access + auto-add settings ---
+{% if svc.transmission %}
+{% set transmission_cfg = '/var/lib/transmission/.config/transmission-daemon/settings.json' %}
+{% set transmission_watch_dir_root = home ~ '/dw' %}
+{% set transmission_watch_dir = transmission_watch_dir_root ~ '/' %}
+
+{{ ensure_dir('transmission_watch_dir_path', transmission_watch_dir_root) }}
+
+transmission_watch_acl_home:
+  cmd.run:
+    - name: setfacl -m u:transmission:rx {{ home }}
+    - unless: getfacl -p {{ home }} | rg -q '^user:transmission:r-x$'
+    - require:
+      - cmd: install_transmission
+
+transmission_watch_acl_dir:
+  cmd.run:
+    - name: |
+        set -eo pipefail
+        setfacl -m u:transmission:rwX {{ home }}/dw
+        setfacl -d -m u:transmission:rwX {{ home }}/dw
+    - unless: |
+        getfacl -p {{ home }}/dw | rg -q '^user:transmission:rwx$' && getfacl -d {{ home }}/dw | rg -q '^default:user:transmission:rwx$'
+    - onlyif: test -d {{ home }}/dw
+    - require:
+      - cmd: install_transmission
+      - cmd: transmission_watch_acl_home
+
+transmission_watch_dir:
+  cmd.run:
+    - name: |
+        set -eo pipefail
+        cfg='{{ transmission_cfg }}'
+        tmp=$(mktemp)
+        python3 - <<'PY' "$cfg" "$tmp"
+        import json, sys, pathlib
+        cfg = pathlib.Path(sys.argv[1])
+        tmp = pathlib.Path(sys.argv[2])
+        data = json.loads(cfg.read_text())
+        data["watch-dir"] = "{{ transmission_watch_dir }}"
+        data["watch-dir-enabled"] = True
+        tmp.write_text(json.dumps(data, indent=4, sort_keys=True))
+        PY
+        install -m 0640 -o transmission -g transmission "$tmp" "$cfg"
+        rm -f "$tmp"
+    - shell: /bin/bash
+    - onlyif: test -f {{ transmission_cfg }}
+    - unless: python3 - <<'PY'
+        import json, sys
+        cfg = "{{ transmission_cfg }}"
+        data = json.load(open(cfg))
+        sys.exit(0 if data.get("watch-dir") == "{{ transmission_watch_dir }}" and data.get("watch-dir-enabled") is True else 1)
+        PY
+    - require:
+      - cmd: install_transmission
+      - cmd: transmission_watch_acl_dir
+
+transmission_restart_on_watchdir_change:
+  cmd.run:
+    - name: systemctl restart transmission
+    - onlyif: systemctl is-active transmission >/dev/null 2>&1
+    - onchanges:
+      - cmd: transmission_watch_dir
 {% endif %}
