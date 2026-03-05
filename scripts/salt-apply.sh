@@ -96,7 +96,7 @@ autoload_dynamic_modules: False
 # Don't traverse non-SLS dirs (configs/, scripts/, units/, data/, build/)
 fileserver_limit_traversal: True
 # Limit parallel state processes (parallel: True in states)
-process_count_max: 8
+process_count_max: 16
 EOF
 }
 
