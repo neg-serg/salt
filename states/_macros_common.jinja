@@ -16,6 +16,11 @@
 {%- set healthcheck_timeout = 30 -%}
 {%- set sudo_timeout_minutes = 30 -%}
 {%- set ollama_pull_timeout = 660 -%}
+
+{#- Shell one-liner: write version marker file (used inside cmd.run name: blocks) -#}
+{%- macro ver_stamp(vd, name, version) -%}
+mkdir -p {{ vd }} && echo '{{ version }}' > {{ vd }}/{{ name }}
+{%- endmacro -%}
 {%- set service_ports = {
     'loki':     {'port': 3100, 'healthcheck': '/ready'},
     'promtail': {'port': 9080, 'healthcheck': '/ready'},

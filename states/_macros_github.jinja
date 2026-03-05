@@ -1,6 +1,6 @@
 {# GitHub release macros: github_tar, github_release_system, github_release_to #}
 
-{% from '_macros_common.jinja' import user as _user, home as _home, retry_attempts as _retry_attempts, retry_interval as _retry_interval, ver_dir as _ver_dir, sys_ver_dir as _sys_ver_dir %}
+{% from '_macros_common.jinja' import user as _user, home as _home, retry_attempts as _retry_attempts, retry_interval as _retry_interval, ver_dir as _ver_dir, sys_ver_dir as _sys_ver_dir, ver_stamp as _ver_stamp %}
 
 {# Download tar.gz, extract single binary to ~/.local/bin/.
    version: when set, enables update-on-version-bump via version file.
@@ -22,7 +22,7 @@ install_{{ name | replace('-', '_') }}:
         tar -xzf "$_td/archive.tar.gz" -C "$_td"
         find "$_td" -name '{{ name }}' -type f -exec install -m 0755 {} ~/.local/bin/{{ name }} \;
 {%- if version %}
-        mkdir -p {{ _ver_dir }} && echo '{{ version }}' > {{ _ver_dir }}/{{ name }}
+        {{ _ver_stamp(_ver_dir, name, version) }}
 {%- endif %}
     - runas: {{ user }}
     - shell: /bin/bash
@@ -73,7 +73,7 @@ install_{{ name | replace('-', '_') }}:
         find "$_td" -maxdepth 3 -name '{{ source_bin }}' -type f -exec install -m 0755 {} {{ dest }}/{{ name }} \;
 {%- endif %}
 {%- if version %}
-        mkdir -p {{ _sys_ver_dir }} && echo '{{ version }}' > {{ _sys_ver_dir }}/{{ name }}
+        {{ _ver_stamp(_sys_ver_dir, name, version) }}
 {%- endif %}
     - shell: /bin/bash
 {%- if version %}
@@ -123,7 +123,7 @@ install_{{ name | replace('-', '_') }}:
         mv -f '{{ dest }}/{{ name }}.tmp' '{{ dest }}/{{ name }}'
 {%- endif %}
 {%- if version %}
-        mkdir -p {{ _ver_dir }} && echo '{{ version }}' > {{ _ver_dir }}/{{ name }}
+        {{ _ver_stamp(_ver_dir, name, version) }}
 {%- endif %}
     - runas: {{ user }}
     - shell: /bin/bash

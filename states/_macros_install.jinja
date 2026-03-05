@@ -2,7 +2,7 @@
    curl_extract_zip, firefox_extension, download_font_zip, git_clone_deploy,
    http_file #}
 
-{% from '_macros_common.jinja' import user as _user, home as _home, retry_attempts as _retry_attempts, retry_interval as _retry_interval, ver_dir as _ver_dir, sys_ver_dir as _sys_ver_dir, download_cache as _download_cache %}
+{% from '_macros_common.jinja' import user as _user, home as _home, retry_attempts as _retry_attempts, retry_interval as _retry_interval, ver_dir as _ver_dir, sys_ver_dir as _sys_ver_dir, download_cache as _download_cache, ver_stamp as _ver_stamp %}
 
 {# Download binary directly to ~/.local/bin/ and chmod +x.
    version: when set, enables update-on-version-bump via version file.
@@ -35,7 +35,7 @@ install_{{ name | replace('-', '_') }}:
         chmod +x {{ _tmp }}
         mv -f {{ _tmp }} {{ _creates }}
 {%- if version %}
-        mkdir -p {{ _vd }} && echo '{{ version }}' > {{ _vd }}/{{ name }}
+        {{ _ver_stamp(_vd, name, version) }}
 {%- endif %}
     - runas: {{ user }}
     - shell: /bin/bash
@@ -91,8 +91,7 @@ install_{{ name | replace('-', '_') }}:
     - name: |
         {{ env ~ ' ' if env else '' }}cargo install {{ '--git ' ~ git if git else pkg or name }}
 {%- if version %}
-        mkdir -p {{ _marker_dir }}
-        echo '{{ version }}' > {{ _marker }}
+        {{ _ver_stamp(_marker_dir, name, version) }}
 {%- endif %}
     - runas: {{ user }}
 {%- if version %}
@@ -185,7 +184,7 @@ install_{{ name | replace('-', '_') }}:
 {%- endif %}
 {%- endif %}
 {%- if version %}
-        mkdir -p {{ _vd }} && echo '{{ version }}' > {{ _vd }}/{{ name }}
+        {{ _ver_stamp(_vd, name, version) }}
 {%- endif %}
 {%- if user %}
     - runas: {{ user }}
@@ -264,7 +263,7 @@ install_{{ name | replace('-', '_') }}:
 {%- endif %}
 {%- endif %}
 {%- if version %}
-        mkdir -p {{ _vd }} && echo '{{ version }}' > {{ _vd }}/{{ name }}
+        {{ _ver_stamp(_vd, name, version) }}
 {%- endif %}
     - runas: {{ user }}
     - shell: /bin/bash
@@ -310,7 +309,7 @@ install_{{ name | replace('-', '_') }}:
         mkdir -p '{{ _dest }}'
         7z x -aoa "$_td/archive.7z" -o'{{ _dest }}'
 {%- if version %}
-        mkdir -p {{ _vd }} && echo '{{ version }}' > {{ _vd }}/{{ name }}
+        {{ _ver_stamp(_vd, name, version) }}
 {%- endif %}
 {%- if user %}
     - runas: {{ user }}
@@ -480,7 +479,7 @@ install_{{ name | replace('-', '_') }}:
 {%- endif %}
         install -m {{ mode }} -D "$src" '{{ dest }}'
 {%- if version %}
-        mkdir -p {{ _vd }} && echo '{{ version }}' > {{ _vd }}/{{ name }}
+        {{ _ver_stamp(_vd, name, version) }}
 {%- endif %}
 {%- if user %}
     - runas: {{ user }}
