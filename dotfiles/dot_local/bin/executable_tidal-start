@@ -1,0 +1,20 @@
+#!/usr/bin/env zsh
+# Quick-start TidalCycles: opens nvim with a scratch .tidal file
+# Inside nvim: :TidalLaunch boots sclang + ghci automatically
+
+local scratch="${HOME}/music/tidal"
+[[ -d "$scratch" ]] || mkdir -p "$scratch"
+
+local file="${scratch}/scratch.tidal"
+if [[ ! -f "$file" ]]; then
+    cat > "$file" << 'EOF'
+-- TidalCycles scratch pad
+-- :TidalLaunch to start  |  :TidalQuit to stop
+-- Shift+Enter: eval line  |  Alt+Enter: eval block
+-- <leader>d: silence channel  |  <leader>Esc: hush all
+
+d1 $ sound "bd sn"
+EOF
+fi
+
+exec nvim "$file"

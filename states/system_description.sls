@@ -77,6 +77,7 @@ include:
   - kanata
   - mpd
   - music_analysis
+  - tidal
   - ollama
   - llama_embed
   - opencode
