@@ -153,19 +153,13 @@ def _parse_mpv_bindings(path):
     return bindings
 
 
-def _key_has_latin(key):
-    """Check if key binding ends with a Latin letter (after modifiers)."""
-    # Split off modifiers (Ctrl+, Alt+, Shift+)
-    parts = key.rsplit("+", 1)
-    char = parts[-1]
-    return len(char) == 1 and char.isascii() and char.isalpha()
-
-
 def _to_cyrillic_key(key):
-    """Convert Latin letter binding to Cyrillic equivalent, preserving modifiers."""
+    """Convert Latin letter binding to Cyrillic equivalent, preserving modifiers.
+
+    Returns None if the key doesn't end with a mappable Latin letter.
+    """
     parts = key.rsplit("+", 1)
-    char = parts[-1]
-    cyrillic = _LATIN_TO_CYRILLIC.get(char)
+    cyrillic = _LATIN_TO_CYRILLIC.get(parts[-1])
     if cyrillic is None:
         return None
     if len(parts) == 2:
@@ -184,8 +178,6 @@ def check_mpv_russian_keys():
     bindings = _parse_mpv_bindings(conf)
     bound_keys = {key for _, key, _ in bindings}
     for lineno, key, cmd in bindings:
-        if not _key_has_latin(key):
-            continue
         cyrillic_key = _to_cyrillic_key(key)
         if cyrillic_key and cyrillic_key not in bound_keys:
             print(

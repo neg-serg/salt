@@ -30,44 +30,28 @@ _JINJA = re.compile(r"\{\{|\{%")
 _UNIT_NOT_FOUND = re.compile(r"Unit (\S+) not found")
 
 
-def _j2_unit_names():
-    """Collect unit names that exist only as .j2 templates (rendered at deploy time)."""
-    names = set()
+def _scan_units():
+    """Scan unit files once, partitioning into plain and jinja-templated."""
+    plain = []
+    jinja_names = set()
+    # .j2 extension templates
     for path in glob.glob(os.path.join(UNITS_DIR, "**/*.j2"), recursive=True):
-        # e.g. states/units/fancontrol-setup.service.j2 → fancontrol-setup.service
-        names.add(os.path.basename(path).removesuffix(".j2"))
-    # Also collect units with inline Jinja (skipped from verification)
-    for pattern in ("**/*.service", "**/*.timer"):
-        for path in glob.glob(os.path.join(UNITS_DIR, pattern), recursive=True):
-            if path.endswith(".j2"):
-                continue
-            try:
-                with open(path, encoding="utf-8") as f:
-                    content = f.read()
-            except (OSError, UnicodeDecodeError):
-                continue
-            if _JINJA.search(content):
-                names.add(os.path.basename(path))
-    return names
-
-
-def find_units():
-    """Find verifiable unit files (.service, .timer)."""
-    units = []
+        jinja_names.add(os.path.basename(path).removesuffix(".j2"))
+    # Non-.j2 units: check for inline Jinja markers
     for pattern in ("**/*.service", "**/*.timer"):
         for path in sorted(glob.glob(os.path.join(UNITS_DIR, pattern), recursive=True)):
             if path.endswith(".j2"):
                 continue
-            # Check for inline Jinja2 templating (e.g. ollama.service)
             try:
                 with open(path, encoding="utf-8") as f:
                     content = f.read()
             except (OSError, UnicodeDecodeError):
                 continue
             if _JINJA.search(content):
-                continue
-            units.append(path)
-    return units
+                jinja_names.add(os.path.basename(path))
+            else:
+                plain.append(path)
+    return plain, jinja_names
 
 
 def verify_unit(path, templated_units):
@@ -92,12 +76,10 @@ def verify_unit(path, templated_units):
 
 
 def main():
-    units = find_units()
+    units, templated_units = _scan_units()
     if not units:
         print("No verifiable unit files found")
         return
-
-    templated_units = _j2_unit_names()
     errors = 0
     for path in units:
         issues = verify_unit(path, templated_units)
