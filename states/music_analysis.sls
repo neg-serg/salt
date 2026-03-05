@@ -4,11 +4,7 @@
 {% import_yaml 'data/versions.yaml' as ver %}
 {% import_yaml 'data/installers.yaml' as tools %}
 
-{% if not host.features.get('music_analysis') %}
-music_analysis_feature_disabled:
-  test.nop:
-    - comment: music_analysis feature disabled for this host
-{% else %}
+{% if host.features.get('music_analysis') %}
 # Python dependencies for Annoy-based analysis scripts
 {{ pacman_install('music_analysis_pydeps', 'python-orjson python-numpy') }}
 {{ paru_install('python_annoy', 'python-annoy') }}

@@ -96,9 +96,5 @@ mpdas_config:
 
 {% if companion_units %}
 {{ user_service_enable('mpd_companion_services', start_now=companion_units, check='active', requires=companion_reqs) }}
-{% else %}
-mpd_companion_services:
-  test.nop:
-    - comment: 'No MPD companion services to enable'
 {% endif %}
 {% endif %}
