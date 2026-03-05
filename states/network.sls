@@ -1,5 +1,5 @@
 {% from '_imports.jinja' import host, home %}
-{% from '_macros_service.jinja' import service_with_unit %}
+{% from '_macros_service.jinja' import service_with_unit, ensure_dir %}
 {% set net = host.features.network %}
 
 # --- VM Bridge: br0 for KVM/libvirt VMs ---
@@ -36,11 +36,7 @@ vm_bridge_firewall:
 # Binary already installed by system_description.sls (install_xray)
 # This adds a systemd service for running xray as a daemon
 {% if net.xray %}
-xray_config_dir:
-  file.directory:
-    - name: /etc/xray
-    - mode: '0750'
-    - makedirs: True
+{{ ensure_dir('xray_config_dir', '/etc/xray', mode='0750', user='root') }}
 
 # Not enabled by default — needs config.json with secrets from gopass
 {{ service_with_unit('xray', 'salt://units/xray.service', template='jinja', context={'home': host.home}, enabled=False) }}

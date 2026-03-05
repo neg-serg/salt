@@ -16,17 +16,14 @@
 {% endif %}
 {% set _codex_api_key = _proxypilot_api_key %}
 
-{%- macro user_file_recurse(state_id, path, source) -%}
-{{ state_id }}:
+{{ ensure_dir('opencode_config_dir', home ~ '/.config/opencode') }}
+opencode_config:
   file.recurse:
-    - name: {{ path }}
-    - source: {{ source }}
+    - name: {{ home }}/.config/opencode
+    - source: salt://dotfiles/dot_config/opencode
     - user: {{ user }}
     - group: {{ user }}
     - makedirs: True
-{%- endmacro -%}
-{{ ensure_dir('opencode_config_dir', home ~ '/.config/opencode') }}
-{{ user_file_recurse('opencode_config', home ~ '/.config/opencode', 'salt://dotfiles/dot_config/opencode') }}
 {{ ensure_dir('proxypilot_config_dir', home ~ '/.config/proxypilot') }}
 proxypilot_config:
   file.managed:

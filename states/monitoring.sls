@@ -1,5 +1,5 @@
 {% from '_imports.jinja' import host, user, service_ports %}
-{% from '_macros_service.jinja' import unit_override, service_with_unit, system_daemon_user, service_with_healthcheck, ensure_running %}
+{% from '_macros_service.jinja' import unit_override, service_with_unit, system_daemon_user, service_with_healthcheck, ensure_running, ensure_dir %}
 {% from '_macros_github.jinja' import github_release_system %}
 {% from '_macros_pkg.jinja' import simple_service %}
 {% import_yaml 'data/versions.yaml' as ver %}
@@ -58,12 +58,7 @@ loki_config:
 # --- Promtail: log shipper to Loki ---
 {% if mon.promtail %}
 {{ github_release_system('promtail', 'grafana/loki', 'promtail-linux-amd64.zip', src_bin='promtail-linux-amd64', tag='v' ~ ver.get('promtail', ''), hash='330f97bf7ef7e97cc2e42649ce7299129ab09dbffe5a2f5c515188502220987c', version=ver.get('promtail', '')) }}
-promtail_cache_dir:
-  file.directory:
-    - name: /var/cache/promtail
-    - user: root
-    - group: root
-    - makedirs: True
+{{ ensure_dir('promtail_cache_dir', '/var/cache/promtail', user='root') }}
 
 promtail_config:
   file.managed:
@@ -86,18 +81,6 @@ promtail_config:
 {% if mon.grafana %}
 {{ simple_service('grafana', 'grafana', service='grafana', requires=['file: grafana_config', 'file: grafana_loki_datasource']) }}
 
-grafana_config_dir:
-  file.directory:
-    - name: /etc/grafana
-    - makedirs: True
-
-grafana_provisioning_dir:
-  file.directory:
-    - name: /etc/grafana/provisioning/datasources
-    - makedirs: True
-    - require:
-      - file: grafana_config_dir
-
 grafana_loki_datasource:
   file.managed:
     - name: /etc/grafana/provisioning/datasources/loki.yaml
@@ -107,8 +90,6 @@ grafana_loki_datasource:
     - template: jinja
     - context:
         loki_port: {{ service_ports.loki.port }}
-    - require:
-      - file: grafana_provisioning_dir
 
 grafana_config:
   file.managed:
@@ -120,35 +101,19 @@ grafana_config:
         hostname: {{ host.hostname }}
         grafana_port: {{ service_ports.grafana.port }}
 
-grafana_dashboards_provider_dir:
-  file.directory:
-    - name: /etc/grafana/provisioning/dashboards
-    - makedirs: True
-    - require:
-      - file: grafana_config_dir
-
-grafana_dashboards_json_dir:
-  file.directory:
-    - name: /etc/grafana/provisioning/dashboards/json
-    - makedirs: True
-    - require:
-      - file: grafana_dashboards_provider_dir
-
 grafana_dashboards_provider:
   file.managed:
     - name: /etc/grafana/provisioning/dashboards/dashboards.yaml
+    - makedirs: True
     - mode: '0644'
     - source: salt://configs/grafana-dashboards-provider.yaml
-    - require:
-      - file: grafana_dashboards_provider_dir
 
 grafana_proxypilot_dashboard:
   file.managed:
     - name: /etc/grafana/provisioning/dashboards/json/proxypilot.json
+    - makedirs: True
     - mode: '0644'
     - source: salt://configs/grafana-dashboard-proxypilot.json
-    - require:
-      - file: grafana_dashboards_json_dir
 
 {{ ensure_running('grafana', service='grafana', watch=['file: grafana_config', 'file: grafana_loki_datasource', 'file: grafana_dashboards_provider', 'file: grafana_proxypilot_dashboard']) }}
 
