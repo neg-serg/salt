@@ -22,32 +22,27 @@ _CYRILLIC_RE = re.compile(r"[\u0400-\u04FF]")
 _RU_LINK_RE = re.compile(r"\.ru\.md\)")
 
 
+def _collect_doc_dir_md():
+    """Collect non-.ru.md files from DOC_DIRS."""
+    return [
+        f
+        for d in DOC_DIRS
+        for f in sorted(glob.glob(os.path.join(d, "*.md")))
+        if not f.endswith(".ru.md")
+    ]
+
+
 def _find_english_docs():
     """Return list of English .md files that require translations."""
-    docs = []
-    for d in DOC_DIRS:
-        for f in sorted(glob.glob(os.path.join(d, "*.md"))):
-            if f.endswith(".ru.md"):
-                continue
-            docs.append(f)
-    for f in ROOT_DOCS:
-        if os.path.isfile(f):
-            docs.append(f)
+    docs = _collect_doc_dir_md()
+    docs += [f for f in ROOT_DOCS if os.path.isfile(f)]
     return [f for f in docs if os.path.basename(f) not in EXCLUDE]
 
 
 def _find_all_english_md():
     """Return list of ALL non-.ru.md files for Cyrillic checking."""
-    docs = []
-    for d in DOC_DIRS:
-        for f in sorted(glob.glob(os.path.join(d, "*.md"))):
-            if f.endswith(".ru.md"):
-                continue
-            docs.append(f)
-    for f in glob.glob("*.md"):
-        if f.endswith(".ru.md"):
-            continue
-        docs.append(f)
+    docs = _collect_doc_dir_md()
+    docs += [f for f in sorted(glob.glob("*.md")) if not f.endswith(".ru.md")]
     return docs
 
 
