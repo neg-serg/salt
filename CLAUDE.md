@@ -29,7 +29,7 @@ Packages installed via pacman/paru outside Salt; Salt handles configuration mana
 | `states/data/` | YAML data files (installers, services, fonts, models, etc.) loaded via `import_yaml` |
 | `scripts/` | Utility scripts (linting, tool updates) |
 
-## Salt State Modules (33 files)
+## Salt State Modules (34 files)
 
 | Module | Purpose |
 |---|---|
@@ -60,6 +60,7 @@ Packages installed via pacman/paru outside Salt; Salt handles configuration mana
 | `hardware.sls` | Fan control, GPU, hardware-specific setup |
 | `network.sls` | VM bridge, xray, sing-box |
 | `steam.sls` | Steam + gaming: multilib repo, Vulkan, gamescope, mangohud |
+| `tidal.sls` | TidalCycles live coding: SuperCollider, SuperDirt, GHCi/Tidal |
 | `kernel_modules.sls` | Kernel module loading |
 | `kernel_params_limine.sls` | Kernel boot parameters via /boot/limine.conf |
 | `bind_mounts.sls` | Bind mounts for /mnt paths |
