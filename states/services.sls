@@ -90,10 +90,10 @@ transmission_watch_acl_home:
 transmission_watch_acl_dir:
   cmd.run:
     - name: |
-        set -eo pipefail
+        set -e
         setfacl -m u:transmission:rwX {{ transmission_watch_dir }}
         setfacl -d -m u:transmission:rwX {{ transmission_watch_dir }}
-    - unless: /bin/bash -c "getfacl -p {{ transmission_watch_dir }} | rg -q '^user:transmission:rwx$' && getfacl -d {{ transmission_watch_dir }} | rg -q '^default:user:transmission:rwx$'"
+    - unless: getfacl -p {{ transmission_watch_dir }} | rg -q '^user:transmission:rwx$' && getfacl -d {{ transmission_watch_dir }} | rg -q '^default:user:transmission:rwx$'
     - require:
       - cmd: install_transmission
       - cmd: transmission_watch_acl_home
