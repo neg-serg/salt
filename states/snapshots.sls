@@ -14,10 +14,8 @@ snapper_registered:
     - makedirs: True
     - mode: '0644'
 
-snapper_timeline_timer:
+snapper_timers:
   service.enabled:
-    - name: snapper-timeline.timer
-
-snapper_cleanup_timer:
-  service.enabled:
-    - name: snapper-cleanup.timer
+    - names:
+      - snapper-timeline.timer
+      - snapper-cleanup.timer

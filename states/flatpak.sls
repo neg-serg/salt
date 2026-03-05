@@ -1,4 +1,4 @@
-{% from '_imports.jinja' import host, user %}
+{% from '_imports.jinja' import host, user, retry_attempts, retry_interval %}
 {% from '_macros_pkg.jinja' import pacman_install, flatpak_install %}
 # Flatpak: install runtime + flathub remote + user-level apps
 {% if host.features.flatpak %}
@@ -13,8 +13,8 @@ flatpak_flathub_remote:
     - require:
       - cmd: install_flatpak
     - retry:
-        attempts: 3
-        interval: 10
+        attempts: {{ retry_attempts }}
+        interval: {{ retry_interval }}
 
 {% for app_id in flatpak.apps %}
 {{ flatpak_install(app_id) }}

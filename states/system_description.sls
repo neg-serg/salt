@@ -1,4 +1,5 @@
 {% from '_imports.jinja' import host, user, pkg_list %}
+{% from '_macros_service.jinja' import ensure_dir %}
 # Salt state for CachyOS workstation — top-level orchestrator
 # Packages installed via pacman/paru outside Salt; Salt handles configuration
 
@@ -36,29 +37,9 @@ system_hostname:
     - name: /etc/hostname
     - contents: {{ host.hostname }}
 
-user_version_cache_dir:
-  file.directory:
-    - name: {{ host.home }}/.cache/salt-versions
-    - user: {{ user }}
-    - group: {{ user }}
-    - mode: '0755'
-    - makedirs: True
-
-system_version_cache_dir:
-  file.directory:
-    - name: /var/cache/salt/versions
-    - user: root
-    - group: root
-    - mode: '0755'
-    - makedirs: True
-
-download_cache_dir:
-  file.directory:
-    - name: /var/cache/salt/downloads
-    - user: {{ user }}
-    - group: {{ user }}
-    - mode: '0755'
-    - makedirs: True
+{{ ensure_dir('user_version_cache_dir', host.home ~ '/.cache/salt-versions', mode='0755') }}
+{{ ensure_dir('system_version_cache_dir', '/var/cache/salt/versions', mode='0755', user='root') }}
+{{ ensure_dir('download_cache_dir', '/var/cache/salt/downloads', mode='0755') }}
 
 include:
   # Core: user accounts, shell, disk mounts — foundations for everything else

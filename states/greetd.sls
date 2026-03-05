@@ -1,6 +1,6 @@
 {% from '_imports.jinja' import host, user, home %}
 {% from '_macros_pkg.jinja' import pacman_install %}
-{% from '_macros_service.jinja' import service_stopped %}
+{% from '_macros_service.jinja' import service_stopped, ensure_dir %}
 # greetd display manager: cage kiosk compositor + quickshell greeter
 
 {{ pacman_install('greetd', 'greetd') }}
@@ -9,13 +9,7 @@
 
 {{ service_stopped('sddm_stopped', 'sddm') }}
 
-greetd_config_dir:
-  file.directory:
-    - name: /etc/greetd
-    - user: root
-    - group: root
-    - mode: '0755'
-    - makedirs: True
+{{ ensure_dir('greetd_config_dir', '/etc/greetd', mode='0755', user='root') }}
 
 greetd_main_config:
   file.managed:
@@ -77,17 +71,12 @@ greetd_wallpaper:
       - file: greetd_config_dir
 {% endif %}
 
-greetd_cleanup_pacnew:
+greetd_cleanup_stale:
   file.absent:
-    - name: /etc/greetd/config.toml.pacnew
-
-greetd_cleanup_regreet:
-  file.absent:
-    - name: /etc/greetd/regreet.toml
-
-greetd_cleanup_hyprland:
-  file.absent:
-    - name: /etc/greetd/hyprland-greeter.conf
+    - names:
+      - /etc/greetd/config.toml.pacnew
+      - /etc/greetd/regreet.toml
+      - /etc/greetd/hyprland-greeter.conf
 
 greetd_enabled:
   service.enabled:

@@ -82,65 +82,43 @@ duckdns_script:
 {{ ensure_dir('transmission_watch_dir', transmission_watch_dir) }}
 {{ ensure_dir('transmission_download_dir', transmission_download_dir) }}
 
-transmission_watch_acl_home:
-  cmd.run:
-    - name: setfacl -m u:transmission:rx {{ home }}
-    - unless: getfacl -p {{ home }} | rg -q '^user:transmission:r-x$'
-    - require:
-      - cmd: install_transmission
-
-transmission_acl_watch:
+transmission_acl_setup:
   cmd.run:
     - name: |
         set -e
+        setfacl -m u:transmission:rx {{ home }}
+        setfacl -m u:transmission:rx {{ home }}/torrent
         setfacl -m u:transmission:rwX {{ transmission_watch_dir }}
         setfacl -d -m u:transmission:rwX {{ transmission_watch_dir }}
-    - unless: getfacl -p {{ transmission_watch_dir }} | rg -q '^user:transmission:rwx$' && getfacl -d {{ transmission_watch_dir }} | rg -q '^user:transmission:rwx$'
-    - require:
-      - cmd: install_transmission
-      - cmd: transmission_watch_acl_home
-
-transmission_acl_download:
-  cmd.run:
-    - name: |
-        set -e
-        setfacl -m u:transmission:rx {{ home }}/torrent
         setfacl -m u:transmission:rwX {{ transmission_download_dir }}
         setfacl -d -m u:transmission:rwX {{ transmission_download_dir }}
-    - unless: getfacl -p {{ transmission_download_dir }} | rg -q '^user:transmission:rwx$' && getfacl -d {{ transmission_download_dir }} | rg -q '^user:transmission:rwx$'
+    - unless: |
+        getfacl -p {{ home }} | rg -q '^user:transmission:r-x$' &&
+        getfacl -p {{ transmission_watch_dir }} | rg -q '^user:transmission:rwx$' &&
+        getfacl -d {{ transmission_watch_dir }} | rg -q '^user:transmission:rwx$' &&
+        getfacl -p {{ transmission_download_dir }} | rg -q '^user:transmission:rwx$' &&
+        getfacl -d {{ transmission_download_dir }} | rg -q '^user:transmission:rwx$'
     - require:
       - cmd: install_transmission
-      - cmd: transmission_watch_acl_home
+      - file: transmission_watch_dir
       - file: transmission_download_dir
 
-transmission_download_dir_setting:
+{% set _tset = [
+  ('transmission_download_dir_setting', '"download-dir"', '".*"', '"' ~ transmission_download_dir ~ '"'),
+  ('transmission_watch_dir_setting', '"watch-dir"', '".*"', '"' ~ transmission_watch_dir ~ '"'),
+  ('transmission_watch_dir_enabled', '"watch-dir-enabled"', '(true|false)', 'true'),
+] %}
+{% for sid, key, vpat, val in _tset %}
+{{ sid }}:
   file.replace:
     - name: {{ transmission_cfg }}
-    - pattern: '^\s*"download-dir"\s*:\s*".*"(?P<suffix>,?)'
-    - repl: '    "download-dir": "{{ transmission_download_dir }}"\g<suffix>'
+    - pattern: '^\s*{{ key }}\s*:\s*{{ vpat }}(?P<suffix>,?)'
+    - repl: '    {{ key }}: {{ val }}\g<suffix>'
     - flags: MULTILINE
     - require:
       - cmd: install_transmission
-      - cmd: transmission_acl_download
-
-transmission_watch_dir_setting:
-  file.replace:
-    - name: {{ transmission_cfg }}
-    - pattern: '^\s*"watch-dir"\s*:\s*".*"(?P<suffix>,?)'
-    - repl: '    "watch-dir": "{{ transmission_watch_dir }}"\g<suffix>'
-    - flags: MULTILINE
-    - require:
-      - cmd: install_transmission
-      - cmd: transmission_acl_watch
-
-transmission_watch_dir_enabled:
-  file.replace:
-    - name: {{ transmission_cfg }}
-    - pattern: '^\s*"watch-dir-enabled"\s*:\s*(true|false)(?P<suffix>,?)'
-    - repl: '    "watch-dir-enabled": true\g<suffix>'
-    - flags: MULTILINE
-    - require:
-      - file: transmission_watch_dir_setting
+      - cmd: transmission_acl_setup
+{% endfor %}
 
 transmission_stop_before_settings_change:
   service.dead:
