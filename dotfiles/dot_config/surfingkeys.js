@@ -254,6 +254,31 @@ api.unmap('ow');
 api.unmap('on');
 api.unmap('ox');
 
+// Unmap built-ins that block go*/gn* quickmark prefixes
+api.unmap('go'); // omnibar open (using native address bar via 'o' key)
+api.unmap('gn'); // Chrome net-internals (useless on Floorp)
+// Remap Chrome-only internal pages to Floorp/Firefox equivalents
+api.unmap('gb');
+api.unmap('gc');
+api.unmap('gd');
+api.unmap('ge');
+api.unmap('gk');
+api.mapkey('gb', 'Open Bookmarks', () => {
+  api.RUNTIME('openLink', { tab: { tabbed: true, active: true }, url: 'about:preferences#general' });
+});
+api.mapkey('gc', 'Open about:config', () => {
+  api.RUNTIME('openLink', { tab: { tabbed: true, active: true }, url: 'about:config' });
+});
+api.mapkey('gd', 'Open Downloads', () => {
+  api.RUNTIME('openLink', { tab: { tabbed: true, active: true }, url: 'about:downloads' });
+});
+api.mapkey('ge', 'Open Add-ons', () => {
+  api.RUNTIME('openLink', { tab: { tabbed: true, active: true }, url: 'about:addons' });
+});
+api.mapkey('gk', 'Open Performance', () => {
+  api.RUNTIME('openLink', { tab: { tabbed: true, active: true }, url: 'about:performance' });
+});
+
 // Large Scroll (Half Page)
 api.mapkey('b', 'Scroll half page down', () => {
   api.Normal.scroll("pageDown");
