@@ -6,6 +6,11 @@ Salt states + chezmoi dotfiles for configuring a CachyOS (Arch-based) workstatio
 Migrated from NixOS (nix-maid/mkHomeFiles), then Fedora Atomic/Silverblue.
 Packages installed via pacman/paru outside Salt; Salt handles configuration management.
 
+## Workflow Requirements
+
+- Before handing results back to the user, run `just` (default `system_description`) to confirm Salt renders successfully and capture any regressions in a fresh apply/log.
+- When working under `dotfiles/dot_config/quickshell/`, load the Quickshell knowledge-base router described in `dotfiles/dot_config/quickshell/IMPROVEMENT_PROMPT.md`. It links to the memory files (`memory/quickshell.md`, `memory/generated/qml-components.md`, etc.) that must drive design decisions.
+
 ## Key Paths
 
 | Path | Purpose |
