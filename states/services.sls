@@ -78,7 +78,7 @@ duckdns_script:
 {% set transmission_cfg = '/var/lib/transmission/.config/transmission-daemon/settings.json' %}
 {% set transmission_watch_dir = home ~ '/dw' %}
 
-{{ ensure_dir('transmission_watch_dir_path', transmission_watch_dir) }}
+{{ ensure_dir('transmission_watch_dir', transmission_watch_dir) }}
 
 transmission_watch_acl_home:
   cmd.run:
@@ -98,34 +98,38 @@ transmission_watch_acl_dir:
       - cmd: install_transmission
       - cmd: transmission_watch_acl_home
 
-transmission_watch_dir:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        cfg='{{ transmission_cfg }}'
-        tmp=$(mktemp)
-        python3 - <<'PY' "$cfg" "$tmp"
-        import json, sys, pathlib
-        cfg = pathlib.Path(sys.argv[1])
-        tmp = pathlib.Path(sys.argv[2])
-        data = json.loads(cfg.read_text())
-        data["watch-dir"] = "{{ transmission_watch_dir }}"
-        data["watch-dir-enabled"] = True
-        tmp.write_text(json.dumps(data, indent=4, sort_keys=True))
-        PY
-        install -m 0640 -o transmission -g transmission "$tmp" "$cfg"
-        rm -f "$tmp"
-    - shell: /bin/bash
-    - onlyif: test -f {{ transmission_cfg }}
-    - unless: python3 -c "import json, sys; cfg='{{ transmission_cfg }}'; data=json.load(open(cfg)); sys.exit(0 if data.get('watch-dir') == '{{ transmission_watch_dir }}' and data.get('watch-dir-enabled') is True else 1)"
+transmission_watch_dir_setting:
+  file.replace:
+    - name: {{ transmission_cfg }}
+    - pattern: '^\s*"watch-dir"\s*:\s*".*"(?P<suffix>,?)'
+    - repl: '    "watch-dir": "{{ transmission_watch_dir }}"\g<suffix>'
+    - flags: MULTILINE
     - require:
       - cmd: install_transmission
       - cmd: transmission_watch_acl_dir
 
-transmission_restart_on_watchdir_change:
-  cmd.run:
-    - name: systemctl restart transmission
-    - onlyif: systemctl is-active transmission >/dev/null 2>&1
-    - onchanges:
-      - cmd: transmission_watch_dir
+transmission_watch_dir_enabled:
+  file.replace:
+    - name: {{ transmission_cfg }}
+    - pattern: '^\s*"watch-dir-enabled"\s*:\s*(true|false)(?P<suffix>,?)'
+    - repl: '    "watch-dir-enabled": true\g<suffix>'
+    - flags: MULTILINE
+    - require:
+      - file: transmission_watch_dir_setting
+
+transmission_stop_before_watchdir_change:
+  service.dead:
+    - name: transmission
+    - prereq:
+      - file: transmission_watch_dir_setting
+      - file: transmission_watch_dir_enabled
+
+transmission_restart_after_watchdir_change:
+  service.running:
+    - name: transmission
+    - watch:
+      - file: transmission_watch_dir_setting
+      - file: transmission_watch_dir_enabled
+    - require:
+      - service: transmission_enabled
 {% endif %}
