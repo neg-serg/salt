@@ -130,6 +130,72 @@ def check_bash_idioms():
     return errors, checked
 
 
+# QWERTY → ЙЦУКЕН mapping for Russian keyboard layout
+_LATIN_TO_CYRILLIC = dict(
+    zip(
+        "qwertyuiop[]asdfghjkl;'zxcvbnm,./QWERTYUIOP{}ASDFGHJKL:\"ZXCVBNM<>?",
+        "йцукенгшщзхъфывапролджэячсмитьбю.ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ,",
+    )
+)
+
+
+def _parse_mpv_bindings(path):
+    """Parse mpv input.conf into list of (line_number, key, command)."""
+    bindings = []
+    with open(path, encoding="utf-8") as f:
+        for lineno, line in enumerate(f, 1):
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            parts = line.split(None, 1)
+            if len(parts) >= 2:
+                bindings.append((lineno, parts[0], parts[1]))
+    return bindings
+
+
+def _key_has_latin(key):
+    """Check if key binding ends with a Latin letter (after modifiers)."""
+    # Split off modifiers (Ctrl+, Alt+, Shift+)
+    parts = key.rsplit("+", 1)
+    char = parts[-1]
+    return len(char) == 1 and char.isascii() and char.isalpha()
+
+
+def _to_cyrillic_key(key):
+    """Convert Latin letter binding to Cyrillic equivalent, preserving modifiers."""
+    parts = key.rsplit("+", 1)
+    char = parts[-1]
+    cyrillic = _LATIN_TO_CYRILLIC.get(char)
+    if cyrillic is None:
+        return None
+    if len(parts) == 2:
+        return f"{parts[0]}+{cyrillic}"
+    return cyrillic
+
+
+def check_mpv_russian_keys():
+    """mpv input.conf: Latin letter bindings must have Cyrillic duplicates."""
+    errors = 0
+    checked = 0
+    conf = os.path.join(DOTFILES_ROOT, "dot_config", "mpv", "input.conf")
+    if not os.path.isfile(conf):
+        return 0, 0
+    checked = 1
+    bindings = _parse_mpv_bindings(conf)
+    bound_keys = {key for _, key, _ in bindings}
+    for lineno, key, cmd in bindings:
+        if not _key_has_latin(key):
+            continue
+        cyrillic_key = _to_cyrillic_key(key)
+        if cyrillic_key and cyrillic_key not in bound_keys:
+            print(
+                f"\033[31mmpv missing Russian duplicate: {conf}:{lineno}: "
+                f"{key} → needs {cyrillic_key}\033[0m"
+            )
+            errors += 1
+    return errors, checked
+
+
 def check_xdg_paths():
     """No canonical XDG defaults (~/Music, ~/Pictures, ...) in dotfiles."""
     errors = 0
@@ -175,6 +241,10 @@ def main():
     xdg_errors, files_checked = check_xdg_paths()
     total_errors += xdg_errors
     print(f"XDG paths: {files_checked} files, {xdg_errors} violations")
+
+    mpv_errors, mpv_checked = check_mpv_russian_keys()
+    total_errors += mpv_errors
+    print(f"mpv Russian keys: {mpv_checked} files, {mpv_errors} missing duplicates")
 
     sys.exit(1 if total_errors else 0)
 
