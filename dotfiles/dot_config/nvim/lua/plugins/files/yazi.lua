@@ -26,6 +26,8 @@ return {
     -- so open_for_directories works even before a keymap fires
     vim.api.nvim_create_autocmd("BufEnter", {
       callback = function(args)
+        if not vim.bo[args.buf].buflisted then return end
+        if vim.bo[args.buf].buftype ~= "" then return end
         if vim.fn.isdirectory(vim.api.nvim_buf_get_name(args.buf)) == 1 then
           require("lazy").load({ plugins = { "yazi.nvim" } })
           return true -- remove this autocmd after first trigger
