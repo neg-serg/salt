@@ -4,8 +4,7 @@
       "model": {
         "primary": "anthropic/claude-opus-4-6-20251022",
         "fallbacks": [
-          "anthropic/claude-sonnet-4-6-20250514",
-          "proxypilot/claude-opus-4-6"
+          "anthropic/claude-sonnet-4-6-20250514"
         ]
       },
       "sandbox": {
@@ -31,25 +30,6 @@
           {
             "id": "claude-sonnet-4-6-20250514",
             "name": "Claude Sonnet 4.6",
-            "contextWindow": 200000,
-            "maxTokens": 16384
-          }
-        ]
-      },
-      "proxypilot": {
-        "baseUrl": "http://127.0.0.1:8317/v1",
-        "apiKey": {{ proxy_key | tojson }},
-        "api": "openai-completions",
-        "models": [
-          {
-            "id": "claude-opus-4-6",
-            "name": "Claude Opus 4.6 (proxy)",
-            "contextWindow": 200000,
-            "maxTokens": 16384
-          },
-          {
-            "id": "claude-sonnet-4-6",
-            "name": "Claude Sonnet 4.6 (proxy)",
             "contextWindow": 200000,
             "maxTokens": 16384
           }
@@ -80,7 +60,7 @@
       "enabled": true,
       "botToken": {{ telegram_token | tojson }},
       "dmPolicy": "allowlist",
-      "allowFrom": ["109503498"],
+      "allowFrom": [{{ telegram_uid | tojson }}],
       "groupPolicy": "disabled"
     }
   }

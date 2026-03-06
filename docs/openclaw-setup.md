@@ -45,6 +45,7 @@ Browser / Telegram
 | `api/anthropic` | Anthropic API key (primary provider) |
 | `api/proxypilot-local` | API key for ProxyPilot fallback (shared with Claude Code, OpenCode) |
 | `api/openclaw-telegram` | Telegram Bot Token (`@negserg_openclaw_bot`) |
+| `api/openclaw-telegram-uid` | Telegram numeric user ID for allowlist |
 
 Create secrets before first Salt apply:
 ```bash
@@ -97,7 +98,7 @@ journalctl --user -u openclaw-gateway -f     # live logs
 
 - Bot: `@negserg_openclaw_bot`
 - DM policy: `allowlist` (only whitelisted users)
-- Allowed users: `109503498`
+- Allowed users: numeric ID from `gopass show -o api/openclaw-telegram-uid`
 - Group policy: `disabled`
 - Session isolation: `per-channel-peer` (each sender gets their own session)
 
