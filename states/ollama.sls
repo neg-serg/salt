@@ -1,6 +1,5 @@
 {% from '_imports.jinja' import host, user, home, retry_attempts, retry_interval, service_ports, ollama_pull_timeout %}
 {% from '_macros_service.jinja' import ensure_dir, service_with_unit, service_with_healthcheck %}
-{% from '_macros_pkg.jinja' import npm_pkg %}
 {% import_yaml 'data/ollama.yaml' as ollama %}
 # Ollama LLM server: systemd service, model pulls
 {% if host.features.ollama %}
@@ -39,7 +38,4 @@ pull_{{ model | replace('.', '_') | replace(':', '_') | replace('-', '_') }}:
     - require:
       - cmd: ollama_start
 {% endfor %}
-
-# --- openclaw (local AI assistant agent) ---
-{{ npm_pkg('openclaw', user=user, home=home) }}
 {% endif %}

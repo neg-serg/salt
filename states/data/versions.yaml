@@ -28,6 +28,9 @@ amnezia_vpn: "2.1.2"
 # --- Proxy ---
 proxypilot: "0.3.0-dev-0.39"
 
+# --- AI agents ---
+openclaw: "2026.3.2"
+
 # --- Desktop apps ---
 droidcam: "2.1.3"
 nyxt: "4.0.0"

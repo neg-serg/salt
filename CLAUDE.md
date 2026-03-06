@@ -29,7 +29,7 @@ Packages installed via pacman/paru outside Salt; Salt handles configuration mana
 | `states/data/` | YAML data files (installers, services, fonts, models, etc.) loaded via `import_yaml` |
 | `scripts/` | Utility scripts (linting, tool updates) |
 
-## Salt State Modules (34 files)
+## Salt State Modules (35 files)
 
 | Module | Purpose |
 |---|---|
@@ -56,6 +56,7 @@ Packages installed via pacman/paru outside Salt; Salt handles configuration mana
 | `ollama.sls` | Ollama LLM service + model pulls |
 | `llama_embed.sls` | llama.cpp embedding server (Qwen3-Embedding via Vulkan) |
 | `opencode.sls` | OpenCode AI agent: TUI config + neg custom theme |
+| `openclaw_agent.sls` | OpenClaw AI agent: gateway daemon, ProxyPilot routing, Telegram |
 | `floorp.sls` | Floorp browser configs + extensions |
 | `hardware.sls` | Fan control, GPU, hardware-specific setup |
 | `network.sls` | VM bridge, xray, sing-box |
