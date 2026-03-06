@@ -15,6 +15,10 @@ RestartSec=5
 User=root
 # Clean up socket on stop
 ExecStopPost=/bin/rm -f /run/salt-daemon.sock
+PrivateTmp=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+LockPersonality=yes
 
 [Install]
 WantedBy=multi-user.target

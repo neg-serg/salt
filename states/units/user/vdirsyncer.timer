@@ -3,5 +3,6 @@ Description=Synchronize calendars and contacts timer
 [Timer]
 OnBootSec=2min
 OnUnitActiveSec=5min
+Persistent=true
 [Install]
 WantedBy=timers.target

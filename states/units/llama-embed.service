@@ -21,6 +21,9 @@ NoNewPrivileges=true
 ProtectSystem=strict
 PrivateTmp=yes
 ReadWritePaths={{ models_dir }}
+RestrictNamespaces=yes
+RestrictRealtime=yes
+LockPersonality=yes
 
 [Install]
-WantedBy=default.target
+WantedBy=multi-user.target

@@ -10,6 +10,7 @@ ExecStart=/usr/sbin/fancontrol
 Restart=on-failure
 RestartSec=5
 NoNewPrivileges=true
+ProtectSystem=full
 ProtectHome=yes
 PrivateTmp=yes
 RestrictNamespaces=yes

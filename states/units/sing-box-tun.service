@@ -17,6 +17,7 @@ ExecStartPost=/usr/bin/resolvectl domain sb0 "~."
 ExecStopPost=/usr/bin/sh -c 'ip rule del pref 200 2>/dev/null; ip route del default dev sb0 table 200 2>/dev/null; if test -s /run/sing-box-tun/prev-default-route; then ip route replace table 200 $(cat /run/sing-box-tun/prev-default-route); fi; ip rule del pref 100 2>/dev/null; ip route flush cache; true'
 ExecStopPost=/usr/bin/resolvectl revert sb0
 Restart=on-failure
+RestartSec=5
 CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_RAW CAP_NET_BIND_SERVICE
 AmbientCapabilities=CAP_NET_ADMIN CAP_NET_RAW CAP_NET_BIND_SERVICE
 NoNewPrivileges=true

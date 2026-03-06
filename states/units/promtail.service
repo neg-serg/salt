@@ -12,6 +12,7 @@ Restart=on-failure
 RestartSec=5
 NoNewPrivileges=true
 ProtectSystem=full
+ProtectHome=yes
 PrivateTmp=yes
 PrivateDevices=yes
 RestrictNamespaces=yes

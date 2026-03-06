@@ -16,6 +16,8 @@ PrivateDevices=yes
 RestrictNamespaces=yes
 RestrictRealtime=yes
 LockPersonality=yes
+ProtectSystem=strict
+PrivateTmp=yes
 
 [Install]
 WantedBy=default.target
