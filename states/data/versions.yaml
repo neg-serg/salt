@@ -22,6 +22,9 @@ ssh_to_age: "1.2.0"
 tdl: "0.20.1"
 essentia: "2.1_beta2"
 
+# --- Input ---
+kanata: "1.11.0"
+
 # --- VPN ---
 amnezia_vpn: "2.1.2"
 
