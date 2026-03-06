@@ -39,4 +39,15 @@ superdirt_startup_config:
       - file: supercollider_config_dir
       - cmd: superdirt_quark_install
 
+# --- boot_noop.scd: no-op boot file for tidal.nvim (startup.scd handles SuperDirt) ---
+superdirt_boot_noop:
+  file.managed:
+    - name: {{ home }}/.config/SuperCollider/boot_noop.scd
+    - source: salt://configs/supercollider-boot-noop.scd
+    - user: {{ user }}
+    - group: {{ user }}
+    - mode: '0644'
+    - require:
+      - file: supercollider_config_dir
+
 {% endif %}
