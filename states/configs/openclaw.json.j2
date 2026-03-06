@@ -2,9 +2,10 @@
   "agents": {
     "defaults": {
       "model": {
-        "primary": "proxypilot/claude-opus-4-6",
+        "primary": "anthropic/claude-opus-4-6-20251022",
         "fallbacks": [
-          "proxypilot/claude-sonnet-4-6"
+          "anthropic/claude-sonnet-4-6-20250514",
+          "proxypilot/claude-opus-4-6"
         ]
       },
       "sandbox": {
@@ -16,6 +17,25 @@
   "models": {
     "mode": "merge",
     "providers": {
+      "anthropic": {
+        "baseUrl": "https://api.anthropic.com",
+        "apiKey": {{ anthropic_key | tojson }},
+        "api": "anthropic-messages",
+        "models": [
+          {
+            "id": "claude-opus-4-6-20251022",
+            "name": "Claude Opus 4.6",
+            "contextWindow": 200000,
+            "maxTokens": 16384
+          },
+          {
+            "id": "claude-sonnet-4-6-20250514",
+            "name": "Claude Sonnet 4.6",
+            "contextWindow": 200000,
+            "maxTokens": 16384
+          }
+        ]
+      },
       "proxypilot": {
         "baseUrl": "http://127.0.0.1:8317/v1",
         "apiKey": {{ proxy_key | tojson }},
@@ -23,13 +43,13 @@
         "models": [
           {
             "id": "claude-opus-4-6",
-            "name": "Claude Opus 4.6",
+            "name": "Claude Opus 4.6 (proxy)",
             "contextWindow": 200000,
             "maxTokens": 16384
           },
           {
             "id": "claude-sonnet-4-6",
-            "name": "Claude Sonnet 4.6",
+            "name": "Claude Sonnet 4.6 (proxy)",
             "contextWindow": 200000,
             "maxTokens": 16384
           }
@@ -59,8 +79,8 @@
     "telegram": {
       "enabled": true,
       "botToken": {{ telegram_token | tojson }},
-      "dmPolicy": "open",
-      "allowFrom": ["*"],
+      "dmPolicy": "allowlist",
+      "allowFrom": ["109503498"],
       "groupPolicy": "disabled"
     }
   }
