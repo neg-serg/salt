@@ -51,6 +51,10 @@
   }
 {%- if telegram_token %},
 
+  "session": {
+    "dmScope": "per-channel-peer"
+  },
+
   "channels": {
     "telegram": {
       "enabled": true,
