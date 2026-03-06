@@ -1,25 +1,13 @@
-{% from '_imports.jinja' import user, home, retry_attempts, retry_interval %}
+{% from '_imports.jinja' import user, home, retry_attempts, retry_interval, gopass_secret %}
 {% from '_macros_service.jinja' import ensure_dir, user_service_file, user_service_enable, user_service_restart %}
 {% import_yaml 'data/versions.yaml' as ver %}
 
 # ── Secret resolution (gopass primary, config-file fallback) ─────────
 {% set _proxypilot_cfg = home ~ '/.config/proxypilot/config.yaml' %}
-
-{% set _gopass_proxy = salt['cmd.run_all']('gopass show -o api/proxypilot-local 2>/dev/null', runas=user, python_shell=True, ignore_retcode=True) %}
-{% if _gopass_proxy.get('retcode', 1) == 0 %}
-{% set _proxy_key = _gopass_proxy['stdout'].strip() %}
-{% else %}
-{% set _proxy_key = salt['cmd.run_stdout']("awk '/^api-keys:/{getline; sub(/^[[:space:]]*-[[:space:]]*\"?/, \"\"); sub(/\"?[[:space:]]*$/, \"\"); print; exit}' " ~ _proxypilot_cfg ~ " 2>/dev/null || true", runas=user).strip() %}
-{% endif %}
-
-{% set _gopass_anthropic = salt['cmd.run_all']('gopass show -o api/anthropic 2>/dev/null', runas=user, python_shell=True, ignore_retcode=True) %}
-{% set _anthropic_key = _gopass_anthropic['stdout'].strip() if _gopass_anthropic.get('retcode', 1) == 0 else '' %}
-
-{% set _gopass_tg = salt['cmd.run_all']('gopass show -o api/openclaw-telegram 2>/dev/null', runas=user, python_shell=True, ignore_retcode=True) %}
-{% set _telegram_token = _gopass_tg['stdout'].strip() if _gopass_tg.get('retcode', 1) == 0 else '' %}
-
-{% set _gopass_tg_uid = salt['cmd.run_all']('gopass show -o api/openclaw-telegram-uid 2>/dev/null', runas=user, python_shell=True, ignore_retcode=True) %}
-{% set _telegram_uid = _gopass_tg_uid['stdout'].strip() if _gopass_tg_uid.get('retcode', 1) == 0 else '' %}
+{% set _proxy_key = gopass_secret('api/proxypilot-local', "awk '/^api-keys:/{getline; sub(/^[[:space:]]*-[[:space:]]*\"?/, \"\"); sub(/\"?[[:space:]]*$/, \"\"); print; exit}' " ~ _proxypilot_cfg ~ " 2>/dev/null || true") %}
+{% set _anthropic_key = gopass_secret('api/anthropic') %}
+{% set _telegram_token = gopass_secret('api/openclaw-telegram') %}
+{% set _telegram_uid = gopass_secret('api/openclaw-telegram-uid') %}
 
 # ── Install OpenClaw via npm (version-pinned) ────────────────────────
 # Inline cmd.run instead of npm_pkg macro: needs --prefix and version guard
