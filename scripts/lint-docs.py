@@ -10,10 +10,10 @@ import sys
 DOC_DIRS = ["docs"]
 
 # Root-level files requiring .ru.md translation
-ROOT_DOCS = ["README.md"]
+ROOT_DOCS = ["README.md", "TODO.md"]
 
 # Files explicitly excluded from translation requirement
-EXCLUDE = {"CLAUDE.md", "TODO.md"}
+EXCLUDE = {"CLAUDE.md"}
 
 # Cyrillic Unicode range
 _CYRILLIC_RE = re.compile(r"[\u0400-\u04FF]")
