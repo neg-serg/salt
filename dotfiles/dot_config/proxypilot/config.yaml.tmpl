@@ -68,24 +68,12 @@ logs-max-total-size-mb: 100
 error-logs-max-files: 10
 
 # ── Model aliases ───────────────────────────────────────────────────
-# Claude Code sends versioned model names (claude-sonnet-4-6-20250514).
-# Map them to the actual models available through Antigravity OAuth.
+# Antigravity provides Gemini models only (not Claude).
+# Claude models require separate --claude-login OAuth (currently broken).
 
 oauth-model-alias:
   antigravity:
-    # Claude Code model names → Antigravity models
-    - name: "claude-sonnet-4-6"
-      alias: "claude-sonnet-4-6-20250514"
-      fork: true
-    - name: "claude-opus-4-6-thinking"
-      alias: "claude-opus-4-6-20251022"
-      fork: true
-    - name: "claude-opus-4-6-thinking"
-      alias: "opus"
-      fork: true
-    - name: "claude-sonnet-4-6"
-      alias: "sonnet"
-      fork: true
+    # Short alias → Antigravity Gemini model
     - name: "gemini-2.5-flash-lite"
       alias: "haiku"
       fork: true

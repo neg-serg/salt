@@ -18,6 +18,9 @@
 {% set _gopass_tg = salt['cmd.run_all']('gopass show -o api/openclaw-telegram 2>/dev/null', runas=user, python_shell=True, ignore_retcode=True) %}
 {% set _telegram_token = _gopass_tg['stdout'].strip() if _gopass_tg.get('retcode', 1) == 0 else '' %}
 
+{% set _gopass_tg_uid = salt['cmd.run_all']('gopass show -o api/openclaw-telegram-uid 2>/dev/null', runas=user, python_shell=True, ignore_retcode=True) %}
+{% set _telegram_uid = _gopass_tg_uid['stdout'].strip() if _gopass_tg_uid.get('retcode', 1) == 0 else '' %}
+
 # ── Install OpenClaw via npm (version-pinned) ────────────────────────
 # Inline cmd.run instead of npm_pkg macro: needs --prefix and version guard
 openclaw_npm:
@@ -51,6 +54,7 @@ openclaw_config:
         anthropic_key: {{ _anthropic_key | tojson }}
         proxy_key: {{ _proxy_key | tojson }}
         telegram_token: {{ _telegram_token | tojson }}
+        telegram_uid: {{ _telegram_uid | tojson }}
     - require:
       - file: openclaw_config_dir
 

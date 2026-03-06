@@ -1,9 +1,8 @@
 [Unit]
 Description=OpenClaw AI agent gateway
 Documentation=https://docs.openclaw.ai
-After=network-online.target proxypilot.service
+After=network-online.target
 Wants=network-online.target
-Requires=proxypilot.service
 ConditionPathExists=%h/.openclaw/openclaw.json
 
 [Service]

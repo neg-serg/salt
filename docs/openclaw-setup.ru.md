@@ -45,6 +45,7 @@ ProxyPilot служит запасным провайдером.
 | `api/anthropic` | API-ключ Anthropic (основной провайдер) |
 | `api/proxypilot-local` | API-ключ ProxyPilot запасной (общий с Claude Code, OpenCode) |
 | `api/openclaw-telegram` | Токен Telegram-бота (`@negserg_openclaw_bot`) |
+| `api/openclaw-telegram-uid` | Числовой Telegram ID пользователя для allowlist |
 
 Создание секретов перед первым Salt apply:
 ```bash
@@ -97,7 +98,7 @@ journalctl --user -u openclaw-gateway -f     # логи в реальном вр
 
 - Бот: `@negserg_openclaw_bot`
 - Политика DM: `allowlist` (только разрешённые пользователи)
-- Разрешённые: `109503498`
+- Разрешённые: числовой ID из `gopass show -o api/openclaw-telegram-uid`
 - Политика групп: `disabled`
 - Изоляция сессий: `per-channel-peer` (каждый отправитель получает свою сессию)
 
