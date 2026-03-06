@@ -4,8 +4,9 @@
 {% from '_macros_install.jinja' import curl_extract_7z %}
 {% import_yaml 'data/versions.yaml' as ver %}
 # Steam + gaming tools (native pacman install)
-# Requires multilib repo for lib32 dependencies;
-# --ask 4 resolves CachyOS lib32-mesa-git vs multilib lib32-mesa conflict.
+# Requires multilib repo for lib32 dependencies.
+# Inline cmd.run (not pacman_install macro): --ask 4 resolves CachyOS
+# lib32-mesa-git vs multilib lib32-mesa conflict; macro doesn't support extra args.
 {% if host.features.steam %}
 {% set modern_skin_version = ver.get('modern_steam', '') %}
 

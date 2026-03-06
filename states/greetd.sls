@@ -64,6 +64,7 @@ greetd_wallpaper:
           cp -f "$wallpaper" {{ home }}/.cache/greeter-wallpaper
         fi
     - runas: {{ user }}
+    - shell: /bin/bash
     - unless: |
         [ -f {{ home }}/.cache/greeter-wallpaper ] &&
         [ ! {{ home }}/.cache/swww/{{ host.primary_output }} -nt {{ home }}/.cache/greeter-wallpaper ]

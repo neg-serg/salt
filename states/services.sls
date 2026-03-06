@@ -92,6 +92,7 @@ transmission_acl_setup:
         setfacl -d -m u:transmission:rwX {{ transmission_watch_dir }}
         setfacl -m u:transmission:rwX {{ transmission_download_dir }}
         setfacl -d -m u:transmission:rwX {{ transmission_download_dir }}
+    - shell: /bin/bash
     - unless: |
         getfacl -p {{ home }} | rg -q '^user:transmission:r-x$' &&
         getfacl -p {{ transmission_watch_dir }} | rg -q '^user:transmission:rwx$' &&
