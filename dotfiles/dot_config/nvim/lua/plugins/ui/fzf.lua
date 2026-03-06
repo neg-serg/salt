@@ -12,7 +12,7 @@ return {
     { '<leader>L', function()
       require('fzf-lua').files({ cwd = require('utils.fzf').project_root() })
     end, desc = 'Files in project root' },
-    { '<leader>.', function() require('fzf-lua').oldfiles() end, desc = 'Recent files' },
+    { '<leader>.', function() require('utils.fzf').frecency() end, desc = 'Frecent files' },
     { '<leader>sf', function()
       require('utils.fzf').turbo_find({ cwd = vim.fn.expand('%:p:h') })
     end, desc = 'Turbo find (cwd)' },
