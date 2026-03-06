@@ -1,19 +1,9 @@
-{% from '_imports.jinja' import user, home %}
+{% from '_imports.jinja' import user, home, gopass_secret %}
 {% from '_macros_pkg.jinja' import npm_pkg %}
 {% from '_macros_service.jinja' import ensure_dir, user_service_restart %}
 {% set _proxypilot_cfg = home ~ '/.config/proxypilot/config.yaml' %}
-{% set _gopass_api_cmd = salt['cmd.run_all']('gopass show -o api/proxypilot-local 2>/dev/null', runas=user, python_shell=True, ignore_retcode=True) %}
-{% if _gopass_api_cmd.get('retcode', 1) == 0 %}
-{% set _proxypilot_api_key = _gopass_api_cmd['stdout'].strip() %}
-{% else %}
-{% set _proxypilot_api_key = salt['cmd.run_stdout']("awk '/^api-keys:/{getline; sub(/^[[:space:]]*-[[:space:]]*\"?/, \"\"); sub(/\"?[[:space:]]*$/, \"\"); print; exit}' " ~ _proxypilot_cfg ~ " 2>/dev/null || true", runas=user).strip() %}
-{% endif %}
-{% set _gopass_mgmt_cmd = salt['cmd.run_all']('gopass show -o api/proxypilot-management 2>/dev/null', runas=user, python_shell=True, ignore_retcode=True) %}
-{% if _gopass_mgmt_cmd.get('retcode', 1) == 0 %}
-{% set _proxypilot_mgmt_key = _gopass_mgmt_cmd['stdout'].strip() %}
-{% else %}
-{% set _proxypilot_mgmt_key = salt['cmd.run_stdout']("awk '/^[[:space:]]*secret-key:[[:space:]]*/{sub(/^[[:space:]]*secret-key:[[:space:]]*\"?/, \"\"); sub(/\"?[[:space:]]*$/, \"\"); print; exit}' " ~ _proxypilot_cfg ~ " 2>/dev/null || true", runas=user).strip() %}
-{% endif %}
+{% set _proxypilot_api_key = gopass_secret('api/proxypilot-local', "awk '/^api-keys:/{getline; sub(/^[[:space:]]*-[[:space:]]*\"?/, \"\"); sub(/\"?[[:space:]]*$/, \"\"); print; exit}' " ~ _proxypilot_cfg ~ " 2>/dev/null || true") %}
+{% set _proxypilot_mgmt_key = gopass_secret('api/proxypilot-management', "awk '/^[[:space:]]*secret-key:[[:space:]]*/{sub(/^[[:space:]]*secret-key:[[:space:]]*\"?/, \"\"); sub(/\"?[[:space:]]*$/, \"\"); print; exit}' " ~ _proxypilot_cfg ~ " 2>/dev/null || true") %}
 {% set _codex_api_key = _proxypilot_api_key %}
 
 {{ ensure_dir('opencode_config_dir', home ~ '/.config/opencode') }}
