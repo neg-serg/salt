@@ -1,4 +1,4 @@
-{% from '_imports.jinja' import user, home %}
+{% from '_imports.jinja' import user, home, retry_attempts, retry_interval %}
 {% from '_macros_service.jinja' import ensure_dir, user_service_file, user_service_enable, user_service_restart %}
 {% import_yaml 'data/versions.yaml' as ver %}
 
@@ -16,6 +16,7 @@
 {% set _telegram_token = _gopass_tg['stdout'].strip() if _gopass_tg.get('retcode', 1) == 0 else '' %}
 
 # ── Install OpenClaw via npm (version-pinned) ────────────────────────
+# Inline cmd.run instead of npm_pkg macro: needs --prefix and version guard
 openclaw_npm:
   cmd.run:
     - name: npm install -g --prefix {{ home }}/.local openclaw@{{ ver.openclaw }}
@@ -23,8 +24,8 @@ openclaw_npm:
     - unless: openclaw --version 2>/dev/null | rg -q '{{ ver.openclaw }}'
     - parallel: True
     - retry:
-        attempts: 3
-        interval: 10
+        attempts: {{ retry_attempts }}
+        interval: {{ retry_interval }}
 
 # ── Config + credentials directories ─────────────────────────────────
 {{ ensure_dir('openclaw_config_dir', home ~ '/.openclaw', mode='0700') }}
