@@ -1,5 +1,5 @@
-{% from '_imports.jinja' import host, user %}
-{% from '_macros_service.jinja' import unit_override, system_daemon_user, service_with_unit, ensure_running %}
+{% from '_imports.jinja' import host, service_ports, healthcheck_timeout %}
+{% from '_macros_service.jinja' import unit_override, system_daemon_user, service_with_unit, service_with_healthcheck, ensure_running %}
 {% from '_macros_github.jinja' import github_release_system %}
 {% from '_macros_pkg.jinja' import simple_service %}
 {% import_yaml 'data/versions.yaml' as ver %}
@@ -33,6 +33,20 @@ unbound_control_certs:
 {{ unit_override('unbound_restart_override', 'unbound.service', 'salt://units/unbound-restart-override.conf', filename='restart.conf', requires=['cmd: install_unbound']) }}
 
 {{ ensure_running('unbound', watch=['file: unbound_config', 'file: unbound_restart_override']) }}
+
+unbound_ready:
+  cmd.run:
+    - name: |
+        for i in $(seq 1 {{ healthcheck_timeout }}); do
+          unbound-control status >/dev/null 2>&1 && exit 0
+          sleep 1
+        done
+        echo "unbound failed to become ready within {{ healthcheck_timeout }}s" >&2
+        exit 1
+    - shell: /bin/bash
+    - unless: unbound-control status >/dev/null 2>&1
+    - require:
+      - service: unbound_running
 {% endif %}
 
 # --- AdGuardHome: DNS filtering + ad blocking ---
@@ -54,6 +68,8 @@ adguardhome_config:
 
 {{ service_with_unit('adguardhome', 'salt://units/adguardhome.service.j2', template='jinja', context={'dns_unbound': dns.unbound}, requires=['cmd: install_adguardhome', 'file: adguardhome_config'], running=True, watch=['file: adguardhome_config']) }}
 
+{{ service_with_healthcheck('adguardhome_start', 'adguardhome', 'curl -sf http://127.0.0.1:' ~ service_ports.adguardhome.port ~ service_ports.adguardhome.healthcheck ~ ' >/dev/null 2>&1', requires=['service: adguardhome_enabled']) }}
+
 # Configure systemd-resolved to forward to AdGuardHome
 resolved_adguardhome:
   file.managed:
@@ -62,9 +78,9 @@ resolved_adguardhome:
     - makedirs: True
     - mode: '0644'
     - require:
-      - service: adguardhome_running
+      - cmd: adguardhome_start
 {% if dns.unbound %}
-      - service: unbound_running
+      - cmd: unbound_ready
 {% endif %}
 
 resolved_restart:
