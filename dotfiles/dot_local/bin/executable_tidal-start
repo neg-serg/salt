@@ -17,4 +17,4 @@ d1 $ sound "bd sn"
 EOF
 fi
 
-exec nvim "$file"
+exec nvim -c "au VimEnter * ++once lua vim.schedule(function() vim.cmd('TidalLaunch') end)" "$file"

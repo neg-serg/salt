@@ -13,7 +13,10 @@ return {
             tidal = {
                 file = '/usr/share/haskell-tidal/BootTidal.hs',
             },
-            sclang = { enabled = true },
+            sclang = {
+                enabled = true,
+                file = '~/.config/SuperCollider/boot_noop.scd',
+            },
         },
     },
 }
