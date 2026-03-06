@@ -27,6 +27,19 @@ Developer tools stay proxied (Claude Code/OpenCode configs + `claude-proxy` wrap
 - Re-test `--claude-login` and `--gemini-cli-login` after next ProxyPilot release
 
 
+## ydotool service not enabled
+
+`ydotool.service` (systemd user unit) is installed but **disabled and inactive**.
+Hyprland MCP tools (`mouse_click`, `click_text`, `key_press`, etc.) depend on `ydotoold` running.
+
+**Fix**: Enable the user service in Salt (`user_services.sls` or similar):
+```
+systemctl --user enable --now ydotool.service
+```
+
+Without this, the Hyprland MCP server's mouse/keyboard automation tools fail silently or error on click/type operations. Screenshots still work (they use `grim`/`slurp`, not ydotool).
+
+
 ## Nyxt browser packaging
 
 `nyxt-bin` — binary packaging for the Nyxt browser. Needs investigation:
