@@ -56,6 +56,7 @@ install_{{ name | replace('-', '_') }}:
         TAG="{{ tag }}"
 {%- else %}
         TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ repo }}/releases/latest | rg -oP '[^/]+$')
+        [ -n "$TAG" ] || { echo "Failed to fetch release tag for {{ repo }}" >&2; exit 1; }
 {%- endif %}
 {%- if format == 'zip' %}
         curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o "$_td/archive.zip"
@@ -106,6 +107,7 @@ install_{{ name | replace('-', '_') }}:
         TAG="{{ tag }}"
 {%- else %}
         TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ repo }}/releases/latest | rg -oP '[^/]+$')
+        [ -n "$TAG" ] || { echo "Failed to fetch release tag for {{ repo }}" >&2; exit 1; }
 {%- endif %}
 {%- if format == 'zip' %}
         _td=$(mktemp -d)

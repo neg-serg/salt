@@ -95,7 +95,7 @@ install_{{ name | replace('-', '_') }}:
 {%- endif %}
     - runas: {{ user }}
 {%- if version %}
-    - unless: test -x '{{ _bin_path }}' && test -f '{{ _marker }}' && grep -qx '{{ version }}' '{{ _marker }}'
+    - unless: test -x '{{ _bin_path }}' && test -f '{{ _marker }}' && rg -qx '{{ version }}' '{{ _marker }}'
 {%- else %}
     - creates: {{ _bin_path }}
 {%- endif %}

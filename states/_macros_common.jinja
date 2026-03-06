@@ -21,10 +21,27 @@
 {%- macro ver_stamp(vd, name, version) -%}
 mkdir -p {{ vd }} && echo '{{ version }}' > {{ vd }}/{{ name }}
 {%- endmacro -%}
+{#- Resolve a secret from gopass, with optional shell fallback command.
+    Returns the secret value, or the fallback result (empty string if no fallback).
+    Uses host.user by default; override with runas='other'.
+    Usage: {% set key = gopass_secret('api/my-key') %}
+           {% set key = gopass_secret('api/my-key', "awk '...' /path/to/config") %}
+-#}
+{%- macro gopass_secret(key, fallback_cmd='true', runas=None) -%}
+{%- set _u = runas if runas is not none else host.user -%}
+{%- set _r = salt['cmd.run_all']('gopass show -o ' ~ key ~ ' 2>/dev/null', runas=_u, python_shell=True, ignore_retcode=True) -%}
+{%- if _r.get('retcode', 1) == 0 -%}
+{{ _r['stdout'].strip() }}
+{%- else -%}
+{{ salt['cmd.run_stdout'](fallback_cmd, runas=_u).strip() }}
+{%- endif -%}
+{%- endmacro -%}
+
 {%- set service_ports = {
-    'loki':     {'port': 3100, 'healthcheck': '/ready'},
-    'promtail': {'port': 9080, 'healthcheck': '/ready'},
-    'grafana':  {'port': 3030, 'healthcheck': '/api/health'},
+    'loki':         {'port': 3100, 'healthcheck': '/ready'},
+    'promtail':     {'port': 9080, 'healthcheck': '/ready'},
+    'grafana':      {'port': 3030, 'healthcheck': '/api/health'},
+    'adguardhome':  {'port': 3000, 'healthcheck': '/'},
     'ollama':       {'port': 11434, 'healthcheck': '/api/tags'},
     'llama_embed':  {'port': 11435, 'healthcheck': '/health'},
 } -%}
