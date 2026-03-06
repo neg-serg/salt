@@ -7,10 +7,16 @@ Requires=proxypilot.service
 ConditionPathExists=%h/.openclaw/openclaw.json
 
 [Service]
-Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin:/bin
-ExecStart=%h/.local/lib/node_modules/openclaw/dist/index.js gateway
+ExecStart=%h/.local/bin/openclaw gateway
+WorkingDirectory=%h/.openclaw
+SyslogIdentifier=openclaw-gateway
 Restart=on-failure
 RestartSec=5
+NoNewPrivileges=true
+PrivateDevices=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+LockPersonality=yes
 
 [Install]
 WantedBy=default.target
