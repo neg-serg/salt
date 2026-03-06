@@ -1,0 +1,16 @@
+[Unit]
+Description=OpenClaw AI agent gateway
+Documentation=https://docs.openclaw.ai
+After=network-online.target proxypilot.service
+Wants=network-online.target
+Requires=proxypilot.service
+ConditionPathExists=%h/.openclaw/openclaw.json
+
+[Service]
+Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=%h/.local/lib/node_modules/openclaw/dist/index.js gateway
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

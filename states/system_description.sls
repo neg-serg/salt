@@ -81,6 +81,7 @@ include:
   - ollama
   - llama_embed
   - opencode
+  - openclaw_agent
   - steam
 
   # Services, monitoring, user units, snapshots

@@ -1,0 +1,64 @@
+{
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "proxypilot/claude-opus-4-6",
+        "fallbacks": [
+          "proxypilot/claude-sonnet-4-6"
+        ]
+      },
+      "sandbox": {
+        "mode": "off"
+      }
+    }
+  },
+
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "proxypilot": {
+        "baseUrl": "http://127.0.0.1:8317/v1",
+        "apiKey": {{ proxy_key | tojson }},
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "claude-opus-4-6",
+            "name": "Claude Opus 4.6",
+            "contextWindow": 200000,
+            "maxTokens": 16384
+          },
+          {
+            "id": "claude-sonnet-4-6",
+            "name": "Claude Sonnet 4.6",
+            "contextWindow": 200000,
+            "maxTokens": 16384
+          }
+        ]
+      }
+    }
+  },
+
+  "gateway": {
+    "mode": "local",
+    "port": 18789,
+    "auth": {
+      "mode": "none"
+    },
+    "reload": {
+      "mode": "hybrid",
+      "debounceMs": 300
+    }
+  }
+{%- if telegram_token %},
+
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "botToken": {{ telegram_token | tojson }},
+      "dmPolicy": "open",
+      "allowFrom": ["*"],
+      "groupPolicy": "disabled"
+    }
+  }
+{%- endif %}
+}
