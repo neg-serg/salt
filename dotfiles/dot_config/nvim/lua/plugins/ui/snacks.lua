@@ -31,7 +31,12 @@ return {
               "$$$ec.....ze$$$"
                   "**$$$**""
             ]]
-        }
+        },
+        sections = {
+            { section = "header" },
+            { section = "recent_files", limit = 8, padding = 1 },
+            { section = "startup" },
+        },
     },
     indent = { enabled = false },
     input = { enabled = true },
@@ -62,6 +67,7 @@ return {
     vim.api.nvim_create_autocmd("User", {
       pattern = "VeryLazy",
       callback = function()
+        require("utils.frecency").setup()
         -- Setup some globals for debugging (lazy-loaded)
         _G.dd = function(...)
           Snacks.debug.inspect(...)

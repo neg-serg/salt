@@ -45,4 +45,21 @@ function M.apply_cmd_to_qf(cmd)
   vim.cmd('cdo ' .. cmd)
 end
 
+function M.frecency()
+  local ranked = require('utils.frecency').get_ranked()
+  local entries = {}
+  local curr = vim.api.nvim_buf_get_name(0)
+  for _, item in ipairs(ranked) do
+    if item.path ~= curr and (vim.uv or vim.loop).fs_stat(item.path) then
+      table.insert(entries, item.path)
+    end
+  end
+  require('fzf-lua').fzf_exec(entries, {
+    prompt = 'Frecency❯ ',
+    previewer = false,
+    winopts = { height = 0.25 },
+    actions = require('fzf-lua').defaults.actions.files,
+  })
+end
+
 return M
