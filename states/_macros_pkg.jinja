@@ -126,14 +126,14 @@ build_{{ safe }}:
       - cmd: pacman_db_warmup
 {%- endmacro -%}
 
-{# npm install -g (global npm package).
-   Usage: {{ npm_pkg('openclaw') }}
-          {{ npm_pkg('prettier', bin='prettier') }}
+{# npm install -g (global npm package) with --prefix for user-level install.
+   Without --prefix, npm tries /usr/lib/node_modules/ (EACCES as non-root).
+   Usage: {{ npm_pkg('codex', pkg='@openai/codex') }}
 #}
 {%- macro npm_pkg(name, pkg=None, bin=None, user=_user, home=_home) -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
-    - name: npm install -g {{ pkg or name }}
+    - name: npm install -g --prefix {{ home }}/.local {{ pkg or name }}
     - runas: {{ user }}
     - creates: {{ home }}/.local/bin/{{ bin or name }}
     - parallel: True
