@@ -1,4 +1,4 @@
-{% from '_imports.jinja' import host, user, service_ports %}
+{% from '_imports.jinja' import host, service_ports %}
 {% from '_macros_service.jinja' import unit_override, service_with_unit, system_daemon_user, service_with_healthcheck, ensure_running, ensure_dir %}
 {% from '_macros_github.jinja' import github_release_system %}
 {% from '_macros_pkg.jinja' import simple_service %}

@@ -1,5 +1,5 @@
 # Disk mounts (/mnt/zero, /mnt/one), btrfs compression and nocow
-{% from '_imports.jinja' import home, user %}
+{% from '_imports.jinja' import home %}
 {% import_yaml 'data/mounts.yaml' as mounts %}
 
 {% for name, m in mounts.disks.items() %}

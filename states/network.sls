@@ -1,4 +1,4 @@
-{% from '_imports.jinja' import host, home %}
+{% from '_imports.jinja' import host %}
 {% from '_macros_service.jinja' import service_with_unit, ensure_dir %}
 {% set net = host.features.network %}
 
@@ -27,6 +27,7 @@ vm_bridge_firewall:
         firewall-cmd --permanent --zone=trusted --add-interface=br0
         firewall-cmd --permanent --zone=trusted --add-service=dhcp
         firewall-cmd --reload
+    - shell: /bin/bash
     - onlyif: command -v firewall-cmd
     - onchanges:
       - file: vm_bridge_netdev

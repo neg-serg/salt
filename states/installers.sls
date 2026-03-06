@@ -127,6 +127,7 @@ mpv_script_mpris_so:
     - runas: {{ user }}
     - shell: /bin/bash
     - unless: test -f {{ mpv_scripts_dir }}/mpris.so && test -f {{ ver_dir }}/mpris.so && rg -qx '{{ ver.mpv_mpris }}' {{ ver_dir }}/mpris.so
+    - parallel: True
     - require:
       - file: mpv_scripts_dir
     - retry:
