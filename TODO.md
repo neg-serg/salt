@@ -40,6 +40,17 @@ systemctl --user enable --now ydotool.service
 Without this, the Hyprland MCP server's mouse/keyboard automation tools fail silently or error on click/type operations. Screenshots still work (they use `grim`/`slurp`, not ydotool).
 
 
+## OpenClaw: cosmetic improvements
+
+**npmrc prefix**: npm global prefix is set to `/nonexistent` (from `/etc/npmrc`).
+Create `~/.npmrc` with `prefix=$HOME/.local` via chezmoi (`dotfiles/dot_npmrc`).
+Without this, `npm list -g` and `npm outdated -g` fail (Salt install works around it via `--prefix`).
+
+**user_services.yaml**: `openclaw-gateway.service` is managed directly from `openclaw_agent.sls` but not registered in `data/user_services.yaml`. For consistency, consider moving `user_service_file` + `user_service_enable` there, keeping only npm install and config in `openclaw_agent.sls`.
+
+**ProxyPilot alias comment**: the `name/alias` format in `proxypilot.yaml.j2` is not self-explanatory. Add a comment clarifying the mapping direction (alias = what the client sends, name = local model ID).
+
+
 ## Nyxt browser packaging
 
 `nyxt-bin` — binary packaging for the Nyxt browser. Needs investigation:
