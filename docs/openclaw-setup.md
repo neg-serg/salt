@@ -2,7 +2,8 @@
 
 ## Overview
 
-OpenClaw is a local AI agent gateway that routes all requests through ProxyPilot.
+OpenClaw is a local AI agent gateway. Primary models use the Anthropic API directly;
+ProxyPilot serves as a fallback provider.
 It provides a Web UI (chat dashboard) and a Telegram bot channel.
 
 ## Architecture
@@ -15,12 +16,13 @@ Browser / Telegram
 │  openclaw-gateway       │  ← systemd user service
 │  ws://127.0.0.1:18789   │     auth: token
 └──────────┬──────────────┘
-           │ OpenAI-compatible API
-           ▼
-┌─────────────────────────┐
-│  ProxyPilot             │  ← routes to Claude via OAuth
-│  http://127.0.0.1:8317  │
-└─────────────────────────┘
+           │
+     ┌─────┴──────┐
+     ▼            ▼
+┌──────────┐ ┌─────────────────────────┐
+│ Anthropic│ │  ProxyPilot (fallback)  │
+│ API      │ │  http://127.0.0.1:8317  │
+└──────────┘ └─────────────────────────┘
 ```
 
 ## Components
@@ -40,7 +42,8 @@ Browser / Telegram
 
 | Key | Purpose |
 |---|---|
-| `api/proxypilot-local` | API key for ProxyPilot (shared with Claude Code, OpenCode) |
+| `api/anthropic` | Anthropic API key (primary provider) |
+| `api/proxypilot-local` | API key for ProxyPilot fallback (shared with Claude Code, OpenCode) |
 | `api/openclaw-telegram` | Telegram Bot Token (`@negserg_openclaw_bot`) |
 
 Create secrets before first Salt apply:
@@ -48,7 +51,7 @@ Create secrets before first Salt apply:
 gopass insert api/openclaw-telegram   # paste Telegram Bot Token from @BotFather
 ```
 
-`api/proxypilot-local` is already used by other tools — no action needed.
+`api/anthropic` and `api/proxypilot-local` are already used by other tools — no action needed.
 
 ## Web UI Access
 
@@ -84,17 +87,17 @@ journalctl --user -u openclaw-gateway -f     # live logs
 
 ## Models
 
-All models routed through ProxyPilot (`http://127.0.0.1:8317/v1`):
-
-| Model | Role |
-|---|---|
-| `proxypilot/claude-opus-4-6` | Primary (default for all agents) |
-| `proxypilot/claude-sonnet-4-6` | Fallback |
+| Model | Provider | Role |
+|---|---|---|
+| `anthropic/claude-opus-4-6-20251022` | Anthropic API (direct) | Primary |
+| `anthropic/claude-sonnet-4-6-20250514` | Anthropic API (direct) | Fallback 1 |
+| `proxypilot/claude-opus-4-6` | ProxyPilot (local proxy) | Fallback 2 |
 
 ## Telegram Bot
 
 - Bot: `@negserg_openclaw_bot`
-- DM policy: `open` (accepts messages from anyone)
+- DM policy: `allowlist` (only whitelisted users)
+- Allowed users: `109503498`
 - Group policy: `disabled`
 - Session isolation: `per-channel-peer` (each sender gets their own session)
 

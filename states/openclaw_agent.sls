@@ -12,6 +12,9 @@
 {% set _proxy_key = salt['cmd.run_stdout']("awk '/^api-keys:/{getline; sub(/^[[:space:]]*-[[:space:]]*\"?/, \"\"); sub(/\"?[[:space:]]*$/, \"\"); print; exit}' " ~ _proxypilot_cfg ~ " 2>/dev/null || true", runas=user).strip() %}
 {% endif %}
 
+{% set _gopass_anthropic = salt['cmd.run_all']('gopass show -o api/anthropic 2>/dev/null', runas=user, python_shell=True, ignore_retcode=True) %}
+{% set _anthropic_key = _gopass_anthropic['stdout'].strip() if _gopass_anthropic.get('retcode', 1) == 0 else '' %}
+
 {% set _gopass_tg = salt['cmd.run_all']('gopass show -o api/openclaw-telegram 2>/dev/null', runas=user, python_shell=True, ignore_retcode=True) %}
 {% set _telegram_token = _gopass_tg['stdout'].strip() if _gopass_tg.get('retcode', 1) == 0 else '' %}
 
@@ -45,6 +48,7 @@ openclaw_config:
     - mode: '0600'
     - replace: False
     - context:
+        anthropic_key: {{ _anthropic_key | tojson }}
         proxy_key: {{ _proxy_key | tojson }}
         telegram_token: {{ _telegram_token | tojson }}
     - require:
