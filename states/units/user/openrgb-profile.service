@@ -1,0 +1,10 @@
+[Unit]
+Description=Load OpenRGB neg profile
+After=default.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/openrgb --profile neg
+
+[Install]
+WantedBy=default.target
