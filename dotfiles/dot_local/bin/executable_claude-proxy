@@ -1,7 +1,11 @@
 #!/usr/bin/env zsh
 set -euo pipefail
 
+# Isolated Claude Code instance routed through ProxyPilot.
+# Uses a separate config dir so it can never touch ~/.claude/.
+
 CLAUDE_PROXY_URL=${CLAUDE_PROXY_URL:-http://127.0.0.1:8317}
+CLAUDE_PROXY_CONFIG=${CLAUDE_PROXY_CONFIG:-${HOME}/.claude-proxy}
 
 if [[ -z ${PROXYPILOT_API_KEY:-} ]]; then
   print -u2 -- "PROXYPILOT_API_KEY is not set; run chezmoi apply or source secrets first."
@@ -13,7 +17,10 @@ if ! command -v claude >/dev/null 2>&1; then
   exit 1
 fi
 
+mkdir -p "${CLAUDE_PROXY_CONFIG}"
+
 exec env \
+  CLAUDE_CONFIG_DIR="${CLAUDE_PROXY_CONFIG}" \
   ANTHROPIC_BASE_URL="${CLAUDE_PROXY_URL}" \
   ANTHROPIC_API_KEY="${PROXYPILOT_API_KEY}" \
   claude "$@"
