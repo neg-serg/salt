@@ -8,7 +8,7 @@
 
 {{ ensure_dir('amnezia_bin_dir', home ~ '/.local/bin') }}
 
-{{ ensure_dir('amnezia_cache_dir', cache) }}
+{{ ensure_dir('amnezia_cache_dir', cache, require=['mount: mount_one']) }}
 
 # Build all Amnezia components in parallel
 amnezia_build:
