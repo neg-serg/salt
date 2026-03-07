@@ -1,6 +1,7 @@
 // Auto-boot SuperDirt on sclang start
 // Deployed by Salt — edits will be overwritten
 (
+Server.killAll;
 s.options.numBuffers = 1024 * 256;
 s.options.memSize = 8192 * 64;
 s.options.numWireBufs = 2048;
