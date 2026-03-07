@@ -22,15 +22,11 @@ install_{{ name | replace('-', '_') }}:
         tar -xzf "$_td/archive.tar.gz" -C "$_td"
         find "$_td" -name '{{ name }}' -type f -exec install -m 0755 {} ~/.local/bin/{{ name }} \;
 {%- if version %}
-        {{ _ver_stamp(_ver_dir, name, version) }}
+        {{ _ver_stamp(_ver_dir, name, version, target=_creates) }}
 {%- endif %}
     - runas: {{ user }}
     - shell: /bin/bash
-{%- if version %}
-    - unless: test -f {{ _creates }} && test -f {{ _ver_dir }}/{{ name }} && rg -qx '{{ version }}' {{ _ver_dir }}/{{ name }}
-{%- else %}
-    - creates: {{ _creates }}
-{%- endif %}
+    - creates: {{ _ver_dir ~ '/' ~ name ~ '@' ~ version if version else _creates }}
     - parallel: True
     - retry:
         attempts: {{ _retry_attempts }}
@@ -74,14 +70,10 @@ install_{{ name | replace('-', '_') }}:
         find "$_td" -maxdepth 3 -name '{{ source_bin }}' -type f -exec install -m 0755 {} {{ dest }}/{{ name }} \;
 {%- endif %}
 {%- if version %}
-        {{ _ver_stamp(_sys_ver_dir, name, version) }}
+        {{ _ver_stamp(_sys_ver_dir, name, version, target=_creates) }}
 {%- endif %}
     - shell: /bin/bash
-{%- if version %}
-    - unless: test -f {{ _creates }} && test -f {{ _sys_ver_dir }}/{{ name }} && rg -qx '{{ version }}' {{ _sys_ver_dir }}/{{ name }}
-{%- else %}
-    - creates: {{ _creates }}
-{%- endif %}
+    - creates: {{ _sys_ver_dir ~ '/' ~ name ~ '@' ~ version if version else _creates }}
     - parallel: True
     - retry:
         attempts: {{ _retry_attempts }}
@@ -125,15 +117,11 @@ install_{{ name | replace('-', '_') }}:
         mv -f '{{ dest }}/{{ name }}.tmp' '{{ dest }}/{{ name }}'
 {%- endif %}
 {%- if version %}
-        {{ _ver_stamp(_ver_dir, name, version) }}
+        {{ _ver_stamp(_ver_dir, name, version, target=_creates) }}
 {%- endif %}
     - runas: {{ user }}
     - shell: /bin/bash
-{%- if version %}
-    - unless: test -e {{ _creates }} && test -f {{ _ver_dir }}/{{ name }} && rg -qx '{{ version }}' {{ _ver_dir }}/{{ name }}
-{%- else %}
-    - creates: {{ _creates }}
-{%- endif %}
+    - creates: {{ _ver_dir ~ '/' ~ name ~ '@' ~ version if version else _creates }}
     - parallel: True
 {%- if require %}
     - require:

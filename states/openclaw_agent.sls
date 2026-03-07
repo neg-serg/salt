@@ -1,4 +1,4 @@
-{% from '_imports.jinja' import host, user, home, retry_attempts, retry_interval, gopass_secret %}
+{% from '_imports.jinja' import host, user, home, retry_attempts, retry_interval, ver_dir, gopass_secret %}
 {% from '_macros_service.jinja' import ensure_dir, user_service_file, user_service_enable, user_service_restart %}
 {% import_yaml 'data/versions.yaml' as ver %}
 {% if host.features.openclaw %}
@@ -14,9 +14,12 @@
 # Inline cmd.run instead of npm_pkg macro: needs --prefix and version guard
 openclaw_npm:
   cmd.run:
-    - name: npm install -g --prefix {{ home }}/.local openclaw@{{ ver.openclaw }}
+    - name: |
+        npm install -g --prefix {{ home }}/.local openclaw@{{ ver.openclaw }}
+        mkdir -p {{ ver_dir }} && rm -f '{{ ver_dir }}/openclaw' {{ ver_dir }}/openclaw@* && ln -sf '{{ home }}/.local/bin/openclaw' '{{ ver_dir }}/openclaw@{{ ver.openclaw }}'
     - runas: {{ user }}
-    - unless: openclaw --version 2>/dev/null | rg -q '{{ ver.openclaw }}'
+    - shell: /bin/bash
+    - creates: {{ ver_dir }}/openclaw@{{ ver.openclaw }}
     - parallel: True
     - retry:
         attempts: {{ retry_attempts }}
