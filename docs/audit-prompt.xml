@@ -1,0 +1,413 @@
+<audit>
+  <meta>
+    <title>Salt Configuration Reproducibility Audit</title>
+    <version>2.0</version>
+    <scope>Can a fresh CachyOS install become a fully working workstation by following documented steps?</scope>
+    <language>ru (technical terms in en)</language>
+  </meta>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       CONTEXT: Deployment pipeline as it exists today
+       ══════════════════════════════════════════════════════════════════ -->
+  <context>
+    <description>
+      Salt states + chezmoi dotfiles для конфигурации рабочей станции CachyOS (Arch-based).
+      Развёртывание — многоэтапный процесс:
+        1. bootstrap-cachyos.sh  — rootfs в /mnt/one/cachyos-root/
+        2. deploy-cachyos.sh     — разметка NVMe, Limine, rsync rootfs
+        3. cachyos-packages.sh   — ~400 пакетов через pacman/paru/makepkg
+        4. salt-apply.sh         — Salt states (конфигурация) + chezmoi (dotfiles)
+
+      Salt НЕ устанавливает пакеты через pacman/paru. Это сознательное решение.
+      Salt управляет: конфигурацией, сервисами, установкой из не-pacman источников
+      (GitHub releases, pip, cargo, npm, curl), кастомными PKGBUILD-ами, feature flags.
+
+      Секреты — gopass (GPG + Yubikey). Некоторые state-ы зависят от секретов
+      на этапе Jinja-рендеринга через макрос gopass_secret().
+    </description>
+
+    <deployment_flow>
+      <step order="1">Свежая установка CachyOS через bootstrap + deploy</step>
+      <step order="2">Первая загрузка: монтирование XFS дисков (/mnt/one, /mnt/zero)</step>
+      <step order="3">Инициализация GPG/Yubikey + gopass clone</step>
+      <step order="4">cachyos-packages.sh (все pacman/AUR пакеты)</step>
+      <step order="5">salt-apply.sh (Salt states + chezmoi)</step>
+      <step order="6">Перезагрузка и проверка</step>
+    </deployment_flow>
+
+    <key_question>
+      Если пользователь точно следует шагам 1-6, получит ли он полностью
+      рабочую систему без дополнительных ручных вмешательств?
+      Если нет — что именно сломается и почему?
+    </key_question>
+  </context>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       GOALS
+       ══════════════════════════════════════════════════════════════════ -->
+  <goals>
+    <primary>
+      Определить, обеспечивает ли текущая Salt-конфигурация вместе со скриптами
+      (bootstrap, deploy, packages) полностью воспроизводимую сборку системы.
+      Каталогизировать каждый разрыв, неявное допущение и недокументированный шаг.
+    </primary>
+
+    <goal id="G1">Построить полную карту зависимостей: какие инструменты Salt
+      ожидает от cachyos-packages.sh, какие от базовой системы, какие устанавливает сам</goal>
+    <goal id="G2">Проверить порядок выполнения state-ов: может ли salt-apply.sh
+      отработать от начала до конца на свежей системе (после packages.sh)</goal>
+    <goal id="G3">Оценить поведение при недоступности gopass: какие state-ы упадут,
+      какие деградируют, какие отработают нормально</goal>
+    <goal id="G4">Проверить устойчивость внешних зависимостей: что если GitHub недоступен,
+      URL устарел, версия удалена</goal>
+    <goal id="G5">Проверить границу Salt/chezmoi: нет ли пересечений, конфликтов,
+      зависимостей без явного require</goal>
+    <goal id="G6">Оценить полноту документации: покрывает ли deploy-cachyos.md
+      все реальные шаги от «голый NVMe» до «рабочая станция»</goal>
+  </goals>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       CONSTRAINTS
+       ══════════════════════════════════════════════════════════════════ -->
+  <constraints>
+    <constraint id="C1" severity="hard">
+      Архитектурное решение «Salt = конфигурация, pacman/paru = пакеты» —
+      осознанное и сохраняется. Не предлагать слияние этих слоёв.
+      Аудит оценивает чистоту границы, а не её отсутствие.
+    </constraint>
+
+    <constraint id="C2" severity="hard">
+      Каждый finding подкреплён конкретными файлами и строками.
+      Никаких предположений — если не можешь подтвердить, пометь «unverified».
+    </constraint>
+
+    <constraint id="C3" severity="hard">
+      Предложенные исправления не ломают существующее. Валидация:
+      `just validate` → `just test` → `just lint` → `just render-matrix`.
+    </constraint>
+
+    <constraint id="C4" severity="hard">
+      Конвенции CLAUDE.md соблюдаются: state ID naming, network resilience
+      (retry/parallel/guard/curl flags), идемпотентность guards, commit style.
+    </constraint>
+
+    <constraint id="C5" severity="hard">
+      Реальные проблемы, а не теоретические. Gap — только то, что реально
+      сломается при развёртывании. Косметика и «nice to have» — вне скоупа.
+    </constraint>
+
+    <constraint id="C6" severity="hard">
+      Секреты: никогда не логировать plaintext. Ссылаться по gopass key path.
+      Поведение gopass_secret() с fallback — преднамеренно и сохраняется.
+    </constraint>
+
+    <constraint id="C7" severity="soft">
+      Минимальные целевые исправления. Одна строка unless: лучше рефакторинга файла.
+    </constraint>
+  </constraints>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       TASKS
+       ══════════════════════════════════════════════════════════════════ -->
+  <tasks>
+    <!-- ─── T1: Tool Dependency Map ───────────────────────────────── -->
+    <task id="T1" priority="critical">
+      <title>Карта зависимостей от внешних инструментов</title>
+      <description>
+        Построить полную карту: какие бинарники Salt вызывает в runtime,
+        откуда они берутся, и что будет если их нет.
+      </description>
+      <steps>
+        <step>Для каждого .sls: извлечь все внешние команды из cmd.run, unless/onlyif,
+          и раскрытых макросов (_macros_*.jinja)</step>
+        <step>Сопоставить каждую команду с источником:
+          - PACMAN_PKGS / AUR_PKGS / CUSTOM_PKGS в cachyos-packages.sh
+          - Устанавливается самим Salt (github_release, curl_bin, cargo_pkg, pip_pkg, npm_pkg)
+          - Базовая система CachyOS (bootstrap rootfs)</step>
+        <step>Найти инструменты без источника — те, что Salt вызывает, но никто не ставит</step>
+        <step>Найти проблемы порядка: Salt ставит инструмент, но использует его в более раннем state</step>
+      </steps>
+      <output>
+        Таблица: Tool | Package | Source (pacman/AUR/salt/base) | Used By (state:line) | Status (OK/MISSING/ORDER)
+      </output>
+    </task>
+
+    <!-- ─── T2: Secrets Availability ──────────────────────────────── -->
+    <task id="T2" priority="critical">
+      <title>Доступность секретов и поведение при их отсутствии</title>
+      <steps>
+        <step>Найти все вызовы gopass_secret() в .sls/.jinja файлах</step>
+        <step>Найти все {{ gopass "..." }} в chezmoi .tmpl файлах (dotfiles/)</step>
+        <step>Для каждого секрета: что будет если gopass вернёт пустую строку?
+          — state упадёт? конфиг будет с пустым полем? сервис не запустится?</step>
+        <step>Определить самую раннюю точку в execution flow где нужен gopass</step>
+        <step>Ответить: можно ли выполнить salt-apply.sh целиком если gopass недоступен
+          (с деградацией, но без падения)?</step>
+      </steps>
+      <output>
+        Таблица: Secret Key | Used By | Fallback | Impact (none/degraded/broken)
+      </output>
+    </task>
+
+    <!-- ─── T3: State Execution Order ─────────────────────────────── -->
+    <task id="T3" priority="high">
+      <title>Порядок выполнения и цепочки зависимостей</title>
+      <steps>
+        <step>Проследить include-порядок в system_description.sls</step>
+        <step>Для каждого state: require ссылается на state из более раннего include? (OK)
+          Из более позднего? (ПРОБЛЕМА). На несуществующий? (ПРОБЛЕМА)</step>
+        <step>Найти implicit ordering: state A работает только потому что идёт после B
+          по порядку include, но нет явного require</step>
+        <step>Проверить parallel: True — нет ли скрытых зависимостей между параллельными state-ами</step>
+        <step>Проверить циклические зависимости</step>
+      </steps>
+      <output>
+        Список: Source State → Target State | Dependency Type | Severity
+      </output>
+    </task>
+
+    <!-- ─── T4: Feature Flag Isolation ────────────────────────────── -->
+    <task id="T4" priority="high">
+      <title>Изоляция feature flags</title>
+      <steps>
+        <step>Список всех feature flags из hosts.yaml defaults</step>
+        <step>Для каждого flag: какие .sls проверяют его ({% if host.features.X %})</step>
+        <step>Проверить что flag гейтит ВСЕ state-ы в файле, а не часть</step>
+        <step>Кросс-файловые зависимости: выключение feature X оставляет orphan-конфиги из Y?</step>
+        <step>`just render-matrix` с каждым synthetic host из feature_matrix.yaml —
+          все комбинации рендерятся без ошибок?</step>
+      </steps>
+      <output>
+        Таблица: Flag | Gating States | Ungated Leaks | Cross-deps | Severity
+      </output>
+    </task>
+
+    <!-- ─── T5: External URL Resilience ───────────────────────────── -->
+    <task id="T5" priority="high">
+      <title>Устойчивость внешних зависимостей</title>
+      <steps>
+        <step>Каталог всех внешних URL: data/installers.yaml, data/versions.yaml,
+          inline в .sls, динамические в _macros_github.jinja</step>
+        <step>Для каждого URL: версия зафиксирована? хэш проверяется? retry есть?
+          idempotency guard есть?</step>
+        <step>Категоризация риска:
+          - LOW: version + hash + retry + guard
+          - MEDIUM: version + retry + guard (нет hash)
+          - HIGH: /latest/ или динамическая версия, или нет guard
+          - CRITICAL: нет version pin, нет hash, нет guard</step>
+        <step>Pre-release версии (proxypilot 0.3.0-dev-*) — могут исчезнуть при релизе</step>
+      </steps>
+      <output>
+        Таблица: Resource | URL | Version Pinned | Hash | Retry | Guard | Risk
+      </output>
+    </task>
+
+    <!-- ─── T6: Idempotency ───────────────────────────────────────── -->
+    <task id="T6" priority="high">
+      <title>Идемпотентность state-ов</title>
+      <steps>
+        <step>Все cmd.run/cmd.script: есть ли guard (creates/unless/onlyif/onchanges/stateful)?</step>
+        <step>State-ы без guard — выполняются при каждом apply</step>
+        <step>file.managed с self-modifying конфигами: replace: False корректно используется?</step>
+        <step>watch-цепочки: рестарт сервиса при неизменном конфиге?</step>
+        <step>Макросы: наследуют ли сгенерированные state-ы guard от определения макроса?</step>
+      </steps>
+      <output>
+        Список: State ID | File:Line | Guard | Status (idempotent/non-idempotent)
+      </output>
+    </task>
+
+    <!-- ─── T7: Salt/Chezmoi Boundary ─────────────────────────────── -->
+    <task id="T7" priority="medium">
+      <title>Граница Salt — chezmoi</title>
+      <steps>
+        <step>Пути под /home/neg/, управляемые Salt (file.managed/directory/recurse)</step>
+        <step>Пути, управляемые chezmoi (структура dotfiles/)</step>
+        <step>Пересечения: файлы под управлением ОБОИХ</step>
+        <step>Chezmoi в salt-apply.sh: доступен ли chezmoi в этот момент?
+          Что если chezmoi apply упадёт на середине? Есть ли retry/recovery?</step>
+      </steps>
+      <output>
+        Таблица пересечений + оценка execution flow chezmoi
+      </output>
+    </task>
+
+    <!-- ─── T8: Host Config Robustness ────────────────────────────── -->
+    <task id="T8" priority="medium">
+      <title>Устойчивость host_config</title>
+      <steps>
+        <step>Что если grains['host'] не совпадает ни с одним хостом и alias?
+          Fallback на defaults — чисто ли это работает?</step>
+        <step>Частичный override хоста: неуказанные features наследуются от defaults?</step>
+        <step>Alias «cachyos» → «telfir»: что реально будет grains['host'] на первом boot?</step>
+      </steps>
+      <output>Edge case analysis с тестовыми сценариями</output>
+    </task>
+
+    <!-- ─── T9: Documentation Gaps ────────────────────────────────── -->
+    <task id="T9" priority="medium">
+      <title>Полнота документации развёртывания</title>
+      <steps>
+        <step>Пройти deploy-cachyos.md пошагово: каждая команда корректна?
+          prerequisites указаны? что если шаг упадёт?</step>
+        <step>Шаги, которых нет в доке, но они обязательны:
+          - Настройка сети (Wi-Fi, DNS)
+          - Настройка дисплея/GPU
+          - Специфика инициализации Yubikey
+          - URL gopass store и GPG key IDs
+          - Post-salt-apply ручные шаги</step>
+        <step>Совпадает ли POST-BOOT.md (генерируется deploy) с deploy-cachyos.md?</step>
+        <step>Русский перевод существует и актуален?</step>
+      </steps>
+      <output>Пошаговый walkthrough с пробелами, отмеченными inline</output>
+    </task>
+
+    <!-- ─── T10: Package Overlap Detection ────────────────────────── -->
+    <task id="T10" priority="low">
+      <title>Пересечения пакетов между cachyos-packages.sh и Salt</title>
+      <steps>
+        <step>Пакеты из cachyos-packages.sh (PACMAN + AUR + CUSTOM)</step>
+        <step>Пакеты, устанавливаемые Salt (pacman_install, paru_install, pkgbuild_install)</step>
+        <step>Пересечения: один пакет из обоих источников</step>
+        <step>Для пересечений: кто побеждает? это осознанно (Salt управляет конфигом)
+          или дублирование?</step>
+      </steps>
+      <output>Таблица: Package | packages.sh | Salt State | Conflict Type</output>
+    </task>
+
+    <!-- ─── T11: Salt Runtime Stability ───────────────────────────── -->
+    <task id="T11" priority="low">
+      <title>Стабильность Salt runtime</title>
+      <steps>
+        <step>Патч Python 3.14 в salt-apply.sh: всё ещё нужен? что если Salt обновится?</step>
+        <step>requirements.txt: версии зафиксированы или плавающие?</step>
+        <step>Обработка ошибок: partial failure оставляет систему в broken state?</step>
+        <step>Daemon mode vs direct: одинаковый результат?</step>
+      </steps>
+      <output>Оценка рисков по компонентам</output>
+    </task>
+  </tasks>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       ACCEPTANCE CRITERIA
+       ══════════════════════════════════════════════════════════════════ -->
+  <acceptance_criteria>
+    <criterion id="AC1">Каждый .sls файл проанализирован минимум для T1, T3, T6.
+      Ни один файл не пропущен.</criterion>
+    <criterion id="AC2">Каждый finding имеет severity: CRITICAL (deploy падает),
+      HIGH (деградация), MEDIUM (производительность/стиль), LOW (документация).</criterion>
+    <criterion id="AC3">Каждый CRITICAL/HIGH finding имеет конкретное предложение:
+      файл, что изменить, как протестировать, риск самого исправления.</criterion>
+    <criterion id="AC4">Отчёт содержит «Deployment Walkthrough» — трассировку
+      свежей установки с аннотированными пробелами.</criterion>
+    <criterion id="AC5">Findings воспроизводимы — другой разработчик может
+      верифицировать каждый.</criterion>
+    <criterion id="AC6">`just validate` и `just test` проходят после предложенных fix-ов.</criterion>
+  </acceptance_criteria>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       REPORT FORMAT
+       ══════════════════════════════════════════════════════════════════ -->
+  <report_format>
+    <section name="Executive Summary">
+      2-3 абзаца: общая оценка воспроизводимости, количество критических блокеров,
+      уровень уверенности (fully reproducible / mostly / significant gaps).
+    </section>
+
+    <section name="Deployment Walkthrough">
+      Пошаговая трассировка свежего развёртывания: шаг → ожидаемый результат →
+      фактический результат → gap (если есть).
+    </section>
+
+    <section name="Findings by Severity">
+      CRITICAL → HIGH → MEDIUM → LOW. Каждый finding:
+      - ID (F01, F02, ...)
+      - Title
+      - Task (T1-T11)
+      - Описание проблемы
+      - Доказательство (file:line)
+      - Что ломается
+      - Как исправить
+      - Как проверить fix
+    </section>
+
+    <section name="Dependency Maps">
+      - Tool dependency table (T1)
+      - Secret dependency table (T2)
+      - External URL risk table (T5)
+    </section>
+
+    <section name="Remediation Roadmap">
+      Приоритизированный список fix-ов:
+      - Phase 1: Critical blockers (deploy невозможен без них)
+      - Phase 2: High severity (deploy с деградацией)
+      - Phase 3: Medium/Low (полировка и устойчивость)
+    </section>
+  </report_format>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       IMPLEMENTATION SAFEGUARDS
+       ══════════════════════════════════════════════════════════════════ -->
+  <safeguards>
+    <safeguard id="S1" name="Read before fix">
+      Не изменять файл, не прочитав его целиком. Понимать логику до изменения.
+    </safeguard>
+
+    <safeguard id="S2" name="Incremental commits">
+      Один fix = один коммит. Формат: [audit] fix: описание.
+      Не группировать несвязанные изменения.
+    </safeguard>
+
+    <safeguard id="S3" name="Validation pipeline">
+      После каждого fix:
+      1. `just validate` — все state-ы рендерятся
+      2. `just test` — dry-run без неожиданностей
+      3. `just lint` — нет регрессий линтинга
+      4. `just render-matrix` — feature-комбинации валидны
+    </safeguard>
+
+    <safeguard id="S4" name="Preserve existing guards">
+      Не удалять и не ослаблять существующие creates/unless/onlyif.
+      Они могут покрывать edge case-ы, не очевидные с первого взгляда.
+    </safeguard>
+
+    <safeguard id="S5" name="Feature flag testing">
+      После fix-а feature flags — проверить с feature ON и OFF.
+      Использовать synthetic hosts из feature_matrix.yaml.
+    </safeguard>
+
+    <safeguard id="S6" name="Macro-first">
+      Новый cmd.run с сетью → использовать существующий макрос.
+      Inline cmd.run — только если ни один макрос не подходит.
+    </safeguard>
+
+    <safeguard id="S7" name="No architecture changes">
+      Аудит может РЕКОМЕНДОВАТЬ архитектурные изменения, но НЕ РЕАЛИЗУЕТ их.
+      Scope: identify → document → minimal targeted fixes.
+    </safeguard>
+  </safeguards>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       TESTING PROTOCOL
+       ══════════════════════════════════════════════════════════════════ -->
+  <testing>
+    <test id="TP1" command="just validate"
+          pass="All states render, 0 failures"
+          when="After every code change"/>
+    <test id="TP2" command="just test"
+          pass="No unexpected changes, no errors"
+          when="After every code change"/>
+    <test id="TP3" command="just lint"
+          pass="All linters pass"
+          when="Before commit"/>
+    <test id="TP4" command="just render-matrix"
+          pass="All host × feature combinations render"
+          when="After feature-flag changes"/>
+    <test id="TP5" command="just idempotency"
+          pass="Second run = zero changes"
+          when="After cmd.run modifications"/>
+    <test id="TP6" type="manual" command="just vm-smoke"
+          pass="Fresh deployment completes without manual steps beyond documented ones"
+          when="Final validation after all fixes"/>
+  </testing>
+</audit>
