@@ -35,6 +35,8 @@
     # laravel_version       # laravel php framework version (https://laravel.com/)
     java_version            # java version (https://www.java.com/)
     package                 # name@version from package.json (https://docs.npmjs.com/files/package.json)
+    docker                  # docker/podman context (custom)
+    pnpm                    # pnpm version in projects (custom)
     rbenv                   # ruby version from rbenv (https://github.com/rbenv/rbenv)
     rvm                     # ruby version from rvm (https://rvm.io)
     fvm                     # flutter version management (https://github.com/leoafarias/fvm)
@@ -431,6 +433,22 @@
   typeset -g POWERLEVEL9K_TIME_FORMAT='%D{%H:%M:%S}'
   typeset -g POWERLEVEL9K_TIME_UPDATE_ON_COMMAND=false
   typeset -g POWERLEVEL9K_TIME_VISUAL_IDENTIFIER_EXPANSION=
+  function prompt_docker() {
+    local ctx
+    ctx=$(docker context show 2>/dev/null) || ctx=$(podman context show 2>/dev/null) || return
+    [[ -n $ctx && $ctx != default ]] || return
+    p10k segment -f 39 -i $'\uf308' -t "$ctx"
+  }
+  function instant_prompt_docker() {}
+
+  function prompt_pnpm() {
+    [[ -f pnpm-lock.yaml ]] || return
+    local ver
+    ver=$(pnpm --version 2>/dev/null) || return
+    p10k segment -f 178 -i $'\ue71e' -t "$ver"
+  }
+  function instant_prompt_pnpm() {}
+
   function instant_prompt_neg() {
       prompt_neg
   }
