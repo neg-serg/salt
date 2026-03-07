@@ -12,19 +12,22 @@
 3. Идемпотентные проверки для обоих
 
 
-## ProxyPilot: сломан Claude OAuth + паника tui flag
+## ProxyPilot: нарушение ToS Google Cloud
 
-`proxypilot --claude-login` — OAuth-коллбэк не завершается (токен не сохраняется в `~/.cli-proxy-api/`).
-`proxypilot --help` и все флаги `--*-login` паникуют с ошибкой `flag redefined: tui`.
-Gemini и Antigravity OAuth работают нормально (токены добавлены вручную до появления бага).
+Аккаунт Google Cloud (`serg.zorg@gmail.com`) заблокирован за нарушение ToS Cloud Code API.
+Токены Gemini и Antigravity аутентифицируются, но все API-запросы возвращают 403 PERMISSION_DENIED.
 
-**Обходной путь**: модели Claude доступны через провайдер Antigravity (`claude-sonnet-4-6`, `claude-opus-4-6-thinking`).
-Инструменты разработки остаются проксированными (конфиги Claude Code/OpenCode + обёртка `claude-proxy`), а стандартный CLI `claude` теперь обращается к Anthropic напрямую.
+**Статус (v0.3.0-dev-0.40)**:
+- Паника `tui` flag: **исправлена** в v0.3.0-dev-0.40
+- `--claude-login`: **работает** — нативный Claude OAuth через Anthropic (не Google)
+- `--antigravity-login` / `--login` (Gemini): аутентификация проходит, но API-вызовы падают (блокировка ToS)
+- Форма апелляции: https://forms.gle/hGzM9MEUv2azZsrb9
 
-- Бинарник: `~/.local/bin/proxypilot` v0.3.0-dev-0.39 (последний релиз всё ещё содержит баг tui flag)
+**Текущая маршрутизация**: модели Claude используют нативный OAuth-токен. Маршруты Gemini/Antigravity недоступны до рассмотрения апелляции.
+
+- Бинарник: `~/.local/bin/proxypilot` v0.3.0-dev-0.40
 - Конфиг: `~/.config/proxypilot/config.yaml`
 - Репо: https://github.com/Finesssee/ProxyPilot
-- Перепроверить `--claude-login` и `--gemini-cli-login` после следующего релиза ProxyPilot
 
 
 ## Сервис ydotool не включён
