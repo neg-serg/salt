@@ -51,14 +51,6 @@ bootstrap_salt() {
     if [[ ! -f "$VENV_DIR/bin/salt-call" ]]; then
         echo "--- Installing Salt and dependencies ---"
         "$VENV_DIR/bin/pip" install -r "${PROJECT_DIR}/requirements.txt"
-
-        # Patch Salt for Python 3.14+ urlunparse behavior
-        PYVER=$("$VENV_DIR/bin/python3" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
-        URL_PY="$VENV_DIR/lib/python${PYVER}/site-packages/salt/utils/url.py"
-        if [[ -f "$URL_PY" ]]; then
-            echo "--- Patching Salt for Python 3.14 compatibility ---"
-            sed -i 's/return "salt:\/\/{}".format(url\[len("file:\/\/\/") :\])/return "salt:\/\/{}".format(url.split("file:", 1)[1].lstrip("\/"))/' "$URL_PY"
-        fi
     fi
 }
 

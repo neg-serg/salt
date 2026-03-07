@@ -5,8 +5,12 @@ Call patch() before importing any salt module. Installs:
   - MockSpwd: replaces removed `spwd` module
   - Warning filter: suppresses Salt's own DeprecationWarnings
   - Multiprocessing fork fix: Python 3.14 changed default to forkserver
+  - URL fix: Python 3.14 urlunparse normalization breaks salt:// URL creation
 """
 
+import importlib
+import importlib.abc
+import importlib.machinery
 import multiprocessing
 import sys
 import warnings
@@ -78,3 +82,46 @@ def patch():
             raise KeyError(f"spwd: {name}")
 
     sys.modules["spwd"] = _MockSpwd()
+
+    # Python 3.14: urlunparse normalizes file:///path differently, breaking
+    # salt.utils.url.create(). Instead of a fragile sed patch on the installed
+    # source, monkey-patch the function at import time via a meta path finder.
+    if sys.version_info >= (3, 14):
+        _install_url_patch()
+
+
+def _patched_url_create(path, saltenv=None):
+    """Replacement for salt.utils.url.create that handles Python 3.14+ urlunparse."""
+    from urllib.parse import urlunparse
+
+    import salt.utils.data
+
+    path = path.replace("\\", "/")
+    query = f"saltenv={saltenv}" if saltenv else ""
+    url = salt.utils.data.decode(urlunparse(("file", "", path, "", query, "")))
+    # Python 3.14 urlunparse may produce "file:path" instead of "file:///path".
+    # Use split+lstrip to robustly extract the path portion regardless of format.
+    return "salt://{}".format(url.split("file:", 1)[1].lstrip("/"))
+
+
+class _SaltUrlPatchFinder(importlib.abc.MetaPathFinder):
+    """Meta path finder that patches salt.utils.url.create after import."""
+
+    def find_module(self, fullname, path=None):
+        if fullname == "salt.utils.url":
+            return self
+        return None
+
+    def load_module(self, fullname):
+        # Remove ourselves to avoid recursion
+        sys.meta_path.remove(self)
+        # Let the real import happen
+        mod = importlib.import_module(fullname)
+        # Patch the create function
+        mod.create = _patched_url_create
+        return mod
+
+
+def _install_url_patch():
+    """Install a meta path finder that patches salt.utils.url on first import."""
+    sys.meta_path.insert(0, _SaltUrlPatchFinder())
