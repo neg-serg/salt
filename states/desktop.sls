@@ -1,6 +1,6 @@
 # Desktop environment: services, SSH, dconf themes
 {% from '_imports.jinja' import host, user, home %}
-{% from '_macros_pkg.jinja' import pacman_install, paru_install %}
+{% from '_macros_pkg.jinja' import pacman_install, paru_install, simple_service %}
 {% from '_macros_service.jinja' import ensure_dir, service_stopped, service_with_unit %}
 {% import_yaml 'data/desktop.yaml' as desktop %}
 
@@ -33,14 +33,22 @@ desktop_services_enabled:
 
 # libvirtd is socket-activated: systemd starts it on demand and stops it when no VMs run.
 # Keeping it in service.running would re-start it on every Salt apply.
+{{ pacman_install('libvirt', 'libvirt') }}
+
 libvirtd_enabled:
   service.enabled:
     - name: libvirtd
+    - require:
+      - cmd: install_libvirt
 
 # pcscd is socket-activated: scdaemon connects on demand for Yubikey smart card operations.
+{{ pacman_install('pcsclite', 'pcsclite') }}
+
 pcscd_socket_enabled:
   service.enabled:
     - name: pcscd.socket
+    - require:
+      - cmd: install_pcsclite
 
 # Disable tuned: its throughput-performance profile conflicts with custom
 # I/O tuning (sets read_ahead_kb=8192 on NVMe, may override sysctl values).
