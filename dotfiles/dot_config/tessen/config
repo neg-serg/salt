@@ -1,0 +1,6 @@
+pass_backend=gopass
+dmenu_backend=rofi
+action=autotype
+autotype_delay=80
+notify=true
+username_key=^(user|username|login|email)$
