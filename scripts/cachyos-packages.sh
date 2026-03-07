@@ -74,6 +74,7 @@ PACMAN_PKGS=(
     perf                # Linux performance profiling
     pgcli               # PostgreSQL CLI with autocomplete
     pipewire            # audio/video server
+    ruby                # Ruby interpreter (needed for gem install in custom PKGBUILD post-install)
     ruff                # fast Python linter + formatter
     shellcheck          # shell script static analysis
     shfmt               # shell script formatter
