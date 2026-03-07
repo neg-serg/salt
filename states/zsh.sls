@@ -39,4 +39,6 @@ zsh_system_rc:
     - source: {{ source }}
     - user: {{ user }}
     - group: {{ user }}
+    - require:
+      - user: user_neg
 {% endfor %}
