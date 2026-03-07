@@ -67,10 +67,10 @@ if [ "$#" -eq 0 ]; then
 fi
 
 for img in "$@"; do
-  path="$(expand_path "$img")"
-  if ! [ -e "$path" ]; then
-    printf 'pic-info: skip missing %s\n' "$path" >&2
+  target="$(expand_path "$img")"
+  if ! [ -e "$target" ]; then
+    printf 'pic-info: skip missing %s\n' "$target" >&2
     continue
   fi
-  "$notify_bin" "$path"
+  "$notify_bin" "$target"
 done
