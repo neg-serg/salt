@@ -2,7 +2,7 @@
 {% from '_macros_service.jinja' import ensure_dir %}
 {% from '_macros_install.jinja' import firefox_extension, git_clone_deploy %}
 # Floorp browser: user.js + userChrome.css + userContent.css + extensions
-{% if host.features.floorp %}
+{% if host.features.floorp and host.floorp_profile %}
 {% import_yaml 'data/floorp.yaml' as floorp %}
 {% set floorp_profile = home ~ '/.floorp/' ~ host.floorp_profile %}
 {% for state_id, relpath, source in [
