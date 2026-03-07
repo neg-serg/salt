@@ -48,7 +48,7 @@
 curl_bin:
   proxypilot:
     url: "https://github.com/Finesssee/ProxyPilot/releases/download/v${VER}/proxypilot-linux-amd64"
-    hash: "3ce8551dc70469fe396263212bbf9f9031c43ef973a235ab2ea0ab18941868db"
+    hash: "d611b1bc94e6d3dda03ed1fdc08fc3be5a2b1f66e58e77e638d26c9874a44a10"
   ssh-to-age:
     url: "https://github.com/Mic92/ssh-to-age/releases/download/${VER}/ssh-to-age.linux-amd64"
     hash: "9980a9b19c9495d446e825a2639b77cb381db30710d50542c835b86e9efaf8e9"

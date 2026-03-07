@@ -29,7 +29,7 @@ kanata: "1.11.0"
 amnezia_vpn: "2.1.2"
 
 # --- Proxy ---
-proxypilot: "0.3.0-dev-0.39"
+proxypilot: "0.3.0-dev-0.40"
 
 # --- AI agents ---
 openclaw: "2026.3.2"

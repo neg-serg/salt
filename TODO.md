@@ -12,19 +12,22 @@ Create a dedicated Salt state (`music_analysis.sls` or extend `installers.sls`) 
 3. Guards both with idempotency checks
 
 
-## ProxyPilot: Claude OAuth broken + tui flag panic
+## ProxyPilot: Google Cloud TOS violation
 
-`proxypilot --claude-login` — OAuth callback never completes (token not saved to `~/.cli-proxy-api/`).
-`proxypilot --help` and all `--*-login` flags panic with `flag redefined: tui`.
-Gemini and Antigravity OAuth work fine (tokens added manually before the bug appeared).
+Google Cloud account (`serg.zorg@gmail.com`) is TOS-blocked on Cloud Code API.
+Gemini and Antigravity tokens authenticate but all API requests return 403 PERMISSION_DENIED.
 
-**Workaround**: Claude models available through Antigravity provider (`claude-sonnet-4-6`, `claude-opus-4-6-thinking`).
-Developer tools stay proxied (Claude Code/OpenCode configs + `claude-proxy` wrapper), while the stock `claude` CLI now uses Anthropic directly.
+**Status (v0.3.0-dev-0.40)**:
+- `tui` flag panic: **fixed** in v0.3.0-dev-0.40
+- `--claude-login`: **works** — native Claude OAuth via Anthropic (not Google)
+- `--antigravity-login` / `--login` (Gemini): authenticate successfully but API calls fail (TOS block)
+- Appeal form: https://forms.gle/hGzM9MEUv2azZsrb9
 
-- Binary: `~/.local/bin/proxypilot` v0.3.0-dev-0.39 (latest release still has the tui flag bug)
+**Current routing**: Claude models use native OAuth token. Gemini/Antigravity routes are dead until TOS appeal is resolved.
+
+- Binary: `~/.local/bin/proxypilot` v0.3.0-dev-0.40
 - Config: `~/.config/proxypilot/config.yaml`
 - Repo: https://github.com/Finesssee/ProxyPilot
-- Re-test `--claude-login` and `--gemini-cli-login` after next ProxyPilot release
 
 
 ## ydotool service not enabled

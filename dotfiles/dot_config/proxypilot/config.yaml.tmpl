@@ -68,14 +68,34 @@ logs-max-total-size-mb: 100
 error-logs-max-files: 10
 
 # ── Model aliases ───────────────────────────────────────────────────
-# Antigravity provides Gemini models only (not Claude).
-# Claude models require separate --claude-login OAuth (currently broken).
+# alias = what the client sends, name = upstream model ID.
+# Claude: native OAuth (--claude-login). Antigravity: Gemini models.
+# Google Cloud TOS-blocked — Gemini/Antigravity tokens may not route.
 
 oauth-model-alias:
   antigravity:
-    # Short alias → Antigravity Gemini model
+    # ── Gemini ──
+    - name: "gemini-2.5-pro"
+      alias: "gemini-2.5-pro"
+      fork: true
+    - name: "gemini-2.5-flash"
+      alias: "gemini-2.5-flash"
+      fork: true
+    - name: "gemini-2.5-flash-lite"
+      alias: "gemini-2.5-flash-lite"
+      fork: true
     - name: "gemini-2.5-flash-lite"
       alias: "haiku"
+      fork: true
+    # ── Claude (via Antigravity, direct OAuth broken) ──
+    - name: "claude-sonnet-4-6"
+      alias: "claude-sonnet-4-6"
+      fork: true
+    - name: "claude-opus-4-6"
+      alias: "claude-opus-4-6"
+      fork: true
+    - name: "claude-haiku-4-5-20251001"
+      alias: "claude-haiku-4-5-20251001"
       fork: true
   codex:
     # OpenCode/Codex CLI use OpenAI-style prefixes (openai/*).
