@@ -32,6 +32,11 @@ api/
   brave-search            # Brave Search API key
   github-token            # GitHub personal access token
   context7                # Context7 API key
+  proxypilot-local        # API-ключ клиентской авторизации ProxyPilot
+  proxypilot-management   # API-ключ management API ProxyPilot
+  anthropic               # API-ключ Anthropic (прямой, для OpenClaw)
+  openclaw-telegram       # Токен Telegram-бота OpenClaw
+  openclaw-telegram-uid   # Telegram user ID для allowlist OpenClaw
 
 lastfm/
   password                # Пароль Last.fm (для mpdas)
@@ -53,7 +58,8 @@ Dotfiles, содержащие секреты, используют chezmoi-ша
 | `~/.config/imapnotify/gmail.json` | `dot_config/imapnotify/gmail.json.tmpl` | `email/gmail/app-password`, `email/gmail/address` |
 | `~/.config/vdirsyncer/config` | `dot_config/vdirsyncer/config.tmpl` | `caldav/google/client-id`, `caldav/google/client-secret` |
 | `~/.config/rescrobbled/config.toml` | `dot_config/rescrobbled/config.toml.tmpl` | `lastfm/api-key`, `lastfm/api-secret` |
-| `~/.config/zsh/10-secrets.zsh` | `dot_config/zsh/10-secrets.zsh.tmpl` | `api/github-token`, `api/brave-search`, `api/context7` |
+| `~/.config/zsh/10-secrets.zsh` | `dot_config/zsh/10-secrets.zsh.tmpl` | `api/github-token`, `api/brave-search`, `api/context7`, `api/proxypilot-local` |
+| `~/.config/proxypilot/config.yaml` | `dot_config/proxypilot/config.yaml.tmpl` | `api/proxypilot-local`, `api/proxypilot-management` |
 
 Синтаксис шаблонов:
 ```
@@ -64,24 +70,35 @@ user           {{ gopass "email/gmail/address" }}
 
 ## Интеграция с Salt
 
-Для Salt states, которым нужны секреты (например, конфиг mpdas в `mpd.sls`):
+Salt states используют Jinja-макрос `gopass_secret()` (из `_macros_common.jinja`),
+который graceful fallback при недоступности gopass:
 
 ```yaml
+# В .sls файле:
+{%- set lastfm_user = gopass_secret('lastfm/username') | trim %}
+{%- set lastfm_pass = gopass_secret('lastfm/password') | trim %}
 mpdas_config:
-  cmd.run:
-    - name: |
-        USER=$(gopass show -o lastfm/username)
-        PASS=$(gopass show -o lastfm/password)
-        cat > ~/.config/mpdas/mpdas.rc << EOF
+  file.managed:
+    - name: {{ home }}/.config/mpdasrc
+    - mode: '0600'
+    - replace: False
+    - contents: |
         host = localhost
         port = 6600
-        service = lastfm
-        username = ${USER}
-        password = ${PASS}
-        EOF
-    - runas: neg
-    - creates: ~/.config/mpdas/mpdas.rc
+        username = {{ lastfm_user }}
+        password = {{ lastfm_pass }}
 ```
+
+Макрос сначала пробует `gopass show -o <key>`. Если не удаётся (retcode != 0),
+выполняет опциональную fallback-команду (по умолчанию `true`, что даёт пустую строку).
+
+Salt states, использующие макрос `gopass_secret()` (с graceful fallback, если gopass недоступен):
+
+| State | gopass-ключ | Fallback |
+|---|---|---|
+| `mpd.sls` | `lastfm/username`, `lastfm/password` | Пустая строка |
+| `opencode.sls` | `api/proxypilot-local`, `api/proxypilot-management` | Парсинг существующего конфига ProxyPilot |
+| `openclaw_agent.sls` | `api/proxypilot-local`, `api/anthropic`, `api/openclaw-telegram`, `api/openclaw-telegram-uid` | Парсинг существующего конфига / пустая строка |
 
 ## Шаги настройки
 

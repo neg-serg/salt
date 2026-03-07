@@ -15,6 +15,8 @@ for key in \
     caldav/google/client-id caldav/google/client-secret \
     lastfm/username lastfm/password lastfm/api-key lastfm/api-secret \
     api/github-token api/brave-search api/context7 \
+    api/proxypilot-local api/proxypilot-management \
+    api/anthropic api/openclaw-telegram api/openclaw-telegram-uid \
     ssh-key yubikey-pin; do
   if gopass show -o "$key" >/dev/null 2>&1; then
     echo "  ✓ $key"
@@ -204,7 +206,75 @@ gopass insert api/context7
 
 ---
 
-## 7. Применение
+## 7. ProxyPilot + OpenClaw (AI-инструментарий)
+
+Используются в: ProxyPilot (AI API прокси), OpenClaw (AI агент-шлюз), OpenCode (TUI-агент).
+Шаблоны: `dot_config/proxypilot/config.yaml.tmpl`, `dot_config/zsh/10-secrets.zsh.tmpl`
+Salt states: `opencode.sls`, `openclaw_agent.sls`
+
+### 7a. ProxyPilot API Key (клиентская авторизация)
+
+Этот ключ аутентифицирует локальные AI-инструменты (Claude Code, OpenCode) через ProxyPilot-прокси.
+
+```bash
+gopass insert api/proxypilot-local
+# Ввести: API-ключ для клиентской авторизации ProxyPilot
+```
+
+### 7b. ProxyPilot Management Key
+
+Доступ к дашборду/статистике прокси через management API (только localhost).
+
+```bash
+gopass insert api/proxypilot-management
+# Ввести: management API key
+```
+
+### 7c. Anthropic API Key (прямой доступ)
+
+Используется OpenClaw как основной провайдер (прямой доступ к Anthropic API).
+
+```bash
+gopass insert api/anthropic
+# Ввести: sk-ant-xxx (API-ключ Anthropic)
+```
+
+### 7d. OpenClaw Telegram-бот
+
+Используется OpenClaw для интеграции с Telegram.
+
+```bash
+gopass insert api/openclaw-telegram
+# Ввести: токен Telegram-бота (формат: 123456:ABC-DEF...)
+
+gopass insert api/openclaw-telegram-uid
+# Ввести: Telegram user ID для allowlist (например 109503498)
+```
+
+---
+
+## 8. GPG Key ID
+
+При инициализации gopass (шаг 1) `<GPG-KEY-ID>` — это fingerprint вашего GPG-ключа.
+Как его найти:
+
+```bash
+gpg --list-keys --keyid-format long
+# Ищите 40-символьный fingerprint или 16-символьный key ID после "rsa4096/"
+# Пример: gpg --list-keys покажет "Key fingerprint = ABCD 1234 ..."
+# Используйте полный fingerprint: gopass init ABCD1234...
+```
+
+Если используется Yubikey, ключ находится на карте:
+
+```bash
+gpg --card-status
+# Ищите строку "General key info" — это ваш key ID
+```
+
+---
+
+## 9. Применение
 
 После заведения всех секретов:
 
@@ -222,7 +292,7 @@ chezmoi apply -v  # применить
 
 ---
 
-## 8. Активация сервисов
+## 10. Активация сервисов
 
 ```bash
 # Почта
@@ -239,7 +309,7 @@ systemctl --user status mbsync-gmail.timer imapnotify-gmail vdirsyncer.timer
 
 ---
 
-## 9. Первичная синхронизация
+## 11. Первичная синхронизация
 
 ```bash
 # Почта — первый полный sync (может занять время)
@@ -255,7 +325,7 @@ vdirsyncer sync
 
 ---
 
-## 10. Финальная проверка
+## 12. Финальная проверка
 
 ```bash
 # Все секреты на месте

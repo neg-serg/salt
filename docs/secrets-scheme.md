@@ -32,6 +32,11 @@ api/
   brave-search            # Brave Search API key
   github-token            # GitHub personal access token
   context7                # Context7 API key
+  proxypilot-local        # ProxyPilot client auth key
+  proxypilot-management   # ProxyPilot management API key
+  anthropic               # Anthropic API key (direct, for OpenClaw)
+  openclaw-telegram       # OpenClaw Telegram bot token
+  openclaw-telegram-uid   # OpenClaw Telegram allowlist user ID
 
 lastfm/
   password                # Last.fm password (for mpdas)
@@ -53,7 +58,8 @@ Dotfiles that contain secrets use chezmoi templates (`.tmpl` suffix):
 | `~/.config/imapnotify/gmail.json` | `dot_config/imapnotify/gmail.json.tmpl` | `email/gmail/app-password`, `email/gmail/address` |
 | `~/.config/vdirsyncer/config` | `dot_config/vdirsyncer/config.tmpl` | `caldav/google/client-id`, `caldav/google/client-secret` |
 | `~/.config/rescrobbled/config.toml` | `dot_config/rescrobbled/config.toml.tmpl` | `lastfm/api-key`, `lastfm/api-secret` |
-| `~/.config/zsh/10-secrets.zsh` | `dot_config/zsh/10-secrets.zsh.tmpl` | `api/github-token`, `api/brave-search`, `api/context7` |
+| `~/.config/zsh/10-secrets.zsh` | `dot_config/zsh/10-secrets.zsh.tmpl` | `api/github-token`, `api/brave-search`, `api/context7`, `api/proxypilot-local` |
+| `~/.config/proxypilot/config.yaml` | `dot_config/proxypilot/config.yaml.tmpl` | `api/proxypilot-local`, `api/proxypilot-management` |
 
 Template syntax:
 ```
@@ -64,24 +70,35 @@ user           {{ gopass "email/gmail/address" }}
 
 ## Salt Integration
 
-For Salt states that need secrets (e.g. mpdas config in `mpd.sls`):
+Salt states use the `gopass_secret()` Jinja macro (defined in `_macros_common.jinja`)
+which gracefully falls back if gopass is unavailable:
 
 ```yaml
+# In the .sls file:
+{%- set lastfm_user = gopass_secret('lastfm/username') | trim %}
+{%- set lastfm_pass = gopass_secret('lastfm/password') | trim %}
 mpdas_config:
-  cmd.run:
-    - name: |
-        USER=$(gopass show -o lastfm/username)
-        PASS=$(gopass show -o lastfm/password)
-        cat > ~/.config/mpdas/mpdas.rc << EOF
+  file.managed:
+    - name: {{ home }}/.config/mpdasrc
+    - mode: '0600'
+    - replace: False
+    - contents: |
         host = localhost
         port = 6600
-        service = lastfm
-        username = ${USER}
-        password = ${PASS}
-        EOF
-    - runas: neg
-    - creates: ~/.config/mpdas/mpdas.rc
+        username = {{ lastfm_user }}
+        password = {{ lastfm_pass }}
 ```
+
+The macro tries `gopass show -o <key>` first. If it fails (retcode != 0),
+it runs an optional fallback command (defaults to `true`, yielding empty string).
+
+Salt states using `gopass_secret()` macro (graceful fallback if gopass unavailable):
+
+| State | gopass key | Fallback |
+|---|---|---|
+| `mpd.sls` | `lastfm/username`, `lastfm/password` | Empty string |
+| `opencode.sls` | `api/proxypilot-local`, `api/proxypilot-management` | Parse existing ProxyPilot config |
+| `openclaw_agent.sls` | `api/proxypilot-local`, `api/anthropic`, `api/openclaw-telegram`, `api/openclaw-telegram-uid` | Parse existing config / empty string |
 
 ## Setup Steps
 

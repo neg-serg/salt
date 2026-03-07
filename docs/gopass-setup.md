@@ -15,6 +15,8 @@ for key in \
     caldav/google/client-id caldav/google/client-secret \
     lastfm/username lastfm/password lastfm/api-key lastfm/api-secret \
     api/github-token api/brave-search api/context7 \
+    api/proxypilot-local api/proxypilot-management \
+    api/anthropic api/openclaw-telegram api/openclaw-telegram-uid \
     ssh-key yubikey-pin; do
   if gopass show -o "$key" >/dev/null 2>&1; then
     echo "  ✓ $key"
@@ -204,7 +206,75 @@ gopass insert api/context7
 
 ---
 
-## 7. Apply
+## 7. ProxyPilot + OpenClaw (AI tooling)
+
+Used by: ProxyPilot (AI API proxy), OpenClaw (AI agent gateway), OpenCode (TUI agent).
+Templates: `dot_config/proxypilot/config.yaml.tmpl`, `dot_config/zsh/10-secrets.zsh.tmpl`
+Salt states: `opencode.sls`, `openclaw_agent.sls`
+
+### 7a. ProxyPilot API Key (client auth)
+
+This key authenticates local AI tools (Claude Code, OpenCode) against the ProxyPilot proxy.
+
+```bash
+gopass insert api/proxypilot-local
+# Enter: API key for ProxyPilot client auth
+```
+
+### 7b. ProxyPilot Management Key
+
+Dashboard/stats access for the proxy management API (localhost only).
+
+```bash
+gopass insert api/proxypilot-management
+# Enter: management API key
+```
+
+### 7c. Anthropic API Key (direct)
+
+Used by OpenClaw as primary provider (direct Anthropic API access).
+
+```bash
+gopass insert api/anthropic
+# Enter: sk-ant-xxx (Anthropic API key)
+```
+
+### 7d. OpenClaw Telegram Bot
+
+Used by OpenClaw for Telegram integration.
+
+```bash
+gopass insert api/openclaw-telegram
+# Enter: Telegram bot token (format: 123456:ABC-DEF...)
+
+gopass insert api/openclaw-telegram-uid
+# Enter: Telegram user ID for allowlist (e.g. 109503498)
+```
+
+---
+
+## 8. GPG Key ID
+
+When initializing gopass (step 1), `<GPG-KEY-ID>` is your GPG key fingerprint.
+To find it:
+
+```bash
+gpg --list-keys --keyid-format long
+# Look for the 40-character fingerprint or the 16-char key ID after "rsa4096/"
+# Example: gpg --list-keys shows "Key fingerprint = ABCD 1234 ..."
+# Use the full fingerprint: gopass init ABCD1234...
+```
+
+If using a Yubikey, the key is on the card:
+
+```bash
+gpg --card-status
+# Look for "General key info" line — that's your key ID
+```
+
+---
+
+## 9. Apply
 
 After provisioning all secrets:
 
@@ -222,7 +292,7 @@ chezmoi apply -v  # apply
 
 ---
 
-## 8. Enable services
+## 10. Enable services
 
 ```bash
 # Mail
@@ -239,7 +309,7 @@ systemctl --user status mbsync-gmail.timer imapnotify-gmail vdirsyncer.timer
 
 ---
 
-## 9. Initial sync
+## 11. Initial sync
 
 ```bash
 # Mail — first full sync (may take a while)
@@ -255,7 +325,7 @@ vdirsyncer sync
 
 ---
 
-## 10. Final verification
+## 12. Final verification
 
 ```bash
 # All secrets present
