@@ -18,12 +18,12 @@ mkdir -p -- "$shots_dir"
 
 # Monitor only BMP creations/close_write, handle per-file to avoid rescans
 inotifywait -q -m -e close_write -e create --format '%w%f' "$shots_dir" \
-  | while IFS= read -r path; do
-        case "$path" in
+  | while IFS= read -r bmp_file; do
+        case "$bmp_file" in
             *.bmp|*.BMP)
-                png="${path%.*}.png"
-                if convert -quality 10 -- "$path" "$png"; then
-                    rm -f -- "$path"
+                png="${bmp_file%.*}.png"
+                if convert -quality 10 -- "$bmp_file" "$png"; then
+                    rm -f -- "$bmp_file"
                 fi
                 ;;
             *) :;;
