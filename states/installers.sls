@@ -123,10 +123,10 @@ mpv_script_mpris_so:
         cd "$_td"
         make
         install -m 0644 mpris.so {{ mpv_scripts_dir }}/mpris.so
-        mkdir -p {{ ver_dir }} && echo '{{ ver.mpv_mpris }}' > {{ ver_dir }}/mpris.so
+        mkdir -p {{ ver_dir }} && rm -f '{{ ver_dir }}/mpris.so' {{ ver_dir }}/mpris.so@* && ln -sf '{{ mpv_scripts_dir }}/mpris.so' '{{ ver_dir }}/mpris.so@{{ ver.mpv_mpris }}'
     - runas: {{ user }}
     - shell: /bin/bash
-    - unless: test -f {{ mpv_scripts_dir }}/mpris.so && test -f {{ ver_dir }}/mpris.so && rg -qx '{{ ver.mpv_mpris }}' {{ ver_dir }}/mpris.so
+    - creates: {{ ver_dir }}/mpris.so@{{ ver.mpv_mpris }}
     - parallel: True
     - require:
       - file: mpv_scripts_dir
