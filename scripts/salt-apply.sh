@@ -271,6 +271,9 @@ echo "Full log: ${LOG_FILE}"
 if [[ $RC -eq 0 ]]; then
     echo "--- ${STATE}: all states passed ---"
     echo "--- Applying dotfiles (chezmoi) ---"
+    # Bootstrap chezmoi config before apply (needed for gopass template rendering)
+    install -Dm644 "${PROJECT_DIR}/dotfiles/dot_config/chezmoi/chezmoi.toml" \
+        "${HOME}/.config/chezmoi/chezmoi.toml" 2>/dev/null || true
     if ! chezmoi apply --force --source "${PROJECT_DIR}/dotfiles" 2>&1; then
         echo ""
         printf '\033[33m━━━ chezmoi apply failed ━━━\033[0m\n'

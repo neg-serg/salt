@@ -24,15 +24,6 @@ RestartSec=3
 {% endset %}
 {{ user_unit_override('mpdris2_user_service', 'mpDris2.service', contents=mpdris2_override) }}
 
-chezmoi_config:
-  file.managed:
-    - name: {{ home }}/.config/chezmoi/chezmoi.toml
-    - source: salt://dotfiles/dot_config/chezmoi/chezmoi.toml
-    - user: {{ user }}
-    - group: {{ user }}
-    - mode: '0644'
-    - makedirs: True
-
 chezmoi_source_symlink:
   file.symlink:
     - name: {{ home }}/.local/share/chezmoi
@@ -43,7 +34,6 @@ chezmoi_source_symlink:
     - makedirs: True
     - require:
       - user: user_neg
-      - file: chezmoi_config
 
 # --- Mail directories (needed by mbsync) ---
 {% if svc.mail %}
