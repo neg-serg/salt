@@ -1,6 +1,7 @@
-{% from '_imports.jinja' import user, home, gopass_secret %}
+{% from '_imports.jinja' import host, user, home, gopass_secret %}
 {% from '_macros_pkg.jinja' import npm_pkg %}
 {% from '_macros_service.jinja' import ensure_dir, user_service_restart %}
+{% if host.features.opencode %}
 {% set _proxypilot_cfg = home ~ '/.config/proxypilot/config.yaml' %}
 {% set _proxypilot_api_key = gopass_secret('api/proxypilot-local', "awk '/^api-keys:/{getline; sub(/^[[:space:]]*-[[:space:]]*\"?/, \"\"); sub(/\"?[[:space:]]*$/, \"\"); print; exit}' " ~ _proxypilot_cfg ~ " 2>/dev/null || true") %}
 {% set _proxypilot_mgmt_key = gopass_secret('api/proxypilot-management', "awk '/^[[:space:]]*secret-key:[[:space:]]*/{sub(/^[[:space:]]*secret-key:[[:space:]]*\"?/, \"\"); sub(/\"?[[:space:]]*$/, \"\"); print; exit}' " ~ _proxypilot_cfg ~ " 2>/dev/null || true") %}
@@ -56,3 +57,4 @@ codex_auth:
 {{ user_service_restart('restart_proxypilot_on_config_change', 'proxypilot.service', onlyif='systemctl --user is-active proxypilot.service >/dev/null 2>&1', onchanges=['file: proxypilot_config']) }}
 
 {{ npm_pkg('codex', pkg='@openai/codex') }}
+{% endif %}

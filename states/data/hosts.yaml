@@ -54,6 +54,8 @@ defaults:
     floorp: true
     kanata: true
     flatpak: true
+    opencode: true
+    openclaw: true
     music_analysis: false
     tidal: false
 
