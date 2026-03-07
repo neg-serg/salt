@@ -5,17 +5,13 @@
 {% import_yaml 'data/versions.yaml' as ver %}
 {% set mon = host.features.monitoring %}
 
-# --- Simple service enables (packages already in system_description.sls) ---
+# --- Simple service enables ---
 {% if mon.sysstat %}
-sysstat_enabled:
-  service.enabled:
-    - name: sysstat
+{{ simple_service('sysstat', 'sysstat') }}
 {% endif %}
 
 {% if mon.vnstat %}
-vnstat_enabled:
-  service.enabled:
-    - name: vnstat
+{{ simple_service('vnstat', 'vnstat') }}
 {% endif %}
 
 # --- Netdata: systemd override for conservative resource limits ---

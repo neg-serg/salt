@@ -1,5 +1,8 @@
+{% from '_macros_pkg.jinja' import pacman_install %}
 # Btrfs snapshot management via snapper + snap-pac + limine-snapper-sync
 # Bootstrap creates initial config; this state keeps it converged.
+
+{{ pacman_install('snapper', 'snapper snap-pac') }}
 
 snapper_config_root:
   file.managed:
@@ -19,3 +22,5 @@ snapper_timers:
     - names:
       - snapper-timeline.timer
       - snapper-cleanup.timer
+    - require:
+      - cmd: install_snapper
