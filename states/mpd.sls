@@ -1,4 +1,4 @@
-{% from '_imports.jinja' import host, user, home, pkg_list, retry_attempts, retry_interval %}
+{% from '_imports.jinja' import host, user, home, pkg_list, gopass_secret %}
 {% from '_macros_install.jinja' import cargo_pkg %}
 {% from '_macros_service.jinja' import ensure_dir, user_service_file, user_service_enable %}
 # MPD Native Deployment
@@ -16,7 +16,7 @@ include:
 {%- if mpdas_installed -%}
 {%-   do companion_units.append('mpdas.service') -%}
 {%- endif -%}
-{%- set companion_reqs = ['cmd: mpd_enabled', 'cmd: mpdas_config'] -%}
+{%- set companion_reqs = ['cmd: mpd_enabled', 'file: mpdas_config'] -%}
 {%- if mpdris2_installed -%}
 {%-   do companion_reqs.append('cmd: mpdris2_user_service_daemon_reload') -%}
 {%- endif -%}
@@ -75,21 +75,22 @@ mpd_config:
 # --- Enable native MPD systemd user service ---
 {{ user_service_enable('mpd_enabled', start_now=['mpd.service'], check='active', onlyif='rg -qx mpd ' ~ pkg_list, requires=['file: mpd_config', 'file: mpd_directories', 'cmd: music_mount', 'cmd: mpd_fifo']) }}
 
-# --- Deploy mpdas config via gopass ---
+# --- Deploy mpdas config via gopass (graceful fallback to empty values) ---
+{%- set lastfm_user = gopass_secret('lastfm/username') | trim %}
+{%- set lastfm_pass = gopass_secret('lastfm/password') | trim %}
 mpdas_config:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        USER=$(gopass show -o lastfm/username)
-        PASS=$(gopass show -o lastfm/password)
-        printf 'host = localhost\nport = 6600\nservice = lastfm\nusername = %s\npassword = %s\n' "$USER" "$PASS" > {{ home }}/.config/mpdasrc
-        chmod 0600 {{ home }}/.config/mpdasrc
-    - shell: /bin/bash
-    - runas: {{ user }}
-    - creates: {{ home }}/.config/mpdasrc
-    - retry:
-        attempts: {{ retry_attempts }}
-        interval: {{ retry_interval }}
+  file.managed:
+    - name: {{ home }}/.config/mpdasrc
+    - user: {{ user }}
+    - group: {{ user }}
+    - mode: '0600'
+    - replace: False
+    - contents: |
+        host = localhost
+        port = 6600
+        service = lastfm
+        username = {{ lastfm_user }}
+        password = {{ lastfm_pass }}
 
 # --- Deploy mpdas systemd user service ---
 {{ user_service_file('mpdas_service_file', 'mpdas.service', source='salt://dotfiles/dot_config/systemd/user/mpdas.service') }}
