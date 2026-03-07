@@ -1,6 +1,7 @@
-{% from '_imports.jinja' import user, home, retry_attempts, retry_interval, gopass_secret %}
+{% from '_imports.jinja' import host, user, home, retry_attempts, retry_interval, gopass_secret %}
 {% from '_macros_service.jinja' import ensure_dir, user_service_file, user_service_enable, user_service_restart %}
 {% import_yaml 'data/versions.yaml' as ver %}
+{% if host.features.openclaw %}
 
 # ── Secret resolution (gopass primary, config-file fallback) ─────────
 {% set _proxypilot_cfg = home ~ '/.config/proxypilot/config.yaml' %}
@@ -58,3 +59,4 @@ openclaw_lingering:
 {{ user_service_enable('openclaw_enabled', start_now=['openclaw-gateway.service'], requires=['cmd: openclaw_npm', 'file: openclaw_config', 'file: openclaw_service']) }}
 
 {{ user_service_restart('restart_openclaw_on_config_change', 'openclaw-gateway.service', onlyif='systemctl --user is-active openclaw-gateway.service >/dev/null 2>&1', onchanges=['file: openclaw_config']) }}
+{% endif %}
