@@ -429,7 +429,6 @@ AUR_PKGS=(
     sing-box            # proxy platform (VLESS/Reality)
     xdg-ninja           # XDG Base Directory audit
 
-    overskride-bin      # Bluetooth GTK4 client
     dualsensectl        # DualSense controller LED/haptics control
     # espanso-wayland     # text expander (Wayland build) — FTBFS on CachyOS
     brutefir            # convolution audio engine
@@ -450,7 +449,6 @@ AUR_PKGS=(
     # zfxtop              # TUI process/system monitor (Go) — FTBFS on CachyOS
     zk                  # Zettelkasten CLI note manager
     pipemixer           # TUI PipeWire mixer (C)
-    xdg-desktop-portal-termfilechooser-boydaihungst-git  # terminal file chooser portal (yazi)
     epr-git             # terminal EPUB reader
     python-rapidgzip    # fast parallel gzip decompressor
     # xxh-git             # bring your shell through SSH — FTBFS on CachyOS
