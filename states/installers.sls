@@ -70,6 +70,17 @@
 # --- Hyprland tools (multi-binary) ---
 {{ curl_extract_tar('hyprevents', 'https://github.com/vilari-mickopf/hyprevents/archive/refs/heads/master.tar.gz', 'hyprevents-master', binaries=['hyprevents', 'event_handler', 'event_loader'], chmod=True) }}
 
+# --- aider (AI coding assistant; needs Python ≤3.12, pydub/audioop broken on 3.13+) ---
+aider_install:
+  cmd.run:
+    - name: uv tool install aider-chat --python 3.12
+    - runas: {{ user }}
+    - creates: {{ home }}/.local/bin/aider
+    - parallel: True
+    - retry:
+        attempts: {{ retry_attempts }}
+        interval: {{ retry_interval }}
+
 # --- pip: dr14_tmeter (custom git install, needs GIT_CONFIG_GLOBAL override) ---
 {{ pip_pkg('dr14_tmeter', pkg='git+https://github.com/simon-r/dr14_t.meter.git', env='GIT_CONFIG_GLOBAL=/dev/null') }}
 
