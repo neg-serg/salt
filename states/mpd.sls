@@ -35,15 +35,6 @@ mpd_directories:
     - group: {{ user }}
     - makedirs: True
 
-# --- Deploy rmpc config ---
-{{ ensure_dir('rmpc_config_dir', home ~ '/.config/rmpc') }}
-rmpc_config:
-  file.recurse:
-    - name: {{ home }}/.config/rmpc
-    - source: salt://dotfiles/dot_config/rmpc
-    - user: {{ user }}
-    - group: {{ user }}
-
 # wiremix needs custom clang args for bindgen
 {{ cargo_pkg('wiremix', env='BINDGEN_EXTRA_CLANG_ARGS="-I/usr/lib/clang/$(ls /usr/lib/clang/ | sort -V | tail -1)/include"') }}
 

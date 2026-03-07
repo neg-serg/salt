@@ -1,1 +1,4 @@
+# Paths managed by Salt states (reactive require/watch chains)
 .config/proxypilot/config.yaml
+.config/mpd/mpd.conf
+.config/systemd/user/mpdas.service
