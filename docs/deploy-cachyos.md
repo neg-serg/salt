@@ -102,7 +102,47 @@ After bootstrap, everything needed for deploy lives on XFS:
 | `/mnt/one/salt/scripts/cachyos-packages.sh` | Package installer |
 | `/mnt/one/salt/scripts/salt-apply.sh` | Post-boot Salt + chezmoi apply |
 
+## Display Manager
+
+Salt deploys **greetd** as the display manager (login screen) and disables SDDM:
+
+- greetd config: `/etc/greetd/config.toml` (deployed by `greetd.sls`)
+- Greeter: cage kiosk compositor + quickshell greeter
+- Session wrapper: `/etc/greetd/session-wrapper` (launches Hyprland)
+- Emergency TTY: `Ctrl+Alt+F2` always drops to a text login (`getty@tty2`)
+
+greetd is **enabled** by Salt (`service.enabled`) but requires a reboot to take effect.
+After `salt-apply.sh` completes, the first reboot will show the graphical greeter.
+
+If the greeter doesn't appear (black screen), switch to TTY2 (`Ctrl+Alt+F2`) and check:
+
+```bash
+journalctl -u greetd --no-pager -n 50
+systemctl status greetd
+cat /etc/greetd/config.toml
+```
+
+## Host Aliases
+
+`states/data/hosts.yaml` supports hostname aliases for migration scenarios.
+The `aliases:` section maps one hostname to another's config:
+
+```yaml
+aliases:
+  cachyos: telfir    # "cachyos" hostname uses telfir's config
+```
+
+This is useful when the hostname hasn't been set yet (e.g. first boot from a live
+USB still reports the default hostname). The alias resolves before config merge,
+so all feature flags and overrides from the target host apply transparently.
+
+To add a new host, add an entry under `hosts:` in `states/data/hosts.yaml`.
+Only override values that differ from defaults — everything else is inherited
+via recursive merge (`slsutil.merge` with `strategy='recurse'`).
+
 ## Troubleshooting
+
+### Boot issues
 
 **Kernel panic: VFS unable to mount root**
 - Check lvm2 hook: `grep HOOKS /etc/mkinitcpio.conf`
@@ -118,8 +158,76 @@ After bootstrap, everything needed for deploy lives on XFS:
 - Wi-Fi: `nmcli device wifi connect <SSID> --ask`
 - DNS fallback: `cat /etc/resolv.conf` (1.1.1.1, 8.8.8.8)
 
-**Custom packages (automated by Salt)**
-- 6 packages built from PKGBUILDs in `build/pkgbuilds/` via Salt states:
-  raise, neg-pretty-printer, richcolors, albumdetails, duf (custom_pkgs.sls),
-  iosevka-neg-fonts (fonts.sls)
-- Built automatically during `scripts/salt-apply.sh`
+### Salt / chezmoi issues
+
+**chezmoi apply fails (gopass/Yubikey not available)**
+
+`salt-apply.sh` will show diagnostic output listing affected `.tmpl` files.
+Common causes:
+- Yubikey not plugged in or GPG agent not running
+- gopass store not cloned yet (see step 6 in POST-BOOT.md)
+
+Fix:
+```bash
+gpg --card-status                    # verify Yubikey detected
+gopass ls                            # verify store accessible
+chezmoi apply --force --source ~/src/salt/dotfiles  # re-run chezmoi only
+```
+
+Note: Salt states complete independently of chezmoi. If chezmoi fails, all system
+configuration is still applied — only dotfiles with secrets are affected.
+
+**Salt state fails with "file not found" for /mnt/one or /mnt/zero**
+
+XFS data disks must be mounted before Salt runs. Salt states that depend on
+`/mnt/one` (amnezia cache, music library) have explicit `require: mount` guards,
+but the mounts themselves must exist:
+
+```bash
+sudo vgchange -ay xenon argon
+sudo mount /dev/mapper/xenon-one /mnt/one
+sudo mount /dev/mapper/argon-zero /mnt/zero
+# Re-run Salt
+cd ~/src/salt && scripts/salt-apply.sh
+```
+
+**greetd shows black screen after reboot**
+
+Switch to TTY2 (`Ctrl+Alt+F2`), log in, and check:
+
+```bash
+journalctl -u greetd --no-pager -n 50
+# Common causes:
+# - Missing display config: check host.display and host.primary_output in hosts.yaml
+# - Quickshell greeter not built: check ~/.config/quickshell/
+# - Cage not installed: pacman -Q cage
+```
+
+Recovery: temporarily switch to console login while debugging:
+```bash
+sudo systemctl disable greetd
+sudo systemctl enable getty@tty1
+sudo reboot
+```
+
+**Service won't start after Salt apply**
+
+```bash
+systemctl status <service>           # check status
+journalctl -u <service> -n 50       # check logs
+systemctl reset-failed <service>    # clear failed state
+systemctl restart <service>          # retry
+```
+
+For user services (MPD, mpdas, mpDris2, ProxyPilot, etc.):
+```bash
+systemctl --user status <service>
+journalctl --user -u <service> -n 50
+```
+
+### Custom packages
+
+6 packages built from PKGBUILDs in `build/pkgbuilds/` via Salt states:
+raise, neg-pretty-printer, richcolors, albumdetails, duf (custom_pkgs.sls),
+iosevka-neg-fonts (fonts.sls).
+Built automatically during `scripts/salt-apply.sh`.

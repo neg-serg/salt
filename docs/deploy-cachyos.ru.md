@@ -101,7 +101,47 @@ echo '/dev/mapper/argon-zero /mnt/zero xfs  noatime  0  0' | sudo tee -a /etc/fs
 | `/mnt/one/salt/scripts/cachyos-packages.sh` | Установщик пакетов |
 | `/mnt/one/salt/scripts/salt-apply.sh` | Применение Salt + chezmoi после загрузки |
 
+## Менеджер входа
+
+Salt разворачивает **greetd** как менеджер входа (экран логина) и отключает SDDM:
+
+- Конфиг greetd: `/etc/greetd/config.toml` (деплоится из `greetd.sls`)
+- Приветственный экран: cage kiosk compositor + quickshell greeter
+- Обёртка сессии: `/etc/greetd/session-wrapper` (запускает Hyprland)
+- Аварийный TTY: `Ctrl+Alt+F2` всегда переключает на текстовый вход (`getty@tty2`)
+
+greetd **активируется** через Salt (`service.enabled`), но требует перезагрузки.
+После завершения `salt-apply.sh` первая перезагрузка покажет графический приветственный экран.
+
+Если приветственный экран не появляется (чёрный экран), переключитесь на TTY2 (`Ctrl+Alt+F2`) и проверьте:
+
+```bash
+journalctl -u greetd --no-pager -n 50
+systemctl status greetd
+cat /etc/greetd/config.toml
+```
+
+## Алиасы хостов
+
+`states/data/hosts.yaml` поддерживает алиасы имён хостов для сценариев миграции.
+Секция `aliases:` отображает одно имя хоста на конфигурацию другого:
+
+```yaml
+aliases:
+  cachyos: telfir    # хост "cachyos" использует конфигурацию telfir
+```
+
+Это полезно, когда hostname ещё не установлен (например, первая загрузка с live USB
+показывает hostname по умолчанию). Алиас разрешается до слияния конфигурации,
+поэтому все флаги фич и переопределения целевого хоста применяются прозрачно.
+
+Чтобы добавить новый хост, создайте запись в секции `hosts:` файла `states/data/hosts.yaml`.
+Переопределяйте только значения, отличающиеся от defaults — всё остальное наследуется
+через рекурсивное слияние (`slsutil.merge` со стратегией `recurse`).
+
 ## Решение проблем
+
+### Проблемы загрузки
 
 **Kernel panic: VFS unable to mount root**
 - Проверить lvm2 hook: `grep HOOKS /etc/mkinitcpio.conf`
@@ -117,8 +157,76 @@ echo '/dev/mapper/argon-zero /mnt/zero xfs  noatime  0  0' | sudo tee -a /etc/fs
 - Wi-Fi: `nmcli device wifi connect <SSID> --ask`
 - Резервный DNS: `cat /etc/resolv.conf` (1.1.1.1, 8.8.8.8)
 
-**Кастомные пакеты (автоматизировано через Salt)**
-- 6 пакетов собираются из PKGBUILDs в `build/pkgbuilds/` через Salt states:
-  raise, neg-pretty-printer, richcolors, albumdetails, duf (custom_pkgs.sls),
-  iosevka-neg-fonts (fonts.sls)
-- Собираются автоматически при запуске `scripts/salt-apply.sh`
+### Проблемы Salt / chezmoi
+
+**chezmoi apply падает (gopass/Yubikey недоступен)**
+
+`salt-apply.sh` выведет диагностику со списком затронутых `.tmpl` файлов.
+Частые причины:
+- Yubikey не подключён или GPG-агент не запущен
+- gopass-хранилище не склонировано (см. шаг 6 в POST-BOOT.md)
+
+Исправление:
+```bash
+gpg --card-status                    # проверить, что Yubikey обнаружен
+gopass ls                            # проверить доступность хранилища
+chezmoi apply --force --source ~/src/salt/dotfiles  # перезапустить только chezmoi
+```
+
+Важно: Salt states выполняются независимо от chezmoi. Если chezmoi упадёт, вся системная
+конфигурация всё равно будет применена — только dotfiles с секретами не развернутся.
+
+**Salt state падает с "file not found" для /mnt/one или /mnt/zero**
+
+XFS-диски с данными должны быть примонтированы до запуска Salt. States, зависящие от
+`/mnt/one` (кэш amnezia, музыкальная библиотека), имеют явные `require: mount` guard-ы,
+но сами точки монтирования должны существовать:
+
+```bash
+sudo vgchange -ay xenon argon
+sudo mount /dev/mapper/xenon-one /mnt/one
+sudo mount /dev/mapper/argon-zero /mnt/zero
+# Перезапустить Salt
+cd ~/src/salt && scripts/salt-apply.sh
+```
+
+**greetd показывает чёрный экран после перезагрузки**
+
+Переключитесь на TTY2 (`Ctrl+Alt+F2`), залогиньтесь и проверьте:
+
+```bash
+journalctl -u greetd --no-pager -n 50
+# Частые причины:
+# - Нет конфигурации дисплея: проверьте host.display и host.primary_output в hosts.yaml
+# - Quickshell greeter не собран: проверьте ~/.config/quickshell/
+# - Cage не установлен: pacman -Q cage
+```
+
+Восстановление: временно переключиться на консольный вход для отладки:
+```bash
+sudo systemctl disable greetd
+sudo systemctl enable getty@tty1
+sudo reboot
+```
+
+**Сервис не запускается после Salt apply**
+
+```bash
+systemctl status <service>           # проверить статус
+journalctl -u <service> -n 50       # проверить логи
+systemctl reset-failed <service>    # сбросить failed-состояние
+systemctl restart <service>          # повторить запуск
+```
+
+Для пользовательских сервисов (MPD, mpdas, mpDris2, ProxyPilot и т.д.):
+```bash
+systemctl --user status <service>
+journalctl --user -u <service> -n 50
+```
+
+### Кастомные пакеты
+
+6 пакетов собираются из PKGBUILDs в `build/pkgbuilds/` через Salt states:
+raise, neg-pretty-printer, richcolors, albumdetails, duf (custom_pkgs.sls),
+iosevka-neg-fonts (fonts.sls).
+Собираются автоматически при запуске `scripts/salt-apply.sh`.
