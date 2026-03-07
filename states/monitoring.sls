@@ -52,7 +52,9 @@ loki_config:
 {% endif %}
 
 # --- Promtail: log shipper to Loki ---
-{% if mon.promtail %}
+# Note: promtail pushes to Loki — enabling promtail without loki results in
+# a running service that fails to connect. Gate on both flags for safety.
+{% if mon.promtail and mon.loki %}
 {{ github_release_system('promtail', 'grafana/loki', 'promtail-linux-amd64.zip', src_bin='promtail-linux-amd64', tag='v' ~ ver.get('promtail', ''), hash='330f97bf7ef7e97cc2e42649ce7299129ab09dbffe5a2f5c515188502220987c', version=ver.get('promtail', '')) }}
 {{ ensure_dir('promtail_cache_dir', '/var/cache/promtail', user='root') }}
 
@@ -75,8 +77,10 @@ promtail_config:
 
 # --- Grafana: dashboard with Loki datasource ---
 {% if mon.grafana %}
-{{ simple_service('grafana', 'grafana', service='grafana', requires=['file: grafana_config', 'file: grafana_loki_datasource']) }}
+{% set grafana_requires = ['file: grafana_config'] + (['file: grafana_loki_datasource'] if mon.loki else []) %}
+{{ simple_service('grafana', 'grafana', service='grafana', requires=grafana_requires) }}
 
+{% if mon.loki %}
 grafana_loki_datasource:
   file.managed:
     - name: /etc/grafana/provisioning/datasources/loki.yaml
@@ -86,6 +90,7 @@ grafana_loki_datasource:
     - template: jinja
     - context:
         loki_port: {{ service_ports.loki.port }}
+{% endif %}
 
 grafana_config:
   file.managed:
@@ -111,7 +116,8 @@ grafana_proxypilot_dashboard:
     - mode: '0644'
     - source: salt://configs/grafana-dashboard-proxypilot.json
 
-{{ ensure_running('grafana', service='grafana', watch=['file: grafana_config', 'file: grafana_loki_datasource', 'file: grafana_dashboards_provider', 'file: grafana_proxypilot_dashboard']) }}
+{% set grafana_watch = ['file: grafana_config', 'file: grafana_dashboards_provider', 'file: grafana_proxypilot_dashboard'] + (['file: grafana_loki_datasource'] if mon.loki else []) %}
+{{ ensure_running('grafana', service='grafana', watch=grafana_watch) }}
 
 {{ service_with_healthcheck('grafana_start', 'grafana', 'curl -sf http://127.0.0.1:' ~ service_ports.grafana.port ~ service_ports.grafana.healthcheck ~ ' >/dev/null 2>&1', requires=['service: grafana_enabled']) }}
 {% endif %}
