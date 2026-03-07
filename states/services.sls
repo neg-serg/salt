@@ -1,5 +1,5 @@
 {% from '_imports.jinja' import host, user, home %}
-{% from '_macros_service.jinja' import ensure_dir, system_daemon_user, service_with_unit, service_stopped %}
+{% from '_macros_service.jinja' import ensure_dir, system_daemon_user, service_with_unit, service_stopped, service_with_healthcheck %}
 {% from '_macros_install.jinja' import curl_extract_tar %}
 {% from '_macros_pkg.jinja' import pacman_install, simple_service %}
 {% import_yaml 'data/versions.yaml' as ver %}
@@ -15,6 +15,15 @@
 {{ simple_service(name, opts.packages, service=opts.service) }}
 {% endif %}
 {% endfor %}
+
+# --- Health checks for network services ---
+{% if svc.get('jellyfin', False) %}
+{{ service_with_healthcheck('jellyfin_start', 'jellyfin', 'curl -sf http://127.0.0.1:8096/health >/dev/null 2>&1', requires=['service: jellyfin_enabled']) }}
+{% endif %}
+
+{% if svc.get('transmission', False) %}
+{{ service_with_healthcheck('transmission_start', 'transmission', 'curl -sf http://127.0.0.1:9091/transmission/web/ >/dev/null 2>&1', requires=['service: transmission_enabled']) }}
+{% endif %}
 
 # ===================================================================
 # Complex services (custom logic, not data-driven)
@@ -138,4 +147,5 @@ transmission_restart_after_settings_change:
       - file: transmission_watch_dir_enabled
     - require:
       - service: transmission_enabled
+      - cmd: transmission_start
 {% endif %}
