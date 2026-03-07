@@ -279,7 +279,19 @@ echo "Full log: ${LOG_FILE}"
 if [[ $RC -eq 0 ]]; then
     echo "--- ${STATE}: all states passed ---"
     echo "--- Applying dotfiles (chezmoi) ---"
-    chezmoi apply --force --source "${PROJECT_DIR}/dotfiles"
+    if ! chezmoi apply --force --source "${PROJECT_DIR}/dotfiles" 2>&1; then
+        echo ""
+        printf '\033[33m━━━ chezmoi apply failed ━━━\033[0m\n'
+        printf '\033[33m  Salt states succeeded but dotfile deployment failed.\033[0m\n'
+        printf '\033[33m  Common cause: gopass/Yubikey not available for .tmpl files.\033[0m\n'
+        printf '\033[33m  Affected templates:\033[0m\n'
+        find "${PROJECT_DIR}/dotfiles" -name '*.tmpl' -exec grep -l 'gopass' {} \; 2>/dev/null | while IFS= read -r f; do
+            printf '\033[33m    - %s\033[0m\n' "${f#"${PROJECT_DIR}"/}"
+        done
+        printf '\033[33m  Fix: ensure gopass is configured (see docs/gopass-setup.md)\033[0m\n'
+        printf '\033[33m  Re-run: chezmoi apply --force --source %s/dotfiles\033[0m\n' "${PROJECT_DIR}"
+        exit 1
+    fi
 else
     echo "--- ${STATE}: some states failed (see log above) ---"
     exit $RC
