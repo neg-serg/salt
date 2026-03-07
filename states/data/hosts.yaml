@@ -28,8 +28,6 @@ defaults:
       promtail: false
       grafana: false
     fancontrol: false
-    kernel:
-      variant: lto
     dns:
       unbound: false
       adguardhome: false
