@@ -41,3 +41,29 @@
       steam: false
       ollama: false
       llama_embed: false
+
+- name: matrix-no-floorp-profile
+  description: Floorp enabled but no profile configured (empty string default)
+  overrides:
+    hostname: matrix-no-floorp-profile
+    floorp_profile: ""
+    features:
+      floorp: true
+
+- name: matrix-minimal
+  description: All optional features disabled (minimal workstation)
+  overrides:
+    hostname: matrix-minimal
+    features:
+      monitoring:
+        sysstat: false
+        vnstat: false
+        netdata: false
+      amnezia: false
+      steam: false
+      mpd: false
+      ollama: false
+      llama_embed: false
+      floorp: false
+      kanata: false
+      flatpak: false
