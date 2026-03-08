@@ -1,0 +1,70 @@
+repos:
+  - repo: local
+    hooks:
+      - id: gitleaks
+        name: gitleaks
+        entry: gitleaks protect --staged --no-banner
+        language: system
+        pass_filenames: false
+
+      - id: ruff-check
+        name: ruff-check
+        entry: .venv/bin/ruff check
+        language: system
+        types: [python]
+        exclude: ^dotfiles/
+
+      - id: ruff-format
+        name: ruff-format
+        entry: .venv/bin/ruff format --check
+        language: system
+        types: [python]
+        exclude: ^dotfiles/
+
+      - id: shellcheck
+        name: shellcheck
+        entry: bash -c 'r=0; for f; do case "$(head -n1 "$f")" in (*bash*|*"/bin/sh"*|*"env sh"*) shellcheck -e SC2129 "$f" || r=1;; esac; done; exit $r' --
+        language: system
+        files: ^(scripts|states/scripts)/.*\.sh$
+
+      - id: yamllint
+        name: yamllint
+        entry: yamllint
+        language: system
+        files: ^(states/data|states/configs|\.github/workflows)/.*\.ya?ml$
+
+      - id: lint-jinja
+        name: lint-jinja
+        entry: .venv/bin/python3 scripts/lint-jinja.py
+        language: system
+        pass_filenames: false
+        files: ^states/.*\.(sls|jinja)$
+
+      - id: lint-dotfiles
+        name: lint-dotfiles
+        entry: .venv/bin/python3 scripts/lint-dotfiles.py
+        language: system
+        pass_filenames: false
+        files: ^dotfiles/
+
+      - id: lint-units
+        name: lint-units
+        entry: .venv/bin/python3 scripts/lint-units.py
+        language: system
+        pass_filenames: false
+        files: ^states/units/
+
+      - id: lint-docs
+        name: lint-docs
+        entry: python3 scripts/lint-docs.py
+        language: system
+        pass_filenames: false
+        files: \.(md|ru\.md)$
+
+      - id: taplo-check
+        name: taplo-check
+        entry: taplo check
+        language: system
+        types: [file]
+        files: \.toml$
+        exclude: ^(\.venv|\.salt_runtime)/
