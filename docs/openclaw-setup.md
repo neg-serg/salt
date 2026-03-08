@@ -2,8 +2,8 @@
 
 ## Overview
 
-OpenClaw is a local AI agent gateway. Primary models use the Anthropic API directly;
-ProxyPilot serves as a fallback provider.
+OpenClaw is a local AI agent gateway. All models are routed through ProxyPilot
+(which provides access to Claude via OAuth, DeepSeek, Groq, Cerebras, etc.).
 It provides a Web UI (chat dashboard) and a Telegram bot channel.
 
 ## Architecture
@@ -17,12 +17,12 @@ Browser / Telegram
 │  ws://127.0.0.1:18789   │     auth: token
 └──────────┬──────────────┘
            │
-     ┌─────┴──────┐
-     ▼            ▼
-┌──────────┐ ┌─────────────────────────┐
-│ Anthropic│ │  ProxyPilot (fallback)  │
-│ API      │ │  http://127.0.0.1:8317  │
-└──────────┘ └─────────────────────────┘
+           │
+           ▼
+┌─────────────────────────┐
+│  ProxyPilot             │  ← OpenAI-compatible proxy
+│  http://127.0.0.1:8317  │     Claude OAuth, DeepSeek, Groq, etc.
+└─────────────────────────┘
 ```
 
 ## Components
@@ -42,8 +42,7 @@ Browser / Telegram
 
 | Key | Purpose |
 |---|---|
-| `api/anthropic` | Anthropic API key (primary provider) |
-| `api/proxypilot-local` | API key for ProxyPilot fallback (shared with Claude Code, OpenCode) |
+| `api/proxypilot-local` | API key for ProxyPilot (shared with Claude Code, OpenCode) |
 | `api/openclaw-telegram` | Telegram Bot Token (`@negserg_openclaw_bot`) |
 | `api/openclaw-telegram-uid` | Telegram numeric user ID for allowlist |
 
@@ -52,7 +51,7 @@ Create secrets before first Salt apply:
 gopass insert api/openclaw-telegram   # paste Telegram Bot Token from @BotFather
 ```
 
-`api/anthropic` and `api/proxypilot-local` are already used by other tools — no action needed.
+`api/proxypilot-local` is already used by other tools — no action needed.
 
 ## Web UI Access
 
@@ -90,9 +89,8 @@ journalctl --user -u openclaw-gateway -f     # live logs
 
 | Model | Provider | Role |
 |---|---|---|
-| `anthropic/claude-opus-4-6-20251022` | Anthropic API (direct) | Primary |
-| `anthropic/claude-sonnet-4-6-20250514` | Anthropic API (direct) | Fallback 1 |
-| `proxypilot/claude-opus-4-6` | ProxyPilot (local proxy) | Fallback 2 |
+| `proxypilot/claude-sonnet-4-6` | ProxyPilot (Claude OAuth) | Primary |
+| `proxypilot/claude-opus-4-6` | ProxyPilot (Claude OAuth) | Fallback |
 
 ## Telegram Bot
 
@@ -122,4 +120,4 @@ systemctl --user restart openclaw-gateway
 
 **Telegram not connecting**: Check `gopass show -o api/openclaw-telegram` returns a valid bot token. Verify with `openclaw status --deep`.
 
-**ProxyPilot not reachable**: Ensure `systemctl --user is-active proxypilot` returns `active`. The gateway unit has `Requires=proxypilot.service`.
+**ProxyPilot not reachable**: Ensure `systemctl --user is-active proxypilot` returns `active`. The gateway unit has `Wants=proxypilot.service`.

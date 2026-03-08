@@ -2,8 +2,8 @@
 
 ## Обзор
 
-OpenClaw — локальный AI-агент gateway. Основные модели используют Anthropic API напрямую;
-ProxyPilot служит запасным провайдером.
+OpenClaw — локальный AI-агент gateway. Все модели маршрутизируются через ProxyPilot
+(доступ к Claude через OAuth, DeepSeek, Groq, Cerebras и др.).
 Предоставляет Web UI (чат-панель) и канал Telegram-бота.
 
 ## Архитектура
@@ -17,12 +17,12 @@ ProxyPilot служит запасным провайдером.
 │  ws://127.0.0.1:18789   │     auth: token
 └──────────┬──────────────┘
            │
-     ┌─────┴──────┐
-     ▼            ▼
-┌──────────┐ ┌─────────────────────────┐
-│ Anthropic│ │  ProxyPilot (запасной)  │
-│ API      │ │  http://127.0.0.1:8317  │
-└──────────┘ └─────────────────────────┘
+           │
+           ▼
+┌─────────────────────────┐
+│  ProxyPilot             │  ← OpenAI-совместимый прокси
+│  http://127.0.0.1:8317  │     Claude OAuth, DeepSeek, Groq и др.
+└─────────────────────────┘
 ```
 
 ## Компоненты
@@ -42,8 +42,7 @@ ProxyPilot служит запасным провайдером.
 
 | Ключ | Назначение |
 |---|---|
-| `api/anthropic` | API-ключ Anthropic (основной провайдер) |
-| `api/proxypilot-local` | API-ключ ProxyPilot запасной (общий с Claude Code, OpenCode) |
+| `api/proxypilot-local` | API-ключ ProxyPilot (общий с Claude Code, OpenCode) |
 | `api/openclaw-telegram` | Токен Telegram-бота (`@negserg_openclaw_bot`) |
 | `api/openclaw-telegram-uid` | Числовой Telegram ID пользователя для allowlist |
 
@@ -52,7 +51,7 @@ ProxyPilot служит запасным провайдером.
 gopass insert api/openclaw-telegram   # вставить токен бота от @BotFather
 ```
 
-`api/anthropic` и `api/proxypilot-local` уже используются другими инструментами — ничего делать не нужно.
+`api/proxypilot-local` уже используется другими инструментами — ничего делать не нужно.
 
 ## Доступ к Web UI
 
@@ -90,9 +89,8 @@ journalctl --user -u openclaw-gateway -f     # логи в реальном вр
 
 | Модель | Провайдер | Роль |
 |---|---|---|
-| `anthropic/claude-opus-4-6-20251022` | Anthropic API (напрямую) | Основная |
-| `anthropic/claude-sonnet-4-6-20250514` | Anthropic API (напрямую) | Запасная 1 |
-| `proxypilot/claude-opus-4-6` | ProxyPilot (локальный прокси) | Запасная 2 |
+| `proxypilot/claude-sonnet-4-6` | ProxyPilot (Claude OAuth) | Основная |
+| `proxypilot/claude-opus-4-6` | ProxyPilot (Claude OAuth) | Запасная |
 
 ## Telegram-бот
 
@@ -122,4 +120,4 @@ systemctl --user restart openclaw-gateway
 
 **Telegram не подключается**: проверьте `gopass show -o api/openclaw-telegram` — должен вернуть валидный токен бота. Проверка: `openclaw status --deep`.
 
-**ProxyPilot недоступен**: убедитесь, что `systemctl --user is-active proxypilot` возвращает `active`. Unit gateway имеет `Requires=proxypilot.service`.
+**ProxyPilot недоступен**: убедитесь, что `systemctl --user is-active proxypilot` возвращает `active`. Unit gateway имеет `Wants=proxypilot.service`.
