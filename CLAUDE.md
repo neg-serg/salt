@@ -253,3 +253,10 @@ Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full de
 - Chezmoi templates: `{{ gopass "key/path" }}` in `.tmpl` files
 - Salt states: `gopass show -o key/path` in `cmd.run`
 - No plaintext secrets in this repo
+
+## Active Technologies
+- Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx) (001-code-rag-integration)
+- LanceDB (embedded Arrow-based vector DB, local `.lancedb/` directory) (001-code-rag-integration)
+
+## Recent Changes
+- 001-code-rag-integration: Added Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx)

@@ -83,6 +83,15 @@
         "EMBEDDING_MODEL": "sentence-transformers/all-MiniLM-L6-v2"
       }
     },
+    "code-rag": {
+      "type": "stdio",
+      "command": "/home/neg/.local/share/pipx/venvs/code-rag/bin/python",
+      "args": [
+        "-m",
+        "code_rag.server"
+      ],
+      "env": {}
+    },
     "ffmpeg": {
       "type": "stdio",
       "command": "/home/neg/.local/bin/uvx",
