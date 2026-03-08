@@ -52,7 +52,7 @@ docs/
 - [x] T004 [US2] Verify deployed config has ProxyPilot provider: run `grep 'openai-completions' ~/.openclaw/openclaw.json` and `openclaw models list` to confirm models are routable
 - [x] T005 [US1] Verify gateway service is running: `systemctl --user status openclaw-gateway` and check logs with `journalctl --user -u openclaw-gateway --no-pager -n 20` for Telegram channel connection
 - [x] T006 [US1] Send test message to Telegram bot and verify AI response within 60 seconds (SC-001); check ProxyPilot logs `journalctl --user -u proxypilot --no-pager -n 20` for matching routed request (SC-002)
-- [ ] T007 [US2] Send 10 consecutive messages to verify OAuth routing stability — no authentication failures or silent drops (SC-006)
+- [x] T007 [US2] Send 10 consecutive messages to verify OAuth routing stability — no authentication failures or silent drops (SC-006)
 
 **Checkpoint**: Bot responds to Telegram messages via ProxyPilot — MVP complete
 
