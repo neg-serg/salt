@@ -4,7 +4,6 @@
 (
     default_album_art_path: None,
     draw_borders: true,
-    show_song_table_header: false,
     symbols: (song: "󰝚", dir: " ", marker: "* ", ellipsis: "..."),
     layout: Split(direction: Vertical, panes: [( pane: Pane(TabContent), size: "100%",), ( pane: Pane(ProgressBar), size: "1",),],),
     progress_bar: ( symbols: ["─", "╼", ""], track_style: (fg: "#BCC8D6"), elapsed_style: (fg: "#BCC8D6"), thumb_style: (fg: "#BCC8D6"),),
@@ -21,20 +20,22 @@
     highlight_border_style: (fg: "#95A8BE"),
     highlighted_item_style: (fg: "#A02E60", modifiers: "Bold"),
     song_table_format: [
-        ( prop: (kind: Property(Track), style: (fg: "green"), default: (kind: Text("Unknown"))), width: "2%",),
+        ( prop: (kind: Property(Track), style: (fg: "green"), default: (kind: Text("Unknown"))),
+          label_prop: (kind: Text("#"), style: (fg: "#4A7088")), width: "2%",),
 
         ( prop: (kind: Group([
           (kind: Property(Artist), style: (fg: "blue")),
           (kind: Text(" ❯ "), style: (fg: "#0055A0")),
           (kind: Property(Title), style: (fg: "#3A4F66")),
-        ]), default: (kind: Property(Filename))), width: "70%"),
+        ]), default: (kind: Property(Filename))),
+          label_prop: (kind: Text("Artist ❯ Title"), style: (fg: "#4A7088")), width: "70%"),
 
         ( prop: (kind: Group([
           (kind: Property(Duration), default: (kind: Text("-")), style: (fg: "31")),
           (kind: Text(" "), style: (fg: "#3A4F66")),
           (kind: Property(Album), style: (fg: "#3A4F66"), default: (kind: Text("Unknown"))),
-        ]), default: (kind: Property(Filename))), width: "30%", alignment: Right),
-
+        ]), default: (kind: Property(Filename))),
+          label_prop: (kind: Text("Duration / Album"), style: (fg: "#4A7088")), width: "30%", alignment: Right),
     ],
     browser_song_format: [
         ( kind: Group([ (kind: Property(Track)), (kind: Text(" ")), ])),

@@ -20,9 +20,8 @@
         disabled_protocols: ["http://", "https://"],
         vertical_align: Center,
         horizontal_align: Center,
-        order: EmbeddedFirst,
     ),
-    directories_sort: ModifiedTime(reverse: true),
+    directories_sort: SortFormat(group_by_type: false, reverse: true),
     tabs: [
         (
             name: "Queue",
@@ -32,7 +31,7 @@
                     (size: "80%", pane: Split(
                         direction: Vertical,
                         panes: [
-                            (size: "1", pane: Pane(QueueHeader)),
+                            (size: "1", pane: Pane(QueueHeader())),
                             (size: "100%", pane: Pane(Queue)),
                         ],
                     )),
@@ -56,13 +55,13 @@
     keybinds: (
         clear: true,
         global: {
-            "1": FocusTab("Queue"),
-            "0": FocusTab("Directories"),
-            "2": FocusTab("Artists"),
-            "3": FocusTab("Album Artists"),
-            "4": FocusTab("Albums"),
-            "P": FocusTab("Playlists"),
-            "?": FocusTab("Search"),
+            "1": SwitchToTab("Queue"),
+            "0": SwitchToTab("Directories"),
+            "2": SwitchToTab("Artists"),
+            "3": SwitchToTab("Album Artists"),
+            "4": SwitchToTab("Albums"),
+            "P": SwitchToTab("Playlists"),
+            "?": SwitchToTab("Search"),
 
             ":": CommandMode,
             "<Tab>": NextTab,
