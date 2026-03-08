@@ -4,15 +4,16 @@
 #
 # Priority ordering (quality-tiered):
 #   1. Groq       — fastest inference (custom LPU), strong models, generous limits
-#   2. Mistral    — massive token limit (1B/month), good coding models (Codestral)
-#   3. Cerebras   — 1M tokens/day, very fast inference, Qwen3 235B
-#   4. OpenRouter  — model aggregator, 27+ free models, auto-routing
-#   5. SambaNova  — good models but lower RPM limits (10-20)
-#   6. Ollama     — local last-resort, always available, zero network dependency
+#   2. Cerebras   — 1M tokens/day, very fast inference, Qwen3 235B
+#   3. OpenRouter  — model aggregator, 27+ free models, auto-routing
+#   4. SambaNova  — good models but lower RPM limits (10-20)
+#   5. Ollama     — local last-resort, always available, zero network dependency
+#
+# Excluded: Mistral — blocks signups from Russia
 #
 # Alias pooling: shared aliases across providers enable round-robin failover.
-#   fallback-large  — general-purpose large models (6 providers)
-#   fallback-code   — code-specialized models (3 providers)
+#   fallback-large  — general-purpose large models (5 providers)
+#   fallback-code   — code-specialized models (2 providers)
 #   fallback-medium — mid-tier models (2 providers)
 #   fallback-small  — fast small models (2 providers)
 #
@@ -30,20 +31,10 @@ providers:
       - name: "qwen/qwen3-32b"
         alias: "fallback-medium"
 
-  - name: "mistral"
-    base_url: "https://api.mistral.ai/v1"
-    gopass_key: "api/mistral"
-    priority: 2
-    models:
-      - name: "codestral-latest"
-        alias: "fallback-code"
-      - name: "mistral-small-latest"
-        alias: "fallback-large"
-
   - name: "cerebras"
     base_url: "https://api.cerebras.ai/v1"
     gopass_key: "api/cerebras"
-    priority: 3
+    priority: 2
     models:
       - name: "qwen-3-235b-a22b-instruct"
         alias: "fallback-large"
@@ -53,7 +44,7 @@ providers:
   - name: "openrouter"
     base_url: "https://openrouter.ai/api/v1"
     gopass_key: "api/openrouter"
-    priority: 4
+    priority: 3
     models:
       - name: "qwen/qwen3-coder-480b-a35b:free"
         alias: "fallback-code"
@@ -63,7 +54,7 @@ providers:
   - name: "sambanova"
     base_url: "https://api.sambanova.ai/v1"
     gopass_key: "api/sambanova"
-    priority: 5
+    priority: 4
     models:
       - name: "Meta-Llama-3.3-70B-Instruct"
         alias: "fallback-large"
@@ -73,7 +64,7 @@ providers:
   - name: "ollama"
     base_url: "http://localhost:11434/v1"
     dummy_key: "ollama"
-    priority: 6
+    priority: 5
     models:
       - name: "qwen3.5:27b"
         alias: "fallback-large"

@@ -389,12 +389,12 @@
         "textMode": "auto"
       },
       "title": "Fallback Activation",
-      "description": "Requests routed to free fallback providers (groq, mistral, cerebras, openrouter, sambanova, ollama)",
+      "description": "Requests routed to free fallback providers (groq, cerebras, openrouter, sambanova, ollama)",
       "type": "stat",
       "targets": [
         {
           "datasource": { "type": "loki", "uid": "loki" },
-          "expr": "sum(count_over_time({syslog_identifier=\"proxypilot\"} |~ `(groq|mistral|cerebras|openrouter|sambanova|ollama)` |~ `\\| (POST|GET)\\s` [$__range]))",
+          "expr": "sum(count_over_time({syslog_identifier=\"proxypilot\"} |~ `(groq|cerebras|openrouter|sambanova|ollama)` |~ `\\| (POST|GET)\\s` [$__range]))",
           "refId": "A"
         }
       ]
@@ -439,33 +439,27 @@
         },
         {
           "datasource": { "type": "loki", "uid": "loki" },
-          "expr": "sum(count_over_time({syslog_identifier=\"proxypilot\"} |~ `mistral` |~ `\\] (4|5)\\d{2} \\|` [$__interval]))",
-          "legendFormat": "mistral",
-          "refId": "B"
-        },
-        {
-          "datasource": { "type": "loki", "uid": "loki" },
           "expr": "sum(count_over_time({syslog_identifier=\"proxypilot\"} |~ `cerebras` |~ `\\] (4|5)\\d{2} \\|` [$__interval]))",
           "legendFormat": "cerebras",
-          "refId": "C"
+          "refId": "B"
         },
         {
           "datasource": { "type": "loki", "uid": "loki" },
           "expr": "sum(count_over_time({syslog_identifier=\"proxypilot\"} |~ `openrouter` |~ `\\] (4|5)\\d{2} \\|` [$__interval]))",
           "legendFormat": "openrouter",
-          "refId": "D"
+          "refId": "C"
         },
         {
           "datasource": { "type": "loki", "uid": "loki" },
           "expr": "sum(count_over_time({syslog_identifier=\"proxypilot\"} |~ `sambanova` |~ `\\] (4|5)\\d{2} \\|` [$__interval]))",
           "legendFormat": "sambanova",
-          "refId": "E"
+          "refId": "D"
         },
         {
           "datasource": { "type": "loki", "uid": "loki" },
           "expr": "sum(count_over_time({syslog_identifier=\"proxypilot\"} |~ `ollama` |~ `\\] (4|5)\\d{2} \\|` [$__interval]))",
           "legendFormat": "ollama",
-          "refId": "F"
+          "refId": "E"
         }
       ]
     },
