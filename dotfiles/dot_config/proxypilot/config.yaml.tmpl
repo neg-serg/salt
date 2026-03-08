@@ -1,6 +1,5 @@
 # ProxyPilot — local AI proxy
 # Docs: https://github.com/Finesssee/ProxyPilot
-
 host: "127.0.0.1"
 port: 8317
 
@@ -26,7 +25,7 @@ routing:
 
 request-retry: 3
 max-retry-credentials: 3
-max-retry-interval: 30
+max-retry-interval: 10
 
 quota-exceeded:
   switch-project: true
@@ -97,24 +96,59 @@ oauth-model-alias:
     - name: "claude-haiku-4-5-20251001"
       alias: "claude-haiku-4-5-20251001"
       fork: true
-  codex:
-    # OpenCode/Codex CLI use OpenAI-style prefixes (openai/*).
-    # Map them to the upstream Codex model IDs so ProxyPilot routes correctly.
-    - name: "gpt-5-codex"
-      alias: "openai/gpt-5-codex"
-      fork: true
-    - name: "gpt-5.2"
-      alias: "openai/gpt-5.2"
-      fork: true
-    - name: "gpt-5.2-codex"
-      alias: "openai/gpt-5.2-codex"
-      fork: true
-    - name: "gpt-5.3-codex"
-      alias: "openai/gpt-5.3-codex"
-      fork: true
-    - name: "gpt-5.3-codex-spark"
-      alias: "openai/gpt-5.3-codex-spark"
-      fork: true
+
+# ── Free fallback providers (emergency-only) ──────────────────────────
+# Activated via dedicated fallback-* aliases when paid providers are down.
+# Providers resolved from states/data/free_providers.yaml at Salt apply time.
+openai-compatibility:
+  - name: "groq"
+    base-url: "https://api.groq.com/openai/v1"
+    api-key-entries:
+      - api-key: "{{ gopass "api/groq" }}"
+    models:
+      - name: "llama-3.3-70b-versatile"
+        alias: "fallback-large"
+      - name: "qwen/qwen3-32b"
+        alias: "fallback-medium"
+  - name: "cerebras"
+    base-url: "https://api.cerebras.ai/v1"
+    api-key-entries:
+      - api-key: "{{ gopass "api/cerebras" }}"
+    models:
+      - name: "qwen-3-235b-a22b-instruct"
+        alias: "fallback-large"
+      - name: "llama3.1-8b"
+        alias: "fallback-small"
+  - name: "openrouter"
+    base-url: "https://openrouter.ai/api/v1"
+    api-key-entries:
+      - api-key: "{{ gopass "api/openrouter" }}"
+    models:
+      - name: "qwen/qwen3-coder-480b-a35b:free"
+        alias: "fallback-code"
+      - name: "openrouter/auto"
+        alias: "fallback-large"
+  - name: "deepseek"
+    base-url: "https://api.deepseek.com/v1"
+    api-key-entries:
+      - api-key: "{{ gopass "api/deepseek" }}"
+    models:
+      - name: "deepseek-chat"
+        alias: "fallback-code"
+      - name: "deepseek-reasoner"
+        alias: "fallback-large"
+  - name: "ollama"
+    base-url: "http://localhost:11434/v1"
+    api-key-entries:
+      - api-key: "ollama"
+    models:
+      - name: "qwen3.5:27b"
+        alias: "fallback-large"
+      - name: "qwen2.5-coder:7b"
+        alias: "fallback-code"
+      - name: "qwen3:14b"
+        alias: "fallback-medium"
+
 
 # ── Payload rules ───────────────────────────────────────────────────
 # Default thinking budget for Gemini models (when not set by client)
