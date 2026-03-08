@@ -5,18 +5,23 @@
 # Priority ordering (quality-tiered):
 #   1. Groq       — fastest inference (custom LPU), strong models, generous limits
 #   2. Cerebras   — 1M tokens/day, very fast inference, Qwen3 235B
-#   3. OpenRouter  — model aggregator, 27+ free models, auto-routing
-#   4. Ollama     — local last-resort, always available, zero network dependency
+#   3. OpenRouter — model aggregator, 27+ free models, auto-routing
+#   4. DeepSeek   — Chinese cloud, optional (trial 5M tokens), top-tier code/reasoning
+#   5. Ollama     — local last-resort, always available, zero network dependency
 #
 # Excluded:
-#   Mistral   — blocks signups from Russia
-#   SambaNova — no access from Russia
+#   Mistral    — blocks signups from Russia
+#   SambaNova  — no access from Russia
+#   SiliconFlow — signup verification code not delivered (revisit later)
 #
 # Alias pooling: shared aliases across providers enable round-robin failover.
-#   fallback-large  — general-purpose large models (4 providers)
-#   fallback-code   — code-specialized models (2 providers)
+#   fallback-large  — general-purpose large models (4 providers, 1 optional)
+#   fallback-code   — code-specialized models (2 providers, 1 optional)
 #   fallback-medium — mid-tier models (2 providers)
 #   fallback-small  — fast small models (1 provider)
+#
+# DeepSeek is optional: only active if operator provisions api/deepseek gopass key.
+# System functions correctly without DeepSeek — all aliases have mandatory coverage.
 #
 # Adding a provider: add entry here + gopass insert api/<name> + just
 # Removing a provider: remove entry here + just
@@ -52,10 +57,20 @@ providers:
       - name: "openrouter/auto"
         alias: "fallback-large"
 
+  - name: "deepseek"
+    base_url: "https://api.deepseek.com"
+    gopass_key: "api/deepseek"
+    priority: 4
+    models:
+      - name: "deepseek-chat"
+        alias: "fallback-code"
+      - name: "deepseek-reasoner"
+        alias: "fallback-large"
+
   - name: "ollama"
     base_url: "http://localhost:11434/v1"
     dummy_key: "ollama"
-    priority: 4
+    priority: 5
     models:
       - name: "qwen3.5:27b"
         alias: "fallback-large"

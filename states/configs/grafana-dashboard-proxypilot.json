@@ -394,7 +394,7 @@
       "targets": [
         {
           "datasource": { "type": "loki", "uid": "loki" },
-          "expr": "sum(count_over_time({syslog_identifier=\"proxypilot\"} |~ `(groq|cerebras|openrouter|ollama)` |~ `\\| (POST|GET)\\s` [$__range]))",
+          "expr": "sum(count_over_time({syslog_identifier=\"proxypilot\"} |~ `(groq|cerebras|openrouter|deepseek|ollama)` |~ `\\| (POST|GET)\\s` [$__range]))",
           "refId": "A"
         }
       ]
@@ -451,9 +451,15 @@
         },
         {
           "datasource": { "type": "loki", "uid": "loki" },
+          "expr": "sum(count_over_time({syslog_identifier=\"proxypilot\"} |~ `deepseek` |~ `\\] (4|5)\\d{2} \\|` [$__interval]))",
+          "legendFormat": "deepseek",
+          "refId": "D"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
           "expr": "sum(count_over_time({syslog_identifier=\"proxypilot\"} |~ `ollama` |~ `\\] (4|5)\\d{2} \\|` [$__interval]))",
           "legendFormat": "ollama",
-          "refId": "D"
+          "refId": "E"
         }
       ]
     },

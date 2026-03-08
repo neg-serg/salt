@@ -2,14 +2,14 @@
 
 ## Overview
 
-Emergency fallback system providing free AI model access when paid providers (Anthropic, Google Gemini) are unavailable. Uses 3 cloud providers + local Ollama as last resort.
+Emergency fallback system providing free AI model access when paid providers (Anthropic, Google Gemini) are unavailable. Uses 3 cloud providers + optional DeepSeek + local Ollama as last resort.
 
 ## Architecture
 
 - ProxyPilot's `openai-compatibility` section routes requests to free providers
 - Alias pooling: shared `fallback-*` aliases enable round-robin across providers
 - Emergency-only: free providers are only reachable via dedicated `fallback-*` model names
-- Cascading: Groq -> Cerebras -> OpenRouter -> Ollama (local)
+- Cascading: Groq -> Cerebras -> OpenRouter -> DeepSeek (optional) -> Ollama (local)
 
 ## Providers
 
@@ -21,21 +21,24 @@ Emergency fallback system providing free AI model access when paid providers (An
 | 2 | Cerebras | llama3.1-8b | fallback-small | 1M tokens/day |
 | 3 | OpenRouter | qwen/qwen3-coder-480b-a35b:free | fallback-code | 200 RPD |
 | 3 | OpenRouter | openrouter/auto | fallback-large | 200 RPD |
-| 4 | Ollama | qwen3.5:27b | fallback-large | Local GPU |
-| 4 | Ollama | qwen2.5-coder:7b | fallback-code | Local GPU |
-| 4 | Ollama | qwen3:14b | fallback-medium | Local GPU |
+| 4 | DeepSeek | deepseek-chat | fallback-code | Optional (trial 5M tokens/30d, then $0.28/M) |
+| 4 | DeepSeek | deepseek-reasoner | fallback-large | Optional (trial 5M tokens/30d, then $0.28/M) |
+| 5 | Ollama | qwen3.5:27b | fallback-large | Local GPU |
+| 5 | Ollama | qwen2.5-coder:7b | fallback-code | Local GPU |
+| 5 | Ollama | qwen3:14b | fallback-medium | Local GPU |
 
 Excluded providers:
 
 - Mistral -- blocks signups from Russia
 - SambaNova -- no access from Russia
+- SiliconFlow -- signup verification code not delivered (revisit later)
 
 ## Alias Coverage
 
 | Alias | Providers | Models |
 |-------|-----------|--------|
-| fallback-large | Groq, Cerebras, OpenRouter, Ollama | 4 models across 4 providers |
-| fallback-code | OpenRouter, Ollama | 2 models across 2 providers |
+| fallback-large | Groq, Cerebras, OpenRouter, DeepSeek (optional), Ollama | 5 models across 5 providers |
+| fallback-code | OpenRouter, DeepSeek (optional), Ollama | 3 models across 3 providers |
 | fallback-medium | Groq, Ollama | 2 models across 2 providers |
 | fallback-small | Cerebras | 1 model, 1 provider |
 
@@ -46,6 +49,7 @@ Excluded providers:
 | `api/groq` | Groq | https://console.groq.com |
 | `api/cerebras` | Cerebras | https://cloud.cerebras.ai |
 | `api/openrouter` | OpenRouter | https://openrouter.ai/keys |
+| `api/deepseek` | DeepSeek | https://platform.deepseek.com |
 
 ## Adding a Provider
 
@@ -66,10 +70,15 @@ Only 2 files changed (data file + gopass secret) -- no code modifications needed
 
 ```bash
 # 1. Sign up and get API keys from each provider
+#    - Groq:       https://console.groq.com
+#    - Cerebras:   https://cloud.cerebras.ai
+#    - OpenRouter:  https://openrouter.ai/keys
+#    - DeepSeek:   https://platform.deepseek.com (email or Google login, trial 5M tokens free, then $0.28/M)
 # 2. Store keys in gopass
 gopass insert api/groq
 gopass insert api/cerebras
 gopass insert api/openrouter
+gopass insert api/deepseek  # optional
 
 # 3. Run bootstrap to seed ProxyPilot config
 scripts/bootstrap-free-providers.sh
