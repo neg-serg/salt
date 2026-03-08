@@ -72,7 +72,7 @@ All new providers must operate at zero monetary cost. Providers with trial credi
 
 ### Functional Requirements
 
-- **FR-001**: System MUST add SiliconFlow as a free fallback provider with at least 3 model mappings covering `fallback-large`, `fallback-small`, and `fallback-code` aliases
+- **FR-001**: System MUST add SiliconFlow as a free fallback provider with 4 model mappings covering all `fallback-*` aliases: `fallback-large`, `fallback-code`, `fallback-medium`, `fallback-small`
 - **FR-002**: System MUST add DeepSeek as an optional fallback provider with at least 2 model mappings covering `fallback-code` and `fallback-large` aliases. DeepSeek is included in the data file but documented as optional — it requires trial signup (5M tokens/30 days) and may cost money after trial expiry ($0.28/M tokens). The operator can enable or disable it by provisioning or omitting the gopass key. The system MUST function correctly without DeepSeek configured.
 - **FR-003**: System MUST store all new provider API keys in gopass and inject them via the existing Salt/bootstrap mechanism — no plaintext secrets in the repository
 - **FR-004**: System MUST follow the existing data-driven pattern: add entries to `states/data/free_providers.yaml` with no code modifications required
@@ -91,15 +91,15 @@ All new providers must operate at zero monetary cost. Providers with trial credi
 
 ### Measurable Outcomes
 
-- **SC-001**: The system maintains at least 5 independent cloud free provider routes (up from 3), ensuring that total fallback failure probability is further reduced
+- **SC-001**: The system maintains at least 4 mandatory cloud free provider routes (5 with optional DeepSeek), up from 3, ensuring that total fallback failure probability is further reduced
 - **SC-002**: Every `fallback-*` alias has at least 2 cloud providers, eliminating single-provider alias vulnerability
-- **SC-003**: At least 2 of the configured cloud providers are China-based companies (not subject to Western sanctions), providing a geopolitically independent fallback path
-- **SC-004**: Adding the new providers requires changes to at most 2 existing files (data file + gopass secrets) with no code modifications — same ease of deployment as the original feature
+- **SC-003**: At least 1 mandatory China-based cloud provider is configured (2 with optional DeepSeek), providing a geopolitically independent fallback path not subject to Western sanctions
+- **SC-004**: The core provider addition requires changes to only the data file and gopass secrets (no code modifications); full feature delivery also includes Grafana dashboard and documentation updates per FR-008/FR-009
 - **SC-005**: All new providers operate at zero ongoing monetary cost (permanent free tiers or negligible cost below $1/year at emergency-only usage levels)
 
 ## Assumptions
 
-- SiliconFlow's permanent free tier for small models (Qwen2.5-7B-Instruct, Llama-3.1-8B, GLM-4-9B-Chat) remains available as of March 2026 and requires no credit card for signup
+- SiliconFlow's permanent free tier for selected models (DeepSeek-R1-Distill-Qwen-7B, Qwen2.5-Coder-7B-Instruct, Qwen3-8B, Qwen3.5-4B) remains available as of March 2026 and requires no credit card for signup
 - DeepSeek's API signup works from Russia via email registration (confirmed working as of March 2026)
 - SiliconFlow's endpoint (`api.siliconflow.cn/v1`) is accessible from Russia without VPN — Chinese companies are not subject to Western sanctions
 - The existing bootstrap script and Salt template handle additional providers without modifications — the data-driven architecture supports arbitrary provider count
@@ -114,7 +114,7 @@ Based on research (March 2026), the following providers were evaluated:
 
 | Priority | Provider | Key Free Models | Free Tier Type | No Credit Card | Russia Access |
 |----------|----------|----------------|----------------|----------------|---------------|
-| 3.5 | SiliconFlow | Qwen2.5-7B-Instruct, Llama-3.1-8B, GLM-4-9B-Chat | Permanent (20+ free models) | Yes | Yes (Chinese) |
+| 3.5 | SiliconFlow | DeepSeek-R1-Distill-Qwen-7B, Qwen2.5-Coder-7B-Instruct, Qwen3-8B, Qwen3.5-4B | Permanent (20+ free models) | Yes | Yes (Chinese) |
 | 3.7 | DeepSeek | DeepSeek-V3.2, DeepSeek-R1 | Trial (5M tokens/30d) + $0.28/M after | Yes | Yes (confirmed) |
 
 ### Excluded After Research

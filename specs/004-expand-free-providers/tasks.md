@@ -91,7 +91,7 @@
 
 ### Within Each Phase
 
-- Data file before Grafana dashboard before Salt apply
+- Data file and Grafana dashboard (parallel, different files) before Salt apply
 - gopass secrets before bootstrap script before deployment
 - Deployment before verification
 
