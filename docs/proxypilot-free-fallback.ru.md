@@ -9,7 +9,7 @@
 - Секция `openai-compatibility` в конфигурации ProxyPilot маршрутизирует запросы к бесплатным провайдерам
 - Пулинг алиасов: общие алиасы `fallback-*` обеспечивают round-robin между провайдерами
 - Только аварийный режим: бесплатные провайдеры доступны исключительно через алиасы `fallback-*`
-- Каскад: Groq → Cerebras → OpenRouter → Ollama (локальный)
+- Каскад: Groq → Cerebras → OpenRouter → DeepSeek (опционально) → Ollama (локальный)
 
 ## Провайдеры
 
@@ -21,21 +21,24 @@
 | 2 | Cerebras | llama3.1-8b | fallback-small | 1M токенов/день |
 | 3 | OpenRouter | qwen/qwen3-coder-480b-a35b:free | fallback-code | 200 запросов/день |
 | 3 | OpenRouter | openrouter/auto | fallback-large | 200 запросов/день |
-| 4 | Ollama | qwen3.5:27b | fallback-large | Локальный GPU |
-| 4 | Ollama | qwen2.5-coder:7b | fallback-code | Локальный GPU |
-| 4 | Ollama | qwen3:14b | fallback-medium | Локальный GPU |
+| 4 | DeepSeek | deepseek-chat | fallback-code | Trial 5M токенов/30д, затем $0.28/M |
+| 4 | DeepSeek | deepseek-reasoner | fallback-large | Trial 5M токенов/30д, затем $0.28/M |
+| 5 | Ollama | qwen3.5:27b | fallback-large | Локальный GPU |
+| 5 | Ollama | qwen2.5-coder:7b | fallback-code | Локальный GPU |
+| 5 | Ollama | qwen3:14b | fallback-medium | Локальный GPU |
 
 Исключённые провайдеры:
 
 - Mistral -- блокирует регистрацию из России
 - SambaNova -- нет доступа из России
+- SiliconFlow -- не удалось получить код верификации при регистрации (можно попробовать позже)
 
 ## Покрытие алиасов
 
 | Алиас | Провайдеры | Модели |
 |-------|------------|--------|
-| fallback-large | Groq, Cerebras, OpenRouter, Ollama | 4 модели, 4 провайдера |
-| fallback-code | OpenRouter, Ollama | 2 модели, 2 провайдера |
+| fallback-large | Groq, Cerebras, OpenRouter, DeepSeek (опц.), Ollama | 5 моделей, 5 провайдеров |
+| fallback-code | OpenRouter, DeepSeek (опц.), Ollama | 3 модели, 3 провайдера |
 | fallback-medium | Groq, Ollama | 2 модели, 2 провайдера |
 | fallback-small | Cerebras | 1 модель, 1 провайдер |
 
@@ -46,6 +49,7 @@
 | `api/groq` | Groq | https://console.groq.com |
 | `api/cerebras` | Cerebras | https://cloud.cerebras.ai |
 | `api/openrouter` | OpenRouter | https://openrouter.ai/keys |
+| `api/deepseek` | DeepSeek | https://platform.deepseek.com |
 
 ## Добавление провайдера
 
@@ -66,10 +70,15 @@
 
 ```bash
 # 1. Зарегистрироваться и получить API-ключи
+#    - Groq: https://console.groq.com
+#    - Cerebras: https://cloud.cerebras.ai
+#    - OpenRouter: https://openrouter.ai/keys
+#    - DeepSeek: https://platform.deepseek.com (email или Google login, trial 5M токенов бесплатно, затем $0.28/M)
 # 2. Сохранить ключи в gopass
 gopass insert api/groq
 gopass insert api/cerebras
 gopass insert api/openrouter
+gopass insert api/deepseek  # опционально
 
 # 3. Внедрить ключи в конфигурацию ProxyPilot
 scripts/bootstrap-free-providers.sh

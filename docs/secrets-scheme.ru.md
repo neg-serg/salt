@@ -40,6 +40,7 @@ api/
   groq                    # API-ключ Groq (бесплатный fallback-провайдер)
   cerebras                # API-ключ Cerebras (бесплатный fallback-провайдер)
   openrouter              # API-ключ OpenRouter (бесплатный fallback-провайдер)
+  deepseek                # API-ключ DeepSeek (опционально — пробные 5M токенов)
 
 lastfm/
   password                # Пароль Last.fm (для mpdas)

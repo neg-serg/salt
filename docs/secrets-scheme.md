@@ -40,6 +40,7 @@ api/
   groq                    # Groq API key (free fallback provider)
   cerebras                # Cerebras API key (free fallback provider)
   openrouter              # OpenRouter API key (free fallback provider)
+  deepseek                # DeepSeek API key (optional — trial 5M tokens)
 
 lastfm/
   password                # Last.fm password (for mpdas)
