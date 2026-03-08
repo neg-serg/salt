@@ -37,6 +37,9 @@ api/
   anthropic               # Anthropic API key (direct, for OpenClaw)
   openclaw-telegram       # OpenClaw Telegram bot token
   openclaw-telegram-uid   # OpenClaw Telegram allowlist user ID
+  groq                    # Groq API key (free fallback provider)
+  cerebras                # Cerebras API key (free fallback provider)
+  openrouter              # OpenRouter API key (free fallback provider)
 
 lastfm/
   password                # Last.fm password (for mpdas)
@@ -97,7 +100,7 @@ Salt states using `gopass_secret()` macro (graceful fallback if gopass unavailab
 | State | gopass key | Fallback |
 |---|---|---|
 | `mpd.sls` | `lastfm/username`, `lastfm/password` | Empty string |
-| `opencode.sls` | `api/proxypilot-local`, `api/proxypilot-management` | Parse existing ProxyPilot config |
+| `opencode.sls` | `api/proxypilot-local`, `api/proxypilot-management`, `api/groq`, `api/cerebras`, `api/openrouter` | Parse existing ProxyPilot config (AWK fallback) |
 | `openclaw_agent.sls` | `api/proxypilot-local`, `api/anthropic`, `api/openclaw-telegram`, `api/openclaw-telegram-uid` | Parse existing config / empty string |
 
 ## Setup Steps

@@ -37,6 +37,9 @@ api/
   anthropic               # API-ключ Anthropic (прямой, для OpenClaw)
   openclaw-telegram       # Токен Telegram-бота OpenClaw
   openclaw-telegram-uid   # Telegram user ID для allowlist OpenClaw
+  groq                    # API-ключ Groq (бесплатный fallback-провайдер)
+  cerebras                # API-ключ Cerebras (бесплатный fallback-провайдер)
+  openrouter              # API-ключ OpenRouter (бесплатный fallback-провайдер)
 
 lastfm/
   password                # Пароль Last.fm (для mpdas)
@@ -97,7 +100,7 @@ Salt states, использующие макрос `gopass_secret()` (с gracefu
 | State | gopass-ключ | Fallback |
 |---|---|---|
 | `mpd.sls` | `lastfm/username`, `lastfm/password` | Пустая строка |
-| `opencode.sls` | `api/proxypilot-local`, `api/proxypilot-management` | Парсинг существующего конфига ProxyPilot |
+| `opencode.sls` | `api/proxypilot-local`, `api/proxypilot-management`, `api/groq`, `api/cerebras`, `api/openrouter` | Парсинг существующего конфига ProxyPilot (AWK-фолбэк) |
 | `openclaw_agent.sls` | `api/proxypilot-local`, `api/anthropic`, `api/openclaw-telegram`, `api/openclaw-telegram-uid` | Парсинг существующего конфига / пустая строка |
 
 ## Шаги настройки
