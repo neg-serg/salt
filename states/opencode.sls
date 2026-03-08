@@ -1,11 +1,29 @@
 {% from '_imports.jinja' import host, user, home, gopass_secret %}
 {% from '_macros_pkg.jinja' import npm_pkg %}
 {% from '_macros_service.jinja' import ensure_dir, user_service_restart %}
+{% import_yaml 'data/free_providers.yaml' as free_providers_data %}
 {% if host.features.opencode %}
 {% set _proxypilot_cfg = home ~ '/.config/proxypilot/config.yaml' %}
 {% set _proxypilot_api_key = gopass_secret('api/proxypilot-local', "awk '/^api-keys:/{getline; sub(/^[[:space:]]*-[[:space:]]*\"?/, \"\"); sub(/\"?[[:space:]]*$/, \"\"); print; exit}' " ~ _proxypilot_cfg ~ " 2>/dev/null || true") %}
 {% set _proxypilot_mgmt_key = gopass_secret('api/proxypilot-management', "awk '/^[[:space:]]*secret-key:[[:space:]]*/{sub(/^[[:space:]]*secret-key:[[:space:]]*\"?/, \"\"); sub(/\"?[[:space:]]*$/, \"\"); print; exit}' " ~ _proxypilot_cfg ~ " 2>/dev/null || true") %}
 {% set _codex_api_key = _proxypilot_api_key %}
+
+{# Resolve free fallback provider API keys from gopass (emergency-only providers).
+   gopass fails in Salt daemon context (no GPG agent); AWK parses the existing
+   rendered config as fallback.  First deploy: run scripts/bootstrap-free-providers.sh
+   to seed the config, then subsequent `just` runs maintain keys via AWK. #}
+{% set _free_providers = [] %}
+{% for p in free_providers_data.get('providers', []) %}
+  {% if p.gopass_key is defined %}
+    {% set _awk_fallback = "awk '/name: \"" ~ p.name ~ "\"/{f=1} f && /api-key:/{gsub(/.*api-key:[[:space:]]*\"?/,\"\"); gsub(/\"[[:space:]]*$/,\"\"); print; exit}' " ~ _proxypilot_cfg ~ " 2>/dev/null || true" %}
+    {% set _key = gopass_secret(p.gopass_key, _awk_fallback) %}
+  {% else %}
+    {% set _key = p.get('dummy_key', '') %}
+  {% endif %}
+  {% if _key %}
+    {% do _free_providers.append({'name': p.name, 'base_url': p.base_url, 'api_key': _key, 'models': p.models}) %}
+  {% endif %}
+{% endfor %}
 
 {{ ensure_dir('proxypilot_config_dir', home ~ '/.config/proxypilot') }}
 proxypilot_config:
@@ -21,6 +39,7 @@ proxypilot_config:
         home: {{ home }}
         api_key: {{ _proxypilot_api_key | tojson }}
         mgmt_key: {{ _proxypilot_mgmt_key | tojson }}
+        free_providers: {{ _free_providers | tojson }}
     - require:
       - file: proxypilot_config_dir
 {{ ensure_dir('codex_config_dir', home ~ '/.codex') }}

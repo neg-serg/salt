@@ -97,6 +97,24 @@ oauth-model-alias:
       alias: "claude-haiku-4-5-20251001"
       fork: true
 
+# ── Free fallback providers (emergency-only) ──────────────────────────
+# Activated via dedicated fallback-* aliases when paid providers are down.
+# Providers resolved from states/data/free_providers.yaml at Salt apply time.
+{%- if free_providers %}
+openai-compatibility:
+{%- for p in free_providers %}
+  - name: "{{ p.name }}"
+    base-url: "{{ p.base_url }}"
+    api-key-entries:
+      - api-key: "{{ p.api_key }}"
+    models:
+{%- for m in p.models %}
+      - name: "{{ m.name }}"
+        alias: "{{ m.alias }}"
+{%- endfor %}
+{%- endfor %}
+{% endif %}
+
 # ── Payload rules ───────────────────────────────────────────────────
 # Default thinking budget for Gemini models (when not set by client)
 
