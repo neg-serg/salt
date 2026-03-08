@@ -34,11 +34,11 @@
 
 ### Implementation for User Story 1+3
 
-- [ ] T005 [US1+US3] MANUAL (optional): Store API key for DeepSeek in gopass: `gopass insert api/deepseek`. Sign up at https://platform.deepseek.com (email/Google login). Skip if not using DeepSeek
-- [ ] T006 [US1+US3] Run `scripts/bootstrap-free-providers.sh` to seed ProxyPilot config with new provider key. Verify DeepSeek shows "OK" in output
-- [ ] T007 [US1+US3] Run `just` to deploy updated config, then `systemctl --user restart proxypilot`. Verify ProxyPilot startup log shows increased OpenAI-compat count (5 with DeepSeek)
-- [ ] T008 [US1+US3] Verify DeepSeek responds: `curl` request to `http://127.0.0.1:8317/v1/chat/completions` with model `fallback-code` — should show `deepseek-chat` in round-robin alongside OpenRouter models
-- [ ] T009 [US1+US3] Verify existing providers unaffected: confirm Groq, Cerebras, OpenRouter, Ollama, and paid routes (claude-sonnet-4-6) still work correctly
+- [x] T005 [US1+US3] MANUAL (optional): Store API key for DeepSeek in gopass: `gopass insert api/deepseek`. Sign up at https://platform.deepseek.com (email/Google login). Skip if not using DeepSeek
+- [x] T006 [US1+US3] Run `scripts/bootstrap-free-providers.sh` to seed ProxyPilot config with new provider key. Verify DeepSeek shows "OK" in output
+- [x] T007 [US1+US3] Run `just` to deploy updated config, then `systemctl --user restart proxypilot`. Verify ProxyPilot startup log shows increased OpenAI-compat count (5 with DeepSeek)
+- [x] T008 [US1+US3] Verify DeepSeek responds: `curl` request to `http://127.0.0.1:8317/v1/chat/completions` with model `fallback-code` — should show `deepseek-chat` in round-robin alongside OpenRouter models
+- [x] T009 [US1+US3] Verify existing providers unaffected: confirm Groq, Cerebras, OpenRouter, Ollama, and paid routes (claude-sonnet-4-6) still work correctly
 
 **Checkpoint**: DeepSeek responds if key provisioned. All existing routes unchanged.
 
