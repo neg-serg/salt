@@ -137,13 +137,14 @@ Based on research (March 2026), the following providers are recommended for init
 | Priority | Provider | Key Models | Daily Limits | No Credit Card |
 |----------|----------|-----------|--------------|----------------|
 | 1 | Groq | Llama 3.3 70B, Qwen3 32B, Llama 4 Scout | 1K RPD, 100K-500K TPD | Yes |
-| 2 | Mistral | Mistral Small 3.1, Codestral | 1B tokens/month | Yes |
-| 3 | Cerebras | Qwen3 235B, Llama 3.1 8B | 1M tokens/day | Yes |
-| 4 | OpenRouter | Qwen3 Coder 480B, free model auto-route | 200 RPD per model | Yes |
-| 5 | SambaNova | Llama 3.1 405B, Llama 3.3 70B | 10-20 RPM | Yes |
+| 2 | Cerebras | Qwen3 235B, Llama 3.1 8B | 1M tokens/day | Yes |
+| 3 | OpenRouter | Qwen3 Coder 480B, free model auto-route | 200 RPD per model | Yes |
+| 4 | SambaNova | Llama 3.1 405B, Llama 3.3 70B | 10-20 RPM | Yes |
 
-All five cloud providers offer OpenAI-compatible endpoints and require no credit card for signup.
+All four cloud providers offer OpenAI-compatible endpoints and require no credit card for signup.
 
-| 6 | Ollama (local) | Models already pulled locally | No limits (GPU-bound) | N/A (local) |
+Excluded: Mistral (blocks signups from Russia).
+
+| 5 | Ollama (local) | Models already pulled locally | No limits (GPU-bound) | N/A (local) |
 
 Ollama serves as the absolute last-resort tier — always available, zero network dependency, but limited by local GPU capacity and model size.
