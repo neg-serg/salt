@@ -10,5 +10,11 @@
       "layer_shell": {
          "enabled": false
       }
+   },
+   "favorites": [],
+   "providers": {
+      "clipboard": {
+         "enabled": false
+      }
    }
 }
