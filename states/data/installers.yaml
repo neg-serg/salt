@@ -82,6 +82,10 @@ curl_extract_zip:
     hash: "29ce535b56e207a406ffa1c2d4842dcc410be003eff8ec508bb732abc9f8e385"
 
 curl_extract_tar:
+  sidecar:
+    url: "https://github.com/marcus/sidecar/releases/download/v${VER}/sidecar_${VER}_linux_amd64.tar.gz"
+    binary_pattern: sidecar
+    hash: "3d75d19476ab7ac5b15a0ac3bf55d4493eff0d6108340a06268b70a7e9aa26b4"
   essentia:
     url: "https://data.metabrainz.org/pub/musicbrainz/acousticbrainz/extractors/essentia-extractor-v${VER}-linux-x86_64.tar.gz"
     binary_pattern: streaming_extractor_music

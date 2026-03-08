@@ -33,6 +33,7 @@ proxypilot: "0.3.0-dev-0.40"
 
 # --- AI agents ---
 openclaw: "2026.3.2"
+sidecar: "0.77.0"
 
 # --- Desktop apps ---
 droidcam: "2.1.3"
