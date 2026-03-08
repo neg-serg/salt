@@ -139,11 +139,10 @@ Based on research (March 2026), the following providers are recommended for init
 | 1 | Groq | Llama 3.3 70B, Qwen3 32B, Llama 4 Scout | 1K RPD, 100K-500K TPD | Yes |
 | 2 | Cerebras | Qwen3 235B, Llama 3.1 8B | 1M tokens/day | Yes |
 | 3 | OpenRouter | Qwen3 Coder 480B, free model auto-route | 200 RPD per model | Yes |
-| 4 | SambaNova | Llama 3.1 405B, Llama 3.3 70B | 10-20 RPM | Yes |
 
-All four cloud providers offer OpenAI-compatible endpoints and require no credit card for signup.
+All three cloud providers offer OpenAI-compatible endpoints and require no credit card for signup.
 
-Excluded: Mistral (blocks signups from Russia).
+Excluded: Mistral (blocks signups from Russia), SambaNova (no access from Russia).
 
 | 5 | Ollama (local) | Models already pulled locally | No limits (GPU-bound) | N/A (local) |
 

@@ -6,16 +6,17 @@
 #   1. Groq       — fastest inference (custom LPU), strong models, generous limits
 #   2. Cerebras   — 1M tokens/day, very fast inference, Qwen3 235B
 #   3. OpenRouter  — model aggregator, 27+ free models, auto-routing
-#   4. SambaNova  — good models but lower RPM limits (10-20)
-#   5. Ollama     — local last-resort, always available, zero network dependency
+#   4. Ollama     — local last-resort, always available, zero network dependency
 #
-# Excluded: Mistral — blocks signups from Russia
+# Excluded:
+#   Mistral   — blocks signups from Russia
+#   SambaNova — no access from Russia
 #
 # Alias pooling: shared aliases across providers enable round-robin failover.
-#   fallback-large  — general-purpose large models (5 providers)
+#   fallback-large  — general-purpose large models (4 providers)
 #   fallback-code   — code-specialized models (2 providers)
 #   fallback-medium — mid-tier models (2 providers)
-#   fallback-small  — fast small models (2 providers)
+#   fallback-small  — fast small models (1 provider)
 #
 # Adding a provider: add entry here + gopass insert api/<name> + just
 # Removing a provider: remove entry here + just
@@ -51,20 +52,10 @@ providers:
       - name: "openrouter/auto"
         alias: "fallback-large"
 
-  - name: "sambanova"
-    base_url: "https://api.sambanova.ai/v1"
-    gopass_key: "api/sambanova"
-    priority: 4
-    models:
-      - name: "Meta-Llama-3.3-70B-Instruct"
-        alias: "fallback-large"
-      - name: "Meta-Llama-3.1-8B-Instruct"
-        alias: "fallback-small"
-
   - name: "ollama"
     base_url: "http://localhost:11434/v1"
     dummy_key: "ollama"
-    priority: 5
+    priority: 4
     models:
       - name: "qwen3.5:27b"
         alias: "fallback-large"
