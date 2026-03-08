@@ -1,8 +1,8 @@
 <!--
   Sync Impact Report
-  Version change: 1.0.0 → 1.0.1
-  Modified principles: N/A (initial creation)
-  Added sections: Core Principles (7), Platform Constraints, Development Workflow, Governance
+  Version change: 1.0.1 → 1.1.0
+  Modified principles: None
+  Added sections: VIII. CI Gate
   Removed sections: None
   Templates requiring updates:
     - .specify/templates/plan-template.md ✅ (Constitution Check aligns with principles)
@@ -84,6 +84,14 @@ Before presenting results, `just` (default target: `system_description`) MUST be
 
 Salt states are interconnected through `require` chains and `include` lists. A change that renders one state can break another through implicit dependencies. The verification gate catches regressions before they reach the live system.
 
+### VIII. CI Gate
+
+CI MUST pass before work is considered accepted. Pull requests and branches with failing CI are not mergeable and the work is treated as incomplete.
+
+Exceptional circumstances (CI infrastructure outage, flaky test unrelated to the change, upstream dependency breakage) MAY justify merging with failing CI, but MUST be explicitly acknowledged and documented in the commit or PR description with a rationale for the override.
+
+The verification gate (Principle VII) catches local regressions; the CI gate catches integration regressions across the full state tree and ensures reproducibility beyond the developer's machine.
+
 ## Platform Constraints
 
 - **OS**: CachyOS (Arch-based). Salt manages both package installation (via pacman/paru macros) and configuration
@@ -111,4 +119,4 @@ This constitution supersedes ad-hoc practices. All state changes, script additio
 
 Versioning follows semantic versioning: MAJOR for principle removals/redefinitions, MINOR for new principles or material expansions, PATCH for clarifications and wording fixes.
 
-**Version**: 1.0.1 | **Ratified**: 2026-03-08 | **Last Amended**: 2026-03-08
+**Version**: 1.1.0 | **Ratified**: 2026-03-08 | **Last Amended**: 2026-03-08
