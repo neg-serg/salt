@@ -1,5 +1,5 @@
 #!/usr/bin/env zsh
-set -euo pipefail
+setopt ERR_EXIT NO_UNSET PIPE_FAIL
 
 # Isolated Claude Code instance routed through ProxyPilot.
 # Uses a separate config dir so it can never touch ~/.claude/.
