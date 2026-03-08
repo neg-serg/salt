@@ -10,7 +10,18 @@
 # ─────────────────────────────────────────────────────────────────────
 
 models:
-  - gemma3:12b
-  - qwen2.5-coder:7b
-  - qwen3:14b
-  - qwen3.5:27b
+  # ── General-purpose ──────────────────────────────────────────────
+  - gemma3:12b             # Google; vision+text, лучший <15B general (вытесняет codegemma)
+  - qwen3:14b              # Alibaba; thinking mode, strong reasoning
+  - qwen3.5:27b            # Alibaba; newest general, лучший <30B general-purpose
+  # ── Code-specialized ─────────────────────────────────────────────
+  - qwen2.5-coder:7b       # Alibaba; lightweight FIM/completion, быстрый inference ~4GB
+  - qwen3-coder:30b        # Alibaba; MoE 3.3B active, 256K ctx, agentic coding ~19GB
+  - deepcoder:14b           # Agentica; O3-mini уровень, fully open-source, 128K ctx ~9GB
+  - deepseek-coder-v2:16b  # DeepSeek; MoE, 160K ctx, GPT-4 class (вытесняет deepseek-coder v1) ~9GB
+  - codestral:22b           # Mistral; 32K ctx, мультиязычный code gen, иная база обучения ~13GB
+  - starcoder2:15b          # BigCode; 600+ языков, The Stack v2, лучший для редких языков ~9GB
+  # ── Не включены (строго вытеснены) ───────────────────────────────
+  # deepseek-coder:6.7b    → вытеснен deepseek-coder-v2:16b (та же семья, новее, лучше)
+  # codellama:7b           → вытеснен qwen2.5-coder:7b (проигрывает на всех бенчмарках)
+  # codegemma:7b           → вытеснен gemma3:12b (та же семья Google, старше)
