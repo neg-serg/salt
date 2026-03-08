@@ -28,13 +28,7 @@
             pane: Split(
                 direction: Horizontal,
                 panes: [
-                    (size: "80%", pane: Split(
-                        direction: Vertical,
-                        panes: [
-                            (size: "1", pane: Pane(QueueHeader())),
-                            (size: "100%", pane: Pane(Queue)),
-                        ],
-                    )),
+                    (size: "80%", pane: Pane(Queue)),
                     (size: "20%", pane: Split(
                         direction: Vertical,
                         panes: [
