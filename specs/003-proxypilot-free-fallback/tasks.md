@@ -43,8 +43,8 @@
 
 ### Implementation for User Story 1+2
 
-- [ ] T005 [US1+US2] MANUAL: Store API keys in gopass for all 5 cloud providers: `gopass insert api/groq`, `gopass insert api/mistral`, `gopass insert api/cerebras`, `gopass insert api/openrouter`, `gopass insert api/sambanova`. Document signup URLs in commit message per quickstart.md
-- [ ] T006 [US1+US2] Run `just` to deploy the updated ProxyPilot config with all free providers injected. Verify `~/.config/proxypilot/config.yaml` contains the `openai-compatibility` section with all 6 providers and no plaintext gopass paths (FR-002)
+- [ ] T005 [US1+US2] MANUAL: Store API keys in gopass for all 3 cloud providers: `gopass insert api/groq`, `gopass insert api/cerebras`, `gopass insert api/openrouter`. Then run `scripts/bootstrap-free-providers.sh` to seed ProxyPilot config. Document signup URLs in commit message per quickstart.md
+- [ ] T006 [US1+US2] Run `just` to deploy the updated ProxyPilot config with all free providers injected. Verify `~/.config/proxypilot/config.yaml` contains the `openai-compatibility` section with all 4 providers (3 cloud + Ollama) and no plaintext gopass paths (FR-002)
 - [ ] T007 [US1+US2] Verify ProxyPilot loads the new config: restart service (`systemctl --user restart proxypilot`), check `proxypilot -list-models` output includes fallback aliases (fallback-large, fallback-code, fallback-medium, fallback-small) alongside existing OAuth models
 - [ ] T008 [P] [US1+US2] Verify each cloud provider independently responds via ProxyPilot: `curl` requests to `http://127.0.0.1:8317/v1/chat/completions` with model names `fallback-large`, `fallback-code`, `fallback-medium`, `fallback-small` — each should return a valid chat completion response within 30 seconds (SC-001)
 - [ ] T009 [P] [US1+US2] Verify Ollama last-resort tier responds: `curl` request to ProxyPilot with an Ollama-specific model alias and confirm response comes from local Ollama (check response headers or model field in response)
@@ -79,7 +79,7 @@
 
 ### Implementation for User Story 4
 
-- [ ] T015 [US4] Verify quality tier ordering in `states/data/free_providers.yaml`: confirm `fallback-large` alias includes providers ordered by quality (Groq 70B → Mistral → Cerebras 235B → OpenRouter → SambaNova → Ollama 27B). Adjust data file ordering if ProxyPilot respects declaration order for round-robin
+- [ ] T015 [US4] Verify quality tier ordering in `states/data/free_providers.yaml`: confirm `fallback-large` alias includes providers ordered by quality (Groq 70B → Cerebras 235B → OpenRouter auto → Ollama 27B). Adjust data file ordering if ProxyPilot respects declaration order for round-robin
 - [ ] T016 [US4] Document the tiering strategy in a comment header in `states/data/free_providers.yaml` explaining the priority ordering rationale (Groq first for speed, Ollama last for guaranteed availability)
 
 **Checkpoint**: Free providers are ordered by quality tier. Documentation explains the ordering.
@@ -104,7 +104,7 @@
 - [ ] T019 [P] Create `docs/proxypilot-free-fallback.md` documenting: provider signup URLs, gopass secret paths, fallback chain explanation, alias pooling strategy, how to add/remove providers (SC-003), troubleshooting guide
 - [ ] T020 [P] Create `docs/proxypilot-free-fallback.ru.md` Russian translation of the documentation (convention: English primary, Russian `.ru.md` translation)
 - [ ] T021 Run final `just` to confirm full Salt render passes with all changes (Verification Gate, Constitution VII). Capture clean apply log
-- [ ] T022 Update `docs/secrets-scheme.md` and `docs/secrets-scheme.ru.md` to include the 5 new gopass paths (`api/groq`, `api/mistral`, `api/cerebras`, `api/openrouter`, `api/sambanova`)
+- [ ] T022 Update `docs/secrets-scheme.md` and `docs/secrets-scheme.ru.md` to include the 3 new gopass paths (`api/groq`, `api/cerebras`, `api/openrouter`)
 
 ---
 
