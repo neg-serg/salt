@@ -15,7 +15,7 @@
 {%- set download_cache = '/var/cache/salt/downloads' -%}
 {%- set healthcheck_timeout = 30 -%}
 {%- set sudo_timeout_minutes = 30 -%}
-{%- set ollama_pull_timeout = 660 -%}
+{%- set ollama_pull_timeout = 14400 -%}
 
 {#- Shell one-liner: create version-encoded marker (used inside cmd.run name: blocks).
     target: absolute path to installed artifact — creates a symlink so creates: detects deletion.
