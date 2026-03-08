@@ -80,6 +80,7 @@ include:
   - tidal
   - ollama
   - llama_embed
+  - code_rag
   - opencode
   - openclaw_agent
   - steam
