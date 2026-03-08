@@ -257,6 +257,8 @@ Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full de
 ## Active Technologies
 - Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx) (001-code-rag-integration)
 - LanceDB (embedded Arrow-based vector DB, local `.lancedb/` directory) (001-code-rag-integration)
+- Jinja2/YAML (Salt states), Bash (bootstrap script) + Salt, ProxyPilot v0.3.0-dev-0.40, gopass (GPG + Yubikey) (004-expand-free-providers)
+- N/A (config files only) (004-expand-free-providers)
 
 ## Recent Changes
 - 001-code-rag-integration: Added Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx)
