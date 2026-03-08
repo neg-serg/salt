@@ -10,15 +10,7 @@
 # ─────────────────────────────────────────────────────────────────────
 
 models:
-  # Tier 1 — fully in VRAM (~50-80 tok/s)
+  - gemma3:12b
+  - qwen2.5-coder:7b
   - qwen3:14b
   - qwen3.5:27b
-  - phi4:14b
-  # Tier 2 — fits in VRAM (~30-50 tok/s)
-  - qwen3:30b-a3b            # MoE: 30B params, 3B active
-  - gemma3:12b
-  - mistral-small:24b
-  # Tier 3 — partial offload (~15-25 tok/s)
-  - qwen3.5:35b
-  - qwen2.5-coder:32b
-  - deepseek-r1:32b
