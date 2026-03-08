@@ -68,8 +68,47 @@ section="openai-compatibility:"
 any_resolved=false
 
 # Read providers in priority order from the data file
+# Note: model-level `- name:` must be checked BEFORE provider-level `- name:`
+# because both match the same regex; the $in_models guard differentiates them.
+current_name=""
+current_base_url=""
+current_key=""
+current_models=()
+in_models=false
+model_name=""
+
+flush_provider() {
+    if [[ -n "$current_name" ]] && [[ -n "$current_key" ]]; then
+        section+=$'\n'"  - name: \"$current_name\""
+        section+=$'\n'"    base-url: \"$current_base_url\""
+        section+=$'\n'"    api-key-entries:"
+        section+=$'\n'"      - api-key: \"$current_key\""
+        section+=$'\n'"    models:"
+        for m in "${current_models[@]}"; do
+            IFS='|' read -r mname malias <<< "$m"
+            section+=$'\n'"      - name: \"$mname\""
+            section+=$'\n'"        alias: \"$malias\""
+        done
+        echo "  OK: $current_name"
+        any_resolved=true
+    elif [[ -n "$current_name" ]]; then
+        echo "  SKIP: $current_name (no key resolved)"
+    fi
+}
+
 while IFS= read -r line; do
-    if [[ "$line" =~ ^[[:space:]]*-[[:space:]]*name:[[:space:]]*\"(.+)\" ]]; then
+    # Model entries (6+ leading spaces distinguishes from provider-level `- name:`)
+    if $in_models && [[ "$line" == "      "* ]] && [[ "$line" =~ -[[:space:]]*name:[[:space:]]*\"(.+)\" ]]; then
+        model_name="${BASH_REMATCH[1]}"
+    elif $in_models && [[ "$line" == "      "* ]] && [[ "$line" =~ alias:[[:space:]]*\"(.+)\" ]]; then
+        model_alias="${BASH_REMATCH[1]}"
+        current_models+=("$model_name|$model_alias")
+    # Models section marker
+    elif [[ "$line" =~ ^[[:space:]]*models: ]]; then
+        in_models=true
+    # New provider entry — flush previous, start new
+    elif [[ "$line" =~ ^[[:space:]]*-[[:space:]]*name:[[:space:]]*\"(.+)\" ]]; then
+        flush_provider
         current_name="${BASH_REMATCH[1]}"
         current_base_url=""
         current_key=""
@@ -85,51 +124,11 @@ while IFS= read -r line; do
         fi
     elif [[ "$line" =~ ^[[:space:]]*dummy_key:[[:space:]]*\"(.+)\" ]]; then
         current_key="${BASH_REMATCH[1]}"
-    elif [[ "$line" =~ ^[[:space:]]*models: ]]; then
-        in_models=true
-    elif $in_models && [[ "$line" =~ ^[[:space:]]*-[[:space:]]*name:[[:space:]]*\"(.+)\" ]]; then
-        model_name="${BASH_REMATCH[1]}"
-    elif $in_models && [[ "$line" =~ ^[[:space:]]*alias:[[:space:]]*\"(.+)\" ]]; then
-        model_alias="${BASH_REMATCH[1]}"
-        current_models+=("$model_name|$model_alias")
-    elif [[ "$line" =~ ^[[:space:]]*-[[:space:]]*name: ]] && [[ -n "$current_name" ]] && [[ -n "$current_key" ]]; then
-        # New provider entry — flush previous
-        section+=$'\n'"  - name: \"$current_name\""
-        section+=$'\n'"    base-url: \"$current_base_url\""
-        section+=$'\n'"    api-key-entries:"
-        section+=$'\n'"      - api-key: \"$current_key\""
-        section+=$'\n'"    models:"
-        for m in "${current_models[@]}"; do
-            IFS='|' read -r mname malias <<< "$m"
-            section+=$'\n'"      - name: \"$mname\""
-            section+=$'\n'"        alias: \"$malias\""
-        done
-        echo "  OK: $current_name"
-        any_resolved=true
-        # Reset for new provider
-        current_name="${BASH_REMATCH[1]##*\"}"
-        current_base_url=""
-        current_key=""
-        current_models=()
-        in_models=false
     fi
 done < "$DATA_FILE"
 
 # Flush last provider
-if [[ -n "$current_name" ]] && [[ -n "$current_key" ]]; then
-    section+=$'\n'"  - name: \"$current_name\""
-    section+=$'\n'"    base-url: \"$current_base_url\""
-    section+=$'\n'"    api-key-entries:"
-    section+=$'\n'"      - api-key: \"$current_key\""
-    section+=$'\n'"    models:"
-    for m in "${current_models[@]}"; do
-        IFS='|' read -r mname malias <<< "$m"
-        section+=$'\n'"      - name: \"$mname\""
-        section+=$'\n'"        alias: \"$malias\""
-    done
-    echo "  OK: $current_name"
-    any_resolved=true
-fi
+flush_provider
 
 if ! $any_resolved; then
     echo "ERROR: No provider keys resolved. Check gopass."
