@@ -14,19 +14,7 @@
 {% for model in ollama.models %}
 pull_{{ model | replace('.', '_') | replace(':', '_') | replace('-', '_') }}:
   cmd.run:
-    - name: |
-        response=$(curl -sS --max-time {{ ollama_pull_timeout - 60 }} \
-          -X POST http://{{ ollama_base }}/api/pull \
-          -d '{"name": "{{ model }}", "stream": false}')
-        status=$(echo "$response" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('status',''))" 2>/dev/null)
-        if [ "$status" = "success" ]; then
-          echo "{{ model }}: pulled successfully"
-        else
-          echo "{{ model }}: pull failed" >&2
-          echo "$response" >&2
-          exit 1
-        fi
-    - shell: /bin/bash
+    - name: ollama pull {{ model }}
     - unless: >-
         curl -sf http://{{ ollama_base }}/api/tags |
         rg -q '"{{ model }}"'
