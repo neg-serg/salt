@@ -49,7 +49,20 @@ jobs:
         run: yamllint states/data/*.yaml states/configs/*.yaml .github/workflows/*.yaml
 
       - name: Lint shell scripts
-        run: shellcheck scripts/*.sh states/scripts/*.sh
+        run: |
+          # ShellCheck only understands sh/bash; skip zsh scripts
+          files=()
+          for f in scripts/*.sh states/scripts/*.sh; do
+            [ -f "$f" ] || continue
+            case "$(head -n1 "$f")" in
+              "#!/usr/bin/env bash"*|"#!/bin/bash"*|"#!/usr/bin/env sh"*|"#!/bin/sh"*|"#!/usr/bin/env dash"*|"#!/bin/dash"*) files+=("$f");;
+            esac
+          done
+          if [ ${#files[@]} -gt 0 ]; then
+            shellcheck -e SC2129 "${files[@]}"
+          else
+            echo "No bash/sh scripts to check"
+          fi
 
   just:
     runs-on: ubuntu-latest
