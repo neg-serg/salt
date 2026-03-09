@@ -126,7 +126,7 @@ validate:
         name="${sls#states/}"
         name="${name%.sls}"
         if ! .venv/bin/salt-call --local --config-dir=.salt_runtime \
-                state.show_sls "$name" --out=quiet 2>/dev/null; then
+                state.show_sls "$name" --out=quiet; then
             echo "FAILED: $name"
             failed=$((failed + 1))
         fi
