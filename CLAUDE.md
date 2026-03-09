@@ -215,6 +215,7 @@ limine_flat_boot_entries:
 - **Documentation i18n**: English is the primary language. Each doc in `docs/` and `README.md` must have a `.ru.md` Russian translation (e.g. `gopass-setup.md` → `gopass-setup.ru.md`). Excluded from translation: `CLAUDE.md`, `dotfiles/`, `build/`. English docs must not contain Cyrillic text. Enforced by `scripts/lint-docs.py`.
 - **Shell scripts shebang**: All shell scripts in `dotfiles/dot_local/bin/` must use `#!/usr/bin/env zsh`. This ensures `.zshenv` is sourced and XDG user directories (`XDG_MUSIC_DIR`, `XDG_PICTURES_DIR`, etc.) are always available, regardless of how the script is invoked (Hyprland keybind, rofi, systemd). Use `${=var}` for explicit word splitting where needed (zsh does not split `$var` by default unlike sh/bash). Python and nushell scripts keep their own shebangs.
 - **XDG user directories**: Canonical source is `environment.d/10-user.conf`. Custom short paths: `~/music`, `~/pic`, `~/vid`, `~/doc`, `~/dw`. Never use canonical XDG defaults (`~/Music`, `~/Pictures`, `~/Documents`, etc.) in code or fallback values.
+- **File ownership (chezmoi vs Salt)**: Each config file must have exactly one owner. Salt owns files requiring: (a) gopass secrets with fallback, (b) `watch`/`onchanges` service triggers, (c) non-XDG deploy paths (e.g. `~/.floorp/<profile>/`), (d) grain/pillar-conditional deployment. Chezmoi owns purely declarative user dotfiles. Files in `dotfiles/` that Salt sources via `salt://dotfiles/` MUST be listed in `dotfiles/.chezmoiignore`. Files where Salt has a separate template source (e.g. `salt://configs/`) MUST NOT exist in `dotfiles/`. Enforced by `scripts/lint-ownership.py`.
 - **URL/file opening**: Always use `handlr open`, never `xdg-open`. Stock `xdg-open` (xdg-utils) does not recognize Hyprland as a DE — it falls to the `generic` code path where Floorp silently ignores remote IPC and nothing opens. A shim at `~/.local/bin/xdg-open` redirects to `handlr open` for third-party tools, but our own code (dotfiles, scripts) should call `handlr open` directly.
 
 ## Platform
@@ -231,7 +232,7 @@ Local proxy for AI coding tools (Claude Code, OpenCode). Routes requests to prov
 | Component | Path / Detail |
 |---|---|
 | Binary | `~/.local/bin/proxypilot` (downloaded via `curl_bin` macro) |
-| Config (chezmoi) | `dotfiles/dot_config/proxypilot/config.yaml.tmpl` |
+| Config (Salt) | `states/configs/proxypilot.yaml.j2` (Jinja2 template with gopass fallback) |
 | Service | `states/units/user/proxypilot.service` (systemd user, always enabled) |
 | Listen | `127.0.0.1:8317` |
 | Auth tokens | `~/.cli-proxy-api/` (OAuth tokens for Gemini, Antigravity) |
@@ -261,6 +262,10 @@ Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full de
 - N/A (config files only) (004-expand-free-providers)
 - Jinja2/YAML (Salt states), JSON (OpenClaw config), INI (systemd unit) + Salt, OpenClaw 2026.3.2 (npm), ProxyPilot 0.3.0-dev-0.40, gopass (005-activate-openclaw-bot)
 - JSON config file (`~/.openclaw/openclaw.json`) (005-activate-openclaw-bot)
+- Python 3.12+ (lint script), Jinja2/YAML (Salt states) + Salt, chezmoi, ripgrep (for lint pattern matching) (007-chezmoi-salt-boundary)
+- Configuration files on disk (007-chezmoi-salt-boundary)
+- Jinja2/YAML (Salt states), Markdown (OpenClaw SKILL.md), TOML (Rathole config), Zsh (scripts) + Salt, OpenClaw 2026.3.2, Rathole, notmuch, msmtp, hyprctl, systemd (006-openclaw-secure-access)
+- Files (Salt states, skill files, systemd units, config files) (006-openclaw-secure-access)
 
 ## Recent Changes
 - 001-code-rag-integration: Added Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx)
