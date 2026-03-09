@@ -274,6 +274,8 @@ Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full de
 - `states/data/packages.yaml` (categorized YAML consumed via `import_yaml`) (008-salt-pkg-management)
 - Jinja2/YAML (Salt states), Python 3.12+ (lint script) + Salt (masterless), Jinja2, PyYAML, ripgrep (for guards) (009-salt-code-quality)
 - N/A (configuration files on disk) (009-salt-code-quality)
+- Jinja2/YAML (Salt states), INI (GameMode/MangoHud configs), Bash (GameMode scripts) + Salt (masterless), chezmoi, GameMode, MangoHud, DXVK, Mesa/RADV (010-gaming-performance)
+- Config files on disk (010-gaming-performance)
 
 ## Recent Changes
 - 001-code-rag-integration: Added Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx)
