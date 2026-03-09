@@ -51,6 +51,12 @@
             "maxTokens": 16384
           }
         ]
+      },
+      "groq": {
+        "baseUrl": "https://api.groq.com/openai/v1",
+        "apiKey": {{ groq_key | tojson }},
+        "api": "openai-completions",
+        "models": []
       }
     }
   },
@@ -64,6 +70,21 @@
     "reload": {
       "mode": "hybrid",
       "debounceMs": 300
+    }
+  },
+
+  "tools": {
+    "media": {
+      "audio": {
+        "enabled": true,
+        "models": [
+          {
+            "provider": "groq",
+            "model": "whisper-large-v3-turbo",
+            "capabilities": ["audio"]
+          }
+        ]
+      }
     }
   }
 {%- if telegram_token %},

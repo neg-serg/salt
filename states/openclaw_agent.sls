@@ -12,6 +12,7 @@
 {% set _telegram_uid = gopass_secret('api/openclaw-telegram-uid', "python3 -c \"import json; print(json.load(open('" ~ _openclaw_cfg ~ "')).get('channels',{}).get('telegram',{}).get('allowFrom',[''])[0])\" 2>/dev/null || true") %}
 {% set _telegram_uid_levra = '6931112349' %}
 {% set _telegram_uid_guest2 = '7379049772' %}
+{% set _groq_key = gopass_secret('api/groq', "true") %}
 
 # ── Install OpenClaw via npm (version-pinned) ────────────────────────
 {{ npm_pkg('openclaw', pkg='openclaw@' ~ ver.openclaw, version=ver.openclaw) }}
@@ -68,6 +69,30 @@ openclaw_guest2_migrate:
       - file: openclaw_config_dir
       - cmd: openclaw_guest_user_migrate
 
+# ── Migrate to add Groq Whisper STT ──────────────────────────────────
+# One-shot: delete config if it lacks the groq provider block,
+# so file.managed (replace: False) will reseed with STT config.
+openclaw_groq_stt_migrate:
+  cmd.run:
+    - name: rm -f {{ home }}/.openclaw/openclaw.json
+    - onlyif: test -f {{ home }}/.openclaw/openclaw.json
+    - unless: grep -q '"groq"' {{ home }}/.openclaw/openclaw.json
+    - require:
+      - file: openclaw_config_dir
+      - cmd: openclaw_guest2_migrate
+
+# ── Migrate to add models array to groq provider ──────────────────
+# One-shot: delete config if groq provider lacks "models" key,
+# so file.managed (replace: False) will reseed with fixed schema.
+openclaw_groq_models_migrate:
+  cmd.run:
+    - name: rm -f {{ home }}/.openclaw/openclaw.json
+    - onlyif: test -f {{ home }}/.openclaw/openclaw.json
+    - unless: python3 -c "import json,sys; c=json.load(open('{{ home }}/.openclaw/openclaw.json')); sys.exit(0 if 'models' in c.get('models',{}).get('providers',{}).get('groq',{}) else 1)"
+    - require:
+      - file: openclaw_config_dir
+      - cmd: openclaw_groq_stt_migrate
+
 # ── Deploy config (secrets injected at apply time) ───────────────────
 # replace: False — OpenClaw rewrites its config at startup (adds defaults,
 # metadata, reorders keys). Salt deploys the initial seed only;
@@ -87,12 +112,14 @@ openclaw_config:
         telegram_uid: {{ _telegram_uid | tojson }}
         telegram_uid_levra: {{ _telegram_uid_levra | tojson }}
         telegram_uid_guest2: {{ _telegram_uid_guest2 | tojson }}
+        groq_key: {{ _groq_key | tojson }}
     - require:
       - file: openclaw_config_dir
       - cmd: openclaw_config_migrate
       - cmd: openclaw_dualagent_migrate
       - cmd: openclaw_guest_user_migrate
       - cmd: openclaw_guest2_migrate
+      - cmd: openclaw_groq_stt_migrate
 
 # ── Lingering (user services survive logout) ─────────────────────────
 openclaw_lingering:
