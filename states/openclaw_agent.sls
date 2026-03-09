@@ -10,6 +10,7 @@
 {% set _openclaw_cfg = home ~ '/.openclaw/openclaw.json' %}
 {% set _telegram_token = gopass_secret('api/openclaw-telegram', "python3 -c \"import json; print(json.load(open('" ~ _openclaw_cfg ~ "')).get('channels',{}).get('telegram',{}).get('botToken',''))\" 2>/dev/null || true") %}
 {% set _telegram_uid = gopass_secret('api/openclaw-telegram-uid', "python3 -c \"import json; print(json.load(open('" ~ _openclaw_cfg ~ "')).get('channels',{}).get('telegram',{}).get('allowFrom',[''])[0])\" 2>/dev/null || true") %}
+{% set _telegram_uid_levra = '6931112349' %}
 
 # ── Install OpenClaw via npm (version-pinned) ────────────────────────
 {{ npm_pkg('openclaw', pkg='openclaw@' ~ ver.openclaw, version=ver.openclaw) }}
@@ -42,6 +43,18 @@ openclaw_dualagent_migrate:
       - file: openclaw_config_dir
       - cmd: openclaw_config_migrate
 
+# ── Migrate to add guest user binding ─────────────────────────────────
+# One-shot: delete config if it lacks the LevRa72 binding,
+# so file.managed (replace: False) will reseed with updated allowFrom + bindings.
+openclaw_guest_user_migrate:
+  cmd.run:
+    - name: rm -f {{ home }}/.openclaw/openclaw.json
+    - onlyif: test -f {{ home }}/.openclaw/openclaw.json
+    - unless: grep -q '{{ _telegram_uid_levra }}' {{ home }}/.openclaw/openclaw.json
+    - require:
+      - file: openclaw_config_dir
+      - cmd: openclaw_dualagent_migrate
+
 # ── Deploy config (secrets injected at apply time) ───────────────────
 # replace: False — OpenClaw rewrites its config at startup (adds defaults,
 # metadata, reorders keys). Salt deploys the initial seed only;
@@ -59,10 +72,12 @@ openclaw_config:
         proxy_key: {{ _proxy_key | tojson }}
         telegram_token: {{ _telegram_token | tojson }}
         telegram_uid: {{ _telegram_uid | tojson }}
+        telegram_uid_levra: {{ _telegram_uid_levra | tojson }}
     - require:
       - file: openclaw_config_dir
       - cmd: openclaw_config_migrate
       - cmd: openclaw_dualagent_migrate
+      - cmd: openclaw_guest_user_migrate
 
 # ── Lingering (user services survive logout) ─────────────────────────
 openclaw_lingering:

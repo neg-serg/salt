@@ -77,9 +77,19 @@
       "enabled": true,
       "botToken": {{ telegram_token | tojson }},
       "dmPolicy": "allowlist",
-      "allowFrom": [{{ telegram_uid | tojson }}],
+      "allowFrom": [{{ telegram_uid | tojson }}, {{ telegram_uid_levra | tojson }}],
       "groupPolicy": "disabled"
     }
-  }
+  },
+
+  "bindings": [
+    {
+      "agentId": "guest",
+      "match": {
+        "channel": "telegram",
+        "peer": { "kind": "direct", "id": "tg:{{ telegram_uid_levra }}" }
+      }
+    }
+  ]
 {%- endif %}
 }
