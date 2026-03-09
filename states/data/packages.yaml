@@ -25,6 +25,7 @@ desktop:
   - hyprpolkitagent
   - rofi
   - swaybg
+  - loupe
   - swayimg
   - swayosd
   - wl-clip-persist
