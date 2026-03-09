@@ -77,7 +77,7 @@
       "enabled": true,
       "botToken": {{ telegram_token | tojson }},
       "dmPolicy": "allowlist",
-      "allowFrom": [{{ telegram_uid | tojson }}, {{ telegram_uid_levra | tojson }}],
+      "allowFrom": [{{ telegram_uid | tojson }}, {{ telegram_uid_levra | tojson }}, {{ telegram_uid_guest2 | tojson }}],
       "groupPolicy": "disabled"
     }
   },
@@ -88,6 +88,13 @@
       "match": {
         "channel": "telegram",
         "peer": { "kind": "direct", "id": "tg:{{ telegram_uid_levra }}" }
+      }
+    },
+    {
+      "agentId": "guest",
+      "match": {
+        "channel": "telegram",
+        "peer": { "kind": "direct", "id": "tg:{{ telegram_uid_guest2 }}" }
       }
     }
   ]
