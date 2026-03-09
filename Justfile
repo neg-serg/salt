@@ -20,6 +20,14 @@ apply-user-services:
 apply-installers:
     scripts/salt-apply.sh installers
 
+# Capture current system packages into states/data/packages.yaml
+pkg-snapshot *ARGS:
+    ./scripts/pkg-snapshot.zsh {{ARGS}}
+
+# Compare declared packages against actual system state
+pkg-drift *ARGS:
+    ./scripts/pkg-drift.zsh {{ARGS}}
+
 # List available recipes
 help:
     @just --list
