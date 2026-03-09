@@ -26,7 +26,7 @@ openclaw_npm:
         interval: {{ retry_interval }}
 
 # ── Config + credentials directories ─────────────────────────────────
-{{ ensure_dir('openclaw_config_dir', home ~ '/.openclaw', mode='0700') }}
+{{ ensure_dir('openclaw_config_dir', home ~ '/.openclaw') }}
 {{ ensure_dir('openclaw_credentials_dir', home ~ '/.openclaw/credentials', mode='0700') }}
 
 # ── Migrate old Anthropic-only config to ProxyPilot ───────────────────
