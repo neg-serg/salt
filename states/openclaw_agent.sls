@@ -1,6 +1,6 @@
 {% from '_imports.jinja' import host, user, home, gopass_secret %}
 {% from '_macros_pkg.jinja' import npm_pkg %}
-{% from '_macros_service.jinja' import ensure_dir, user_service_file, user_service_enable, user_service_restart %}
+{% from '_macros_service.jinja' import ensure_dir, user_service_file, user_service_enable, user_service_restart, user_unit_override %}
 {% import_yaml 'data/versions.yaml' as ver %}
 {% if host.features.openclaw %}
 
@@ -103,7 +103,15 @@ openclaw_lingering:
 # ── Systemd user service ─────────────────────────────────────────────
 {{ user_service_file('openclaw_service', 'openclaw-gateway.service') }}
 
-{{ user_service_enable('openclaw_enabled', start_now=['openclaw-gateway.service'], requires=['cmd: install_openclaw', 'file: openclaw_config', 'file: openclaw_service']) }}
+# Drop-in: pass Wayland display env vars so mpv and other GUI tools work
+{% set openclaw_wayland_override %}
+[Service]
+Environment=WAYLAND_DISPLAY=wayland-1
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+{% endset %}
+{{ user_unit_override('openclaw_wayland_env', 'openclaw-gateway.service', contents=openclaw_wayland_override) }}
+
+{{ user_service_enable('openclaw_enabled', start_now=['openclaw-gateway.service'], requires=['cmd: install_openclaw', 'file: openclaw_config', 'file: openclaw_service', 'file: openclaw_wayland_env']) }}
 
 {{ user_service_restart('restart_openclaw_on_config_change', 'openclaw-gateway.service', onlyif='systemctl --user is-active openclaw-gateway.service >/dev/null 2>&1', onchanges=['file: openclaw_config']) }}
 
