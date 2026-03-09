@@ -1,0 +1,35 @@
+# OpenClaw skill definitions (data-driven)
+# Skills deployed via chezmoi to ~/.openclaw/skills/
+# Each skill has a SKILL.md file with YAML frontmatter + markdown instructions
+#
+# Schema:
+#   <name>:
+#     description: brief description
+#     requires_bins: [binary1, binary2]   # gating: skill loads only when bins exist
+#     owner_only: true|false              # if true, only available on owner agent
+
+hyprland_desktop:
+  description: "Hyprland desktop control — workspaces, windows, screenshots, app launching"
+  requires_bins:
+    - hyprctl
+    - grim
+  owner_only: true
+
+file_manager:
+  description: "File browsing, searching, reading, and management within allowed paths"
+  requires_bins:
+    - ls
+    - find
+    - cat
+    - cp
+    - mv
+    - realpath
+  owner_only: false
+
+email_notmuch:
+  description: "Email management via notmuch (search/read) and msmtp (send)"
+  requires_bins:
+    - notmuch
+    - msmtp
+    - mbsync
+  owner_only: true
