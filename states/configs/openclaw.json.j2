@@ -10,7 +10,24 @@
       "sandbox": {
         "mode": "off"
       }
-    }
+    },
+    "list": [
+      {
+        "id": "main",
+        "name": "Main (Owner)",
+        "tools": {
+          "profile": "full"
+        }
+      },
+      {
+        "id": "guest",
+        "name": "Guest",
+        "tools": {
+          "profile": "minimal",
+          "deny": ["exec", "browser", "gateway", "cron"]
+        }
+      }
+    ]
   },
 
   "models": {
