@@ -1,8 +1,6 @@
 {% from '_imports.jinja' import host, user, home %}
-{% from '_macros_service.jinja' import ensure_dir, system_daemon_user, service_with_unit, service_stopped, service_with_healthcheck %}
-{% from '_macros_install.jinja' import curl_extract_tar %}
+{% from '_macros_service.jinja' import ensure_dir, service_with_unit, service_stopped, service_with_healthcheck %}
 {% from '_macros_pkg.jinja' import pacman_install, simple_service %}
-{% import_yaml 'data/versions.yaml' as ver %}
 {% import_yaml 'data/services.yaml' as services %}
 {% set svc = host.features.services %}
 
@@ -46,28 +44,11 @@ samba_config:
         hostname: {{ host.hostname }}
         mnt_zero: {{ host.mnt_zero }}
         user: {{ user }}
+    - require:
+      - cmd: install_samba
 
 # Don't enable at boot — manual start only: systemctl start smb
 {{ service_stopped('samba_not_enabled', 'smb', stop=False, requires=['file: samba_config']) }}
-{% endif %}
-
-# --- Bitcoind: Bitcoin Core node ---
-{% if svc.bitcoind %}
-{% set _btc_ver = ver.get('bitcoind', '') %}
-{% set btc_url = 'https://bitcoincore.org/bin/bitcoin-core-${VER}/bitcoin-${VER}-x86_64-linux-gnu.tar.gz' | replace('${VER}', _btc_ver) %}
-{% set btc_pattern = 'bitcoin-${VER}/bin' | replace('${VER}', _btc_ver) %}
-{{ curl_extract_tar('bitcoind', btc_url, binary_pattern=btc_pattern, binaries=['bitcoind', 'bitcoin-cli'], bin_dest='/usr/local/bin', hash='07f77afd326639145b9ba9562912b2ad2ccec47b8a305bd075b4f4cb127b7ed7', version=_btc_ver if _btc_ver else None, user=None) }}
-
-{{ system_daemon_user('bitcoind', '/var/lib/bitcoind') }}
-
-# Don't enable at boot — manual start: systemctl start bitcoind
-{{ service_with_unit('bitcoind', 'salt://units/bitcoind.service', enabled=False) }}
-
-bitcoind_logrotate:
-  file.managed:
-    - name: /etc/logrotate.d/bitcoind
-    - mode: '0644'
-    - source: salt://configs/bitcoind-logrotate
 {% endif %}
 
 # --- DuckDNS: dynamic DNS updater ---

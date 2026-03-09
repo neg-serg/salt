@@ -17,6 +17,8 @@ mount_{{ name }}:
     - opts: noatime
     - persist: True
     - failhard: True
+    - require:
+      - file: {{ name }}_dir
 {% endfor %}
 
 # btrfs compression: set as filesystem property (complements fstab compress= option).
