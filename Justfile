@@ -49,6 +49,7 @@ lint:
     .venv/bin/ruff format --check .
     .venv/bin/python3 scripts/lint-jinja.py
     .venv/bin/python3 scripts/lint-dotfiles.py
+    .venv/bin/python3 scripts/lint-ownership.py
     .venv/bin/python3 scripts/lint-units.py
     .venv/bin/python3 scripts/lint-qml.py
     .venv/bin/python3 scripts/render-matrix.py
