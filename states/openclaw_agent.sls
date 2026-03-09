@@ -1,4 +1,5 @@
-{% from '_imports.jinja' import host, user, home, retry_attempts, retry_interval, ver_dir, gopass_secret %}
+{% from '_imports.jinja' import host, user, home, gopass_secret %}
+{% from '_macros_pkg.jinja' import npm_pkg %}
 {% from '_macros_service.jinja' import ensure_dir, user_service_file, user_service_enable, user_service_restart %}
 {% import_yaml 'data/versions.yaml' as ver %}
 {% if host.features.openclaw %}
@@ -11,19 +12,7 @@
 {% set _telegram_uid = gopass_secret('api/openclaw-telegram-uid', "python3 -c \"import json; print(json.load(open('" ~ _openclaw_cfg ~ "')).get('channels',{}).get('telegram',{}).get('allowFrom',[''])[0])\" 2>/dev/null || true") %}
 
 # ── Install OpenClaw via npm (version-pinned) ────────────────────────
-# Inline cmd.run instead of npm_pkg macro: needs --prefix and version guard
-openclaw_npm:
-  cmd.run:
-    - name: |
-        npm install -g --prefix {{ home }}/.local openclaw@{{ ver.openclaw }}
-        mkdir -p {{ ver_dir }} && rm -f '{{ ver_dir }}/openclaw' {{ ver_dir }}/openclaw@* && ln -sf '{{ home }}/.local/bin/openclaw' '{{ ver_dir }}/openclaw@{{ ver.openclaw }}'
-    - runas: {{ user }}
-    - shell: /bin/bash
-    - creates: {{ ver_dir }}/openclaw@{{ ver.openclaw }}
-    - parallel: True
-    - retry:
-        attempts: {{ retry_attempts }}
-        interval: {{ retry_interval }}
+{{ npm_pkg('openclaw', pkg='openclaw@' ~ ver.openclaw, version=ver.openclaw) }}
 
 # ── Config + credentials directories ─────────────────────────────────
 {{ ensure_dir('openclaw_config_dir', home ~ '/.openclaw') }}
@@ -84,7 +73,7 @@ openclaw_lingering:
 # ── Systemd user service ─────────────────────────────────────────────
 {{ user_service_file('openclaw_service', 'openclaw-gateway.service') }}
 
-{{ user_service_enable('openclaw_enabled', start_now=['openclaw-gateway.service'], requires=['cmd: openclaw_npm', 'file: openclaw_config', 'file: openclaw_service']) }}
+{{ user_service_enable('openclaw_enabled', start_now=['openclaw-gateway.service'], requires=['cmd: install_openclaw', 'file: openclaw_config', 'file: openclaw_service']) }}
 
 {{ user_service_restart('restart_openclaw_on_config_change', 'openclaw-gateway.service', onlyif='systemctl --user is-active openclaw-gateway.service >/dev/null 2>&1', onchanges=['file: openclaw_config']) }}
 

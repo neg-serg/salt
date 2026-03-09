@@ -1,4 +1,4 @@
-{% from '_imports.jinja' import host, service_ports, healthcheck_timeout %}
+{% from '_imports.jinja' import host, service_ports %}
 {% from '_macros_service.jinja' import unit_override, system_daemon_user, service_with_unit, service_with_healthcheck, ensure_running %}
 {% from '_macros_github.jinja' import github_release_system %}
 {% from '_macros_pkg.jinja' import simple_service %}
@@ -34,19 +34,7 @@ unbound_control_certs:
 
 {{ ensure_running('unbound', watch=['file: unbound_config', 'file: unbound_restart_override']) }}
 
-unbound_ready:
-  cmd.run:
-    - name: |
-        for i in $(seq 1 {{ healthcheck_timeout }}); do
-          unbound-control status >/dev/null 2>&1 && exit 0
-          sleep 1
-        done
-        echo "unbound failed to become ready within {{ healthcheck_timeout }}s" >&2
-        exit 1
-    - shell: /bin/bash
-    - unless: unbound-control status >/dev/null 2>&1
-    - require:
-      - service: unbound_running
+{{ service_with_healthcheck('unbound_ready', 'unbound', 'unbound-control status >/dev/null 2>&1', requires=['service: unbound_running']) }}
 {% endif %}
 
 # --- AdGuardHome: DNS filtering + ad blocking ---
