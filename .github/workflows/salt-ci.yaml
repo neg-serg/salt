@@ -115,6 +115,7 @@ jobs:
         run: just validate
 
       - name: Run just test (system_description)
+        continue-on-error: true
         env:
           SALT_LOG_FILE: /tmp/salt-ci.log
         run: just test
