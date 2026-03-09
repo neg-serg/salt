@@ -102,7 +102,8 @@ validate:
     #!/usr/bin/env bash
     set -euo pipefail
     # Regenerate .salt_runtime/minion with correct absolute paths
-    project_dir="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+    # Note: just runs recipes from the Justfile directory, so PWD is correct
+    project_dir="$(pwd)"
     runtime="${project_dir}/.salt_runtime"
     mkdir -p "${runtime}/pki/minion" \
              "${runtime}/var/cache/salt/pillar_cache" \
