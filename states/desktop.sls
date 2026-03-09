@@ -17,6 +17,22 @@ pacman_salt_pkglist_hook:
 
 {{ ensure_dir('pacman_salt_cache_dir', '/var/cache/salt', mode='0755', user='root') }}
 
+# --- Pacman: pin packages to prevent unwanted upgrades ---
+pacman_ignore_pkgs:
+  file.replace:
+    - name: /etc/pacman.conf
+    - pattern: '^#?\s*IgnorePkg\s*=.*'
+    - repl: 'IgnorePkg = hyprland hy3'
+    - append_if_not_found: True
+    - not_found_content: 'IgnorePkg = hyprland hy3'
+
+# --- Faillock: raise threshold to avoid lockouts on typos ---
+faillock_config:
+  file.replace:
+    - name: /etc/security/faillock.conf
+    - pattern: '^#?\s*deny\s*=\s*\d+'
+    - repl: 'deny = 10'
+
 etckeeper_init:
   cmd.run:
     - name: etckeeper init && etckeeper commit "Initial commit"
