@@ -1,7 +1,7 @@
 {% from '_imports.jinja' import host, user, pkg_list %}
 {% from '_macros_service.jinja' import ensure_dir %}
 # Salt state for CachyOS workstation — top-level orchestrator
-# Packages installed via pacman/paru outside Salt; Salt handles configuration
+# Packages managed via packages.sls (data/packages.yaml) + domain-specific states
 
 pacman_db_warmup:
   cmd.run:
@@ -65,7 +65,8 @@ include:
   - network
   - amnezia
 
-  # Packages: CLI tools, desktop apps, themes, custom PKGBUILDs, flatpak
+  # Packages: base system packages, CLI tools, desktop apps, themes, custom PKGBUILDs, flatpak
+  - packages
   - installers
   - installers_desktop
   - installers_themes

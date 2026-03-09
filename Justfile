@@ -20,6 +20,14 @@ apply-user-services:
 apply-installers:
     scripts/salt-apply.sh installers
 
+# Capture current system packages into states/data/packages.yaml
+pkg-snapshot *ARGS:
+    ./scripts/pkg-snapshot.zsh {{ARGS}}
+
+# Compare declared packages against actual system state
+pkg-drift *ARGS:
+    ./scripts/pkg-drift.zsh {{ARGS}}
+
 # List available recipes
 help:
     @just --list
@@ -110,7 +118,7 @@ validate:
              "${runtime}/var/log/salt"
     cat > "${runtime}/minion" <<MEOF
     pki_dir: ${runtime}/pki/minion
-    log_file: ${runtime}/var/log/salt/minion
+    log_file: /dev/null
     cachedir: ${runtime}/var/cache/salt
     file_client: local
     file_roots:
@@ -121,11 +129,18 @@ validate:
     enable_gpu_grains: False
     grains_cache: False
     MEOF
+    # Clear stale proc locks from previous runs
+    rm -rf "${runtime}/var/cache/salt/proc/"*
+    # Use sudo when available (CI has NOPASSWD sudo, needed for runas=)
+    sudo_cmd=()
+    if sudo -n true 2>/dev/null; then
+        sudo_cmd=(sudo)
+    fi
     failed=0
     for sls in states/*.sls; do
         name="${sls#states/}"
         name="${name%.sls}"
-        if ! .venv/bin/salt-call --local --config-dir=.salt_runtime \
+        if ! "${sudo_cmd[@]}" .venv/bin/salt-call --local --config-dir=.salt_runtime \
                 state.show_sls "$name" --out=quiet 2>/dev/null; then
             echo "FAILED: $name"
             failed=$((failed + 1))
