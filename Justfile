@@ -101,11 +101,30 @@ lint-sysctl:
 validate:
     #!/usr/bin/env bash
     set -euo pipefail
+    # Regenerate .salt_runtime/minion with correct absolute paths
+    project_dir="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+    runtime="${project_dir}/.salt_runtime"
+    mkdir -p "${runtime}/pki/minion" \
+             "${runtime}/var/cache/salt/pillar_cache" \
+             "${runtime}/var/log/salt"
+    cat > "${runtime}/minion" <<MEOF
+    pki_dir: ${runtime}/pki/minion
+    log_file: ${runtime}/var/log/salt/minion
+    cachedir: ${runtime}/var/cache/salt
+    file_client: local
+    file_roots:
+      base:
+        - ${project_dir}/states/
+        - ${project_dir}/
+    enable_fqdns_grains: False
+    enable_gpu_grains: False
+    grains_cache: False
+    MEOF
     failed=0
     for sls in states/*.sls; do
         name="${sls#states/}"
         name="${name%.sls}"
-        if ! sudo .venv/bin/salt-call --local --config-dir=.salt_runtime \
+        if ! .venv/bin/salt-call --local --config-dir=.salt_runtime \
                 state.show_sls "$name" --out=quiet 2>/dev/null; then
             echo "FAILED: $name"
             failed=$((failed + 1))
