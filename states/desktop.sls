@@ -82,6 +82,15 @@ pcscd_socket_enabled:
 
 {{ paru_install('wlr-which-key', 'wlr-which-key') }}
 
+# --- swayimg: use local build from ~/src/swayimg instead of pacman binary ---
+swayimg_local_build:
+  file.symlink:
+    - name: {{ home }}/.local/bin/swayimg
+    - target: {{ home }}/src/swayimg/build/swayimg
+    - force: True
+    - user: {{ user }}
+    - group: {{ user }}
+
 # --- SSH directory setup ---
 {{ ensure_dir('ssh_dir', home ~ '/.ssh', mode='0700') }}
 
