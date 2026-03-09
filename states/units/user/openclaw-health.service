@@ -1,0 +1,8 @@
+[Unit]
+Description=OpenClaw gateway health check
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/openclaw-health-check
+TimeoutStartSec=60
