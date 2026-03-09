@@ -9,7 +9,8 @@ if [[ -d "$ZI_HOME/zmodules/zpmod/Src" ]]; then
   zmodload zi/zpmod 2> /dev/null
 fi
 
-FAST_WORK_DIR=~/.config/f-sy-h
+# Native syntax highlighting module path
+module_path+=("$HOME/.local/lib/zsh")
 
 if [[ -r "$ZI_HOME/bin/zi.zsh" ]]; then
   source "$ZI_HOME/bin/zi.zsh"
@@ -47,21 +48,8 @@ if [[ -r "${ZDOTDIR}/99-fix-aliases.zsh" ]]; then
   zsh-defer source "${ZDOTDIR}/99-fix-aliases.zsh"
 fi
 
-# F-Sy-H theme parser (populates FAST_HIGHLIGHT_STYLES before F-Sy-H loads)
-zsh-defer source "${ZDOTDIR}/50-fsyh-parser.zsh"
-
-# F-Sy-H (must be loaded last to correctly wrap ZLE widgets)
-# We use zsh-defer to ensure it runs after all other widget-defining scripts
-_load_f_sy_h() {
-  if [[ -z "$DISTROBOX_ENTER_PATH" ]]; then
-    zi ice depth'1' lucid atinit'typeset -gA FAST_HIGHLIGHT; FAST_HIGHLIGHT[use_async]=1'
-    zi load neg-serg/F-Sy-H
-  fi
-  # Re-apply ext overrides after F-Sy-H re-sources current_theme.zsh
-  local _ext="${XDG_CONFIG_HOME:-$HOME/.config}/f-sy-h/current_theme_ext.zsh"
-  [[ -r "$_ext" ]] && source "$_ext"
-}
-zsh-defer _load_f_sy_h
+# Native syntax highlighting
+source "$HOME/.local/lib/zsh/zsh-native-syntax.plugin.zsh"
 
 [[ $NEOVIM_TERMINAL ]] && source "${ZDOTDIR}/08-neovim-cd.zsh"
 
