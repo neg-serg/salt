@@ -312,6 +312,28 @@
 {%- endif %}
 {%- endmacro -%}
 
+{# Deploy user unit file + enable service in a single call.
+   Combines user_service_file() + user_service_enable() with internal require chain.
+   services: list of units to enable (default [filename]). start_now: list to enable --now (default []).
+   Usage: {{ user_service_with_unit('kanata', 'kanata.service', start_now=['kanata.service'], requires=['cmd: install_kanata']) }}
+          {{ user_service_with_unit('mpdas', 'mpdas.service', source='salt://dotfiles/dot_config/systemd/user/mpdas.service') }}
+#}
+{%- macro user_service_with_unit(name, filename, source=None, services=None, start_now=None, requires=None, user=_user, home=_home) -%}
+{%- set _svc_list = services if services is not none else [filename] -%}
+{%- set _now_list = start_now if start_now else [] -%}
+{%- set _file_id = name ~ '_service' -%}
+{{ user_service_file(_file_id, filename, source=source, user=user, home=home) }}
+
+{%- set _reqs = ['file: ' ~ _file_id, 'cmd: ' ~ _file_id ~ '_daemon_reload'] -%}
+{%- if requires %}
+{%- for req in requires %}
+{%- set _ = _reqs.append(req) %}
+{%- endfor %}
+{%- endif %}
+
+{{ user_service_enable(name ~ '_enabled', services=_svc_list, start_now=_now_list, requires=_reqs, user=user) }}
+{%- endmacro -%}
+
 {# Restart a systemd user service with proper environment wiring.
    Usage: {{ user_service_restart('restart_proxypilot', 'proxypilot.service', onlyif='systemctl --user is-active proxypilot.service >/dev/null 2>&1', requires=['file: proxypilot_config']) }}
 #}
