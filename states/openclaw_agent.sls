@@ -48,7 +48,7 @@ openclaw_dualagent_migrate:
   cmd.run:
     - name: rm -f {{ home }}/.openclaw/openclaw.json
     - onlyif: test -f {{ home }}/.openclaw/openclaw.json
-    - unless: grep -q '"list"' {{ home }}/.openclaw/openclaw.json
+    - unless: grep -q '"guest"' {{ home }}/.openclaw/openclaw.json
     - require:
       - file: openclaw_config_dir
       - cmd: openclaw_config_migrate
