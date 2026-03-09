@@ -1,6 +1,6 @@
 # Desktop environment: services, SSH, dconf themes
 {% from '_imports.jinja' import host, user, home %}
-{% from '_macros_pkg.jinja' import pacman_install, paru_install, simple_service %}
+{% from '_macros_pkg.jinja' import pacman_install, paru_install %}
 {% from '_macros_service.jinja' import ensure_dir, service_stopped, service_with_unit %}
 {% import_yaml 'data/desktop.yaml' as desktop %}
 
