@@ -2,6 +2,9 @@
 #
 # ── Schema ────────────────────────────────────────────────────────────
 #
+# hyprland_packages: <string>     — space-separated pacman packages for Hyprland
+# screenshot_packages: <string>   — space-separated pacman packages for screenshots
+#
 # running_services:
 #   - <service_name>               — systemd services to start and enable
 #
@@ -10,6 +13,13 @@
 #                                    values are shell-escaped at render time
 #
 # ─────────────────────────────────────────────────────────────────────
+
+hyprland_packages: >-
+  hyprpaper hypridle hyprlock hyprpolkitagent
+  xdg-desktop-portal-hyprland hyprpicker wlr-randr
+
+screenshot_packages: >-
+  grim slurp
 
 running_services:
   - NetworkManager
