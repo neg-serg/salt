@@ -272,6 +272,8 @@ Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full de
 - Files (Salt states, skill files, systemd units, config files) (006-openclaw-secure-access)
 - Jinja2/YAML (Salt states), Zsh (analysis + drift scripts) + Salt (masterless), pacman, paru, ripgrep (for idempotency guards) (008-salt-pkg-management)
 - `states/data/packages.yaml` (categorized YAML consumed via `import_yaml`) (008-salt-pkg-management)
+- Jinja2/YAML (Salt states), Python 3.12+ (lint script) + Salt (masterless), Jinja2, PyYAML, ripgrep (for guards) (009-salt-code-quality)
+- N/A (configuration files on disk) (009-salt-code-quality)
 
 ## Recent Changes
 - 001-code-rag-integration: Added Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx)
