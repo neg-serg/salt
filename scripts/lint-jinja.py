@@ -584,6 +584,181 @@ def check_network_resilience(rendered_docs):
     return warnings
 
 
+_SUPPRESSION_RE = re.compile(r"#\s*salt-lint:\s*disable=([a-z_,\s-]+)")
+
+_IDEMPOTENCY_GUARDS = frozenset({"creates", "unless", "onlyif"})
+_IDEMPOTENCY_REQUISITE_GUARDS = frozenset({"onchanges", "onchanges_in"})
+
+
+def _parse_suppressions(sls_files):
+    """Parse inline suppression comments from source .sls files.
+
+    Returns a dict: {state_id: set_of_suppressed_rules}.
+    Suppression applies to the state block immediately following the comment.
+    """
+    suppressions = {}
+    for path in sls_files:
+        with open(path) as fh:
+            lines = fh.readlines()
+
+        pending_rules = set()
+        for line in lines:
+            stripped = line.strip()
+            # Check for suppression comment
+            m = _SUPPRESSION_RE.search(stripped)
+            if m:
+                rules = {r.strip() for r in m.group(1).split(",")}
+                pending_rules.update(rules)
+                continue
+
+            # Check if this is a state ID line (top-level YAML key)
+            id_m = _RAW_STATE_ID_RE.match(line)
+            if id_m and pending_rules:
+                state_id = id_m.group(1)
+                suppressions.setdefault(state_id, set()).update(pending_rules)
+                pending_rules = set()
+            elif stripped and not stripped.startswith("#"):
+                # Non-comment, non-empty line that isn't a state ID clears pending
+                pending_rules = set()
+
+    return suppressions
+
+
+def check_idempotency_guards(rendered_docs, suppressions=None):
+    """Check that cmd.run/cmd.script states have idempotency guards.
+
+    Every cmd.run/cmd.script state must have at least one of:
+    - creates: (file marker)
+    - unless: (state check)
+    - onlyif: (conditional guard)
+    - onchanges: (requisite trigger — the trigger IS the guard)
+
+    States with salt-lint: disable=idempotency are skipped.
+    """
+    suppressions = suppressions or {}
+    warnings = 0
+
+    for filepath, docs in rendered_docs.items():
+        for doc in docs:
+            if not doc or not isinstance(doc, dict):
+                continue
+            for state_id, state_body in doc.items():
+                if state_id in _SALT_DIRECTIVES:
+                    continue
+                if not isinstance(state_body, dict):
+                    continue
+
+                # Check suppression
+                if "idempotency" in suppressions.get(state_id, set()):
+                    continue
+
+                for mod_func, directives in state_body.items():
+                    if mod_func not in ("cmd.run", "cmd.script"):
+                        continue
+                    if not isinstance(directives, list):
+                        continue
+
+                    has_guard = False
+                    for d in directives:
+                        if not isinstance(d, dict):
+                            continue
+                        # Direct guards
+                        if any(k in d for k in _IDEMPOTENCY_GUARDS):
+                            has_guard = True
+                            break
+                        # Requisite guards (onchanges means "only run when dependency changed")
+                        if any(k in d for k in _IDEMPOTENCY_REQUISITE_GUARDS):
+                            has_guard = True
+                            break
+
+                    if not has_guard:
+                        print(
+                            f"\033[33mIdempotency: {filepath}:"
+                            f" '{state_id}' — cmd.run/cmd.script without"
+                            f" creates/unless/onlyif/onchanges guard\033[0m"
+                        )
+                        warnings += 1
+
+    return warnings
+
+
+def check_stale_suppressions(sls_files, rendered_docs, suppressions):
+    """Warn when a suppression comment exists but no matching violation would fire.
+
+    This catches suppressions that were added for a violation that has since been
+    fixed, preventing dead suppression comments from accumulating.
+    """
+    warnings = 0
+
+    # Collect state IDs that would have violations (without suppressions)
+    idempotency_violators = set()
+    network_violators = set()
+
+    for filepath, docs in rendered_docs.items():
+        for doc in docs:
+            if not doc or not isinstance(doc, dict):
+                continue
+            for state_id, state_body in doc.items():
+                if state_id in _SALT_DIRECTIVES or not isinstance(state_body, dict):
+                    continue
+                for mod_func, directives in state_body.items():
+                    if mod_func not in ("cmd.run", "cmd.script"):
+                        continue
+                    if not isinstance(directives, list):
+                        continue
+
+                    # Check idempotency
+                    has_guard = False
+                    cmd_text = ""
+                    for d in directives:
+                        if not isinstance(d, dict):
+                            continue
+                        if any(k in d for k in _IDEMPOTENCY_GUARDS):
+                            has_guard = True
+                        if any(k in d for k in _IDEMPOTENCY_REQUISITE_GUARDS):
+                            has_guard = True
+                        if "name" in d:
+                            cmd_text = str(d["name"])
+                    if not has_guard:
+                        idempotency_violators.add(state_id)
+
+                    # Check network
+                    if _NETWORK_CMD_RE.search(cmd_text):
+                        if not (
+                            _LOCALHOST_CURL_RE.search(cmd_text)
+                            and not re.search(
+                                r"\b(wget|git\s+clone|pacman\s+-S|paru|makepkg)\b", cmd_text
+                            )
+                        ):
+                            has_retry = any(
+                                isinstance(d, dict) and "retry" in d for d in directives
+                            )
+                            has_parallel = any(
+                                isinstance(d, dict) and "parallel" in d for d in directives
+                            )
+                            if not has_retry or not has_parallel:
+                                network_violators.add(state_id)
+
+    # Check each suppression against actual violations
+    rule_to_violators = {
+        "idempotency": idempotency_violators,
+        "network-retry": network_violators,
+        "network-parallel": network_violators,
+    }
+
+    for state_id, rules in suppressions.items():
+        for rule in rules:
+            violators = rule_to_violators.get(rule)
+            if violators is not None and state_id not in violators:
+                print(
+                    f"\033[33mStale suppression: '{state_id}'"
+                    f" — salt-lint: disable={rule} but no violation exists\033[0m"
+                )
+                warnings += 1
+
+    return warnings
+
+
 def check_data_integrity():
     """Validate YAML data files: required keys, version cross-references."""
     errors = 0
@@ -962,23 +1137,36 @@ def main():
     total_errors += data_errors
     print(f"Data integrity: {data_errors} errors")
 
-    # 10. Network resilience (retry + parallel on network commands)
+    # 10. Parse inline suppressions for idempotency and network checks
+    suppressions = _parse_suppressions(sls_files)
+
+    # 11. Network resilience (retry + parallel on network commands)
     network_warnings = check_network_resilience(rendered_docs)
     total_warnings += network_warnings
     print(f"Network resilience: {network_warnings} warnings")
 
-    # 11. Bash syntax without shell: /bin/bash
+    # 12. Idempotency guards (cmd.run/cmd.script without creates/unless/onlyif/onchanges)
+    idempotency_warnings = check_idempotency_guards(rendered_docs, suppressions)
+    total_warnings += idempotency_warnings
+    print(f"Idempotency guards: {idempotency_warnings} warnings")
+
+    # 13. Stale suppressions (suppression comment with no matching violation)
+    stale_warnings = check_stale_suppressions(sls_files, rendered_docs, suppressions)
+    total_warnings += stale_warnings
+    print(f"Stale suppressions: {stale_warnings} warnings")
+
+    # 14. Bash syntax without shell: /bin/bash
     shell_warnings = check_cmd_shell(rendered_docs)
     total_warnings += shell_warnings
     print(f"Cmd shell: {shell_warnings} warnings")
 
-    # 12. Salt URI references (salt:// paths point to existing files)
+    # 15. Salt URI references (salt:// paths point to existing files)
     data_yamls = sorted(glob.glob("states/data/*.yaml"))
     uri_errors = check_salt_uri_refs(sls_files, jinja_files, data_yamls)
     total_errors += uri_errors
     print(f"Salt URI refs: {uri_errors} errors")
 
-    # 13. Systemd unit file validation
+    # 16. Systemd unit file validation
     unit_errors, units_checked = check_systemd_units()
     total_errors += unit_errors
     print(f"Systemd units: {units_checked} files, {unit_errors} errors")

@@ -56,9 +56,8 @@ pcscd_socket_enabled:
 {{ service_stopped('tuned_stopped', 'tuned') }}
 
 # --- Hyprland ecosystem packages ---
-{{ pacman_install('hyprland_desktop',
-    'hyprpaper hypridle hyprlock hyprpolkitagent xdg-desktop-portal-hyprland hyprpicker wlr-randr') }}
-{{ pacman_install('screenshot_tools', 'grim slurp') }}
+{{ pacman_install('hyprland_desktop', desktop.hyprland_packages) }}
+{{ pacman_install('screenshot_tools', desktop.screenshot_packages) }}
 {{ pacman_install('rsync', 'rsync') }}
 {{ pacman_install('localsend', 'localsend') }}
 {{ pacman_install('chromium', 'chromium') }}
