@@ -785,6 +785,8 @@ _SYSTEMD_NOISE_RE = re.compile(
     is\ not\ executable          # binary not installed yet
     | Cannot\ find\ unit         # dependency resolution
     | not\ found\ in\ search     # unit not installed
+    | Unit\ \S+\ not\ found      # newer systemd: dependency not installed
+    | Failed\ to\ create.*not\ found  # newer systemd: ordering dep missing
     | has\ a\ bad\ unit\ file    # summary line (details are separate)
     | Support\ for\ option.*removed  # system-level deprecation noise
     """,
