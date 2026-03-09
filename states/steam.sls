@@ -51,6 +51,30 @@ steam_pkg:
 
 {{ curl_extract_7z('modern_steam_skin', 'https://github.com/SleepDaemon/Modern-Steam/releases/download/v' ~ modern_skin_version ~ '/SteamDarkMode.7z', home ~ '/.local/share/Steam/skins', creates=home ~ '/.local/share/Steam/skins/steamui', version=modern_skin_version if modern_skin_version else None, user=user, require=['cmd: install_p7zip', 'file: steam_skins_dir']) }}
 
+gamemode_config:
+  file.managed:
+    - name: /etc/gamemode.ini
+    - source: salt://configs/gamemode.ini
+    - mode: '0644'
+    - require:
+      - cmd: steam_pkg
+
+gamemode_start_script:
+  file.managed:
+    - name: /usr/local/bin/gamemode-start.sh
+    - source: salt://scripts/gamemode-start.sh
+    - mode: '0755'
+    - require:
+      - cmd: steam_pkg
+
+gamemode_end_script:
+  file.managed:
+    - name: /usr/local/bin/gamemode-end.sh
+    - source: salt://scripts/gamemode-end.sh
+    - mode: '0755'
+    - require:
+      - cmd: steam_pkg
+
 dxvk_resolution_fix:
   cmd.script:
     - source: salt://scripts/dxvk-resolution-fix.sh
