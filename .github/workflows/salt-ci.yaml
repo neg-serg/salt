@@ -75,6 +75,16 @@ jobs:
       - name: Enable mock gopass
         run: echo "$PWD/scripts/mock-bin" >> "$GITHUB_PATH"
 
+      - name: Prepare Salt CI environment
+        run: |
+          # Create user 'neg' so runas= in Jinja rendering works
+          sudo useradd -m neg 2>/dev/null || true
+          # Create empty package list for file.search guards
+          sudo mkdir -p /var/cache/salt
+          sudo touch /var/cache/salt/pacman_installed.txt
+          # Create /etc/salt for minion_id caching
+          sudo mkdir -p /etc/salt
+
       - name: Install apt dependencies
         run: |
           sudo apt-get update -qq
