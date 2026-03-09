@@ -2,3 +2,9 @@
 .config/proxypilot/config.yaml
 .config/mpd/mpd.conf
 .config/systemd/user/mpdas.service
+
+# Floorp browser: Salt deploys to ~/.floorp/<profile>/ (non-XDG path)
+.config/floorp/user.js
+.config/floorp/userChrome.css
+.config/floorp/userContent.css
+.config/floorp/custom/
