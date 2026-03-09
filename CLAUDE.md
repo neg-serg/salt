@@ -4,7 +4,7 @@
 
 Salt states + chezmoi dotfiles for configuring a CachyOS (Arch-based) workstation.
 Migrated from NixOS (nix-maid/mkHomeFiles), then Fedora Atomic/Silverblue.
-Packages installed via pacman/paru outside Salt; Salt handles configuration management.
+Packages managed declaratively via `states/data/packages.yaml` + domain-specific states; Salt handles both package installation and configuration management.
 
 ## Workflow Requirements
 
@@ -27,9 +27,12 @@ Packages installed via pacman/paru outside Salt; Salt handles configuration mana
 | `dotfiles/` | Chezmoi source dir (dot_ prefix = . in paths) |
 | `docs/` | Documentation (migration tracking, secrets, setup guides) |
 | `states/data/` | YAML data files (installers, services, fonts, models, etc.) loaded via `import_yaml` |
+| `states/data/packages.yaml` | Categorized package declarations — source of truth for system packages |
 | `scripts/` | Utility scripts (linting, tool updates) |
+| `scripts/pkg-snapshot.zsh` | Analysis tool: captures `pacman -Qqe` → `packages.yaml` |
+| `scripts/pkg-drift.zsh` | Drift detection: compares declared vs actual packages |
 
-## Salt State Modules (35 files)
+## Salt State Modules (36 files)
 
 | Module | Purpose |
 |---|---|
@@ -40,6 +43,7 @@ Packages installed via pacman/paru outside Salt; Salt handles configuration mana
 | `mounts.sls` | Disk mounts (/mnt/zero, /mnt/one), btrfs compression |
 | `desktop.sls` | Desktop: system services, SSH, dconf themes |
 | `fonts.sls` | All fonts: pacman, Iosevka PKGBUILD, FiraCode, downloaded fonts |
+| `packages.sls` | Declarative package management: data-driven from `data/packages.yaml` (pacman + AUR) |
 | `installers.sls` | CLI tools: data-driven from `data/installers.yaml` + custom installs |
 | `installers_desktop.sls` | Desktop apps: RoomEQ, Throne, Overskride, Nyxt, DroidCam |
 | `installers_themes.sls` | Themes/icons: matugen, kora, Flight GTK |
@@ -266,6 +270,8 @@ Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full de
 - Configuration files on disk (007-chezmoi-salt-boundary)
 - Jinja2/YAML (Salt states), Markdown (OpenClaw SKILL.md), TOML (Rathole config), Zsh (scripts) + Salt, OpenClaw 2026.3.2, Rathole, notmuch, msmtp, hyprctl, systemd (006-openclaw-secure-access)
 - Files (Salt states, skill files, systemd units, config files) (006-openclaw-secure-access)
+- Jinja2/YAML (Salt states), Zsh (analysis + drift scripts) + Salt (masterless), pacman, paru, ripgrep (for idempotency guards) (008-salt-pkg-management)
+- `states/data/packages.yaml` (categorized YAML consumed via `import_yaml`) (008-salt-pkg-management)
 
 ## Recent Changes
 - 001-code-rag-integration: Added Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx)
