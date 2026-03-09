@@ -68,6 +68,7 @@ include:
   # Packages: base system packages, CLI tools, desktop apps, themes, custom PKGBUILDs, flatpak
   - packages
   - installers
+  - installers_mpv
   - installers_desktop
   - installers_themes
   - flatpak
@@ -88,6 +89,8 @@ include:
 
   # Services, monitoring, user units, snapshots
   - services
+  - services_bitcoind
   - monitoring
+  - monitoring_loki
   - user_services
   - snapshots
