@@ -1,11 +1,37 @@
-.cache
-.elixir_ls
+# VCS
 .git
 .hg
-.licenses
-.sass-cache
 .svn
-.yarn
+
+# Caches & build artifacts
+.cache
+__pycache__/
+*.pyc
+.sass-cache
 .node_modules
+.yarn
+.venv/
+venv/
+.direnv/
+
+# Editor / IDE state
+*.swp
+*.swo
+*~
+.netrwhist
+.elixir_ls
+
+# AI / agent tooling
+.claude/
+.serena/
+specs/
+_catalog/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Misc
+.licenses
 tags
 tmp
