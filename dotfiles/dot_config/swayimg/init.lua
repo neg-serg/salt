@@ -57,7 +57,7 @@ swayimg.enable_overlay(true)
 -- Image list
 --------------------------------------------------------------------------------
 swayimg.imagelist.set_order("none")
-swayimg.imagelist.enable_recursive(false)
+swayimg.imagelist.enable_recursive(false)   -- wrapper uses fd for fast filtered expansion
 
 --------------------------------------------------------------------------------
 -- Font / text
@@ -76,10 +76,12 @@ swayimg.text.set_status_timer(2)
 swayimg.viewer.set_window_background(0x00000000)
 swayimg.viewer.set_image_background(0xff000000)
 swayimg.viewer.set_default_scale("optimal")
+-- Note: corrupt/undecodable images are auto-skipped by swayimg's C loader
+-- (setjmp/longjmp in decoders, nullptr → remove entry → skip to next)
 swayimg.viewer.set_default_position("center")
 swayimg.viewer.enable_loop(false)
-swayimg.viewer.set_history_limit(4)
-swayimg.viewer.set_preload_limit(16)
+swayimg.viewer.set_history_limit(8)   -- more back-nav cache (was 4)
+swayimg.viewer.set_preload_limit(6)   -- smaller queue drains faster on position jumps (was 16)
 
 swayimg.viewer.set_text_tl({})
 swayimg.viewer.set_text_tr({})
@@ -91,7 +93,7 @@ swayimg.viewer.set_text_br({ "{list.index}/{list.total}", "{status}" })
 --------------------------------------------------------------------------------
 swayimg.gallery.set_thumb_size(200)
 swayimg.gallery.set_aspect("fill")
-swayimg.gallery.set_cache_size(100000)
+swayimg.gallery.set_cache_size(2000)   -- bounded memory (was 100000)
 swayimg.gallery.enable_preload(true)
 swayimg.gallery.enable_pstore(true)
 swayimg.gallery.set_padding_size(4)

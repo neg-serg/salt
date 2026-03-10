@@ -1,59 +1,77 @@
 #!/usr/bin/env zsh
-setopt ERR_EXIT NOUNSET PIPE_FAIL
+# swayimg-first: session manager for swayimg
+# - Uses fd for fast directory expansion (ignores .git by default)
+# - Passes file list via --from-file for large directories
+# - Manages session metadata for swayimg-actions.sh
+# - Cleans up stale session files from crashed sessions
 
 data_dir="${XDG_DATA_HOME:-$HOME/.local/share}/swayimg"
-session_id="swayimg-$PPID-$$-$RANDOM"
-playlist_file="$data_dir/${session_id}.list"
-range_file="$data_dir/${session_id}.range"
 mkdir -p "$data_dir"
 
-# Export session metadata for helper scripts
+# Clean stale session files older than 24 hours
+find "$data_dir" \( -name 'swayimg-*.list' -o -name 'swayimg-*.range' \) -mtime +1 -delete 2>/dev/null || true
+
+# Session metadata — files created lazily by action scripts if needed
+session_id="swayimg-$PPID-$$-$RANDOM"
 export SWAYIMG_SESSION_ID="$session_id"
-export SWAYIMG_FILELIST="$playlist_file"
-export SWAYIMG_RANGE_FILE="$range_file"
+export SWAYIMG_FILELIST="$data_dir/${session_id}.list"
+export SWAYIMG_RANGE_FILE="$data_dir/${session_id}.range"
 
-# Pre-filter arguments to avoid VCS dirs (.git, .hg, .svn, .bzr)
-is_vcs_path() {
-  case "${1%/}" in
-    */.git | */.git/* | .git | .git/*) return 0 ;;
-    */.hg | */.hg/* | .hg | .hg/*) return 0 ;;
-    */.svn | */.svn/* | .svn | .svn/*) return 0 ;;
-    */.bzr | */.bzr/* | .bzr | .bzr/*) return 0 ;;
-    *) return 1 ;;
-  esac
-}
+# Classify arguments into files, directories, and flags
+files=()
+dirs=()
+flags=()
+had_explicit_args=false
 
-out_args=()
-for a in "$@"; do
-  if [ -e "$a" ]; then
-    if is_vcs_path "$a"; then
-      continue
-    fi
-    if [ -d "$a" ]; then
-      while IFS= read -r -d '' f; do
-        out_args+=("$f")
-      done < <(find "$a" \( -type d \( -name .git -o -name .hg -o -name .svn -o -name .bzr \) -prune \) -o -type f -print0)
-    else
-      out_args+=("$a")
-    fi
+for arg in "$@"; do
+  if [[ "$arg" == -* ]]; then
+    flags+=("$arg")
+  elif [[ -d "$arg" ]]; then
+    dirs+=("$arg")
+    had_explicit_args=true
+  elif [[ -f "$arg" ]]; then
+    files+=("$arg")
+    had_explicit_args=true
   else
-    out_args+=("$a")
+    print -u2 "sx: skipping non-existent path: $arg"
+    had_explicit_args=true
   fi
 done
 
-# Persist the expanded playlist for helper scripts (one realpath per line)
-: > "$playlist_file"
-if [ "${#out_args[@]}" -gt 0 ]; then
-  for arg in "${out_args[@]}"; do
-    if [ -e "$arg" ]; then
-      realpath "$arg" 2> /dev/null || true
-    fi
-  done | sed '/^[[:space:]]*$/d' >> "$playlist_file"
+# Error if user gave paths but none were valid
+if $had_explicit_args && (( ${#files[@]} + ${#dirs[@]} == 0 )); then
+  print -u2 "sx: no valid files or directories to open"
+  exit 1
 fi
 
-# Start swayimg directly (IPC socket removed in new Lua-based version)
-swayimg "${out_args[@]}"
-rc=$?
+# Expand directories via fd (fast, ignores .git/VCS by default)
+# Write to --from-file for large lists to avoid ARG_MAX
+filelist="$data_dir/${session_id}.from"
+: > "$filelist"
 
-rm -f "$playlist_file" "$range_file" 2> /dev/null || true
+for dir in "${dirs[@]}"; do
+  fd -t f . "$dir" >> "$filelist" 2>/dev/null
+done
+
+for file_arg in "${files[@]}"; do
+  print -r -- "$file_arg" >> "$filelist"
+done
+
+# Check if we have anything to show
+if [[ ! -s "$filelist" ]] && ! $had_explicit_args; then
+  # No args given — let swayimg use CWD
+  rm -f "$filelist"
+  swayimg "${flags[@]}"
+  rc=$?
+elif [[ ! -s "$filelist" ]]; then
+  print -u2 "sx: no images found"
+  rm -f "$filelist"
+  exit 1
+else
+  swayimg "${flags[@]}" --from-file "$filelist"
+  rc=$?
+fi
+
+# Cleanup
+rm -f "$filelist" "$SWAYIMG_FILELIST" "$SWAYIMG_RANGE_FILE" 2>/dev/null || true
 exit $rc
