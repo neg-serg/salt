@@ -21,77 +21,38 @@
 {{ ensure_dir('openclaw_config_dir', home ~ '/.openclaw') }}
 {{ ensure_dir('openclaw_credentials_dir', home ~ '/.openclaw/credentials', mode='0700') }}
 
-# ── Migrate old Anthropic-only config to ProxyPilot ───────────────────
-# One-shot: delete existing config if it still has the old Anthropic provider,
-# so file.managed (replace: False) will reseed from the updated template.
-openclaw_config_migrate:
-  cmd.run:
-    - name: rm -f {{ home }}/.openclaw/openclaw.json
-    - onlyif: test -f {{ home }}/.openclaw/openclaw.json
-    - unless: grep -q 'openai-completions' {{ home }}/.openclaw/openclaw.json
-    - require:
-      - file: openclaw_config_dir
+# ── Config migration marker directory ─────────────────────────────────
+{% set _migrate_dir = home ~ '/.openclaw/.migrations' %}
+{{ ensure_dir('openclaw_migrate_dir', _migrate_dir) }}
 
-# ── Migrate single-agent config to dual-agent ────────────────────────
-# One-shot: delete config if it lacks the "agents.list" key (dual-agent
-# structure), so file.managed (replace: False) will reseed from the
-# updated template with owner + guest agents.
-openclaw_dualagent_migrate:
-  cmd.run:
-    - name: rm -f {{ home }}/.openclaw/openclaw.json
-    - onlyif: test -f {{ home }}/.openclaw/openclaw.json
-    - unless: grep -q '"guest"' {{ home }}/.openclaw/openclaw.json
-    - require:
-      - file: openclaw_config_dir
-      - cmd: openclaw_config_migrate
+# ── One-shot config migrations ────────────────────────────────────────
+# Each migration deletes the config so file.managed (replace: False)
+# reseeds from the updated template. A marker file prevents re-runs,
+# because OpenClaw rewrites its own config at startup and strips fields
+# that grep-based guards relied on (allowFrom, bindings, etc.).
 
-# ── Migrate to add guest user binding ─────────────────────────────────
-# One-shot: delete config if it lacks the LevRa72 binding,
-# so file.managed (replace: False) will reseed with updated allowFrom + bindings.
-openclaw_guest_user_migrate:
-  cmd.run:
-    - name: rm -f {{ home }}/.openclaw/openclaw.json
-    - onlyif: test -f {{ home }}/.openclaw/openclaw.json
-    - unless: grep -q '{{ _telegram_uid_levra }}' {{ home }}/.openclaw/openclaw.json
-    - require:
-      - file: openclaw_config_dir
-      - cmd: openclaw_dualagent_migrate
+{% set migrations = [
+  ('openclaw_config_migrate',     'proxypilot'),
+  ('openclaw_dualagent_migrate',  'dualagent'),
+  ('openclaw_guest_user_migrate', 'guest-levra'),
+  ('openclaw_guest2_migrate',     'guest2'),
+  ('openclaw_groq_stt_migrate',   'groq-stt'),
+  ('openclaw_groq_models_migrate','groq-models'),
+] %}
 
-# ── Migrate to add second guest user ─────────────────────────────────
-# One-shot: delete config if it lacks guest2 UID,
-# so file.managed (replace: False) will reseed with updated allowFrom + bindings.
-openclaw_guest2_migrate:
+{% for state_id, marker in migrations %}
+{{ state_id }}:
   cmd.run:
-    - name: rm -f {{ home }}/.openclaw/openclaw.json
+    - name: rm -f {{ home }}/.openclaw/openclaw.json && touch {{ _migrate_dir }}/{{ marker }}
+    - creates: {{ _migrate_dir }}/{{ marker }}
     - onlyif: test -f {{ home }}/.openclaw/openclaw.json
-    - unless: grep -q '{{ _telegram_uid_guest2 }}' {{ home }}/.openclaw/openclaw.json
     - require:
       - file: openclaw_config_dir
-      - cmd: openclaw_guest_user_migrate
-
-# ── Migrate to add Groq Whisper STT ──────────────────────────────────
-# One-shot: delete config if it lacks the groq provider block,
-# so file.managed (replace: False) will reseed with STT config.
-openclaw_groq_stt_migrate:
-  cmd.run:
-    - name: rm -f {{ home }}/.openclaw/openclaw.json
-    - onlyif: test -f {{ home }}/.openclaw/openclaw.json
-    - unless: grep -q '"groq"' {{ home }}/.openclaw/openclaw.json
-    - require:
-      - file: openclaw_config_dir
-      - cmd: openclaw_guest2_migrate
-
-# ── Migrate to add models array to groq provider ──────────────────
-# One-shot: delete config if groq provider lacks "models" key,
-# so file.managed (replace: False) will reseed with fixed schema.
-openclaw_groq_models_migrate:
-  cmd.run:
-    - name: rm -f {{ home }}/.openclaw/openclaw.json
-    - onlyif: test -f {{ home }}/.openclaw/openclaw.json
-    - unless: python3 -c "import json,sys; c=json.load(open('{{ home }}/.openclaw/openclaw.json')); sys.exit(0 if 'models' in c.get('models',{}).get('providers',{}).get('groq',{}) else 1)"
-    - require:
-      - file: openclaw_config_dir
-      - cmd: openclaw_groq_stt_migrate
+      - file: openclaw_migrate_dir
+      {%- if not loop.first %}
+      - cmd: {{ migrations[loop.index0 - 1][0] }}
+      {%- endif %}
+{% endfor %}
 
 # ── Deploy config (secrets injected at apply time) ───────────────────
 # replace: False — OpenClaw rewrites its config at startup (adds defaults,
@@ -115,11 +76,7 @@ openclaw_config:
         groq_key: {{ _groq_key | tojson }}
     - require:
       - file: openclaw_config_dir
-      - cmd: openclaw_config_migrate
-      - cmd: openclaw_dualagent_migrate
-      - cmd: openclaw_guest_user_migrate
-      - cmd: openclaw_guest2_migrate
-      - cmd: openclaw_groq_stt_migrate
+      - cmd: openclaw_groq_models_migrate
 
 # ── Lingering (user services survive logout) ─────────────────────────
 openclaw_lingering:
