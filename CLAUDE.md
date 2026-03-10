@@ -323,10 +323,6 @@ Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full de
 - N/A (configuration files on disk) (009-salt-code-quality)
 - Jinja2/YAML (Salt states), INI (GameMode/MangoHud configs), Bash (GameMode scripts) + Salt (masterless), chezmoi, GameMode, MangoHud, DXVK, Mesa/RADV (010-gaming-performance)
 - Config files on disk (010-gaming-performance)
-- Lua 5.4 (embedded in swayimg C++ binary) + swayimg (local build from `~/src/swayimg`), chezmoi (dotfile deployment) (011-swayimg-lua-config)
-- N/A (single config file on disk) (011-swayimg-lua-config)
-- C++20 (swayimg codebase at `~/src/swayimg/`) + Wayland client libs, image decoder libs (libjpeg, libpng, libwebp, etc.), Lua 5.4, pthreads (015-fix-swayimg-loader-threading)
-- N/A (in-memory image caches) (015-fix-swayimg-loader-threading)
 
 ## Recent Changes
 - 001-code-rag-integration: Added Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx)
