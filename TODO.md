@@ -1,5 +1,21 @@
 # TODO
 
+Backlog of ideas and improvements. When ready to implement, run `/speckit.specify` with the description.
+
+---
+
+## Browser profiles with persistent sessions
+
+Multiple Floorp profiles with persistent data (cookies, localStorage, sessions). Goal: login to VK, YouTube and other popular sites via cookie import from other browsers.
+
+- Named profiles with isolated storage
+- Cookie import/export between profiles and browsers (Chrome, Firefox, Floorp)
+- Profile switching via CLI or Hyprland keybind
+- Salt-managed profile templates with pre-configured settings (extensions, privacy, proxy)
+- Consider: `browser-cookie3` (Python) for cross-browser cookie extraction
+
+---
+
 ## Music analysis pipeline (essentia + annoy)
 
 Scripts `music-highlevel`, `music-similar`, `music-index` require:
