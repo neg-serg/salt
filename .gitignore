@@ -20,6 +20,15 @@ salt_config/pki/
 salt_config/var/
 .salt_runtime/
 
+# Speech engines — large model files and runtime artifacts
+speech-engines/.venv*/
+speech-engines/whisper.cpp/
+speech-engines/chatterbox-server/
+speech-engines/voices/*.bin
+speech-engines/voices/*.onnx
+speech-engines/voices/*.onnx.json
+speech-engines/voices/*.pt
+
 # Tools
 .claude/
 .serena/
