@@ -74,6 +74,7 @@ gaming:
 system:
   - btop
   - btrfs-progs
+  - pacman-contrib
   - htop
   - lsof
   - lvm2

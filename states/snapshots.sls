@@ -24,3 +24,9 @@ snapper_timers:
       - snapper-cleanup.timer
     - require:
       - cmd: install_snapper
+
+paccache_timer:
+  service.enabled:
+    - name: paccache.timer
+    - require:
+      - cmd: install_pkg_system
