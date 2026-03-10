@@ -7,8 +7,9 @@ import importlib.util
 import json
 import os
 import re
+import statistics
 import sys
-from collections import deque
+from collections import defaultdict, deque
 from pathlib import Path
 
 SCRIPTS_DIR = Path(__file__).resolve().parent
@@ -127,9 +128,111 @@ def find_state_via_substring(state_id: str, file_contents):
     return None
 
 
+def run_trend(json_mode: bool) -> None:
+    """Scan all logs/*.log files, aggregate durations by state_id, output ranked stats."""
+    logs_dir = Path("logs")
+    if not logs_dir.is_dir():
+        raise SystemExit("No logs/ directory found")
+    log_files = sorted(logs_dir.glob("*.log"), key=lambda p: p.stat().st_mtime)
+    if not log_files:
+        raise SystemExit("No .log files found in logs/")
+
+    by_state: dict[str, list[float]] = defaultdict(list)
+    latest_by_state: dict[str, float] = {}
+
+    for log_path in log_files:
+        durations = parse_log(log_path)
+        for dur, state_id in durations:
+            by_state[state_id].append(dur)
+            latest_by_state[state_id] = dur
+
+    rows = []
+    for state_id, durs in by_state.items():
+        rows.append(
+            {
+                "state_id": state_id,
+                "count": len(durs),
+                "min_ms": round(min(durs), 2),
+                "avg_ms": round(statistics.mean(durs), 2),
+                "max_ms": round(max(durs), 2),
+                "latest_ms": round(latest_by_state[state_id], 2),
+            }
+        )
+    rows.sort(key=lambda r: r["avg_ms"], reverse=True)
+
+    if json_mode:
+        json.dump(rows, fp=sys.stdout, indent=2)
+        print()
+        return
+
+    cols = [f"{'state_id':<60s}", f"{'count':>5s}", f"{'min_ms':>10s}"]
+    cols += [f"{'avg_ms':>10s}", f"{'max_ms':>10s}", f"{'latest_ms':>10s}"]
+    hdr = " ".join(cols)
+    print(f"Trend across {len(log_files)} log file(s):")
+    print(hdr)
+    print("-" * len(hdr))
+    for r in rows:
+        print(
+            f"{r['state_id']:<60s} {r['count']:>5d} {r['min_ms']:>10.2f} "
+            f"{r['avg_ms']:>10.2f} {r['max_ms']:>10.2f} {r['latest_ms']:>10.2f}"
+        )
+
+
+def run_compare(log1: Path, log2: Path, json_mode: bool) -> None:
+    """Compare two log files and highlight regressions (>20% slower)."""
+    if not log1.is_file():
+        raise SystemExit(f"Log file not found: {log1}")
+    if not log2.is_file():
+        raise SystemExit(f"Log file not found: {log2}")
+
+    def _to_dict(durations: list[tuple[float, str]]) -> dict[str, float]:
+        d: dict[str, float] = {}
+        for dur, state_id in durations:
+            d[state_id] = dur  # last occurrence wins
+        return d
+
+    d1 = _to_dict(parse_log(log1))
+    d2 = _to_dict(parse_log(log2))
+
+    common = set(d1) & set(d2)
+    rows = []
+    for state_id in common:
+        v1, v2 = d1[state_id], d2[state_id]
+        delta = v2 - v1
+        pct = (delta / v1 * 100) if v1 != 0 else float("inf") if delta > 0 else 0.0
+        regression = pct > 20
+        rows.append(
+            {
+                "state_id": state_id,
+                "log1_ms": round(v1, 2),
+                "log2_ms": round(v2, 2),
+                "delta_ms": round(delta, 2),
+                "change_pct": round(pct, 2),
+                "regression": regression,
+            }
+        )
+    rows.sort(key=lambda r: abs(r["delta_ms"]), reverse=True)
+
+    if json_mode:
+        json.dump(rows, fp=sys.stdout, indent=2)
+        print()
+        return
+
+    hdr = f"{'state_id':<60s} {'log1_ms':>10s} {'log2_ms':>10s} {'delta_ms':>10s} {'change%':>8s}  "
+    print(f"Comparison: {log1} vs {log2}")
+    print(hdr)
+    print("-" * len(hdr))
+    for r in rows:
+        marker = "\u26a0" if r["regression"] else " "
+        print(
+            f"{r['state_id']:<60s} {r['log1_ms']:>10.2f} {r['log2_ms']:>10.2f} "
+            f"{r['delta_ms']:>10.2f} {r['change_pct']:>7.1f}% {marker}"
+        )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Profile Salt state durations from logs")
-    parser.add_argument("log", type=Path, help="Path to salt-apply log file")
+    parser.add_argument("log", nargs="?", type=Path, help="Path to salt-apply log file")
     parser.add_argument("--top", type=int, default=10, help="Number of slowest states to show")
     parser.add_argument(
         "--min-ms", type=float, default=0.0, help="Only show durations >= this threshold"
@@ -142,7 +245,30 @@ def main() -> None:
         default="system_description",
         help="Top-level state used to compute include chains",
     )
+    parser.add_argument(
+        "--trend",
+        action="store_true",
+        help="Scan all logs/*.log files and show per-state duration statistics",
+    )
+    parser.add_argument(
+        "--compare",
+        nargs=2,
+        type=Path,
+        metavar=("LOG1", "LOG2"),
+        help="Compare two log files and highlight regressions",
+    )
     args = parser.parse_args()
+
+    if args.trend:
+        run_trend(json_mode=args.json)
+        return
+
+    if args.compare:
+        run_compare(args.compare[0], args.compare[1], json_mode=args.json)
+        return
+
+    if args.log is None:
+        parser.error("the following arguments are required: log")
 
     if not args.log.is_file():
         raise SystemExit(f"Log file not found: {args.log}")

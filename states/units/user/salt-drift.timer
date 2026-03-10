@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily Salt package drift check
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+RandomizedDelaySec=1h
+
+[Install]
+WantedBy=timers.target
