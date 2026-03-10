@@ -1,0 +1,7 @@
+[Unit]
+Description=Salt package drift detection
+
+[Service]
+Type=oneshot
+ExecStart=%h/src/salt/scripts/drift-notify.sh
+WorkingDirectory=%h/src/salt

@@ -26,6 +26,7 @@ DAEMON_SCRIPT="${SCRIPT_DIR}/salt-daemon.py"
 
 STATE="system_description"
 TEST_MODE=false
+SNAPPER_PRE_NUM=""
 
 for arg in "$@"; do
     case "$arg" in
@@ -104,6 +105,26 @@ get_sudo() {
         echo "error: no NOPASSWD sudo and no .password file found" >&2
         echo "  either configure NOPASSWD or create .password" >&2
         exit 1
+    fi
+}
+
+# ── Snapper: pre/post-apply snapshots ──────────────────────────────────────────
+snapshot_pre() {
+    if command -v snapper &>/dev/null; then
+        local num
+        num=$("${SUDO_CMD[@]}" snapper create --type pre --print-number \
+              --description "salt-pre: ${STATE}" 2>/dev/null) || return 0
+        SNAPPER_PRE_NUM="$num"
+        echo "(snapshot #${num}: pre-apply)"
+    fi
+}
+
+snapshot_post() {
+    if [[ -n "${SNAPPER_PRE_NUM:-}" ]]; then
+        local num
+        num=$("${SUDO_CMD[@]}" snapper create --type post --pre-number "${SNAPPER_PRE_NUM}" \
+              --print-number --description "salt-post: ${STATE}" 2>/dev/null) || return 0
+        echo "(snapshot #${num}: post-apply, pre=#${SNAPPER_PRE_NUM})"
     fi
 }
 
@@ -237,6 +258,8 @@ bootstrap_salt
 setup_config
 get_sudo
 
+snapshot_pre
+
 if ensure_daemon; then
     run_via_daemon
     RC=$?
@@ -244,6 +267,8 @@ else
     run_direct
     RC=$?
 fi
+
+snapshot_post
 
 # ── Post-run: check log for errors that may have been missed ──────────────────
 check_log_errors() {

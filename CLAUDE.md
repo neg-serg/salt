@@ -31,6 +31,11 @@ Packages managed declaratively via `states/data/packages.yaml` + domain-specific
 | `scripts/` | Utility scripts (linting, tool updates) |
 | `scripts/pkg-snapshot.zsh` | Analysis tool: captures `pacman -Qqe` → `packages.yaml` |
 | `scripts/pkg-drift.zsh` | Drift detection: compares declared vs actual packages |
+| `scripts/dep-graph.py` | State dependency graph generator (DOT/SVG/text) |
+| `scripts/health-check.sh` | Unified service health checker (system + user + HTTP) |
+| `scripts/drift-notify.sh` | Drift notification wrapper (notify-send + logging) |
+| `scripts/state-profiler.py` | State profiling with trend and comparison modes |
+| `tests/smoke-test.sh` | Container-based smoke test (Podman + archlinux) |
 
 ## Salt State Modules (36 files)
 
@@ -221,6 +226,48 @@ limine_flat_boot_entries:
 - **XDG user directories**: Canonical source is `environment.d/10-user.conf`. Custom short paths: `~/music`, `~/pic`, `~/vid`, `~/doc`, `~/dw`. Never use canonical XDG defaults (`~/Music`, `~/Pictures`, `~/Documents`, etc.) in code or fallback values.
 - **File ownership (chezmoi vs Salt)**: Each config file must have exactly one owner. Salt owns files requiring: (a) gopass secrets with fallback, (b) `watch`/`onchanges` service triggers, (c) non-XDG deploy paths (e.g. `~/.floorp/<profile>/`), (d) grain/pillar-conditional deployment. Chezmoi owns purely declarative user dotfiles. Files in `dotfiles/` that Salt sources via `salt://dotfiles/` MUST be listed in `dotfiles/.chezmoiignore`. Files where Salt has a separate template source (e.g. `salt://configs/`) MUST NOT exist in `dotfiles/`. Enforced by `scripts/lint-ownership.py`.
 - **URL/file opening**: Always use `handlr open`, never `xdg-open`. Stock `xdg-open` (xdg-utils) does not recognize Hyprland as a DE — it falls to the `generic` code path where Floorp silently ignores remote IPC and nothing opens. A shim at `~/.local/bin/xdg-open` redirects to `handlr open` for third-party tools, but our own code (dotfiles, scripts) should call `handlr open` directly.
+
+## Justfile Recipes
+
+| Recipe | Description |
+|---|---|
+| `apply STATE` | Apply a Salt state (default: `system_description`). Creates snapper pre/post snapshot pair automatically. |
+| `apply-opencode` | Apply opencode state only |
+| `apply-user-services` | Apply user_services state only |
+| `apply-installers` | Apply installers state only |
+| `rollback` | Revert to the last pre-apply btrfs snapshot (snapper undochange) |
+| `pkg-snapshot` | Capture current packages → `packages.yaml` |
+| `pkg-drift` | Compare declared vs installed packages |
+| `dep-graph *ARGS` | Generate state dependency graph (SVG by default, opens with handlr) |
+| `smoke-test *ARGS` | Run container-based smoke tests via Podman |
+| `health *ARGS` | Check all managed service health (colored table, `--json`, `--quiet`) |
+| `profile LOG` | Profile state durations from a log file |
+| `profile-trend` | Show min/max/avg/latest duration trends across all logs |
+| `profile-compare LOG1 LOG2` | Compare two apply logs, highlight regressions (>20% slower) |
+| `lint` | Run all linters (shellcheck, ruff, custom lint scripts) |
+| `fmt` | Format Python code |
+| `test STATE` | Dry-run a state (test=True) |
+| `validate` | Render all states and verify no errors |
+| `daemon` | Run salt-minion daemon |
+| `daemon-health` | Check salt-minion daemon health |
+| `index` | Index all Salt states |
+| `render-matrix` | Render feature matrix |
+| `idempotency STATE` | Check state idempotency |
+| `vm-smoke ROOTFS` | VM-based smoke test |
+| `logs-prune DAYS DRY_RUN` | Prune old log files |
+| `tools` | List managed tools |
+| `check-updates` | Check for tool updates |
+| `update-tools *ARGS` | Update managed tools |
+| `clean` | Clean build artifacts |
+| `help` | Show recipe help |
+
+### Snapshot Behavior
+
+Every `just apply` automatically creates a btrfs snapshot pair via snapper:
+- **Pre-snapshot**: Created before salt-call with label `salt-pre: <STATE>`
+- **Post-snapshot**: Created after salt-call with label `salt-post: <STATE>`
+- **Graceful degradation**: Silently skipped if snapper is unavailable
+- **Rollback**: `just rollback` reverts the last pre/post pair via `snapper undochange`
 
 ## Platform
 

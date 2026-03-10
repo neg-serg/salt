@@ -62,7 +62,7 @@ lint:
     .venv/bin/python3 scripts/lint-qml.py
     .venv/bin/python3 scripts/render-matrix.py
     # ShellCheck only understands sh/bash; skip zsh scripts.
-    bash -c 'set -euo pipefail; files=(); while IFS= read -r -d "" path; do first=$(head -n1 "$path"); case "$first" in ("#!/usr/bin/env bash"*|"#!/bin/bash"*|"#!/usr/bin/env sh"*|"#!/bin/sh"*|"#!/usr/bin/env dash"*|"#!/bin/dash"*) files+=("$path");; esac; done < <(find scripts states/scripts -maxdepth 1 -name "*.sh" -print0); if [ ${#files[@]} -gt 0 ]; then shellcheck -e SC2129 "${files[@]}"; else echo "No bash scripts for shellcheck"; fi'
+    bash -c 'set -euo pipefail; files=(); while IFS= read -r -d "" path; do first=$(head -n1 "$path"); case "$first" in ("#!/usr/bin/env bash"*|"#!/bin/bash"*|"#!/usr/bin/env sh"*|"#!/bin/sh"*|"#!/usr/bin/env dash"*|"#!/bin/dash"*) files+=("$path");; esac; done < <(find scripts states/scripts tests -maxdepth 1 -name "*.sh" -print0 2>/dev/null); if [ ${#files[@]} -gt 0 ]; then shellcheck -e SC2129 "${files[@]}"; else echo "No bash scripts for shellcheck"; fi'
     yamllint states/data/*.yaml states/configs/*.yaml .github/workflows/*.yaml
     taplo check $(find . -name '*.toml' -not -path './.venv/*' -not -path './.salt_runtime/*' 2>/dev/null)
 
@@ -199,3 +199,49 @@ logs-prune DAYS="14" DRY_RUN="":
     else \
         python3 scripts/cleanup-logs.py --days {{DAYS}}; \
     fi
+
+# Revert to last pre-apply btrfs snapshot
+rollback:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    pre=$(sudo snapper list --columns number,type,description | grep 'salt-pre:' | tail -1 | awk '{print $1}')
+    if [ -z "$pre" ]; then
+        echo "No salt pre-apply snapshot found" >&2
+        exit 1
+    fi
+    post=$(sudo snapper list --columns number,type,description | grep 'salt-post:' | tail -1 | awk '{print $1}')
+    if [ -z "$post" ]; then
+        echo "No matching post-apply snapshot found" >&2
+        exit 1
+    fi
+    echo "Rolling back: snapshot #${pre}..#${post}"
+    sudo snapper undochange "${pre}..${post}"
+
+# Generate Salt state dependency graph
+dep-graph *ARGS:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    args=({{ARGS}})
+    if [ ${#args[@]} -eq 0 ]; then
+        python3 scripts/dep-graph.py --format svg --output logs/dep-graph.svg
+        echo "Written to logs/dep-graph.svg"
+        handlr open logs/dep-graph.svg 2>/dev/null || echo "Open logs/dep-graph.svg to view"
+    else
+        python3 scripts/dep-graph.py "${args[@]}"
+    fi
+
+# Run container-based smoke test (Podman)
+smoke-test *ARGS:
+    tests/smoke-test.sh {{ARGS}}
+
+# Profile state durations with optional trend analysis
+profile-trend:
+    python3 scripts/state-profiler.py --trend
+
+# Compare two state apply logs for regressions
+profile-compare LOG1 LOG2:
+    python3 scripts/state-profiler.py --compare {{LOG1}} {{LOG2}}
+
+# Check health of all Salt-managed services
+health *ARGS:
+    scripts/health-check.sh {{ARGS}}

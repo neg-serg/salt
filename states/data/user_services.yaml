@@ -29,6 +29,8 @@ unit_files:
   - {id: vicinae_service, filename: vicinae.service}
   - {id: proxypilot_service, filename: proxypilot.service}
   - {id: openrgb_profile_service, filename: openrgb-profile.service}
+  - {id: salt_drift_service, filename: salt-drift.service}
+  - {id: salt_drift_timer, filename: salt-drift.timer}
 
 # Services/sockets to enable (systemctl --user enable)
 enable_services:
@@ -45,3 +47,4 @@ enable_services:
 enable_now_timers:
   - mbsync-gmail.timer
   - vdirsyncer.timer
+  - salt-drift.timer
