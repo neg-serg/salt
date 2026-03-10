@@ -1,0 +1,446 @@
+#!/usr/bin/env zsh
+# salt-alert — unified alert dispatcher for salt-monitor
+# Subcommands:
+#   --send     Dispatch alert (Telegram + desktop)
+#   --recover  Send recovery notification
+#   --health   CLI health table
+#   --test     Send test Telegram message
+#
+# Alert state: ~/.cache/salt-monitor/alerts/<scope>.<service>.<alert_type>
+# File format: <first_detected_epoch>:<alert_sent>:<last_alert_epoch>
+
+set -uo pipefail
+zmodload zsh/datetime    # provides $EPOCHSECONDS
+
+# ── Configuration (injected by Salt/Jinja) ───────────────────────────
+TELEGRAM_TOKEN="{{ telegram_token }}"
+TELEGRAM_UID="{{ telegram_uid }}"
+DESKTOP_NOTIFICATIONS={{ desktop_notifications | default(true) | lower }}
+{% raw %}
+STATE_DIR="${HOME}/.cache/salt-monitor/alerts"
+COOLDOWN_SECONDS=900          # 15-minute dedup cooldown
+BATCH_WINDOW=10               # 10-second batch collection window
+
+# ── Severity → display mapping ───────────────────────────────────────
+typeset -A SEVERITY_PREFIX SEVERITY_DUNST
+SEVERITY_PREFIX=(
+    [critical]='🔴 CRITICAL'
+    [warning]='🟡 WARNING'
+    [info]='ℹ️ INFO'
+)
+SEVERITY_DUNST=(
+    [critical]='critical'
+    [warning]='normal'
+    [info]='low'
+)
+
+# ── Helpers ──────────────────────────────────────────────────────────
+mkdir -p "$STATE_DIR"
+
+state_file() {
+    # $1=scope $2=service $3=alert_type
+    echo "${STATE_DIR}/${1}.${2}.${3}"
+}
+
+now_epoch() {
+    echo "$EPOCHSECONDS"
+}
+
+send_telegram() {
+    local msg="$1"
+    [[ -z "$TELEGRAM_TOKEN" || -z "$TELEGRAM_UID" ]] && return 1
+    curl -fsSL --max-time 10 \
+        "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
+        -d chat_id="$TELEGRAM_UID" \
+        -d parse_mode=HTML \
+        -d text="$msg" \
+        -d disable_web_page_preview=true \
+        >/dev/null 2>&1
+}
+
+send_desktop() {
+    local summary="$1" body="$2" severity="${3:-warning}"
+    # Check if desktop notifications are enabled
+    [[ "$DESKTOP_NOTIFICATIONS" != "true" ]] && return 0
+    # Only send if Hyprland session is active
+    [[ -z "${WAYLAND_DISPLAY:-}" ]] && return 0
+    command -v dunstify &>/dev/null || return 0
+
+    local urgency="${SEVERITY_DUNST[$severity]:-normal}"
+    dunstify -u "$urgency" -a "salt-monitor" "$summary" "$body" 2>/dev/null || true
+}
+
+send_desktop_with_action() {
+    local summary="$1" body="$2" severity="${3:-warning}" unit="$4" scope="${5:-system}"
+    [[ "$DESKTOP_NOTIFICATIONS" != "true" ]] && return 0
+    [[ -z "${WAYLAND_DISPLAY:-}" ]] && return 0
+    command -v dunstify &>/dev/null || return 0
+
+    local urgency="${SEVERITY_DUNST[$severity]:-normal}"
+    local action_result
+    action_result=$(dunstify -u "$urgency" -a "salt-monitor" \
+        --action="restart,Restart Service" \
+        "$summary" "$body" 2>/dev/null) || return 0
+
+    if [[ "$action_result" == "restart" ]]; then
+        if [[ "$scope" == "user" ]]; then
+            systemctl --user restart "${unit}.service" 2>/dev/null &
+        else
+            systemctl restart "${unit}.service" 2>/dev/null &
+        fi
+    fi
+}
+
+# ── Deduplication logic ──────────────────────────────────────────────
+check_cooldown() {
+    local sf="$1"
+    [[ ! -f "$sf" ]] && return 1  # no state = not in cooldown
+
+    local contents
+    contents=$(<"$sf")
+    local last_alert_epoch="${contents##*:}"
+    local current=$(now_epoch)
+
+    if (( current - last_alert_epoch < COOLDOWN_SECONDS )); then
+        return 0  # still in cooldown
+    fi
+    return 1  # cooldown expired, can re-alert
+}
+
+create_state() {
+    local sf="$1" alert_sent="${2:-0}"
+    local current=$(now_epoch)
+    echo "${current}:${alert_sent}:${current}" > "$sf"
+}
+
+update_state_sent() {
+    local sf="$1"
+    [[ ! -f "$sf" ]] && return
+    local contents
+    contents=$(<"$sf")
+    local first_epoch="${contents%%:*}"
+    local current=$(now_epoch)
+    echo "${first_epoch}:1:${current}" > "$sf"
+}
+
+get_downtime() {
+    local sf="$1"
+    [[ ! -f "$sf" ]] && echo "unknown" && return
+    local contents
+    contents=$(<"$sf")
+    local first_epoch="${contents%%:*}"
+    local current=$(now_epoch)
+    local diff=$((current - first_epoch))
+    if (( diff < 60 )); then
+        echo "${diff}s"
+    elif (( diff < 3600 )); then
+        echo "$((diff / 60))m $((diff % 60))s"
+    else
+        echo "$((diff / 3600))h $((diff % 3600 / 60))m"
+    fi
+}
+
+# ── Batch collection ─────────────────────────────────────────────────
+BATCH_FILE="${STATE_DIR}/.batch_pending"
+
+add_to_batch() {
+    local msg="$1" severity="$2" unit="${3:-}" scope="${4:-system}"
+    # Encode newlines to prevent batch file line splitting
+    msg="${msg//$'\n'/%%NL%%}"
+    echo "${severity}|${unit}|${scope}|${msg}" >> "$BATCH_FILE"
+}
+
+flush_batch() {
+    [[ ! -f "$BATCH_FILE" ]] && return
+
+    local lines=()
+    local severity rest unit scope msg prefix telegram_msg max_severity entry
+    local nl=$'\n'
+    while IFS= read -r line; do
+        lines+=("$line")
+    done < "$BATCH_FILE"
+    rm -f "$BATCH_FILE"
+
+    (( ${#lines[@]} == 0 )) && return
+
+    if (( ${#lines[@]} == 1 )); then
+        # Single alert — send directly
+        severity="${lines[1]%%|*}"
+        rest="${lines[1]#*|}"
+        unit="${rest%%|*}"
+        rest="${rest#*|}"
+        scope="${rest%%|*}"
+        msg="${rest#*|}"
+        msg="${msg//\%\%NL\%\%/${nl}}"
+
+        prefix="${SEVERITY_PREFIX[$severity]:-INFO}"
+        telegram_msg="<b>${prefix}</b>${nl}${msg}"
+        send_telegram "$telegram_msg"
+
+        if [[ -n "$unit" ]]; then
+            send_desktop_with_action "$prefix" "$msg" "$severity" "$unit" "$scope" &
+        else
+            send_desktop "$prefix" "$msg" "$severity"
+        fi
+    else
+        # Multiple alerts — batch into one message
+        telegram_msg="<b>🔴 ALERT BATCH (${#lines[@]} issues)</b>"
+        max_severity="info"
+        for entry in "${lines[@]}"; do
+            severity="${entry%%|*}"
+            rest="${entry#*|}"
+            rest="${rest#*|}"  # skip unit
+            rest="${rest#*|}"  # skip scope
+            msg="$rest"
+            msg="${msg//\%\%NL\%\%/${nl}}"
+            prefix="${SEVERITY_PREFIX[$severity]:-INFO}"
+            telegram_msg+="${nl}${nl}${prefix}: ${msg}"
+
+            # Track highest severity
+            if [[ "$severity" == "critical" ]]; then
+                max_severity="critical"
+            elif [[ "$severity" == "warning" && "$max_severity" != "critical" ]]; then
+                max_severity="warning"
+            fi
+        done
+        send_telegram "$telegram_msg"
+        send_desktop "$SEVERITY_PREFIX[$max_severity]" "${#lines[@]} monitoring issues detected" "$max_severity"
+    fi
+}
+
+# ── Subcommand: --send ───────────────────────────────────────────────
+cmd_send() {
+    local scope="" service="" alert_type="failed" severity="warning" message="" log_lines=""
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --scope)     scope="$2"; shift 2 ;;
+            --service)   service="$2"; shift 2 ;;
+            --type)      alert_type="$2"; shift 2 ;;
+            --severity)  severity="$2"; shift 2 ;;
+            --message)   message="$2"; shift 2 ;;
+            --log-lines) log_lines="$2"; shift 2 ;;
+            *) shift ;;
+        esac
+    done
+
+    [[ -z "$scope" || -z "$service" ]] && {
+        echo "error: --scope and --service required" >&2
+        return 1
+    }
+
+    local sf
+    sf=$(state_file "$scope" "$service" "$alert_type")
+
+    # Check deduplication
+    if [[ -f "$sf" ]] && check_cooldown "$sf"; then
+        return 0  # suppressed by cooldown
+    fi
+
+    # Create or update state
+    if [[ ! -f "$sf" ]]; then
+        create_state "$sf" 0
+    fi
+
+    # Build message (use $'\n' for real newlines — curl -d doesn't interpret \n)
+    local display_msg="<b>${service}</b> (${scope}) — ${alert_type}"
+    [[ -n "$message" ]] && display_msg+=$'\n'"${message}"
+    if [[ -n "$log_lines" ]]; then
+        display_msg+=$'\n\n'"<pre>$(echo "$log_lines" | head -5)</pre>"
+    fi
+
+    # Add to batch (caller is responsible for --flush after poll cycle)
+    add_to_batch "$display_msg" "$severity" "$service" "$scope"
+
+    # Mark state as sent
+    update_state_sent "$sf"
+}
+
+# ── Subcommand: --recover ────────────────────────────────────────────
+cmd_recover() {
+    local scope="" service="" alert_type="failed"
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --scope)    scope="$2"; shift 2 ;;
+            --service)  service="$2"; shift 2 ;;
+            --type)     alert_type="$2"; shift 2 ;;
+            *) shift ;;
+        esac
+    done
+
+    [[ -z "$scope" || -z "$service" ]] && return 1
+
+    local sf
+    sf=$(state_file "$scope" "$service" "$alert_type")
+    [[ ! -f "$sf" ]] && return 0  # no active alert to recover
+
+    local downtime
+    downtime=$(get_downtime "$sf")
+
+    # Always send recovery regardless of cooldown
+    local msg="<b>✅ RECOVERED</b>
+<b>${service}</b> (${scope}) is healthy again
+Downtime: ${downtime}"
+
+    send_telegram "$msg"
+    send_desktop "✅ RECOVERED" "${service} is healthy (down ${downtime})" "info"
+
+    # Clean up state file
+    rm -f "$sf"
+}
+
+# ── Subcommand: --health ─────────────────────────────────────────────
+cmd_health() {
+    local json_mode=false quiet_mode=false
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --json)  json_mode=true; shift ;;
+            --quiet) quiet_mode=true; shift ;;
+            *) shift ;;
+        esac
+    done
+
+    local exit_code=0
+    local -a json_entries=()
+    local svc active_state status_icon status_text
+    local af alert_name contents first_epoch duration dur_str
+
+    # ── System services ──────────────────────────────
+    if ! $quiet_mode && ! $json_mode; then
+        printf '\n\033[1m━━━ System Services ━━━\033[0m\n'
+    fi
+
+    local sys_services=(sshd unbound NetworkManager)
+    local opt_services=(cronie ollama llama-embed jellyfin transmission adguardhome loki promtail grafana netdata samba bitcoind)
+
+    for svc in "${sys_services[@]}" "${opt_services[@]}"; do
+        # Skip optional services that don't exist
+        if [[ " ${opt_services[*]} " == *" $svc "* ]]; then
+            systemctl cat "${svc}.service" &>/dev/null || continue
+        fi
+
+        active_state=$(systemctl show -p ActiveState --value "${svc}.service" 2>/dev/null)
+        if [[ "$active_state" == "active" ]]; then
+            status_icon='\033[32m●\033[0m'
+            status_text="active"
+        elif [[ "$active_state" == "failed" ]]; then
+            status_icon='\033[31m●\033[0m'
+            status_text="failed"
+            exit_code=1
+        else
+            status_icon='\033[33m●\033[0m'
+            status_text="$active_state"
+        fi
+
+        if $json_mode; then
+            json_entries+=("{\"name\":\"${svc}\",\"scope\":\"system\",\"status\":\"${status_text}\"}")
+        elif ! $quiet_mode; then
+            printf "  ${status_icon} %-24s %s\n" "$svc" "$status_text"
+        fi
+    done
+
+    # ── User services ────────────────────────────────
+    if ! $quiet_mode && ! $json_mode; then
+        printf '\n\033[1m━━━ User Services ━━━\033[0m\n'
+    fi
+
+    local user_svcs=(proxypilot openclaw-gateway mpd imapnotify-gmail surfingkeys-server vicinae)
+    for svc in "${user_svcs[@]}"; do
+        systemctl --user cat "${svc}.service" &>/dev/null || continue
+
+        active_state=$(systemctl --user show -p ActiveState --value "${svc}.service" 2>/dev/null)
+        if [[ "$active_state" == "active" ]]; then
+            status_icon='\033[32m●\033[0m'
+            status_text="active"
+        elif [[ "$active_state" == "failed" ]]; then
+            status_icon='\033[31m●\033[0m'
+            status_text="failed"
+            exit_code=1
+        else
+            status_icon='\033[33m●\033[0m'
+            status_text="$active_state"
+        fi
+
+        if $json_mode; then
+            json_entries+=("{\"name\":\"${svc}\",\"scope\":\"user\",\"status\":\"${status_text}\"}")
+        elif ! $quiet_mode; then
+            printf "  ${status_icon} %-24s %s\n" "$svc" "$status_text"
+        fi
+    done
+
+    # ── Active alerts ────────────────────────────────
+    local alert_files=("${STATE_DIR}"/*(.N))
+    if (( ${#alert_files[@]} > 0 )); then
+        if ! $quiet_mode && ! $json_mode; then
+            printf '\n\033[1m━━━ Active Alerts ━━━\033[0m\n'
+        fi
+        for af in "${alert_files[@]}"; do
+            alert_name="${af:t}"
+            [[ "$alert_name" == .* ]] && continue  # skip dot files
+            contents=$(<"$af")
+            first_epoch="${contents%%:*}"
+            duration=$(( EPOCHSECONDS - first_epoch ))
+            if (( duration < 60 )); then
+                dur_str="${duration}s"
+            elif (( duration < 3600 )); then
+                dur_str="$((duration / 60))m"
+            else
+                dur_str="$((duration / 3600))h $((duration % 3600 / 60))m"
+            fi
+
+            if $json_mode; then
+                json_entries+=("{\"alert\":\"${alert_name}\",\"since_epoch\":${first_epoch},\"duration\":\"${dur_str}\"}")
+            elif ! $quiet_mode; then
+                printf '  \033[31m⚠\033[0m  %-30s  %s ago\n' "$alert_name" "$dur_str"
+            fi
+        done
+    fi
+
+    # ── Output ───────────────────────────────────────
+    if $json_mode; then
+        echo "[$(IFS=,; echo "${json_entries[*]}")]"
+    elif ! $quiet_mode; then
+        echo ""
+    fi
+
+    return $exit_code
+}
+
+# ── Subcommand: --test ───────────────────────────────────────────────
+cmd_test() {
+    echo "Sending test alert to Telegram..."
+    local msg="<b>🧪 TEST ALERT</b>
+salt-alert is working correctly.
+Host: $(hostname)
+Time: $(date '+%Y-%m-%d %H:%M:%S')"
+
+    if send_telegram "$msg"; then
+        echo "✓ Test message sent successfully"
+        send_desktop "🧪 TEST" "salt-alert is working" "info"
+    else
+        echo "✗ Failed to send test message" >&2
+        echo "  Check TELEGRAM_TOKEN and TELEGRAM_UID" >&2
+        return 1
+    fi
+}
+
+# ── Main dispatch ────────────────────────────────────────────────────
+case "${1:-}" in
+    --send)    shift; cmd_send "$@" ;;
+    --recover) shift; cmd_recover "$@" ;;
+    --flush)   flush_batch ;;
+    --health)  shift; cmd_health "$@" ;;
+    --test)    cmd_test ;;
+    *)
+        echo "Usage: salt-alert {--send|--recover|--flush|--health|--test}" >&2
+        echo "  --send    --scope <s> --service <s> --severity <s> --message <m>" >&2
+        echo "  --recover --scope <s> --service <s>" >&2
+        echo "  --flush   Flush pending batch alerts" >&2
+        echo "  --health  [--json|--quiet]" >&2
+        echo "  --test" >&2
+        exit 1
+        ;;
+esac
+{% endraw %}

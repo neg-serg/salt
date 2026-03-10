@@ -1,0 +1,57 @@
+# Loki alert rules — deployed by monitoring_alerts.sls when Loki is enabled
+# Evaluated by Loki ruler component at 30-second intervals
+groups:
+  - name: salt-monitor-rules
+    interval: 30s
+    rules:
+      # Error burst: >10 errors per minute from any unit
+      - alert: ErrorBurst
+        expr: |
+          sum by (unit) (
+            count_over_time({job="systemd-journal"} |= "level=error" [1m])
+          ) > 10
+        for: 0m
+        labels:
+          severity: warning
+          source: loki
+        annotations:
+          summary: "Error burst from {{ '{{' }} $labels.unit {{ '}}' }}"
+          description: "{{ '{{' }} $value {{ '}}' }} errors in last minute"
+
+      # SSH brute force: >5 auth failures in 5 minutes from same source
+      - alert: SSHBruteForce
+        expr: |
+          sum by (source_ip) (
+            count_over_time({unit="sshd.service"} |~ "Failed password|Invalid user" [5m])
+          ) > 5
+        for: 0m
+        labels:
+          severity: critical
+          source: loki
+        annotations:
+          summary: "SSH brute force from {{ '{{' }} $labels.source_ip {{ '}}' }}"
+          description: "{{ '{{' }} $value {{ '}}' }} failed attempts in 5 minutes"
+
+      # OOM killer: immediate alert
+      - alert: OOMKiller
+        expr: |
+          count_over_time({job="systemd-journal"} |= "Out of memory: Killed process" [1m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          source: loki
+        annotations:
+          summary: "OOM killer activated"
+          description: "A process was killed by the OOM killer"
+
+      # btrfs errors: immediate alert
+      - alert: BtrfsError
+        expr: |
+          count_over_time({job="systemd-journal", transport="kernel"} |~ "BTRFS (error|warning)" [1m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          source: loki
+        annotations:
+          summary: "btrfs filesystem error detected"
+          description: "Kernel reported btrfs error — check filesystem immediately"

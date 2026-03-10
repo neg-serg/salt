@@ -1,0 +1,6 @@
+[Unit]
+Description=Salt monitor watchdog (restarts salt-monitor if dead)
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'if ! systemctl --user is-active --quiet salt-monitor.service; then systemctl --user restart salt-monitor.service && %h/.local/bin/salt-alert --send --scope meta --service salt-monitor --type watchdog --severity warning --message "salt-monitor was dead, restarted by watchdog" && %h/.local/bin/salt-alert --flush; fi'

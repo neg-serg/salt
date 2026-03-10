@@ -1,0 +1,10 @@
+[Unit]
+Description=Salt monitor watchdog timer
+
+[Timer]
+OnBootSec=120
+OnUnitActiveSec=60
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -101,25 +101,8 @@ Environment=XDG_RUNTIME_DIR=/run/user/1000
 
 {{ user_service_restart('restart_openclaw_on_config_change', 'openclaw-gateway.service', onlyif='systemctl --user is-active openclaw-gateway.service >/dev/null 2>&1', onchanges=['file: openclaw_config']) }}
 
-# ── Health check script ──────────────────────────────────────────────
-openclaw_health_script:
-  file.managed:
-    - name: {{ home }}/.local/bin/openclaw-health-check
-    - source: salt://scripts/openclaw-health-check.sh
-    - template: jinja
-    - user: {{ user }}
-    - group: {{ user }}
-    - mode: '0755'
-    - context:
-        telegram_token: {{ _telegram_token | tojson }}
-        telegram_uid: {{ _telegram_uid | tojson }}
-
-# ── Health check systemd units ───────────────────────────────────────
-{{ user_service_file('openclaw_health_service', 'openclaw-health.service') }}
-{{ user_service_file('openclaw_health_timer', 'openclaw-health.timer') }}
-
-{{ user_service_enable('openclaw_health_enabled',
-    start_now=['openclaw-health.timer'],
-    requires=['file: openclaw_health_script', 'file: openclaw_health_service', 'file: openclaw_health_timer']) }}
+# ── Health check: REMOVED — now handled by monitoring_alerts.sls ─────
+# Old openclaw-health-check.sh, openclaw-health.{service,timer} replaced
+# by unified salt-monitor + salt-alert system.
 
 {% endif %}
