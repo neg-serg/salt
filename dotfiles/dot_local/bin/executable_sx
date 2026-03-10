@@ -1,3 +1,7 @@
 #!/usr/bin/env zsh
-# sx: alias for swayimg-first (swayimg wrapper with VCS filtering)
+# sx: image viewer wrapper (launches swayimg via swayimg-first session manager)
+if ! command -v swayimg > /dev/null 2>&1; then
+  print -u2 "sx: swayimg not found (expected at ~/.local/bin/swayimg)"
+  exit 1
+fi
 exec swayimg-first "$@"
