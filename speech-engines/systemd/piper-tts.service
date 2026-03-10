@@ -1,0 +1,15 @@
+[Unit]
+Description=Piper TTS Server (OpenAI-compatible, CPU fallback)
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=%h/src/1st-level/@rag/speech-engines/.venv-piper/bin/python %h/src/1st-level/@rag/speech-engines/piper-server.py --port 8001 --voices-dir %h/src/1st-level/@rag/speech-engines/voices
+Restart=on-failure
+RestartSec=5
+
+# CPU-only, very lightweight
+MemoryMax=1G
+
+[Install]
+WantedBy=default.target
