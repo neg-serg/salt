@@ -61,6 +61,16 @@
     }
   },
 
+  "messages": {
+    "tts": {
+      "auto": "inbound",
+      "provider": "edge",
+      "edge": {
+        "voice": "en-US-AndrewMultilingualNeural"
+      }
+    }
+  },
+
   "gateway": {
     "mode": "local",
     "port": 18789,
@@ -79,9 +89,14 @@
         "enabled": true,
         "models": [
           {
+            "type": "cli",
+            "command": "whisper-cli",
+            "args": ["-m", "/home/neg/src/1st-level/@rag/speech-engines/voices/ggml-large-v3-turbo.bin", "-f", "{{ '{{MediaPath}}' }}", "-l", "auto", "--no-prints"],
+            "timeoutSeconds": 30
+          },
+          {
             "provider": "groq",
-            "model": "whisper-large-v3-turbo",
-            "capabilities": ["audio"]
+            "model": "whisper-large-v3-turbo"
           }
         ]
       }
