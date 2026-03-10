@@ -21,6 +21,8 @@ models:
   - deepseek-coder-v2:16b  # DeepSeek; MoE, 160K ctx, GPT-4 class (вытесняет deepseek-coder v1) ~9GB
   - codestral:22b           # Mistral; 32K ctx, мультиязычный code gen, иная база обучения ~13GB
   - starcoder2:15b          # BigCode; 600+ языков, The Stack v2, лучший для редких языков ~9GB
+  # ── Vision-specialized ─────────────────────────────────────────
+  - qwen2.5vl:7b            # Alibaba; OCR+semantic, лучший <10B vision (charts, docs, screenshots) ~5GB
   # ── Не включены (строго вытеснены) ───────────────────────────────
   # deepseek-coder:6.7b    → вытеснен deepseek-coder-v2:16b (та же семья, новее, лучше)
   # codellama:7b           → вытеснен qwen2.5-coder:7b (проигрывает на всех бенчмарках)
