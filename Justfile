@@ -244,4 +244,4 @@ profile-compare LOG1 LOG2:
 
 # Check health of all Salt-managed services
 health *ARGS:
-    scripts/health-check.sh {{ARGS}}
+    ~/.local/bin/salt-alert --health {{ARGS}}

@@ -1,0 +1,14 @@
+[Unit]
+Description=Salt reactive monitoring daemon
+After=network-online.target default.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/salt-monitor
+Restart=on-failure
+RestartSec=10s
+Environment=WAYLAND_DISPLAY=wayland-1
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+
+[Install]
+WantedBy=default.target

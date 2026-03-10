@@ -1,0 +1,419 @@
+#!/usr/bin/env zsh
+# salt-monitor — persistent monitoring daemon
+# Polls systemd service states every 15 seconds
+# Polls resource usage every 60 seconds
+# Dispatches alerts via salt-alert
+
+set -uo pipefail
+zmodload zsh/datetime    # provides $EPOCHSECONDS
+
+# ── Configuration ────────────────────────────────────────────────────
+POLL_INTERVAL=15              # seconds between service state polls
+RESOURCE_INTERVAL=60          # seconds between resource checks
+HTTP_CHECK_INTERVAL=4         # every Nth poll cycle (60s = 4 * 15s)
+HTTP_TIMEOUT=5                # curl timeout for health checks
+HTTP_CONSECUTIVE_FAIL=3       # consecutive failures before alert
+BOOT_GRACE_SECONDS=180        # suppress non-failed alerts during boot
+MAINTENANCE_LOCK="${HOME}/.cache/salt-monitor/maintenance.lock"
+STATE_DIR="${HOME}/.cache/salt-monitor/alerts"
+ALERT_CMD="${HOME}/.local/bin/salt-alert"
+
+# ── Service inventory (injected by Salt/Jinja) ──────────────────────
+{% set svc_data = monitored %}
+# System services to monitor
+typeset -a SYS_SERVICES SYS_SEVERITIES SYS_HEALTH_URLS SYS_OPTIONAL
+{% for svc in svc_data.system_services %}
+SYS_SERVICES+=({{ svc.name }})
+SYS_SEVERITIES+=({{ svc.severity }})
+SYS_HEALTH_URLS+=({{ svc.health_url | default('none', true) }})
+SYS_OPTIONAL+=({{ svc.optional | default(false) | lower }})
+{% endfor %}
+
+# User services to monitor
+typeset -a USR_SERVICES USR_SEVERITIES USR_OPTIONAL
+{% for svc in svc_data.user_services %}
+USR_SERVICES+=({{ svc.name }})
+USR_SEVERITIES+=({{ svc.severity }})
+USR_OPTIONAL+=({{ svc.optional | default(false) | lower }})
+{% endfor %}
+
+# User timers to monitor
+typeset -a USR_TIMERS USR_TIMER_SEVERITIES
+{% for tmr in svc_data.user_timers %}
+USR_TIMERS+=({{ tmr.name }})
+USR_TIMER_SEVERITIES+=({{ tmr.severity }})
+{% endfor %}
+
+# Resource thresholds
+{% set res = svc_data.resources %}
+typeset -a FS_PATHS FS_WARN FS_CRIT FS_OPTIONAL
+{% for fs in res.filesystems %}
+FS_PATHS+=({{ fs.path }})
+FS_WARN+=({{ fs.warning_pct }})
+FS_CRIT+=({{ fs.critical_pct }})
+FS_OPTIONAL+=({{ fs.optional | default(false) | lower }})
+{% endfor %}
+MEM_WARN_PCT={{ res.memory.warning_available_pct }}
+CPU_WARN_PCT={{ res.cpu.warning_load_pct }}
+CPU_SUSTAINED_MIN={{ res.cpu.sustained_minutes }}
+BTRFS_WARN_PCT={{ res.btrfs.warning_pct }}
+{% raw %}
+# ── State tracking ──────────────────────────────────────────────────
+typeset -A PREV_FAILED           # service → 1 if was failed last poll
+typeset -A HTTP_FAIL_COUNT       # service → consecutive HTTP fail count
+typeset -A INACTIVE_FIRST_SEEN   # service → epoch when first seen inactive
+CPU_HIGH_COUNT=0                  # sustained high CPU counter
+LAST_DRIFT_DATE=""                # date of last drift check
+BOOT_TIME=$EPOCHSECONDS
+POLL_COUNT=0
+RESOURCE_LAST=0
+
+mkdir -p "$STATE_DIR"
+
+# ── Logging ──────────────────────────────────────────────────────────
+log() {
+    echo "[$(date '+%H:%M:%S')] $*"
+}
+
+# ── Check if in maintenance mode ────────────────────────────────────
+in_maintenance() {
+    [[ -f "$MAINTENANCE_LOCK" ]]
+}
+
+# ── Check if in boot grace period ───────────────────────────────────
+in_grace_period() {
+    (( EPOCHSECONDS - BOOT_TIME < BOOT_GRACE_SECONDS ))
+}
+
+# ── Alert wrapper (checks maintenance lock) ─────────────────────────
+dispatch_alert() {
+    if in_maintenance; then
+        log "SUPPRESSED (maintenance): $*"
+        return 0
+    fi
+    "$ALERT_CMD" --send "$@"
+}
+
+dispatch_recover() {
+    "$ALERT_CMD" --recover "$@"
+}
+
+# ── Service state polling ───────────────────────────────────────────
+poll_services() {
+    local failed_system failed_user svc severity optional active_state log_lines
+
+    # Get current failed units (system scope)
+    failed_system=$(systemctl list-units --state=failed --no-legend --plain 2>/dev/null | awk '{print $1}' | sed 's/\.service$//')
+
+    # Check each system service
+    for i in {1..${#SYS_SERVICES[@]}}; do
+        svc="${SYS_SERVICES[$i]}"
+        severity="${SYS_SEVERITIES[$i]}"
+        optional="${SYS_OPTIONAL[$i]}"
+
+        # Skip optional services whose unit doesn't exist
+        if [[ "$optional" == "true" ]]; then
+            systemctl cat "${svc}.service" &>/dev/null || continue
+        fi
+
+        active_state=$(systemctl show -p ActiveState --value "${svc}.service" 2>/dev/null)
+
+        if [[ "$active_state" == "failed" ]]; then
+            # Service failed — always alert (even during grace period)
+            if [[ -z "${PREV_FAILED[$svc]:-}" ]]; then
+                PREV_FAILED[$svc]=1
+                log_lines=$(journalctl -u "${svc}.service" -n 5 --no-pager 2>/dev/null || echo "(no logs)")
+                log "FAILED: $svc"
+                dispatch_alert --scope system --service "$svc" --type failed \
+                    --severity "$severity" \
+                    --message "Service entered failed state" \
+                    --log-lines "$log_lines"
+            fi
+        elif [[ "$active_state" == "inactive" ]]; then
+            # Inactive — might be intentional stop or not-yet-started
+            if in_grace_period; then
+                continue  # skip during boot grace
+            fi
+            # For non-optional services, alert after 30s delay
+            if [[ "$optional" != "true" ]]; then
+                if [[ -z "${INACTIVE_FIRST_SEEN[$svc]:-}" ]]; then
+                    INACTIVE_FIRST_SEEN[$svc]=$EPOCHSECONDS
+                elif (( EPOCHSECONDS - INACTIVE_FIRST_SEEN[$svc] > 30 )); then
+                    if [[ -z "${PREV_FAILED[$svc]:-}" ]]; then
+                        PREV_FAILED[$svc]=1
+                        log "INACTIVE (30s+): $svc"
+                        dispatch_alert --scope system --service "$svc" --type inactive \
+                            --severity "$severity" \
+                            --message "Service inactive for >30 seconds (not failed, possibly stopped)"
+                    fi
+                fi
+            fi
+        else
+            # Service is active/activating — check for recovery
+            if [[ -n "${PREV_FAILED[$svc]:-}" ]]; then
+                log "RECOVERED: $svc"
+                dispatch_recover --scope system --service "$svc" --type failed
+                dispatch_recover --scope system --service "$svc" --type inactive
+                unset "PREV_FAILED[$svc]"
+            fi
+            unset "INACTIVE_FIRST_SEEN[$svc]" 2>/dev/null
+        fi
+    done
+
+    # Get current failed units (user scope)
+    failed_user=$(systemctl --user list-units --state=failed --no-legend --plain 2>/dev/null | awk '{print $1}' | sed 's/\.service$//')
+
+    # Check each user service
+    for i in {1..${#USR_SERVICES[@]}}; do
+        svc="${USR_SERVICES[$i]}"
+        severity="${USR_SEVERITIES[$i]}"
+        optional="${USR_OPTIONAL[$i]}"
+
+        if [[ "$optional" == "true" ]]; then
+            systemctl --user cat "${svc}.service" &>/dev/null || continue
+        fi
+
+        active_state=$(systemctl --user show -p ActiveState --value "${svc}.service" 2>/dev/null)
+
+        if [[ "$active_state" == "failed" ]]; then
+            if [[ -z "${PREV_FAILED[user_${svc}]:-}" ]]; then
+                PREV_FAILED[user_${svc}]=1
+                log_lines=$(journalctl --user -u "${svc}.service" -n 5 --no-pager 2>/dev/null || echo "(no logs)")
+                log "FAILED (user): $svc"
+                dispatch_alert --scope user --service "$svc" --type failed \
+                    --severity "$severity" \
+                    --message "User service entered failed state" \
+                    --log-lines "$log_lines"
+            fi
+        elif [[ "$active_state" == "inactive" ]]; then
+            if in_grace_period; then
+                continue
+            fi
+            if [[ "$optional" != "true" ]]; then
+                if [[ -z "${INACTIVE_FIRST_SEEN[user_${svc}]:-}" ]]; then
+                    INACTIVE_FIRST_SEEN[user_${svc}]=$EPOCHSECONDS
+                elif (( EPOCHSECONDS - INACTIVE_FIRST_SEEN[user_${svc}] > 30 )); then
+                    if [[ -z "${PREV_FAILED[user_${svc}]:-}" ]]; then
+                        PREV_FAILED[user_${svc}]=1
+                        log "INACTIVE (user, 30s+): $svc"
+                        dispatch_alert --scope user --service "$svc" --type inactive \
+                            --severity "$severity" \
+                            --message "User service inactive for >30 seconds"
+                    fi
+                fi
+            fi
+        else
+            if [[ -n "${PREV_FAILED[user_${svc}]:-}" ]]; then
+                log "RECOVERED (user): $svc"
+                dispatch_recover --scope user --service "$svc" --type failed
+                dispatch_recover --scope user --service "$svc" --type inactive
+                unset "PREV_FAILED[user_${svc}]"
+            fi
+            unset "INACTIVE_FIRST_SEEN[user_${svc}]" 2>/dev/null
+        fi
+    done
+}
+
+# ── HTTP health checks ──────────────────────────────────────────────
+poll_http_health() {
+    in_grace_period && return
+    local svc health_url severity optional active_state
+
+    for i in {1..${#SYS_SERVICES[@]}}; do
+        svc="${SYS_SERVICES[$i]}"
+        health_url="${SYS_HEALTH_URLS[$i]}"
+        severity="${SYS_SEVERITIES[$i]}"
+        optional="${SYS_OPTIONAL[$i]}"
+
+        [[ "$health_url" == "none" ]] && continue
+
+        # Skip if unit doesn't exist
+        if [[ "$optional" == "true" ]]; then
+            systemctl cat "${svc}.service" &>/dev/null || continue
+        fi
+
+        # Skip if service is not running
+        active_state=$(systemctl show -p ActiveState --value "${svc}.service" 2>/dev/null)
+        [[ "$active_state" != "active" ]] && continue
+
+        if curl -sf --max-time "$HTTP_TIMEOUT" "$health_url" >/dev/null 2>&1; then
+            # Healthy
+            if [[ -n "${HTTP_FAIL_COUNT[$svc]:-}" ]]; then
+                HTTP_FAIL_COUNT[$svc]=0
+                dispatch_recover --scope system --service "$svc" --type unhealthy
+            fi
+        else
+            # Unhealthy
+            HTTP_FAIL_COUNT[$svc]=$(( ${HTTP_FAIL_COUNT[$svc]:-0} + 1 ))
+            if (( HTTP_FAIL_COUNT[$svc] >= HTTP_CONSECUTIVE_FAIL )); then
+                log "UNHEALTHY: $svc (${HTTP_FAIL_COUNT[$svc]} consecutive failures)"
+                dispatch_alert --scope system --service "$svc" --type unhealthy \
+                    --severity "$severity" \
+                    --message "Running but health endpoint failing (${health_url})"
+            fi
+        fi
+    done
+}
+
+# ── Resource monitoring ──────────────────────────────────────────────
+poll_resources() {
+    local fs_path warn crit optional usage_pct fs_key avail
+    local mem_total mem_avail avail_pct top_procs
+    local load_avg nproc_count load_x100 threshold_x100
+    local btrfs_output data_used data_total meta_used meta_total data_pct meta_pct
+
+    # ── Filesystem usage ─────────────────────────────
+    for i in {1..${#FS_PATHS[@]}}; do
+        fs_path="${FS_PATHS[$i]}"
+        warn="${FS_WARN[$i]}"
+        crit="${FS_CRIT[$i]}"
+        optional="${FS_OPTIONAL[$i]}"
+
+        # Skip optional mounts that don't exist
+        if [[ "$optional" == "true" ]]; then
+            mountpoint -q "$fs_path" 2>/dev/null || continue
+        fi
+
+        usage_pct=$(df --output=pcent "$fs_path" 2>/dev/null | tail -1 | tr -d ' %')
+        [[ -z "$usage_pct" ]] && continue
+
+        fs_key="${fs_path//\//_}"
+        [[ "$fs_key" == "_" ]] && fs_key="root"
+
+        if (( usage_pct >= crit )); then
+            avail=$(df -h --output=avail "$fs_path" 2>/dev/null | tail -1 | tr -d ' ')
+            dispatch_alert --scope resource --service "disk.${fs_key}" --type full \
+                --severity critical \
+                --message "Filesystem ${fs_path} at ${usage_pct}% (${avail} free)"
+        elif (( usage_pct >= warn )); then
+            avail=$(df -h --output=avail "$fs_path" 2>/dev/null | tail -1 | tr -d ' ')
+            dispatch_alert --scope resource --service "disk.${fs_key}" --type full \
+                --severity warning \
+                --message "Filesystem ${fs_path} at ${usage_pct}% (${avail} free)"
+        else
+            dispatch_recover --scope resource --service "disk.${fs_key}" --type full
+        fi
+    done
+
+    # ── Memory usage ─────────────────────────────────
+    mem_total=$(awk '/^MemTotal:/ {print $2}' /proc/meminfo)
+    mem_avail=$(awk '/^MemAvailable:/ {print $2}' /proc/meminfo)
+
+    if [[ -n "$mem_total" && -n "$mem_avail" && "$mem_total" -gt 0 ]]; then
+        avail_pct=$(( mem_avail * 100 / mem_total ))
+
+        if (( avail_pct < MEM_WARN_PCT )); then
+            top_procs=$(ps aux --sort=-rss | head -4 | tail -3 | awk '{printf "  %s (%.0fMB)\n", $11, $6/1024}')
+            dispatch_alert --scope resource --service memory --type low \
+                --severity warning \
+                --message "Memory low: ${avail_pct}% available ($(( mem_avail / 1024 ))MB free)\nTop processes:\n${top_procs}"
+        else
+            dispatch_recover --scope resource --service memory --type low
+        fi
+    fi
+
+    # ── CPU load ─────────────────────────────────────
+    load_avg=$(awk '{print $1}' /proc/loadavg)
+    nproc_count=$(nproc)
+
+    # Compare as integers (load * 100 vs threshold * nproc) — use awk instead of bc
+    load_x100=$(awk -v l="$load_avg" 'BEGIN {printf "%d", l * 100}')
+    threshold_x100=$(( CPU_WARN_PCT * nproc_count ))
+
+    if (( load_x100 > threshold_x100 )); then
+        CPU_HIGH_COUNT=$(( CPU_HIGH_COUNT + 1 ))
+        if (( CPU_HIGH_COUNT >= CPU_SUSTAINED_MIN )); then
+            top_procs=$(ps aux --sort=-pcpu | head -4 | tail -3 | awk '{printf "  %s (%.1f%%)\n", $11, $3}')
+            dispatch_alert --scope resource --service cpu --type high \
+                --severity warning \
+                --message "CPU load sustained high: ${load_avg} (threshold: ${CPU_WARN_PCT}% of ${nproc_count} cores for ${CPU_SUSTAINED_MIN}min)\nTop processes:\n${top_procs}"
+        fi
+    else
+        if (( CPU_HIGH_COUNT > 0 )); then
+            CPU_HIGH_COUNT=0
+            dispatch_recover --scope resource --service cpu --type high
+        fi
+    fi
+
+    # ── btrfs usage ──────────────────────────────────
+    if command -v btrfs &>/dev/null; then
+        btrfs_output=$(btrfs filesystem usage -b / 2>/dev/null) || return
+
+        data_used=$(echo "$btrfs_output" | awk '/Data,/ {getline; if (/Used:/) print $2}')
+        data_total=$(echo "$btrfs_output" | awk '/Data,/ {split($2,a,":"); gsub(/Size:/,"",a[1]); print $2}')
+        meta_used=$(echo "$btrfs_output" | awk '/Metadata,/ {getline; if (/Used:/) print $2}')
+        meta_total=$(echo "$btrfs_output" | awk '/Metadata,/ {split($2,a,":"); gsub(/Size:/,"",a[1]); print $2}')
+
+        # Parse btrfs data ratio
+        if [[ -n "$data_used" && -n "$data_total" && "$data_total" -gt 0 ]] 2>/dev/null; then
+            data_pct=$(( data_used * 100 / data_total ))
+            if (( data_pct >= BTRFS_WARN_PCT )); then
+                dispatch_alert --scope resource --service btrfs --type data \
+                    --severity warning \
+                    --message "btrfs data usage at ${data_pct}% ($(( data_used / 1073741824 ))GB / $(( data_total / 1073741824 ))GB)"
+            else
+                dispatch_recover --scope resource --service btrfs --type data
+            fi
+        fi
+
+        if [[ -n "$meta_used" && -n "$meta_total" && "$meta_total" -gt 0 ]] 2>/dev/null; then
+            meta_pct=$(( meta_used * 100 / meta_total ))
+            if (( meta_pct >= BTRFS_WARN_PCT )); then
+                dispatch_alert --scope resource --service btrfs --type metadata \
+                    --severity critical \
+                    --message "btrfs METADATA usage at ${meta_pct}% — this can cause write failures even with free data space"
+            else
+                dispatch_recover --scope resource --service btrfs --type metadata
+            fi
+        fi
+    fi
+}
+
+# ── Drift check (daily) ─────────────────────────────────────────────
+check_drift() {
+    local today
+    today=$(date +%F)
+    [[ "$today" == "$LAST_DRIFT_DATE" ]] && return
+    LAST_DRIFT_DATE="$today"
+
+    local drift_script="${HOME}/.local/share/salt/scripts/pkg-drift.zsh"
+    [[ -x "$drift_script" ]] || drift_script="$(dirname "$(dirname "$ALERT_CMD")")/../scripts/pkg-drift.zsh"
+    [[ -x "$drift_script" ]] || return
+
+    if ! "$drift_script" --quiet 2>/dev/null; then
+        dispatch_alert --scope system --service drift --type detected \
+            --severity warning \
+            --message "Package drift detected — run 'just pkg-drift' for details"
+    fi
+}
+
+# ── Main loop ────────────────────────────────────────────────────────
+log "salt-monitor starting (PID $$, grace period ${BOOT_GRACE_SECONDS}s)"
+
+while true; do
+    POLL_COUNT=$(( POLL_COUNT + 1 ))
+
+    # Service state polling (every 15s)
+    poll_services
+
+    # HTTP health checks (every 4th cycle = 60s)
+    if (( POLL_COUNT % HTTP_CHECK_INTERVAL == 0 )); then
+        poll_http_health
+    fi
+
+    # Resource checks (every 60s)
+    now_ts=$EPOCHSECONDS
+    if (( now_ts - RESOURCE_LAST >= RESOURCE_INTERVAL )); then
+        RESOURCE_LAST=$now_ts
+        poll_resources
+    fi
+
+    # Daily drift check
+    check_drift
+
+    # Flush any pending alerts from this poll cycle
+    "$ALERT_CMD" --flush
+
+    sleep "$POLL_INTERVAL"
+done
+{% endraw %}

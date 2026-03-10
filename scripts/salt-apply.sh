@@ -253,10 +253,25 @@ run_direct() {
     return "$rc"
 }
 
+# ── Maintenance lock (suppresses salt-monitor alerts during apply) ─────────────
+MAINTENANCE_LOCK="${HOME}/.cache/salt-monitor/maintenance.lock"
+
+maintenance_lock_create() {
+    mkdir -p "${HOME}/.cache/salt-monitor"
+    touch "$MAINTENANCE_LOCK"
+}
+
+maintenance_lock_remove() {
+    rm -f "$MAINTENANCE_LOCK"
+}
+
 # ── Main ───────────────────────────────────────────────────────────────────────
 bootstrap_salt
 setup_config
 get_sudo
+
+maintenance_lock_create
+trap maintenance_lock_remove EXIT
 
 snapshot_pre
 

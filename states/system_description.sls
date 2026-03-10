@@ -91,6 +91,7 @@ include:
   - services
   - services_bitcoind
   - monitoring
+  - monitoring_alerts
   - monitoring_loki
   - user_services
   - snapshots

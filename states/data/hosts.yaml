@@ -27,6 +27,7 @@ defaults:
       loki: false
       promtail: false
       grafana: false
+      alerts: true
     fancontrol: false
     dns:
       unbound: false

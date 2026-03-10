@@ -1,0 +1,115 @@
+# Service inventory for reactive monitoring (salt-monitor + salt-alert)
+# Consumed via import_yaml in monitoring_alerts.sls
+
+# Global settings
+settings:
+  desktop_notifications: false
+
+# System services (systemd system scope)
+system_services:
+  # Always monitored (core system)
+  - name: sshd
+    severity: critical
+  - name: unbound
+    severity: critical
+  - name: cronie
+    severity: warning
+    optional: true
+  - name: NetworkManager
+    severity: critical
+
+  # Optional (only monitored if unit file exists)
+  - name: ollama
+    severity: warning
+    health_url: "http://127.0.0.1:11434/api/tags"
+    optional: true
+  - name: llama-embed
+    severity: warning
+    health_url: "http://127.0.0.1:11435/health"
+    optional: true
+  - name: jellyfin
+    severity: info
+    optional: true
+  - name: transmission
+    severity: info
+    optional: true
+  - name: adguardhome
+    severity: warning
+    health_url: "http://127.0.0.1:3000/"
+    optional: true
+  - name: loki
+    severity: warning
+    health_url: "http://127.0.0.1:3100/ready"
+    optional: true
+  - name: promtail
+    severity: info
+    optional: true
+  - name: grafana
+    severity: info
+    health_url: "http://127.0.0.1:3030/api/health"
+    optional: true
+  - name: netdata
+    severity: info
+    optional: true
+  - name: samba
+    severity: info
+    optional: true
+  - name: bitcoind
+    severity: info
+    optional: true
+
+# User services (systemd user scope)
+user_services:
+  - name: proxypilot
+    severity: critical
+  - name: openclaw-gateway
+    severity: warning
+  - name: mpd
+    severity: info
+    optional: true
+  - name: imapnotify-gmail
+    severity: info
+    optional: true
+  - name: surfingkeys-server
+    severity: info
+    optional: true
+  - name: vicinae
+    severity: info
+    optional: true
+
+# User timers (checked for enabled+active, not running)
+user_timers:
+  - name: mbsync-gmail.timer
+    severity: info
+  - name: vdirsyncer.timer
+    severity: info
+  - name: salt-drift.timer
+    severity: warning
+
+# Resource thresholds
+resources:
+  filesystems:
+    - path: /
+      warning_pct: 85
+      critical_pct: 95
+    - path: /home
+      warning_pct: 85
+      critical_pct: 95
+    - path: /mnt/one
+      warning_pct: 85
+      critical_pct: 95
+      optional: true
+    - path: /mnt/zero
+      warning_pct: 85
+      critical_pct: 95
+      optional: true
+
+  memory:
+    warning_available_pct: 10
+
+  cpu:
+    warning_load_pct: 90
+    sustained_minutes: 5
+
+  btrfs:
+    warning_pct: 85
