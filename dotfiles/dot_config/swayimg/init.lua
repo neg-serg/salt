@@ -142,6 +142,7 @@ swayimg.viewer.on_key("p", function() swayimg.viewer.open("prev") end)
 swayimg.viewer.on_key("BackSpace", function() swayimg.viewer.open("prev") end)
 swayimg.viewer.on_key("g", function() swayimg.viewer.open("first") end)
 swayimg.viewer.on_key("Shift+g", function() swayimg.viewer.open("last") end)
+swayimg.viewer.on_key("space", function() swayimg.viewer.open("next") end)
 swayimg.viewer.on_key("Next", function() swayimg.viewer.open("next") end)
 swayimg.viewer.on_key("Prior", function() swayimg.viewer.open("prev") end)
 
