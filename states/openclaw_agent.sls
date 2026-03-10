@@ -4,12 +4,12 @@
 {% import_yaml 'data/versions.yaml' as ver %}
 {% if host.features.openclaw %}
 
-# ── Secret resolution (gopass primary, config-file fallback) ─────────
+# ── Secret resolution (gopass primary, credentials-file fallback) ─────
 {% set _proxypilot_cfg = home ~ '/.config/proxypilot/config.yaml' %}
 {% set _proxy_key = gopass_secret('api/proxypilot-local', "awk '/^api-keys:/{getline; sub(/^[[:space:]]*-[[:space:]]*\"?/, \"\"); sub(/\"?[[:space:]]*$/, \"\"); print; exit}' " ~ _proxypilot_cfg ~ " 2>/dev/null || true") %}
-{% set _openclaw_cfg = home ~ '/.openclaw/openclaw.json' %}
-{% set _telegram_token = gopass_secret('api/openclaw-telegram', "python3 -c \"import json; print(json.load(open('" ~ _openclaw_cfg ~ "')).get('channels',{}).get('telegram',{}).get('botToken',''))\" 2>/dev/null || true") %}
-{% set _telegram_uid = gopass_secret('api/openclaw-telegram-uid', "python3 -c \"import json; print(json.load(open('" ~ _openclaw_cfg ~ "')).get('channels',{}).get('telegram',{}).get('allowFrom',[''])[0])\" 2>/dev/null || true") %}
+{% set _creds = home ~ '/.openclaw/credentials' %}
+{% set _telegram_token = gopass_secret('api/openclaw-telegram', "cat " ~ _creds ~ "/telegram-token 2>/dev/null || true") %}
+{% set _telegram_uid = gopass_secret('api/openclaw-telegram-uid', "cat " ~ _creds ~ "/telegram-uid 2>/dev/null || true") %}
 {% set _telegram_uid_levra = 'REDACTED_UID_LEVRA' %}
 {% set _telegram_uid_guest2 = 'REDACTED_UID_GUEST2' %}
 {% set _groq_key = gopass_secret('api/groq', "true") %}
@@ -38,6 +38,8 @@
   ('openclaw_guest2_migrate',     'guest2'),
   ('openclaw_groq_stt_migrate',   'groq-stt'),
   ('openclaw_groq_models_migrate','groq-models'),
+  ('openclaw_telegram_reseed',    'telegram-reseed'),
+  ('openclaw_telegram_creds',     'telegram-creds'),
 ] %}
 
 {% for state_id, marker in migrations %}
@@ -76,7 +78,7 @@ openclaw_config:
         groq_key: {{ _groq_key | tojson }}
     - require:
       - file: openclaw_config_dir
-      - cmd: openclaw_groq_models_migrate
+      - cmd: openclaw_telegram_creds
 
 # ── Lingering (user services survive logout) ─────────────────────────
 openclaw_lingering:

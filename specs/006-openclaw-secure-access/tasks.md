@@ -50,7 +50,7 @@
 ## Phase 5: Verification
 
 - [x] T012 Run `just` to verify Salt renders cleanly with all changes to `openclaw_agent.sls`
-- [ ] T013 Functional test (manual): verify health timer starts, test each skill via local Web UI and Telegram bot
+- [x] T013 Functional test (manual): verify health timer starts, test each skill via local Web UI and Telegram bot
 - [x] T014 Write future expansion note at `specs/006-openclaw-secure-access/TODO.md` describing Tailscale integration path
 
 ---
