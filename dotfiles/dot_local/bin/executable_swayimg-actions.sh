@@ -1,5 +1,5 @@
 #!/usr/bin/env zsh
-# swayimg-actions: move/copy/rotate/wallpaper for swayimg; dests limited to $XDG_PICTURES_DIR; before mv send prev_file via IPC to avoid end-of-list crash
+# swayimg-actions: move/copy/rotate/wallpaper for swayimg; dests limited to $XDG_PICTURES_DIR
 
 IFS=$'\n\t'
 if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -18,41 +18,12 @@ rofi_cmd='rofi -dmenu -sort -matching fuzzy -no-plugins -auto-select -theme sway
 pics_dir_default="$HOME/pic"
 pics_dir="${XDG_PICTURES_DIR:-$pics_dir_default}"
 
-# ---- IPC helpers -----------------------------------------------------------
-# Find swayimg IPC socket from env or runtime dir (best-effort)
-_find_ipc_socket() {
-  if [ -n "${SWAYIMG_IPC:-}" ] && [ -S "$SWAYIMG_IPC" ]; then
-    printf '%s' "$SWAYIMG_IPC"
-    return 0
-  fi
-  # Fallback: pick the newest socket that looks like swayimg-*.sock
-  local rt="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
-  if [ -d "$rt" ]; then
-    # shellcheck disable=SC2012,SC2296
-    local -a matches=()
-    # Zsh globbing: (Nom) = Null glob + order by modification time
-    matches=("$rt"/swayimg-*.sock(Nom))
-    local s="${matches[1]:-}"
-    if [ -n "$s" ] && [ -S "$s" ]; then
-      printf '%s' "$s"
-      return 0
-    fi
-  fi
-  return 1
-}
-
-_ipc_send() { # _ipc_send <command>
-  local sock cmd
-  cmd="$1"
-  sock="$(_find_ipc_socket || true)"
-  [ -n "$sock" ] || return 0
-  if command -v socat > /dev/null 2>&1; then
-    printf '%s\n' "$cmd" | socat - "UNIX-CONNECT:$sock" > /dev/null 2>&1 || true
-  elif command -v ncat > /dev/null 2>&1; then
-    printf '%s\n' "$cmd" | ncat -U "$sock" > /dev/null 2>&1 || true
-  else
-    return 0
-  fi
+# ---- signal helpers --------------------------------------------------------
+# Send USR1 to swayimg to trigger prev_file (configured via on_signal in init.lua)
+_signal_prev() {
+  local pid
+  pid="$(pgrep -x swayimg 2> /dev/null | head -1)" || true
+  [ -n "$pid" ] && kill -USR1 "$pid" 2> /dev/null || true
 }
 
 # ---- swww helpers -----------------------------------------------------------
@@ -165,9 +136,9 @@ proc() { # mv/cp with remembered last dest
   fi
   [ -z "${dest}" ] && exit 0
   if [ -d "$dest" ]; then
-    # Avoid swayimg crash when current list ends after move: switch away first
+    # Signal swayimg to navigate away before moving the current file
     if [ "$cmd" = "mv" ]; then
-      _ipc_send "prev_file"
+      _signal_prev
     fi
     while read -r line; do
       "$cmd" "$(realpath "$line")" "$dest"
