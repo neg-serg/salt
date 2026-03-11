@@ -67,82 +67,88 @@ enabled_services:
 
 package_checks:
   pkg:
-    - base
-    - linux-cachyos-lts
-    - linux-firmware
-    - limine
-    - btrfs-progs
-    - snapper
-    - snap-pac
-    - networkmanager
-    - openssh
-    - paru
-    - sudo
-    - zsh
-    - git
-    - hyprland
-    - kitty
-    - podman
-    - pipewire
-    - rust
-    - clang
-    - cmake
-    - nodejs
-    - bat
-    - fd
-    - fzf
-    - ripgrep
-    - zoxide
-    - mpd
-    - mpv
-    - ffmpegthumbnailer
-    - btop
-    - fastfetch
-    - smartmontools
-    - nmap
-    - socat
-    - ollama
-    - telegram-desktop
-    - tmux
-    - gopass
-    - chezmoi
-    - git-delta
-    - libvirt
-    - qemu-desktop
-    - rofi
-    - dunst
-    - swappy
-    - quickshell
-    - swayosd
-    - wl-clip-persist
-    - ttf-material-symbols-variable
-    - ttf-jetbrains-mono-nerd
-    - ttf-icomoon-feather
-    - otf-font-awesome
-    - noto-fonts
-    - noto-fonts-emoji
-    - ttf-ibm-plex
-    - inter-font
-    - imagemagick
-    - yt-dlp
-    - unbound
-    - avahi
-    - samba
-    - grafana
+    # -- base system --
+    - base                            # minimal Arch Linux installation
+    - btrfs-progs                     # btrfs filesystem utilities
+    - limine                          # multiprotocol bootloader
+    - linux-cachyos-lts               # CachyOS LTS kernel
+    - linux-firmware                  # firmware files for Linux
+    - networkmanager                  # network connection manager
+    - openssh                         # SSH server and client
+    - paru                            # AUR helper
+    - snap-pac                        # pacman hook for snapper snapshots
+    - snapper                         # btrfs snapshot manager
+    - sudo                            # privilege escalation
+    - zsh                             # Z shell
+    # -- desktop --
+    - dunst                           # notification daemon
+    - hyprland                        # Wayland tiling compositor
+    - kitty                           # GPU-accelerated terminal
+    - quickshell                      # Qt6 desktop shell framework
+    - rofi                            # application launcher
+    - swappy                          # screenshot annotation tool
+    - swayosd                         # on-screen display for Wayland
+    - wl-clip-persist                 # Wayland clipboard persistence
+    # -- dev tools --
+    - chezmoi                         # dotfile manager
+    - clang                           # C/C++ compiler (LLVM)
+    - cmake                           # build system generator
+    - git                             # version control system
+    - git-delta                       # syntax-highlighting diff pager
+    - nodejs                          # JavaScript runtime
+    - rust                            # Rust toolchain
+    # -- cli tools --
+    - bat                             # cat with syntax highlighting
+    - btop                            # resource monitor
+    - fastfetch                       # system information tool
+    - fd                              # find alternative
+    - fzf                             # fuzzy finder
+    - gopass                          # password manager (GPG)
+    - imagemagick                     # image manipulation toolkit
+    - ripgrep                         # fast recursive grep
+    - socat                           # multipurpose relay tool
+    - tmux                            # terminal multiplexer
+    - yt-dlp                          # media downloader
+    - zoxide                          # smart cd replacement
+    # -- media --
+    - ffmpegthumbnailer               # video thumbnail generator
+    - mpd                             # music player daemon
+    - mpv                             # media player
+    - pipewire                        # audio/video server
+    # -- services --
+    - avahi                           # mDNS/DNS-SD service discovery
+    - grafana                         # monitoring dashboard
+    - libvirt                         # virtualization API
+    - nmap                            # network scanner
+    - ollama                          # local LLM inference server
+    - qemu-desktop                    # machine emulator (desktop profile)
+    - samba                           # SMB/CIFS file sharing
+    - smartmontools                   # disk health monitoring
+    - telegram-desktop                # Telegram messenger
+    - unbound                         # DNS resolver
+    # -- fonts --
+    - inter-font                      # Inter typeface
+    - noto-fonts                      # Google Noto fonts
+    - noto-fonts-emoji                # Google Noto emoji fonts
+    - otf-font-awesome                # Font Awesome icons
+    - ttf-ibm-plex                    # IBM Plex typeface
+    - ttf-icomoon-feather             # Feather icons
+    - ttf-jetbrains-mono-nerd         # JetBrains Mono with Nerd glyphs
+    - ttf-material-symbols-variable   # Material Symbols variable font
   aur:
-    - pyprland
-    - wlogout
-    - carapace-bin
-    - doggo
-    - pipemixer
-    - newsraft
-    - salt
-    - amneziawg-tools
-    - amneziawg-dkms
+    - amneziawg-dkms                  # AmneziaWG DKMS kernel module
+    - amneziawg-tools                 # AmneziaWG userspace tools
+    - carapace-bin                    # multi-shell completion engine
+    - doggo                           # DNS client (dig alternative)
+    - newsraft                        # RSS/Atom feed reader (TUI)
+    - pipemixer                       # PipeWire TUI mixer
+    - pyprland                        # Hyprland plugin manager
+    - salt                            # infrastructure automation
+    - wlogout                         # Wayland logout menu
   custom:
-    - raise
-    - neg-pretty-printer
-    - richcolors
-    - albumdetails
-    - taoup
-    - iosevka-neg-fonts
+    - albumdetails                    # music album metadata tool
+    - iosevka-neg-fonts               # custom Iosevka font build
+    - neg-pretty-printer              # custom pretty-printer
+    - raise                           # window raise utility
+    - richcolors                      # terminal color utility
+    - taoup                           # Unix philosophy quotes
