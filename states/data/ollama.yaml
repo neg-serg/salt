@@ -23,6 +23,12 @@ models:
   - starcoder2:15b          # BigCode; 600+ языков, The Stack v2, лучший для редких языков ~9GB
   # ── Vision-specialized ─────────────────────────────────────────
   - qwen2.5vl:7b            # Alibaba; OCR+semantic, лучший <10B vision (charts, docs, screenshots) ~5GB
+  # ── Uncensored / large ────────────────────────────────────────────
+  - qwen3:235b-a22b         # Alibaba; MoE 235B (22B active), минимальная цензура ~142GB (GPU+RAM offload)
+  - qwen3:32b               # Alibaba; dense 32B, полностью в 24GB VRAM Q4 ~20GB
+  - llama3.1:70b            # Meta; 128K ctx, top-tier quality ~43GB (GPU+RAM offload)
+  - mistral-nemo             # Mistral+NVIDIA; 12B, 128K ctx, creative/uncensored ~7.5GB
+  - gemma3:27b              # Google; multimodal 27B, 128K ctx, 140+ языков ~17GB
   # ── Не включены (строго вытеснены) ───────────────────────────────
   # deepseek-coder:6.7b    → вытеснен deepseek-coder-v2:16b (та же семья, новее, лучше)
   # codellama:7b           → вытеснен qwen2.5-coder:7b (проигрывает на всех бенчмарках)
