@@ -252,7 +252,6 @@ PACMAN_PKGS=(
     tealdeer            # fast tldr pages client (Rust)
     tmux                # terminal multiplexer
     toilet              # fancy ASCII art text (figlet alternative)
-    translate-shell     # Google Translate CLI
     udiskie             # automounter for removable media
     ugrep               # ultra-fast grep with fuzzy/archive support
     urlscan             # URL extractor from emails/text
@@ -369,7 +368,6 @@ PACMAN_PKGS=(
 
     spotifyd            # headless Spotify daemon
     sbctl               # Secure Boot key manager
-    patchmatrix         # JACK patchbay matrix GUI
 )
 
 # ===================================================================
