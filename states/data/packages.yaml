@@ -230,7 +230,6 @@ other:
   - neomutt  # feature-rich terminal email client
   - nerdctl  # Docker-compatible containerd CLI
   - nicotine+  # Soulseek P2P music client
-  - nix  # functional package manager
   - nm-connection-editor  # NetworkManager GUI editor
   - nss-mdns  # glibc mDNS hostname resolution
   - nuspell  # fast spellchecking library
@@ -247,9 +246,7 @@ other:
   - parallel  # shell job parallelizer
   - paru  # AUR helper
   - pastel  # CLI color tool (generate, convert, analyze)
-  - patchmatrix  # JACK patchbay (flow matrix style)
   - patool  # portable archive file manager
-  - pavucontrol  # PulseAudio volume control GUI
   - pbzip2  # parallel bzip2 implementation
   - pcmanfm  # lightweight file manager
   - pcsc-tools  # smart card reader tools
@@ -312,7 +309,6 @@ other:
   - tmux  # terminal multiplexer
   - toilet  # FIGlet-compatible text art generator
   - traceroute  # network path tracer
-  - translate-shell  # CLI translator (Google Translate)
   - transmission-cli  # BitTorrent daemon and CLI
   - transmission-gtk  # BitTorrent GTK client
   - tree  # directory listing as tree
