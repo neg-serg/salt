@@ -1,21 +1,21 @@
 apps:
-  - com.github.qarmin.czkawka
-  - com.github.tmewett.BrogueCE
-  - com.google.AndroidStudio
-  - com.google.Chrome
-  - com.obsproject.Studio
-  - com.shatteredpixel.shatteredpixeldungeon
-  - com.vysp3r.ProtonPlus
-  - io.github.dimtpap.coppwr
-  - io.github.woelper.Oculante
-  - md.obsidian.Obsidian
-  - me.timschneeberger.jdsp4linux
-  - net.davidotek.pupgui2
-  - net.lutris.Lutris
-  - net.pcsx2.PCSX2
-  - net.sapples.LiveCaptions
-  - net.veloren.airshipper
-  - org.gimp.GIMP
-  - org.libreoffice.LibreOffice
-  - org.zdoom.GZDoom
-  - tk.deat.Jazz2Resurrection
+  - com.github.qarmin.czkawka                   # duplicate/similar file finder
+  - com.github.tmewett.BrogueCE                 # Brogue Community Edition roguelike
+  - com.google.AndroidStudio                    # Android IDE
+  - com.google.Chrome                           # Google Chrome browser
+  - com.obsproject.Studio                       # OBS streaming/recording studio
+  - com.shatteredpixel.shatteredpixeldungeon    # Shattered Pixel Dungeon roguelike
+  - com.vysp3r.ProtonPlus                       # Proton/Wine version manager
+  - io.github.dimtpap.coppwr                    # PipeWire graph inspector
+  - io.github.woelper.Oculante                  # fast image viewer
+  - md.obsidian.Obsidian                        # knowledge base / note-taking
+  - me.timschneeberger.jdsp4linux               # audio DSP equalizer
+  - net.davidotek.pupgui2                       # ProtonUp-Qt Proton manager
+  - net.lutris.Lutris                           # game launcher/manager
+  - net.pcsx2.PCSX2                             # PS2 emulator
+  - net.sapples.LiveCaptions                    # real-time speech captioning
+  - net.veloren.airshipper                       # Veloren game launcher
+  - org.gimp.GIMP                               # image editor
+  - org.libreoffice.LibreOffice                 # office suite
+  - org.zdoom.GZDoom                            # GZDoom source port
+  - tk.deat.Jazz2Resurrection                   # Jazz Jackrabbit 2 reimplementation

@@ -2,8 +2,10 @@
 #
 # ── Schema ────────────────────────────────────────────────────────────
 #
-# hyprland_packages: <string>     — space-separated pacman packages for Hyprland
-# screenshot_packages: <string>   — space-separated pacman packages for screenshots
+# hyprland_packages:
+#   - <package>                    — pacman packages for Hyprland (one per line, inline comment)
+# screenshot_packages:
+#   - <package>                    — pacman packages for screenshots (one per line, inline comment)
 #
 # running_services:
 #   - <service_name>               — systemd services to start and enable
@@ -14,12 +16,17 @@
 #
 # ─────────────────────────────────────────────────────────────────────
 
-hyprland_packages: >-
-  hyprpaper hypridle hyprlock hyprpolkitagent
-  xdg-desktop-portal-hyprland hyprpicker wlr-randr
+hyprland_packages:
+  - hypridle                            # idle daemon for Hyprland
+  - hyprlock                            # screen locker for Hyprland
+  - hyprpicker                          # color picker for Hyprland
+  - hyprpolkitagent                     # polkit authentication agent
+  - wlr-randr                           # wlroots display configuration tool
+  - xdg-desktop-portal-hyprland         # XDG desktop portal backend for Hyprland
 
-screenshot_packages: >-
-  grim slurp
+screenshot_packages:
+  - grim                                # Wayland screenshot tool
+  - slurp                               # Wayland region selector
 
 running_services:
   - NetworkManager

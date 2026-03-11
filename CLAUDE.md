@@ -227,6 +227,18 @@ limine_flat_boot_entries:
 - **File ownership (chezmoi vs Salt)**: Each config file must have exactly one owner. Salt owns files requiring: (a) gopass secrets with fallback, (b) `watch`/`onchanges` service triggers, (c) non-XDG deploy paths (e.g. `~/.floorp/<profile>/`), (d) grain/pillar-conditional deployment. Chezmoi owns purely declarative user dotfiles. Files in `dotfiles/` that Salt sources via `salt://dotfiles/` MUST be listed in `dotfiles/.chezmoiignore`. Files where Salt has a separate template source (e.g. `salt://configs/`) MUST NOT exist in `dotfiles/`. Enforced by `scripts/lint-ownership.py`.
 - **URL/file opening**: Always use `handlr open`, never `xdg-open`. Stock `xdg-open` (xdg-utils) does not recognize Hyprland as a DE — it falls to the `generic` code path where Floorp silently ignores remote IPC and nothing opens. A shim at `~/.local/bin/xdg-open` redirects to `handlr open` for third-party tools, but our own code (dotfiles, scripts) should call `handlr open` directly.
 - **Package descriptions**: Every package entry in `states/data/packages.yaml` must have an inline YAML comment describing what the package is. Format: `- pkg-name  # short description`. This applies to all categories (`base`, `desktop`, `dev`, `network`, `system`, `other`, `aur`, etc.). When adding or modifying packages, always include or preserve the description comment.
+- **Data file package lists**: Package lists in `states/data/*.yaml` must use YAML list format (one package per line), not space-separated strings. Each entry must have an inline comment. Entries are sorted lexicographically by default; logical grouping is acceptable for large sets. When a data file stores a list as `>-` (folded scalar), convert it to a YAML list and use `| join(' ')` in the template call. Example:
+  ```yaml
+  # ✓ correct — list with comments, sorted
+  packages:
+    - grim   # Wayland screenshot tool
+    - slurp  # Wayland region selector
+  ```
+  ```yaml
+  # ✗ wrong — opaque string, no comments possible
+  packages: >-
+    grim slurp
+  ```
 
 ## Justfile Recipes
 
