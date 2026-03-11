@@ -59,7 +59,7 @@ greetd_session_wrapper:
 greetd_wallpaper:
   cmd.run:
     - name: |
-        wallpaper=$(tr '\0' '\n' < {{ home }}/.cache/swww/{{ host.primary_output }} 2>/dev/null | rg '^/')
+        wallpaper=$(tr '\0' '\n' < {{ home }}/.cache/swww-vulkan/{{ host.primary_output }} 2>/dev/null | rg '^/')
         if [ -n "$wallpaper" ] && [ -f "$wallpaper" ]; then
           cp -f "$wallpaper" {{ home }}/.cache/greeter-wallpaper
         fi
@@ -67,7 +67,7 @@ greetd_wallpaper:
     - shell: /bin/bash
     - unless: |
         [ -f {{ home }}/.cache/greeter-wallpaper ] &&
-        [ ! {{ home }}/.cache/swww/{{ host.primary_output }} -nt {{ home }}/.cache/greeter-wallpaper ]
+        [ ! {{ home }}/.cache/swww-vulkan/{{ host.primary_output }} -nt {{ home }}/.cache/greeter-wallpaper ]
     - require:
       - file: greetd_config_dir
 {% endif %}

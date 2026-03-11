@@ -273,7 +273,6 @@ PACMAN_PKGS=(
     hyprland            # tiling Wayland compositor
     hypridle            # Hyprland idle daemon
     hyprlock            # Hyprland lock screen
-    hyprpaper           # Hyprland wallpaper daemon
     kitty               # GPU-accelerated terminal emulator
     podman              # rootless container engine (Docker alternative)
     xdg-desktop-portal-hyprland  # XDG desktop portal for Hyprland
@@ -281,8 +280,6 @@ PACMAN_PKGS=(
     dunst               # notification daemon
     rofi                # application launcher / dmenu replacement
     swappy              # Wayland screenshot editor / annotator
-    swaybg              # Wayland wallpaper setter
-    swww                # animated Wayland wallpaper daemon
     wev                 # Wayland event viewer (xev equivalent)
     wf-recorder         # Wayland screen recorder
     wtype               # Wayland keyboard input tool (xdotool equivalent)

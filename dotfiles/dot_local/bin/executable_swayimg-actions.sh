@@ -26,11 +26,11 @@ _signal_prev() {
   [ -n "$pid" ] && kill -USR1 "$pid" 2> /dev/null || true
 }
 
-# ---- swww helpers -----------------------------------------------------------
+# ---- swww-vulkan helpers ----------------------------------------------------
 ensure_swww() {
-  # Start swww daemon if not running
-  if ! swww query > /dev/null 2>&1; then
-    swww init > /dev/null 2>&1 || true
+  # Start swww-vulkan daemon if not running
+  if ! swww-vulkan query > /dev/null 2>&1; then
+    swww-vulkan init > /dev/null 2>&1 || true
     sleep 0.05
   fi
 }
@@ -47,7 +47,7 @@ screen_wh() {
   [ -n "${wh:-}" ] && printf '%s\n' "$wh" || printf '1920x1080\n'
 }
 
-# Render image to tmp file based on mode for swww
+# Render image to tmp file based on mode for swww-vulkan
 # writes output path to $tmp_wall
 render_for_mode() {
   local mode="$1" file="$2" wh
@@ -165,12 +165,12 @@ copy_name() { # copy absolute path to clipboard
   [ -x "$HOME/bin/pic-notify" ] && "$HOME/bin/pic-notify" "$file" || true
 }
 
-wall() { # wall <mode> <file> via swww
+wall() { # wall <mode> <file> via swww-vulkan
   local mode="$1" file="$2"
   ensure_swww
   render_for_mode "$mode" "$file" || return 0
   # Allow user to override transition opts via $SWWW_FLAGS
-  swww img "${SWWW_IMAGE_OVERRIDE:-$tmp_wall}" ${SWWW_FLAGS:-} > /dev/null 2>&1 || true
+  swww-vulkan img "${SWWW_IMAGE_OVERRIDE:-$tmp_wall}" ${SWWW_FLAGS:-} > /dev/null 2>&1 || true
   echo "$file" >> "${XDG_DATA_HOME:-$HOME/.local/share}/wl/wallpaper.list" 2> /dev/null || true
 }
 
