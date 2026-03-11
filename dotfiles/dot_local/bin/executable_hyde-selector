@@ -19,18 +19,15 @@ case "$1" in
     done | rofi -dmenu -theme "$ROFI_THEME" -p "Wallpaper")
 
     if [ -n "$selected" ]; then
-      # Assuming swww is used
-      if command -v swww > /dev/null; then
-        swww img "$WP_DIR/$selected" --transition-type grow --transition-pos "$(hyprctl cursorpos | sed 's/,//g')"
+      # Set wallpaper via swww-vulkan
+      if command -v swww-vulkan > /dev/null; then
+        swww-vulkan img "$WP_DIR/$selected" --transition-type grow --transition-pos "$(hyprctl cursorpos | sed 's/,//g')"
         # Save wallpaper for hyprlock
         mkdir -p "$HOME/.cache/hyde"
         ln -sf "$WP_DIR/$selected" "$HOME/.cache/hyde/wall.set.png"
 
         # Reload Kitty
         pkill -USR1 kitty || true
-      elif command -v hyprpaper > /dev/null; then
-        # This requires hyprctl hyprpaper commands
-        true
       fi
     fi
     ;;

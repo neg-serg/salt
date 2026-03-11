@@ -21,10 +21,8 @@ desktop:
   - hypridle  # Hyprland idle daemon
   - hyprland  # dynamic tiling Wayland compositor
   - hyprlock  # GPU-accelerated screen locker for Hyprland
-  - hyprpaper  # Wayland wallpaper utility
   - hyprpolkitagent  # polkit agent for Hyprland (QML)
   - rofi  # app launcher and dmenu replacement
-  - swaybg  # Wayland wallpaper setter
   - loupe  # GNOME image viewer
   - swayimg  # lightweight Wayland image viewer
   - swayosd  # on-screen display for volume/caps/brightness
@@ -299,7 +297,6 @@ other:
   - s-tui  # terminal CPU stress test and monitor
   - sudo  # privileged command execution
   - swappy  # Wayland screenshot editor
-  - swww  # Wayland wallpaper daemon (animated)
   - systemd-language-server  # LSP for systemd units
   - systemd-resolvconf  # resolvconf via systemd-resolved
   - taplo-cli  # TOML toolkit (formatter, linter)
