@@ -72,8 +72,8 @@ pcscd_socket_enabled:
 {{ service_stopped('tuned_stopped', 'tuned') }}
 
 # --- Hyprland ecosystem packages ---
-{{ pacman_install('hyprland_desktop', desktop.hyprland_packages) }}
-{{ pacman_install('screenshot_tools', desktop.screenshot_packages) }}
+{{ pacman_install('hyprland_desktop', desktop.hyprland_packages | join(' ')) }}
+{{ pacman_install('screenshot_tools', desktop.screenshot_packages | join(' ')) }}
 {{ pacman_install('rsync', 'rsync') }}
 {{ pacman_install('localsend', 'localsend') }}
 {{ pacman_install('chromium', 'chromium') }}
@@ -87,6 +87,23 @@ swayimg_local_build:
   file.symlink:
     - name: {{ home }}/.local/bin/swayimg
     - target: {{ home }}/src/swayimg/build/swayimg
+    - force: True
+    - user: {{ user }}
+    - group: {{ user }}
+
+# --- swww-vulkan: use local build from ~/src/swww-vulkan instead of hyprpaper ---
+swww_vulkan_local_build:
+  file.symlink:
+    - name: {{ home }}/.local/bin/swww-vulkan
+    - target: {{ home }}/src/swww-vulkan/target/release/swww-vulkan
+    - force: True
+    - user: {{ user }}
+    - group: {{ user }}
+
+swww_vulkan_daemon_local_build:
+  file.symlink:
+    - name: {{ home }}/.local/bin/swww-vulkan-daemon
+    - target: {{ home }}/src/swww-vulkan/target/release/swww-vulkan-daemon
     - force: True
     - user: {{ user }}
     - group: {{ user }}
