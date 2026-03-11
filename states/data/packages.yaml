@@ -8,407 +8,407 @@
 # Generated on: 2026-03-09
 
 base:
-  - base
-  - base-devel
-  - limine
-  - limine-snapper-sync
-  - linux-cachyos-lts
-  - linux-cachyos-lts-headers
-  - linux-firmware
+  - base  # minimal Arch Linux installation
+  - base-devel  # build tools for Arch packages
+  - limine  # multiprotocol bootloader
+  - limine-snapper-sync  # sync Limine entries with snapper snapshots
+  - linux-cachyos-lts  # CachyOS BORE LTS kernel
+  - linux-cachyos-lts-headers  # kernel headers for module builds
+  - linux-firmware  # firmware blobs for Linux
 
 desktop:
-  - dunst
-  - hypridle
-  - hyprland
-  - hyprlock
-  - hyprpaper
-  - hyprpolkitagent
-  - rofi
-  - swaybg
-  - loupe
-  - swayimg
-  - swayosd
-  - wl-clip-persist
-  - xdg-desktop-portal-gtk
-  - xdg-desktop-portal-hyprland
+  - dunst  # lightweight notification daemon
+  - hypridle  # Hyprland idle daemon
+  - hyprland  # dynamic tiling Wayland compositor
+  - hyprlock  # GPU-accelerated screen locker for Hyprland
+  - hyprpaper  # Wayland wallpaper utility
+  - hyprpolkitagent  # polkit agent for Hyprland (QML)
+  - rofi  # app launcher and dmenu replacement
+  - swaybg  # Wayland wallpaper setter
+  - loupe  # GNOME image viewer
+  - swayimg  # lightweight Wayland image viewer
+  - swayosd  # on-screen display for volume/caps/brightness
+  - wl-clip-persist  # keep Wayland clipboard after app close
+  - xdg-desktop-portal-gtk  # xdg-desktop-portal GTK backend
+  - xdg-desktop-portal-hyprland  # xdg-desktop-portal Hyprland backend
 
 dev:
-  - clang
-  - cmake
-  - gdb
-  - git
-  - lua-language-server
-  - neovim
-  - nodejs
-  - npm
-  - python-pipx
-  - rust
-  - vim
+  - clang  # C/C++ frontend for LLVM
+  - cmake  # cross-platform build system
+  - gdb  # GNU debugger
+  - git  # distributed version control
+  - lua-language-server  # LSP for Lua
+  - neovim  # modern Vim fork
+  - nodejs  # JavaScript runtime
+  - npm  # JavaScript package manager
+  - python-pipx  # install Python apps in isolated envs
+  - rust  # systems programming language
+  - vim  # classic text editor
 
 network:
-  - curl
-  - networkmanager
-  - nmap
-  - openssh
-  - wget
+  - curl  # CLI data transfer tool
+  - networkmanager  # network connection manager
+  - nmap  # network discovery and security auditing
+  - openssh  # SSH protocol implementation
+  - wget  # file retrieval from the web
 
 audio:
   # NOTE: some audio packages managed by audio.sls
-  - pipewire
+  - pipewire  # low-latency audio/video router
 
 media:
-  - ffmpegthumbnailer
-  - gst-libav
-  - gst-plugins-bad
-  - gst-plugins-ugly
-  - imagemagick
-  - mpv
+  - ffmpegthumbnailer  # video thumbnail generator
+  - gst-libav  # GStreamer libav plugin
+  - gst-plugins-bad  # GStreamer bad plugins
+  - gst-plugins-ugly  # GStreamer ugly plugins
+  - imagemagick  # image manipulation toolkit
+  - mpv  # media player
 
 fonts:
   # NOTE: some fonts packages managed by fonts.sls
-  - noto-fonts-cjk
+  - noto-fonts-cjk  # Google Noto CJK fonts
 
 gaming:
   # NOTE: most gaming packages managed by steam.sls — not listed here
 
 system:
-  - btop
-  - btrfs-progs
-  - pacman-contrib
-  - htop
-  - lsof
-  - lvm2
-  - parted
-  - strace
-  - sysstat
+  - btop  # resource monitor (C++ bpytop port)
+  - btrfs-progs  # btrfs filesystem utilities
+  - htop  # interactive process viewer
+  - lsof  # list open files
+  - lvm2  # logical volume manager
+  - parted  # partition editor
+  - strace  # system call tracer
+  - sysstat  # performance monitoring (iostat, sar, mpstat)
+  - pacman-contrib  # pacman helper scripts (paccache, checkupdates)
 
 other:
-  - abduco
-  - age
-  - android-tools
-  - ansible
-  - aria2
-  - asciinema
-  - atop
-  - avahi
-  - bandwhich
-  - bat
-  - beets
-  - blender
-  - bluez-utils
-  - borg
-  - bpftrace
-  - bucklespring
-  - cachyos-keyring
-  - cachyos-mirrorlist
-  - cachyos-settings
-  - cachyos-v3-mirrorlist
-  - carla
-  - cava
-  - ccid
-  - cdparanoia
-  - chafa
-  - chezmoi
-  - choose
-  - chromaprint
-  - claude-code
-  - cliphist
-  - convmv
-  - corectrl
-  - cowsay
-  - cpufetch
-  - cpupower
-  - ctop
-  - curlie
-  - darktable
-  - dash
-  - ddrescue
-  - dhcpcd
-  - diff-so-fancy
-  - difftastic
-  - direnv
-  - distrobox
-  - dive
-  - dkms
-  - dnsmasq
-  - doggo
-  - dos2unix
-  - duf
-  - dust
-  - efibootmgr
-  - elfutils
-  - enca
-  - entr
-  - erdtree
-  - etckeeper
-  - expect
-  - fastfetch
-  - fclones
-  - fd
-  - figlet
-  - fio
-  - floorp-bin
-  - fortune-mod
-  - fping
-  - freerdp
-  - fwupd
-  - fzf
-  - geoip
-  - geoip-database
-  - gist
-  - git-crypt
-  - git-delta
-  - git-filter-repo
-  - github-cli
-  - gitleaks
-  - git-lfs
-  - glow
-  - goaccess
-  - goimapnotify
-  - gopass
-  - go-yq
-  - gptfdisk
-  - grafana
-  - graphviz
-  - greetd-regreet
-  - grex
-  - gvfs
-  - gvfs-mtp
-  - gvfs-smb
-  - hashcat
-  - helix
-  - helvum
-  - hexyl
-  - himalaya
-  - htmlq
-  - httpie
-  - hunspell-ru
-  - hwinfo
-  - hyperfine
-  - id3v2
-  - iftop
-  - inotify-tools
-  - ioping
-  - iotop-c
-  - iperf3
-  - isync
-  - iwd
-  - jc
-  - jpegoptim
-  - jq
-  - jujutsu
-  - just
-  - kexec-tools
-  - kitty
-  - kmon
-  - kvantum
-  - kvantum-qt5
-  - lbzip2
-  - less
-  - libnotify
-  - liquidctl
-  - lldb
-  - lm_sensors
-  - lnav
-  - lolcat
-  - lowdown
-  - lshw
-  - lsp-plugins
-  - man-db
-  - man-pages
-  - mediainfo
-  - media-player-info
-  - memtester
-  - miller
-  - minicom
-  - moreutils
-  - mpc
-  - mpd
-  - mpdris2-git
-  - mtools
-  - mtr
-  - multipath-tools
-  - ncdu
-  - neomutt
-  - nerdctl
-  - nicotine+
-  - nix
-  - nm-connection-editor
-  - nss-mdns
-  - nuspell
-  - nvtop
-  - ollama
-  - ollama-vulkan
-  - onefetch
-  - openbsd-netcat
-  - openocd
-  - openrgb
-  - optipng
-  - ouch
-  - pandoc-cli
-  - parallel
-  - paru
-  - pastel
-  - patchmatrix
-  - patool
-  - pavucontrol
-  - pbzip2
-  - pcmanfm
-  - pcsc-tools
-  - perf
-  - perl-image-exiftool
-  - pgcli
-  - picard
-  - pigz
-  - plocate
-  - pngquant
-  - podman
-  - powertop
-  - pre-commit
-  - prettyping
-  - progress
-  - pv
-  - pwgen
-  - qemu-desktop
-  - qpwgraph
-  - qrencode
-  - qt5ct
-  - qt5-wayland
-  - qt6ct
-  - quickshell
-  - rawtherapee
-  - rclone
-  - recoll
-  - reptyr
-  - ripgrep
-  - rlwrap
-  - ruff
-  - sad
-  - sbctl
-  - schedtool
-  - scour
-  - shellcheck
-  - shfmt
-  - smartmontools
-  - socat
-  - sonic-visualiser
-  - sox
-  - sshfs
-  - sshpass
-  - streamlink
-  - s-tui
-  - sudo
-  - swappy
-  - swww
-  - systemd-language-server
-  - systemd-resolvconf
-  - taplo-cli
-  - tcpdump
-  - tealdeer
-  - telegram-desktop
-  - tesseract
-  - tesseract-data-eng
-  - tesseract-data-rus
-  - testdisk
-  - texlive-basic
-  - tig
-  - tmux
-  - toilet
-  - traceroute
-  - translate-shell
-  - transmission-cli
-  - transmission-gtk
-  - tree
-  - tree-sitter-cli
-  - ttyd
-  - tumbler
-  - turbostat
-  - udiskie
-  - ugrep
-  - unarchiver
-  - unbound
-  - unzip
-  - upower
-  - urlscan
-  - urlwatch
-  - valgrind
-  - vdirsyncer
-  - virt-manager
-  - viu
-  - vnstat
-  - w3m
-  - waypipe
-  - wayvnc
-  - wev
-  - wf-recorder
-  - which
-  - whois
-  - wiremix
-  - wireshark-cli
-  - wlogout
-  - wtype
-  - xfsprogs
-  - xh
-  - yamllint
-  - ydotool
-  - yt-dlp
-  - zathura
-  - zathura-pdf-poppler
-  - zbar
-  - zk
-  - zmap
-  - zoxide
-  - zsh
+  - abduco  # session attach/detach support
+  - age  # modern file encryption tool
+  - android-tools  # Android platform tools (adb, fastboot)
+  - ansible  # IT automation and config management
+  - aria2  # multi-protocol download utility
+  - asciinema  # terminal session recorder
+  - atop  # system and process monitor
+  - avahi  # mDNS/DNS-SD service discovery
+  - bandwhich  # terminal bandwidth monitor
+  - bat  # cat clone with syntax highlighting
+  - beets  # music library manager and tagger
+  - blender  # 3D graphics creation suite
+  - bluez-utils  # Bluetooth protocol stack utilities
+  - borg  # deduplicating backup with encryption
+  - bpftrace  # eBPF tracing language
+  - bucklespring  # Model-M keyboard sound simulator
+  - cachyos-keyring  # CachyOS package signing keys
+  - cachyos-mirrorlist  # CachyOS repository mirrors
+  - cachyos-settings  # CachyOS default settings
+  - cachyos-v3-mirrorlist  # CachyOS v3 repository mirrors
+  - carla  # audio plugin host
+  - cava  # console audio visualizer
+  - ccid  # USB smart card driver
+  - cdparanoia  # CD audio extraction tool
+  - chafa  # image-to-text converter
+  - chezmoi  # dotfiles manager
+  - choose  # human-friendly alternative to cut/awk
+  - chromaprint  # audio fingerprinting library
+  - claude-code  # Anthropic CLI agentic coding tool
+  - cliphist  # Wayland clipboard manager
+  - convmv  # filename encoding converter
+  - corectrl  # GPU/CPU control application
+  - cowsay  # talking cow ASCII art
+  - cpufetch  # CPU architecture fetch tool
+  - cpupower  # CPU power management utility
+  - ctop  # container metrics top-like UI
+  - curlie  # curl with httpie-like UX
+  - darktable  # RAW image editor
+  - dash  # minimal POSIX shell
+  - ddrescue  # GNU data recovery tool
+  - dhcpcd  # DHCP/IPv6 client
+  - diff-so-fancy  # pretty diff viewer
+  - difftastic  # syntax-aware diff tool
+  - direnv  # per-directory environment variables
+  - distrobox  # run any Linux distro in terminal
+  - dive  # Docker image layer explorer
+  - dkms  # dynamic kernel module system
+  - dnsmasq  # lightweight DNS/DHCP server
+  - doggo  # DNS client for humans
+  - dos2unix  # text file line-ending converter
+  - duf  # disk usage/free utility
+  - dust  # intuitive du replacement (Rust)
+  - efibootmgr  # EFI boot manager editor
+  - elfutils  # ELF/DWARF utilities
+  - enca  # charset analyzer and converter
+  - entr  # run commands on file changes
+  - erdtree  # filesystem and disk-usage analyzer
+  - etckeeper  # /etc version control
+  - expect  # interactive application automation
+  - fastfetch  # system info fetcher (neofetch replacement)
+  - fclones  # duplicate file finder
+  - fd  # fast find replacement
+  - figlet  # ASCII art text generator
+  - fio  # storage benchmark and I/O tester
+  - floorp-bin  # Firefox-based customizable browser
+  - fortune-mod  # random quote generator
+  - fping  # parallel ping utility
+  - freerdp  # RDP client implementation
+  - fwupd  # firmware update daemon
+  - fzf  # command-line fuzzy finder
+  - geoip  # IP-to-country resolver
+  - geoip-database  # GeoIP legacy country database
+  - gist  # GitHub gist CLI
+  - git-crypt  # transparent git file encryption
+  - git-delta  # syntax-highlighting git diff pager
+  - git-filter-repo  # fast git history rewriter
+  - github-cli  # GitHub CLI (gh)
+  - gitleaks  # git secrets/keys auditor
+  - git-lfs  # git large file storage
+  - glow  # CLI markdown renderer
+  - goaccess  # real-time web log analyzer
+  - goimapnotify  # IMAP IDLE notification daemon (Go)
+  - gopass  # team password manager (GPG-based)
+  - go-yq  # CLI YAML/JSON/XML processor
+  - gptfdisk  # GPT partition table editor
+  - grafana  # metrics visualization and dashboards
+  - graphviz  # graph visualization (DOT language)
+  - greetd-regreet  # GTK greeter for greetd
+  - grex  # regex generator from examples
+  - gvfs  # GIO virtual filesystem
+  - gvfs-mtp  # GIO MTP backend (Android devices)
+  - gvfs-smb  # GIO SMB/CIFS backend (Windows shares)
+  - hashcat  # advanced password recovery
+  - helix  # post-modern modal text editor
+  - helvum  # PipeWire GTK patchbay
+  - hexyl  # colored hex viewer
+  - himalaya  # CLI email client
+  - htmlq  # jq for HTML
+  - httpie  # human-friendly HTTP client
+  - hunspell-ru  # Russian spellcheck dictionary
+  - hwinfo  # hardware detection tool
+  - hyperfine  # command-line benchmarking tool
+  - id3v2  # ID3v2 tag editor
+  - iftop  # interface bandwidth monitor
+  - inotify-tools  # inotify CLI utilities
+  - ioping  # disk I/O latency tester
+  - iotop-c  # I/O top monitor
+  - iperf3  # network bandwidth measurement
+  - isync  # IMAP/MailDir synchronizer (mbsync)
+  - iwd  # Intel wireless daemon
+  - jc  # CLI output to JSON converter
+  - jpegoptim  # JPEG optimization utility
+  - jq  # CLI JSON processor
+  - jujutsu  # git-compatible VCS (jj)
+  - just  # project-specific command runner
+  - kexec-tools  # load kernel from running kernel
+  - kitty  # GPU-accelerated terminal emulator
+  - kmon  # kernel module manager and monitor
+  - kvantum  # SVG-based Qt6 theme engine
+  - kvantum-qt5  # SVG-based Qt5 theme engine
+  - lbzip2  # parallel bzip2 compressor
+  - less  # terminal pager
+  - libnotify  # desktop notification library
+  - liquidctl  # AIO liquid cooler control
+  - lldb  # LLVM debugger
+  - lm_sensors  # hardware monitoring (temperatures, fans)
+  - lnav  # log file viewer and analyzer
+  - lolcat  # rainbow text output
+  - lowdown  # Markdown translator
+  - lshw  # hardware info tool
+  - lsp-plugins  # audio DSP plugin collection
+  - man-db  # man page reader
+  - man-pages  # Linux man pages
+  - mediainfo  # media file metadata viewer
+  - media-player-info  # media player capability database
+  - memtester  # RAM fault tester
+  - miller  # name-indexed data processing (CSV/JSON/etc)
+  - minicom  # serial communication program
+  - moreutils  # extra Unix tools (sponge, ts, parallel, etc)
+  - mpc  # MPD CLI client
+  - mpd  # music player daemon
+  - mpdris2-git  # MPRIS2 bridge for MPD
+  - mtools  # MS-DOS disk access utilities
+  - mtr  # traceroute + ping combined
+  - multipath-tools  # device-mapper multipath tools
+  - ncdu  # ncurses disk usage analyzer
+  - neomutt  # feature-rich terminal email client
+  - nerdctl  # Docker-compatible containerd CLI
+  - nicotine+  # Soulseek P2P music client
+  - nix  # functional package manager
+  - nm-connection-editor  # NetworkManager GUI editor
+  - nss-mdns  # glibc mDNS hostname resolution
+  - nuspell  # fast spellchecking library
+  - nvtop  # GPU process monitor (AMD/Intel/NVIDIA)
+  - ollama  # local LLM runner
+  - ollama-vulkan  # local LLM runner (Vulkan backend)
+  - onefetch  # git repo summary in terminal
+  - openbsd-netcat  # TCP/IP swiss army knife (OpenBSD)
+  - openocd  # embedded device debugger/programmer
+  - openrgb  # open-source RGB lighting control
+  - optipng  # lossless PNG optimizer
+  - ouch  # compress/decompress archives easily
+  - pandoc-cli  # document format converter
+  - parallel  # shell job parallelizer
+  - paru  # AUR helper
+  - pastel  # CLI color tool (generate, convert, analyze)
+  - patchmatrix  # JACK patchbay (flow matrix style)
+  - patool  # portable archive file manager
+  - pavucontrol  # PulseAudio volume control GUI
+  - pbzip2  # parallel bzip2 implementation
+  - pcmanfm  # lightweight file manager
+  - pcsc-tools  # smart card reader tools
+  - perf  # Linux kernel performance profiler
+  - perl-image-exiftool  # EXIF metadata reader/writer
+  - pgcli  # PostgreSQL CLI with autocomplete
+  - picard  # MusicBrainz audio tagger
+  - pigz  # parallel gzip
+  - plocate  # fast file locator (mlocate-compatible)
+  - pngquant  # PNG 8-bit quantizer
+  - podman  # OCI container engine (rootless)
+  - powertop  # power consumption diagnostics
+  - pre-commit  # multi-language git hook framework
+  - prettyping  # colorful ping wrapper
+  - progress  # coreutils progress viewer
+  - pv  # pipe data throughput monitor
+  - pwgen  # password generator
+  - qemu-desktop  # QEMU VM for desktop use
+  - qpwgraph  # PipeWire Qt patchbay GUI
+  - qrencode  # QR code generator
+  - qt5ct  # Qt5 configuration utility
+  - qt5-wayland  # Qt5 Wayland platform plugin
+  - qt6ct  # Qt6 configuration utility
+  - quickshell  # QtQuick desktop shell toolkit
+  - rawtherapee  # RAW photo processor
+  - rclone  # rsync for cloud storage
+  - recoll  # full-text search tool (Xapian)
+  - reptyr  # reattach process to new terminal
+  - ripgrep  # fast recursive grep (rg)
+  - rlwrap  # readline wrapper for CLI programs
+  - ruff  # ultra-fast Python linter (Rust)
+  - sad  # space-age sed (batch editor)
+  - sbctl  # Secure Boot key manager
+  - schedtool  # process scheduling policy tool
+  - scour  # SVG optimizer
+  - shellcheck  # shell script linter
+  - shfmt  # shell script formatter
+  - smartmontools  # S.M.A.R.T. disk monitoring
+  - socat  # multipurpose network relay
+  - sonic-visualiser  # music audio analyzer
+  - sox  # sound processing Swiss Army knife
+  - sshfs  # FUSE SSH filesystem
+  - sshpass  # non-interactive SSH password auth
+  - streamlink  # stream launcher for video players
+  - s-tui  # terminal CPU stress test and monitor
+  - sudo  # privileged command execution
+  - swappy  # Wayland screenshot editor
+  - swww  # Wayland wallpaper daemon (animated)
+  - systemd-language-server  # LSP for systemd units
+  - systemd-resolvconf  # resolvconf via systemd-resolved
+  - taplo-cli  # TOML toolkit (formatter, linter)
+  - tcpdump  # CLI packet analyzer
+  - tealdeer  # fast tldr client (Rust)
+  - telegram-desktop  # Telegram messenger
+  - tesseract  # OCR engine
+  - tesseract-data-eng  # Tesseract English data
+  - tesseract-data-rus  # Tesseract Russian data
+  - testdisk  # partition recovery and file undelete
+  - texlive-basic  # TeX Live essentials
+  - tig  # text-mode git interface
+  - tmux  # terminal multiplexer
+  - toilet  # FIGlet-compatible text art generator
+  - traceroute  # network path tracer
+  - translate-shell  # CLI translator (Google Translate)
+  - transmission-cli  # BitTorrent daemon and CLI
+  - transmission-gtk  # BitTorrent GTK client
+  - tree  # directory listing as tree
+  - tree-sitter-cli  # Tree-sitter parser dev tool
+  - ttyd  # share terminal over the web
+  - tumbler  # D-Bus thumbnail service
+  - turbostat  # CPU frequency/idle statistics
+  - udiskie  # auto-mount removable media (udisks)
+  - ugrep  # ultra-fast grep with TUI and fuzzy search
+  - unarchiver  # unar/lsar archive extractor
+  - unbound  # validating recursive DNS resolver
+  - unzip  # ZIP archive extractor
+  - upower  # power device abstraction
+  - urlscan  # terminal URL selector (for mutt)
+  - urlwatch  # web page change monitor
+  - valgrind  # memory debugging and profiling
+  - vdirsyncer  # CalDAV/CardDAV synchronizer
+  - virt-manager  # VM management GUI (libvirt)
+  - viu  # terminal image viewer
+  - vnstat  # network traffic monitor
+  - w3m  # text-based web browser and pager
+  - waypipe  # Wayland proxy (like ssh -X)
+  - wayvnc  # VNC server for wlroots compositors
+  - wev  # Wayland event debugger (like xev)
+  - wf-recorder  # Wayland screen recorder
+  - which  # show full path of commands
+  - whois  # WHOIS client
+  - wiremix  # TUI PipeWire audio mixer
+  - wireshark-cli  # network protocol analyzer (CLI)
+  - wlogout  # Wayland logout menu
+  - wtype  # Wayland xdotool (type text)
+  - xfsprogs  # XFS filesystem utilities
+  - xh  # fast HTTP client (Rust)
+  - yamllint  # YAML linter
+  - ydotool  # generic input automation (no X)
+  - yt-dlp  # YouTube/video downloader
+  - zathura  # minimalistic document viewer
+  - zathura-pdf-poppler  # zathura PDF backend (poppler)
+  - zbar  # barcode reader
+  - zk  # Zettelkasten CLI note tool
+  - zmap  # fast Internet-wide network scanner
+  - zoxide  # smarter cd (frecency-based)
+  - zsh  # advanced programmable shell
 
 aur:
   # NOTE: some AUR packages managed by domain states (desktop.sls, installers_desktop.sls, etc.)
-  - act-bin
-  - advancecomp
-  - albumdetails
-  - amneziawg-dkms
-  - amneziawg-tools
-  - blktrace
-  - brutefir
-  - carapace-bin
-  - cmake-language-server
-  - dcfldd
-  - ddccontrol
-  - dualsensectl
-  - epr-git
-  - freeze-bin
-  - gitbutler-bin
-  - git-extras
-  - gram-editor-git
-  - hw-probe
-  - hy3
-  - iosevka-neg-fonts
-  - jdupes
-  - lutgen-bin
-  - massren
-  - mpdas
-  - neg-pretty-printer
-  - neo-matrix
-  - newsraft
-  - no-more-secrets
-  - oh-my-posh
-  - opencode-bin
-  - par
-  - pinentry-rofi
-  - pipemixer
-  - pup-bin
-  - pyprland
-  - python-rapidgzip
-  - raise
-  - raysession
-  - richcolors
-  - rmlint
-  - rofi-file-browser-extended-git
-  - salt
-  - scc
-  - taoup
-  - tessen
-  - ttfautohint
-  - unflac
-  - vicinae
-  - vimiv-qt
-  - vmtouch
+  - act-bin  # run GitHub Actions locally
+  - advancecomp  # recompress zip/png/gz with 7-zip algo
+  - albumdetails  # music album metadata generator
+  - amneziawg-dkms  # AmneziaWG DKMS kernel module
+  - amneziawg-tools  # AmneziaWG userspace tools
+  - blktrace  # block layer I/O tracer
+  - brutefir  # multi-channel FIR convolution engine
+  - carapace-bin  # multi-shell completion engine
+  - cmake-language-server  # LSP for CMake
+  - dcfldd  # forensic dd replacement with hashing
+  - ddccontrol  # DDC monitor parameter control
+  - dualsensectl  # PS5 DualSense controller tool
+  - epr-git  # CLI EPUB reader
+  - freeze-bin  # generate images of code/terminal output
+  - gitbutler-bin  # visual Git client (Tauri/Rust/Svelte)
+  - git-extras  # extra git utilities (summary, effort, etc)
+  - gram-editor-git  # minimal code editor
+  - hw-probe  # hardware probe and operability check
+  - hy3  # i3-like tiling plugin for Hyprland
+  - iosevka-neg-fonts  # custom Iosevka Nerd Fonts (neg-serg)
+  - jdupes  # duplicate file finder and deduplicator
+  - lutgen-bin  # LUT-based color palette generator
+  - massren  # batch file rename via text editor
+  - mpdas  # MPD AudioScrobbler client
+  - neg-pretty-printer  # custom pretty-printer for scripts
+  - neo-matrix  # Matrix digital rain simulator
+  - newsraft  # TUI feed/RSS reader
+  - no-more-secrets  # "Sneakers" data decryption effect
+  - oh-my-posh  # cross-shell prompt theme engine
+  - opencode-bin  # AI coding agent TUI
+  - par  # paragraph reformatter
+  - pinentry-rofi  # rofi-based GPG pinentry
+  - pipemixer  # TUI PipeWire volume control
+  - pup-bin  # CLI HTML parser (like jq for HTML)
+  - pyprland  # Hyprland plugin manager (scratchpads, etc)
+  - python-rapidgzip  # parallel gzip decompressor (Python)
+  - raise  # run-or-raise for Hyprland (neg-serg fork)
+  - raysession  # NSM session manager for audio apps
+  - richcolors  # render color palettes from hex files
+  - rmlint  # duplicate and lint file remover
+  - rofi-file-browser-extended-git  # rofi file browser plugin
+  - salt  # remote execution and config management
+  - scc  # fast code line counter with COCOMO
+  - taoup  # Art of Unix Programming wisdom quotes
+  - tessen  # rofi menu for pass/gopass autotype
+  - ttfautohint  # automated font hinting for web
+  - unflac  # audio image + cue sheet splitter
+  - vicinae  # native desktop launcher (fast, extensible)
+  - vimiv-qt  # image viewer with vim keybindings
+  - vmtouch  # filesystem cache diagnostics and control
