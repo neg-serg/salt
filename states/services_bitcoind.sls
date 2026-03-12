@@ -1,15 +1,19 @@
 # Bitcoind: Bitcoin Core node (split from services.sls)
 {% from '_imports.jinja' import host %}
 {% from '_macros_service.jinja' import system_daemon_user, service_with_unit %}
-{% from '_macros_install.jinja' import curl_extract_tar %}
-{% import_yaml 'data/versions.yaml' as ver %}
+{% from '_macros_pkg.jinja' import pacman_install %}
 {% set svc = host.features.services %}
 
 {% if svc.bitcoind %}
-{% set _btc_ver = ver.get('bitcoind', '') %}
-{% set btc_url = 'https://bitcoincore.org/bin/bitcoin-core-${VER}/bitcoin-${VER}-x86_64-linux-gnu.tar.gz' | replace('${VER}', _btc_ver) %}
-{% set btc_pattern = 'bitcoin-${VER}/bin' | replace('${VER}', _btc_ver) %}
-{{ curl_extract_tar('bitcoind', btc_url, binary_pattern=btc_pattern, binaries=['bitcoind', 'bitcoin-cli'], bin_dest='/usr/local/bin', hash='07f77afd326639145b9ba9562912b2ad2ccec47b8a305bd075b4f4cb127b7ed7', version=_btc_ver if _btc_ver else None, user=None) }}
+{{ pacman_install('bitcoind', 'bitcoin-daemon') }}
+
+# One-time cleanup: remove old manually-installed binaries
+bitcoind_legacy_cleanup:
+  file.absent:
+    - names:
+      - /usr/local/bin/bitcoind
+      - /usr/local/bin/bitcoin-cli
+    - onlyif: test -f /usr/local/bin/bitcoind
 
 {{ system_daemon_user('bitcoind', '/var/lib/bitcoind') }}
 

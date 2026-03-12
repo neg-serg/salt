@@ -7,7 +7,7 @@ Wants=network-online.target
 Type=simple
 User=root
 Group=root
-ExecStart=/usr/local/bin/promtail -config.file=/etc/promtail/config.yaml
+ExecStart=/usr/bin/promtail -config.file=/etc/promtail/config.yaml
 Restart=on-failure
 RestartSec=5
 NoNewPrivileges=true

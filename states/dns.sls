@@ -1,8 +1,6 @@
 {% from '_imports.jinja' import host, service_ports %}
 {% from '_macros_service.jinja' import unit_override, system_daemon_user, service_with_unit, service_with_healthcheck, ensure_running %}
-{% from '_macros_github.jinja' import github_release_system %}
-{% from '_macros_pkg.jinja' import simple_service %}
-{% import_yaml 'data/versions.yaml' as ver %}
+{% from '_macros_pkg.jinja' import simple_service, pacman_install %}
 {% set dns = host.features.dns %}
 
 # --- Unbound: recursive DNS resolver with DNSSEC + DoT ---
@@ -39,8 +37,14 @@ unbound_control_certs:
 
 # --- AdGuardHome: DNS filtering + ad blocking ---
 {% if dns.adguardhome %}
-{{ github_release_system('adguardhome', 'AdguardTeam/AdGuardHome', 'AdGuardHome_linux_amd64.tar.gz', src_bin='AdGuardHome', format='tar.gz', tag='v' ~ ver.get('adguardhome', ''), hash='cf25794597a2f5b6cd8cd3670439db6f548c59af4ace392e40055b90e80c9329', version=ver.get('adguardhome', '')) }}
+{{ pacman_install('adguardhome', 'adguardhome') }}
 {{ system_daemon_user('adguardhome', '/var/lib/adguardhome') }}
+
+# One-time cleanup: remove old manually-installed binary
+adguardhome_legacy_cleanup:
+  file.absent:
+    - name: /usr/local/bin/AdGuardHome
+    - onlyif: test -f /usr/local/bin/AdGuardHome
 
 adguardhome_config:
   file.managed:
