@@ -346,6 +346,8 @@ Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full de
 - YAML data files + rendered config file on disk (021-image-gen-roster)
 - Jinja2/YAML (Salt states), Zsh (CLI wrapper), Python 3.12+ (ComfyUI runtime) + ComfyUI, PyTorch ROCm 6.3-6.4, flash-attn (AMD fork), ffmpeg (hevc_vaapi) (022-video-ai-models)
 - Files on `/mnt/one/video-ai/` (models ~10-30 GB each, output MP4s) (022-video-ai-models)
+- Python 3.12+ (consistent with code-rag, notes-rag) + readability-lxml, markdownify, httpx (existing), rag-shared (existing), urllib.robotparser (stdlib) (023-external-docs-rag)
+- LanceDB (existing `note_chunks` table) + JSON state file + YAML source registry (023-external-docs-rag)
 
 ## Recent Changes
 - 001-code-rag-integration: Added Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx)
