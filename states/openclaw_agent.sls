@@ -80,6 +80,20 @@ openclaw_config:
       - file: openclaw_config_dir
       - cmd: openclaw_telegram_creds
 
+# ── Config sanitizer (ExecStartPre) ─────────────────────────────────
+# OpenClaw auto-populates STT models (e.g. Groq Whisper) into
+# models.providers with contextWindow=0 / maxTokens=0 → crash on next
+# startup. This pre-start script strips invalid model entries.
+openclaw_sanitize_script:
+  file.managed:
+    - name: {{ home }}/.local/bin/openclaw-sanitize-config
+    - source: salt://scripts/openclaw-sanitize-config.py
+    - user: {{ user }}
+    - group: {{ user }}
+    - mode: '0755'
+    - require:
+      - file: openclaw_config_dir
+
 # ── Lingering (user services survive logout) ─────────────────────────
 openclaw_lingering:
   cmd.run:
@@ -97,7 +111,7 @@ Environment=XDG_RUNTIME_DIR=/run/user/1000
 {% endset %}
 {{ user_unit_override('openclaw_wayland_env', 'openclaw-gateway.service', contents=openclaw_wayland_override) }}
 
-{{ user_service_enable('openclaw_enabled', start_now=['openclaw-gateway.service'], requires=['cmd: install_openclaw', 'file: openclaw_config', 'file: openclaw_service', 'file: openclaw_wayland_env']) }}
+{{ user_service_enable('openclaw_enabled', start_now=['openclaw-gateway.service'], requires=['cmd: install_openclaw', 'file: openclaw_config', 'file: openclaw_service', 'file: openclaw_wayland_env', 'file: openclaw_sanitize_script']) }}
 
 {{ user_service_restart('restart_openclaw_on_config_change', 'openclaw-gateway.service', onlyif='systemctl --user is-active openclaw-gateway.service >/dev/null 2>&1', onchanges=['file: openclaw_config']) }}
 
