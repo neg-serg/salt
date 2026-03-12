@@ -531,6 +531,7 @@ Singleton {
         'panel.pill.color': 'panelPillColor',
         'panel.animations.stdMs': 'panelAnimStdMs',
         'panel.animations.fastMs': 'panelAnimFastMs',
+        'panel.animations.slideMs': 'panelSlideMs',
         'panel.tray.longHoldMs': 'panelTrayLongHoldMs',
         'panel.tray.shortHoldMs': 'panelTrayShortHoldMs',
         'panel.tray.guardMs': 'panelTrayGuardMs',
@@ -819,6 +820,7 @@ Singleton {
     // Animation timings
     property int panelAnimStdMs: val('panel.animations.stdMs', 250)
     property int panelAnimFastMs: val('panel.animations.fastMs', 200)
+    property int panelSlideMs: val('panel.animations.slideMs', 350)
     // Tray behavior timings
     property int panelTrayLongHoldMs: val('panel.tray.longHoldMs', 2500)
     property int panelTrayShortHoldMs: val('panel.tray.shortHoldMs', 1500)
