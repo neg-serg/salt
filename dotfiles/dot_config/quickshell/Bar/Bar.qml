@@ -305,14 +305,14 @@ Scope {
                 readonly property bool monitorEnabled: (Settings.settings.barMonitors.includes(modelData.name)
                                                         || (Settings.settings.barMonitors.length === 0))
 
-                // --- Whole-bar fade-in entrance animation ---
-                property real barFadeOpacity: 1.0
+                // --- Whole-bar slide-up entrance animation (clip reveal) ---
+                property real barSlideProgress: 1.0
                 property bool barSlideAnimating: false
                 property bool _barSlideInitDone: false
                 NumberFadeBehavior {
-                    id: barFadeAnim
+                    id: barSlideAnim
                     target: monitorItem
-                    property: "barFadeOpacity"
+                    property: "barSlideProgress"
                     duration: Theme.panelSlideMs || 350
                     easing.type: Theme.uiEasingStdOut || Easing.OutCubic
                     onStopped: { monitorItem.barSlideAnimating = false }
@@ -322,17 +322,17 @@ Scope {
                     interval: 50
                     repeat: false
                     onTriggered: {
-                        monitorItem.barFadeOpacity = 0;
+                        monitorItem.barSlideProgress = 0;
                         monitorItem.barSlideAnimating = true;
-                        barFadeAnim.from = 0;
-                        barFadeAnim.to = 1;
-                        barFadeAnim.start();
+                        barSlideAnim.from = 0;
+                        barSlideAnim.to = 1;
+                        barSlideAnim.start();
                     }
                 }
                 Component.onCompleted: {
                     if (monitorEnabled && Theme.animationsEnabled) {
                         _barSlideInitDone = true;
-                        barFadeOpacity = 0;
+                        barSlideProgress = 0;
                         barSlideTimer.start();
                     }
                 }
@@ -394,7 +394,7 @@ Scope {
 
                     Item {
                         anchors.fill: parent
-                        opacity: monitorItem.barFadeOpacity
+                        transform: Translate { y: shadowPanel.barHeightPx * (1 - monitorItem.barSlideProgress) }
 
                         ShaderEffect {
                             anchors.fill: parent
@@ -492,7 +492,7 @@ Scope {
                         Item {
                             id: leftPanelContent
                             anchors.fill: parent
-                            opacity: monitorItem.barFadeOpacity
+                            transform: Translate { y: leftPanel.barHeightPx * (1 - monitorItem.barSlideProgress) }
 
                     // Outer backdrop: covers full panel width at seam opacity
                     // (semi-transparent — lets wallpaper show through in seam/gap area)
@@ -805,7 +805,7 @@ Scope {
                         id: leftPanelSource
                         anchors.fill: parent
                         sourceItem: leftPanelContent
-                        opacity: monitorItem.barFadeOpacity
+                        transform: Translate { y: leftPanel.barHeightPx * (1 - monitorItem.barSlideProgress) }
                         hideSource: false
                         live: true
                         recursive: true
@@ -907,7 +907,7 @@ Scope {
                         Item {
                             id: rightPanelContent
                             anchors.fill: parent
-                            opacity: monitorItem.barFadeOpacity
+                            transform: Translate { y: rightPanel.barHeightPx * (1 - monitorItem.barSlideProgress) }
     
                     // Outer backdrop: covers full panel width at seam opacity
                     Rectangle {
@@ -1291,7 +1291,7 @@ Scope {
                         id: rightPanelSource
                         anchors.fill: parent
                         sourceItem: rightPanelContent
-                        opacity: monitorItem.barFadeOpacity
+                        transform: Translate { y: rightPanel.barHeightPx * (1 - monitorItem.barSlideProgress) }
                         hideSource: false
                         live: true
                         recursive: true
