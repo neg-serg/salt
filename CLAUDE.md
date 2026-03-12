@@ -342,6 +342,8 @@ Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full de
 - YAML data files + Markdown documentation (deliverables); Bash/Zsh for benchmarking scripts + GCC 15.2.1 (Graphite/ISL built-in), libgomp, hyperfine, asp (PKGBUILD access) (019-autoparallel-research)
 - Files in `states/data/` and `docs/` (019-autoparallel-research)
 - QML 6 (Qt 6), JavaScript helpers + Quickshell runtime, QtQuick, Quickshell.Wayland (PanelWindow/WlrLayershell) (020-quickshell-panel-slide)
+- Jinja2/YAML (Salt states), Zsh (CLI wrapper, bootstrap script) + Salt (masterless), gopass, curl, jq (021-image-gen-roster)
+- YAML data files + rendered config file on disk (021-image-gen-roster)
 
 ## Recent Changes
 - 001-code-rag-integration: Added Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx)
