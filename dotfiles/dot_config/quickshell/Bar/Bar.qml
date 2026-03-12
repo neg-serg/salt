@@ -300,9 +300,42 @@ Scope {
             model: Quickshell.screens
 
             Item {
+                id: monitorItem
                 property var modelData // 'modelData' comes from Variants
                 readonly property bool monitorEnabled: (Settings.settings.barMonitors.includes(modelData.name)
                                                         || (Settings.settings.barMonitors.length === 0))
+
+                // --- Whole-bar fade-in entrance animation ---
+                property real barFadeOpacity: 1.0
+                property bool barSlideAnimating: false
+                property bool _barSlideInitDone: false
+                NumberFadeBehavior {
+                    id: barFadeAnim
+                    target: monitorItem
+                    property: "barFadeOpacity"
+                    duration: Theme.panelSlideMs || 350
+                    easing.type: Theme.uiEasingStdOut || Easing.OutCubic
+                    onStopped: { monitorItem.barSlideAnimating = false }
+                }
+                Timer {
+                    id: barSlideTimer
+                    interval: 50
+                    repeat: false
+                    onTriggered: {
+                        monitorItem.barFadeOpacity = 0;
+                        monitorItem.barSlideAnimating = true;
+                        barFadeAnim.from = 0;
+                        barFadeAnim.to = 1;
+                        barFadeAnim.start();
+                    }
+                }
+                Component.onCompleted: {
+                    if (monitorEnabled && Theme.animationsEnabled) {
+                        _barSlideInitDone = true;
+                        barFadeOpacity = 0;
+                        barSlideTimer.start();
+                    }
+                }
 
                 PanelLayer {
                     id: reservePanel
@@ -361,6 +394,7 @@ Scope {
 
                     Item {
                         anchors.fill: parent
+                        opacity: monitorItem.barFadeOpacity
 
                         ShaderEffect {
                             anchors.fill: parent
@@ -393,29 +427,6 @@ Scope {
                     screen: modelData
                     color: "transparent"
                     property bool panelHovering: false
-                    property real slideX: 0
-                    property bool _slideAnimating: false
-                    NumberFadeBehavior {
-                        id: leftSlideAnim
-                        target: leftPanel
-                        property: "slideX"
-                        duration: Theme.panelSlideMs
-                        easing.type: Theme.uiEasingStdOut
-                        onStopped: { leftPanel._slideAnimating = false }
-                    }
-                    onVisibleChanged: {
-                        if (visible && Theme.animationsEnabled) {
-                            slideX = -(implicitWidth || 960);
-                            _slideAnimating = true;
-                            leftSlideAnim.from = slideX;
-                            leftSlideAnim.to = 0;
-                            leftSlideAnim.start();
-                        } else {
-                            leftSlideAnim.stop();
-                            slideX = 0;
-                            _slideAnimating = false;
-                        }
-                    }
                     WlrLayershell.namespace: "quickshell-bar-left"
                     // Debug/testing: put bars on Overlay when wedge debug or shader-test enabled
                     WlrLayershell.layer: (((Quickshell.env("QS_WEDGE_DEBUG") || "") === "1")
@@ -481,7 +492,7 @@ Scope {
                         Item {
                             id: leftPanelContent
                             anchors.fill: parent
-                            transform: Translate { x: leftPanel.slideX }
+                            opacity: monitorItem.barFadeOpacity
 
                     // Outer backdrop: covers full panel width at seam opacity
                     // (semi-transparent — lets wallpaper show through in seam/gap area)
@@ -794,6 +805,7 @@ Scope {
                         id: leftPanelSource
                         anchors.fill: parent
                         sourceItem: leftPanelContent
+                        opacity: monitorItem.barFadeOpacity
                         hideSource: false
                         live: true
                         recursive: true
@@ -813,29 +825,6 @@ Scope {
                     screen: modelData
                     color: "transparent"
                     property bool panelHovering: false
-                    property real slideX: 0
-                    property bool _slideAnimating: false
-                    NumberFadeBehavior {
-                        id: rightSlideAnim
-                        target: rightPanel
-                        property: "slideX"
-                        duration: Theme.panelSlideMs
-                        easing.type: Theme.uiEasingStdOut
-                        onStopped: { rightPanel._slideAnimating = false }
-                    }
-                    onVisibleChanged: {
-                        if (visible && Theme.animationsEnabled) {
-                            slideX = (implicitWidth || 960);
-                            _slideAnimating = true;
-                            rightSlideAnim.from = slideX;
-                            rightSlideAnim.to = 0;
-                            rightSlideAnim.start();
-                        } else {
-                            rightSlideAnim.stop();
-                            slideX = 0;
-                            _slideAnimating = false;
-                        }
-                    }
                     WlrLayershell.namespace: "quickshell-bar-right"
                     // Debug/testing: put bars on Overlay when wedge debug or shader-test enabled
                     WlrLayershell.layer: (((Quickshell.env("QS_WEDGE_DEBUG") || "") === "1")
@@ -918,8 +907,8 @@ Scope {
                         Item {
                             id: rightPanelContent
                             anchors.fill: parent
-                            transform: Translate { x: rightPanel.slideX }
-
+                            opacity: monitorItem.barFadeOpacity
+    
                     // Outer backdrop: covers full panel width at seam opacity
                     Rectangle {
                         id: rightBarBackdropOuter
@@ -1302,6 +1291,7 @@ Scope {
                         id: rightPanelSource
                         anchors.fill: parent
                         sourceItem: rightPanelContent
+                        opacity: monitorItem.barFadeOpacity
                         hideSource: false
                         live: true
                         recursive: true
@@ -1391,7 +1381,7 @@ Scope {
                     // Prevents early full-width flash while rows are still measuring.
                     property bool useReadinessFilter: true
                     property bool rightPanelActive: rightPanel.renderActive
-                    property bool panelSlidesComplete: !leftPanel._slideAnimating && !rightPanel._slideAnimating
+                    property bool panelSlidesComplete: !monitorItem.barSlideAnimating
                     visible: monitorEnabled && seamPanel.rightPanelActive && seamPanel.panelSlidesComplete && (
                         !seamPanel.useReadinessFilter
                         ? (seamPanel.rawGapWidth > 0)
