@@ -70,7 +70,7 @@ steam_skin_link_{{ loop.index }}:
     - force: True
     - onlyif: test -f {{ css_pair[0] }}
     - require:
-      - cmd: modern_steam_skin
+      - cmd: install_modern_steam_skin
 {% endfor %}
 
 gamemode_config:
