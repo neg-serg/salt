@@ -59,8 +59,6 @@ extensions:
     slug: clearurls
   - id: jid1-93WyvpgvxzGATw@jetpack
     slug: to-google-translate
-  - id: BeautifulPurpleSky@Godie
-    slug: beautiful-purple-sky
   - id: ATBC@EasonWong
     slug: adaptive-tab-bar-colour
   - id: "{03f7f700-a42f-4841-8dfc-c33894bd52d3}"
@@ -69,3 +67,4 @@ extensions:
 # Extensions to remove (no longer wanted)
 unwanted:
   - "{3c078156-979c-498b-8990-85f7987dd929}"
+  - BeautifulPurpleSky@Godie
