@@ -1,0 +1,22 @@
+# Maintainer: neg-serg <neg-serg@example.com>
+pkgname=tailray
+pkgver=0.3.0
+pkgrel=1
+pkgdesc='Tailscale system tray icon for Linux'
+arch=('x86_64')
+url='https://github.com/NotAShelf/tailray'
+license=('MIT')
+depends=('dbus')
+makedepends=('rust' 'cargo' 'pkg-config')
+source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz")
+sha256sums=('a7d74393b3c916a9fa49a2b3d0378638b081610e2a6a4da4f1818019d515faa0')
+
+build() {
+    cd "${pkgname}-${pkgver}"
+    cargo build --release
+}
+
+package() {
+    cd "${pkgname}-${pkgver}"
+    install -Dm755 "target/release/tailray" "${pkgdir}/usr/bin/tailray"
+}
