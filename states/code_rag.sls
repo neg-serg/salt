@@ -4,5 +4,13 @@
 #}
 {% from '_imports.jinja' import home %}
 {% from '_macros_install.jinja' import pip_pkg %}
+{% from '_macros_pkg.jinja' import pacman_install %}
 
 {{ pip_pkg('code_rag', pkg=home ~ '/src/1st-level/@rag/code-rag', bin='code-rag-index') }}
+
+{# docs-rag: external documentation ingestion (web, manpages, local) into shared LanceDB.
+   Provides docs-import, docs-manpages, docs-remove, docs-list CLI commands.
+   Requires mandoc for man page → markdown rendering.
+#}
+{{ pacman_install('mandoc', pkgs='mandoc') }}
+{{ pip_pkg('docs_rag', pkg=home ~ '/src/1st-level/@rag/docs-rag', bin='docs-import') }}
