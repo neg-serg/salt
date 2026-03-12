@@ -85,6 +85,7 @@ include:
   - code_rag
   - opencode
   - openclaw_agent
+  - image_generation
   - steam
 
   # Services, monitoring, user units, snapshots

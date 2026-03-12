@@ -1,0 +1,73 @@
+# Image generation provider roster for gen-image CLI wrapper.
+# Data-driven: edit this file + `just apply` to add/remove providers.
+# Mirrors free_providers.yaml pattern with added `api_type` field.
+#
+# Priority ordering (quality/reliability-tiered):
+#   1. Together AI  — OpenAI-compatible, generous free tier ($100 + 3mo FLUX.1-schnell)
+#   2. Hugging Face — broad model selection, custom API format
+#   3. Cloudflare   — 100k req/day free, custom account-scoped API
+#   5. ComfyUI      — local GPU fallback, always available, zero network dependency
+#
+# api_type values:
+#   openai      — POST {base_url}/images/generations (OpenAI format)
+#   huggingface — POST {base_url}/models/{model_name} (HF Inference API)
+#   cloudflare  — POST {base_url}/accounts/{account_id}/ai/run/{model_name}
+#   comfyui     — POST {base_url}/api/prompt (ComfyUI workflow API)
+#
+# Alias pooling: shared aliases across providers enable priority-based failover.
+#   flux-fast    — fast FLUX generation (3 providers)
+#   flux-quality — high-quality FLUX generation (2 providers)
+#   sdxl         — Stable Diffusion XL (2 providers)
+#
+# Adding a provider: add entry here + gopass insert api/<name> + just
+# Removing a provider: remove entry here + just
+
+providers:
+  - name: "together-ai"                  # Together AI — OpenAI-compatible image API
+    base_url: "https://api.together.xyz/v1"
+    api_type: "openai"
+    gopass_key: "api/together-ai"
+    priority: 1
+    models:
+      - name: "black-forest-labs/FLUX.1-schnell-Free"
+        alias: "flux-fast"               # fast generation, free unlimited 3 months
+      - name: "black-forest-labs/FLUX.1-pro"
+        alias: "flux-quality"            # high-quality, uses credits
+      - name: "stabilityai/stable-diffusion-3-medium"
+        alias: "sdxl"                    # SD3 medium as SDXL-tier fallback
+
+  - name: "huggingface"                  # Hugging Face Inference API — custom format
+    base_url: "https://api-inference.huggingface.co"
+    api_type: "huggingface"
+    gopass_key: "api/huggingface"
+    priority: 2
+    models:
+      - name: "black-forest-labs/FLUX.1-schnell"
+        alias: "flux-fast"               # fast FLUX via HF routing
+      - name: "black-forest-labs/FLUX.1-dev"
+        alias: "flux-quality"            # dev variant, good quality
+      - name: "stabilityai/stable-diffusion-xl-base-1.0"
+        alias: "sdxl"                    # classic SDXL base
+
+  - name: "cloudflare"                   # Cloudflare Workers AI — account-scoped REST
+    base_url: "https://api.cloudflare.com/client/v4"
+    api_type: "cloudflare"
+    gopass_key: "api/cloudflare-ai"
+    account_id: ""                        # set via gopass or edit after bootstrap
+    priority: 3
+    models:
+      - name: "@cf/black-forest-labs/FLUX-1-schnell"
+        alias: "flux-fast"               # FLUX.1-schnell on CF edge
+      - name: "@cf/stabilityai/stable-diffusion-xl-base-1.0"
+        alias: "sdxl"                    # SDXL on CF edge
+
+  - name: "comfyui"                      # Local ComfyUI — GPU fallback, always available
+    base_url: "http://127.0.0.1:8188"
+    api_type: "comfyui"
+    dummy_key: "local"
+    priority: 5
+    models:
+      - name: "flux1-schnell-fp8"
+        alias: "flux-fast"               # local FLUX.1-schnell (requires model download)
+      - name: "sdxl-base"
+        alias: "sdxl"                    # local SDXL (requires model download)
