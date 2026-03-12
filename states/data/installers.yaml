@@ -59,8 +59,6 @@ pip_pkg:
 cargo_pkg:
   pzip:
     bin: pz
-  rustnet:
-    git: "https://github.com/domcyrus/rustnet"
   rsmetrx:
     git: "https://github.com/neg-serg/rsmetrx"
 
