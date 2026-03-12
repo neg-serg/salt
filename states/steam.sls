@@ -51,6 +51,28 @@ steam_pkg:
 
 {{ curl_extract_7z('modern_steam_skin', 'https://github.com/SleepDaemon/Modern-Steam/releases/download/v' ~ modern_skin_version ~ '/SteamDarkMode.7z', home ~ '/.local/share/Steam/skins', creates=home ~ '/.local/share/Steam/skins/steamui', version=modern_skin_version if modern_skin_version else None, user=user, require=['cmd: install_p7zip', 'file: steam_skins_dir']) }}
 
+# Activate Modern-Steam CSS skin: symlink *.custom.css into Steam's
+# steamui/ and clientui/ directories where the new UI auto-loads them.
+{% set skins = home ~ '/.local/share/Steam/skins' %}
+{% set steam = home ~ '/.local/share/Steam' %}
+{% for css_pair in [
+  (skins ~ '/steamui/config.css', steam ~ '/steamui/config.css'),
+  (skins ~ '/steamui/libraryroot.custom.css', steam ~ '/steamui/libraryroot.custom.css'),
+  (skins ~ '/clientui/friends.custom.css', steam ~ '/clientui/friends.custom.css'),
+  (skins ~ '/clientui/ofriends.custom.css', steam ~ '/clientui/ofriends.custom.css'),
+] %}
+steam_skin_link_{{ loop.index }}:
+  file.symlink:
+    - name: {{ css_pair[1] }}
+    - target: {{ css_pair[0] }}
+    - user: {{ user }}
+    - group: {{ user }}
+    - force: True
+    - onlyif: test -f {{ css_pair[0] }}
+    - require:
+      - cmd: modern_steam_skin
+{% endfor %}
+
 gamemode_config:
   file.managed:
     - name: /etc/gamemode.ini

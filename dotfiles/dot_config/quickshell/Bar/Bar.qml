@@ -393,6 +393,29 @@ Scope {
                     screen: modelData
                     color: "transparent"
                     property bool panelHovering: false
+                    property real slideX: 0
+                    property bool _slideAnimating: false
+                    NumberFadeBehavior {
+                        id: leftSlideAnim
+                        target: leftPanel
+                        property: "slideX"
+                        duration: Theme.panelSlideMs
+                        easing.type: Theme.uiEasingStdOut
+                        onStopped: { leftPanel._slideAnimating = false }
+                    }
+                    onVisibleChanged: {
+                        if (visible && Theme.animationsEnabled) {
+                            slideX = -(implicitWidth || 960);
+                            _slideAnimating = true;
+                            leftSlideAnim.from = slideX;
+                            leftSlideAnim.to = 0;
+                            leftSlideAnim.start();
+                        } else {
+                            leftSlideAnim.stop();
+                            slideX = 0;
+                            _slideAnimating = false;
+                        }
+                    }
                     WlrLayershell.namespace: "quickshell-bar-left"
                     // Debug/testing: put bars on Overlay when wedge debug or shader-test enabled
                     WlrLayershell.layer: (((Quickshell.env("QS_WEDGE_DEBUG") || "") === "1")
@@ -458,6 +481,7 @@ Scope {
                         Item {
                             id: leftPanelContent
                             anchors.fill: parent
+                            transform: Translate { x: leftPanel.slideX }
 
                     // Outer backdrop: covers full panel width at seam opacity
                     // (semi-transparent — lets wallpaper show through in seam/gap area)
@@ -789,6 +813,29 @@ Scope {
                     screen: modelData
                     color: "transparent"
                     property bool panelHovering: false
+                    property real slideX: 0
+                    property bool _slideAnimating: false
+                    NumberFadeBehavior {
+                        id: rightSlideAnim
+                        target: rightPanel
+                        property: "slideX"
+                        duration: Theme.panelSlideMs
+                        easing.type: Theme.uiEasingStdOut
+                        onStopped: { rightPanel._slideAnimating = false }
+                    }
+                    onVisibleChanged: {
+                        if (visible && Theme.animationsEnabled) {
+                            slideX = (implicitWidth || 960);
+                            _slideAnimating = true;
+                            rightSlideAnim.from = slideX;
+                            rightSlideAnim.to = 0;
+                            rightSlideAnim.start();
+                        } else {
+                            rightSlideAnim.stop();
+                            slideX = 0;
+                            _slideAnimating = false;
+                        }
+                    }
                     WlrLayershell.namespace: "quickshell-bar-right"
                     // Debug/testing: put bars on Overlay when wedge debug or shader-test enabled
                     WlrLayershell.layer: (((Quickshell.env("QS_WEDGE_DEBUG") || "") === "1")
@@ -871,6 +918,7 @@ Scope {
                         Item {
                             id: rightPanelContent
                             anchors.fill: parent
+                            transform: Translate { x: rightPanel.slideX }
 
                     // Outer backdrop: covers full panel width at seam opacity
                     Rectangle {
@@ -1343,7 +1391,8 @@ Scope {
                     // Prevents early full-width flash while rows are still measuring.
                     property bool useReadinessFilter: true
                     property bool rightPanelActive: rightPanel.renderActive
-                    visible: monitorEnabled && seamPanel.rightPanelActive && (
+                    property bool panelSlidesComplete: !leftPanel._slideAnimating && !rightPanel._slideAnimating
+                    visible: monitorEnabled && seamPanel.rightPanelActive && seamPanel.panelSlidesComplete && (
                         !seamPanel.useReadinessFilter
                         ? (seamPanel.rawGapWidth > 0)
                         : (seamPanel.geometryReady)

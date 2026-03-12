@@ -339,6 +339,9 @@ Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full de
 - Markdown (documentation artifact), Jinja2/YAML (code examples within document) + None — this is a standalone documentation deliverable (017-salt-best-practices)
 - Files in `docs/` directory (017-salt-best-practices)
 - Jinja2/YAML (Salt states), Bash (PKGBUILDs) + Salt (masterless), pacman, paru, makepkg (018-pkgbuild-migration)
+- YAML data files + Markdown documentation (deliverables); Bash/Zsh for benchmarking scripts + GCC 15.2.1 (Graphite/ISL built-in), libgomp, hyperfine, asp (PKGBUILD access) (019-autoparallel-research)
+- Files in `states/data/` and `docs/` (019-autoparallel-research)
+- QML 6 (Qt 6), JavaScript helpers + Quickshell runtime, QtQuick, Quickshell.Wayland (PanelWindow/WlrLayershell) (020-quickshell-panel-slide)
 
 ## Recent Changes
 - 001-code-rag-integration: Added Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx)

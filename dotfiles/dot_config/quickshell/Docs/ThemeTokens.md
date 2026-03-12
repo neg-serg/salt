@@ -207,7 +207,8 @@ Core mappings (examples):
 - Pill: panelPillHeight → panel.pill.height; panelPillIconSize → panel.pill.iconSize;
   panelPillPaddingH → panel.pill.paddingH; panelPillShowDelayMs → panel.pill.showDelayMs;
   panelPillAutoHidePauseMs → panel.pill.autoHidePauseMs; panelPillColor → panel.pill.color
-- Animations: panelAnimStdMs → panel.animations.stdMs; panelAnimFastMs → panel.animations.fastMs
+- Animations: panelAnimStdMs → panel.animations.stdMs; panelAnimFastMs → panel.animations.fastMs;
+  panelSlideMs → panel.animations.slideMs (default 350; entrance slide duration for left/right panels)
 - Tray: panelTrayLongHoldMs → panel.tray.longHoldMs; panelTrayShortHoldMs → panel.tray.shortHoldMs;
   panelTrayGuardMs → panel.tray.guardMs; panelTrayOverlayDismissDelayMs →
   panel.tray.overlayDismissDelayMs; panelTrayInlinePadding → panel.tray.inlinePadding
