@@ -1,0 +1,37 @@
+# Documentation sources for docs-rag (deployed by code_rag.sls)
+# Consumed by: docs-import --all --config <this file>
+# Format reference: specs/023-external-docs-rag/data-model.md
+
+salt-states:
+  type: web
+  url: https://docs.saltproject.io/en/latest/ref/states/
+  depth: 2
+  delay: 1.0
+  tags: salt,reference
+
+hyprland:
+  type: web
+  url: https://wiki.hyprland.org/Configuring/
+  depth: 2
+  delay: 0.5
+  tags: hyprland,reference
+
+cachyos:
+  type: web
+  url: https://wiki.cachyos.org/
+  depth: 2
+  delay: 0.5
+  tags: cachyos,linux,reference
+
+core-tools:
+  type: manpage
+  pages:
+    - fd         # find alternative
+    - git        # version control
+    - jq         # JSON processor
+    - mandoc     # man page compiler
+    - pacman     # package manager
+    - rg         # ripgrep search
+    - salt-call  # Salt local execution
+    - systemctl  # systemd service manager
+    - zsh        # Z shell
