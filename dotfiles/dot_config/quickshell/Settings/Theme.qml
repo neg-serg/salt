@@ -820,7 +820,7 @@ Singleton {
     // Animation timings
     property int panelAnimStdMs: val('panel.animations.stdMs', 250)
     property int panelAnimFastMs: val('panel.animations.fastMs', 200)
-    property int panelSlideMs: val('panel.animations.slideMs', 350)
+    property int panelSlideMs: val('panel.animations.slideMs', 3500)
     // Tray behavior timings
     property int panelTrayLongHoldMs: val('panel.tray.longHoldMs', 2500)
     property int panelTrayShortHoldMs: val('panel.tray.shortHoldMs', 1500)
