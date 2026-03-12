@@ -91,22 +91,7 @@ swayimg_local_build:
     - user: {{ user }}
     - group: {{ user }}
 
-# --- swww-vulkan: use local build from ~/src/swww-vulkan instead of hyprpaper ---
-swww_vulkan_local_build:
-  file.symlink:
-    - name: {{ home }}/.local/bin/swww-vulkan
-    - target: {{ home }}/src/swww-vulkan/target/release/swww-vulkan
-    - force: True
-    - user: {{ user }}
-    - group: {{ user }}
-
-swww_vulkan_daemon_local_build:
-  file.symlink:
-    - name: {{ home }}/.local/bin/swww-vulkan-daemon
-    - target: {{ home }}/src/swww-vulkan/target/release/swww-vulkan-daemon
-    - force: True
-    - user: {{ user }}
-    - group: {{ user }}
+# swww-vulkan: installed via custom_pkgs (PKGBUILD → /usr/bin/)
 
 # --- SSH directory setup ---
 {{ ensure_dir('ssh_dir', home ~ '/.ssh', mode='0700') }}
