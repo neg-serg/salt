@@ -1,0 +1,246 @@
+#!/bin/bash
+# Video AI generation runner: submit workflow to ComfyUI, encode output as MP4.
+# Usage: video-ai-generate.sh --model MODEL_ID --prompt "TEXT" [--image PATH] [--compat]
+#        [--width W] [--height H] [--frames N]
+set -euo pipefail
+
+VIDEO_AI_DIR="${VIDEO_AI_DIR:-/mnt/one/video-ai}"
+COMFYUI_DIR="${COMFYUI_DIR:-${VIDEO_AI_DIR}/comfyui}"
+COMFYUI_PORT="${COMFYUI_PORT:-8188}"
+COMFYUI_URL="http://127.0.0.1:${COMFYUI_PORT}"
+OUTPUT_DIR="${VIDEO_AI_DIR}/output"
+WORKFLOWS_DIR="${VIDEO_AI_DIR}/workflows"
+VENV_PYTHON="${COMFYUI_DIR}/venv/bin/python"
+
+# ── Defaults ─────────────────────────────────────────────────────────
+MODEL=""
+PROMPT=""
+IMAGE=""
+WIDTH=854
+HEIGHT=480
+FRAMES=97  # ~4 seconds at 24fps
+COMPAT=false
+
+usage() {
+    cat >&2 <<'EOF'
+Usage: video-ai-generate.sh --model ID --prompt "TEXT" [OPTIONS]
+
+Options:
+  --model ID      Model ID (e.g., ltx-video-2b, wan21-t2v-14b)
+  --prompt TEXT    Text description for video generation
+  --image PATH    Reference image for image-to-video (optional)
+  --width W       Output width (default: 854)
+  --height H      Output height (default: 480)
+  --frames N      Number of frames (default: 97, ~4s at 24fps)
+  --compat        Encode as H.264 instead of H.265
+  --help          Show this help
+EOF
+    exit 1
+}
+
+# ── Parse arguments ──────────────────────────────────────────────────
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --model)  MODEL="$2"; shift 2 ;;
+        --prompt) PROMPT="$2"; shift 2 ;;
+        --image)  IMAGE="$2"; shift 2 ;;
+        --width)  WIDTH="$2"; shift 2 ;;
+        --height) HEIGHT="$2"; shift 2 ;;
+        --frames) FRAMES="$2"; shift 2 ;;
+        --compat) COMPAT=true; shift ;;
+        --help)   usage ;;
+        *) echo "Unknown option: $1" >&2; usage ;;
+    esac
+done
+
+[[ -z "${MODEL}" ]] && { echo "Error: --model is required" >&2; usage; }
+[[ -z "${PROMPT}" ]] && { echo "Error: --prompt is required" >&2; usage; }
+
+# ── Validate prerequisites ───────────────────────────────────────────
+[[ -f "${VENV_PYTHON}" ]] || { echo "Error: ComfyUI not installed at ${COMFYUI_DIR}" >&2; exit 4; }
+command -v ffmpeg >/dev/null || { echo "Error: ffmpeg not found" >&2; exit 4; }
+
+WORKFLOW_FILE="${WORKFLOWS_DIR}/${MODEL}.json"
+# Try model-specific workflow, fall back to generic t2v workflow
+if [[ ! -f "${WORKFLOW_FILE}" ]]; then
+    # Try to find any workflow matching model prefix
+    for wf in "${WORKFLOWS_DIR}"/*; do
+        if [[ "$(basename "$wf" .json)" == *"${MODEL%%[-_]*}"* ]]; then
+            WORKFLOW_FILE="$wf"
+            break
+        fi
+    done
+fi
+[[ -f "${WORKFLOW_FILE}" ]] || { echo "Error: No workflow found for model '${MODEL}'" >&2; exit 2; }
+
+if [[ -n "${IMAGE}" ]]; then
+    [[ -f "${IMAGE}" ]] || { echo "Error: Image file not found: ${IMAGE}" >&2; exit 1; }
+    IMAGE="$(realpath "${IMAGE}")"
+fi
+
+# ── Prepare workflow ─────────────────────────────────────────────────
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+SLUG=$(echo "${PROMPT}" | tr '[:upper:]' '[:lower:]' | tr -cs '[:alnum:]' '-' | head -c 40 | sed 's/-$//')
+WORK_DIR=$(mktemp -d "/tmp/video-ai-${MODEL}-XXXXXX")
+WORKFLOW_RESOLVED="${WORK_DIR}/workflow.json"
+
+# Substitute placeholders in workflow
+sed -e "s|__PROMPT__|${PROMPT//|/\\|}|g" \
+    -e "s|__WIDTH__|${WIDTH}|g" \
+    -e "s|__HEIGHT__|${HEIGHT}|g" \
+    -e "s|__FRAMES__|${FRAMES}|g" \
+    "${WORKFLOW_FILE}" > "${WORKFLOW_RESOLVED}"
+
+# If image provided, inject into workflow
+if [[ -n "${IMAGE}" ]]; then
+    # Create input image link for ComfyUI
+    mkdir -p "${COMFYUI_DIR}/input"
+    cp "${IMAGE}" "${COMFYUI_DIR}/input/input_image.png"
+fi
+
+echo "[video-ai] Model: ${MODEL}" >&2
+echo "[video-ai] Prompt: ${PROMPT}" >&2
+echo "[video-ai] Resolution: ${WIDTH}x${HEIGHT}, Frames: ${FRAMES}" >&2
+
+# ── Start ComfyUI if not running ─────────────────────────────────────
+COMFYUI_PID=""
+if ! curl -sf "${COMFYUI_URL}/system_stats" >/dev/null 2>&1; then
+    echo "[video-ai] Starting ComfyUI on port ${COMFYUI_PORT}..." >&2
+    cd "${COMFYUI_DIR}"
+    "${VENV_PYTHON}" main.py \
+        --listen 127.0.0.1 \
+        --port "${COMFYUI_PORT}" \
+        --disable-auto-launch \
+        --output-directory "${WORK_DIR}/raw" \
+        >/dev/null 2>&1 &
+    COMFYUI_PID=$!
+
+    # Wait for ComfyUI to become ready
+    echo -n "[video-ai] Waiting for ComfyUI..." >&2
+    for i in $(seq 1 120); do
+        if curl -sf "${COMFYUI_URL}/system_stats" >/dev/null 2>&1; then
+            echo " ready (${i}s)" >&2
+            break
+        fi
+        if [[ $i -eq 120 ]]; then
+            echo " timeout!" >&2
+            kill "${COMFYUI_PID}" 2>/dev/null || true
+            exit 1
+        fi
+        sleep 1
+    done
+fi
+
+# ── Submit workflow ──────────────────────────────────────────────────
+echo "[video-ai] Submitting workflow..." >&2
+RESPONSE=$(curl -sf -X POST "${COMFYUI_URL}/prompt" \
+    -H "Content-Type: application/json" \
+    -d @"${WORKFLOW_RESOLVED}")
+
+PROMPT_ID=$(echo "${RESPONSE}" | python3 -c "import sys,json; print(json.load(sys.stdin)['prompt_id'])" 2>/dev/null || true)
+
+if [[ -z "${PROMPT_ID}" ]]; then
+    echo "Error: Failed to submit workflow to ComfyUI" >&2
+    echo "Response: ${RESPONSE}" >&2
+    [[ -n "${COMFYUI_PID}" ]] && kill "${COMFYUI_PID}" 2>/dev/null || true
+    exit 1
+fi
+
+echo "[video-ai] Prompt ID: ${PROMPT_ID}" >&2
+
+# ── Poll for progress ────────────────────────────────────────────────
+echo "[video-ai] Generating..." >&2
+while true; do
+    HISTORY=$(curl -sf "${COMFYUI_URL}/history/${PROMPT_ID}" 2>/dev/null || echo "{}")
+
+    # Check if complete
+    if echo "${HISTORY}" | python3 -c "
+import sys, json
+h = json.load(sys.stdin)
+if '${PROMPT_ID}' in h:
+    status = h['${PROMPT_ID}'].get('status', {})
+    if status.get('completed', False) or status.get('status_str') == 'success':
+        sys.exit(0)
+    if 'messages' in status:
+        for msg in status['messages']:
+            if msg[0] == 'execution_error':
+                print(msg[1].get('exception_message', 'Unknown error'), file=sys.stderr)
+                sys.exit(2)
+sys.exit(1)
+" 2>/dev/null; then
+        echo -e "\n[video-ai] Generation complete!" >&2
+        break
+    fi
+
+    # Show progress
+    PROGRESS=$(curl -sf "${COMFYUI_URL}/prompt" 2>/dev/null | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    qi = data.get('exec_info', {}).get('queue_remaining', '?')
+    print(f'queue: {qi}', end='')
+except: pass
+" 2>/dev/null || echo "...")
+    echo -ne "\r[video-ai] ${PROGRESS}  " >&2
+
+    sleep 2
+done
+
+# ── Find output files ────────────────────────────────────────────────
+mkdir -p "${OUTPUT_DIR}"
+RAW_DIR="${WORK_DIR}/raw"
+
+# ComfyUI saves as webp/png sequences — find the output
+OUTPUT_FILES=$(find "${RAW_DIR}" -name "*.webp" -o -name "*.png" 2>/dev/null | sort | head -1)
+
+if [[ -z "${OUTPUT_FILES}" ]]; then
+    # Try to find from ComfyUI output directory
+    RAW_DIR="${COMFYUI_DIR}/output"
+    OUTPUT_FILES=$(find "${RAW_DIR}" -name "*.webp" -newer "${WORKFLOW_RESOLVED}" 2>/dev/null | sort | head -1)
+fi
+
+if [[ -z "${OUTPUT_FILES}" ]]; then
+    echo "Error: No output files found after generation" >&2
+    [[ -n "${COMFYUI_PID}" ]] && kill "${COMFYUI_PID}" 2>/dev/null || true
+    exit 1
+fi
+
+# ── Encode to MP4 ────────────────────────────────────────────────────
+OUTPUT_MP4="${OUTPUT_DIR}/${MODEL}_${TIMESTAMP}_${SLUG}.mp4"
+
+echo "[video-ai] Encoding to MP4..." >&2
+
+# Select encoder: VAAPI hw accel or software fallback
+if [[ "${COMPAT}" == "true" ]]; then
+    ENCODER_ARGS=(-c:v h264_vaapi)
+    FALLBACK_ARGS=(-c:v libx264 -preset medium -crf 18)
+else
+    ENCODER_ARGS=(-c:v hevc_vaapi)
+    FALLBACK_ARGS=(-c:v libx265 -preset medium -crf 18)
+fi
+
+# Try hardware encoding, fall back to software
+if vainfo 2>/dev/null | grep -q "VAEntrypointEncSlice"; then
+    ffmpeg -y -vaapi_device /dev/dri/renderD128 \
+        -i "${OUTPUT_FILES}" \
+        -vf "format=nv12,hwupload" \
+        "${ENCODER_ARGS[@]}" \
+        -f mp4 "${OUTPUT_MP4}" 2>/dev/null || {
+        echo "[video-ai] VAAPI encoding failed, falling back to software..." >&2
+        ffmpeg -y -i "${OUTPUT_FILES}" \
+            "${FALLBACK_ARGS[@]}" \
+            -f mp4 "${OUTPUT_MP4}" 2>/dev/null
+    }
+else
+    echo "[video-ai] VAAPI not available, using software encoding..." >&2
+    ffmpeg -y -i "${OUTPUT_FILES}" \
+        "${FALLBACK_ARGS[@]}" \
+        -f mp4 "${OUTPUT_MP4}" 2>/dev/null
+fi
+
+# ── Cleanup ──────────────────────────────────────────────────────────
+rm -rf "${WORK_DIR}"
+[[ -n "${COMFYUI_PID}" ]] && kill "${COMFYUI_PID}" 2>/dev/null || true
+
+echo "[video-ai] Output: ${OUTPUT_MP4}" >&2
+echo "${OUTPUT_MP4}"
