@@ -1,0 +1,97 @@
+# Video AI model registry for video_ai.sls
+# Each model entry defines a downloadable video generation checkpoint.
+# Set enabled: true to download via Salt apply. All disabled by default.
+
+# ComfyUI custom nodes required by video models
+comfyui_nodes:
+  - repo: https://github.com/Lightricks/ComfyUI-LTXVideo  # LTX-Video nodes
+    dir: ComfyUI-LTXVideo
+  - repo: https://github.com/kijai/ComfyUI-WanVideoWrapper  # Wan2.1 nodes (GGUF support)
+    dir: ComfyUI-WanVideoWrapper
+  - repo: https://github.com/kijai/ComfyUI-HunyuanVideoWrapper  # HunyuanVideo nodes
+    dir: ComfyUI-HunyuanVideoWrapper
+  - repo: https://github.com/kijai/ComfyUI-CogVideoXWrapper  # CogVideoX nodes
+    dir: ComfyUI-CogVideoXWrapper
+  - repo: https://github.com/city96/ComfyUI-GGUF  # GGUF model loader
+    dir: ComfyUI-GGUF
+
+models:
+  - id: ltx-video-2b
+    name: "LTX-Video 2B Distilled"  # fastest, AMD-tested on 7900 XTX (~66s)
+    enabled: false
+    repo: Lightricks/LTX-Video
+    files:
+      - ltx-video-2b-v0.9.5.safetensors  # 2B distilled checkpoint
+    precision: fp16
+    vram_gb: 12
+    modes:
+      - t2v  # text-to-video
+      - i2v  # image-to-video
+      - v2v  # video-to-video
+    max_resolution: 720p
+    default: true
+    comfyui_workflow: ltx-video-t2v.json
+    notes: "AMD-tested on 7900 XTX, fastest option"
+
+  - id: hunyuanvideo-15
+    name: "HunyuanVideo 1.5 FP8"  # best quality, Tencent
+    enabled: false
+    repo: tencent/HunyuanVideo-1.5
+    files:
+      - hunyuan_video_1_5_fp8_e4m3fn.safetensors  # FP8 quantized 8.3B
+    precision: fp8
+    vram_gb: 14
+    modes:
+      - t2v  # text-to-video
+      - i2v  # image-to-video
+    max_resolution: 720p
+    default: false
+    comfyui_workflow: hunyuanvideo-t2v.json
+    notes: "highest quality open model, ~5 min per 4s clip"
+
+  - id: wan21-t2v-14b
+    name: "Wan2.1 T2V 14B GGUF Q5"  # Alibaba, very good quality
+    enabled: false
+    repo: city96/Wan2.1-T2V-14B-gguf
+    files:
+      - wan2.1-t2v-14b-Q5_K_M.gguf  # Q5 quantized 14B
+    precision: gguf-q5
+    vram_gb: 11
+    modes:
+      - t2v  # text-to-video
+    max_resolution: 480p
+    default: false
+    comfyui_workflow: wan21-t2v.json
+    notes: "very good quality, slowest (~20 min per 4s clip)"
+
+  - id: wan21-t2v-1.3b
+    name: "Wan2.1 T2V 1.3B"  # Alibaba, small/fast variant
+    enabled: false
+    repo: Wan-AI/Wan2.1-T2V-1.3B
+    files:
+      - diffusion_pytorch_model.safetensors  # 1.3B fp16
+    precision: fp16
+    vram_gb: 8
+    modes:
+      - t2v  # text-to-video only
+    max_resolution: 480p
+    default: false
+    comfyui_workflow: wan21-t2v.json
+    notes: "smallest model, easiest to run, lower quality"
+
+  - id: cogvideox-5b
+    name: "CogVideoX 5B"  # Zhipu AI / THUDM
+    enabled: false
+    repo: THUDM/CogVideoX-5b
+    files:
+      - diffusion_pytorch_model-00001-of-00002.safetensors  # part 1
+      - diffusion_pytorch_model-00002-of-00002.safetensors  # part 2
+    precision: bf16
+    vram_gb: 16
+    modes:
+      - t2v  # text-to-video
+      - i2v  # image-to-video (separate checkpoint)
+    max_resolution: 480p
+    default: false
+    comfyui_workflow: cogvideox-t2v.json
+    notes: "dated (480p/8fps), included for completeness"
