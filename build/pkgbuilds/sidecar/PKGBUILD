@@ -1,0 +1,15 @@
+# Maintainer: neg-serg <neg-serg@example.com>
+pkgname=sidecar
+pkgver=0.77.0
+pkgrel=1
+pkgdesc='AI agent tool for code assistance'
+arch=('x86_64')
+url='https://github.com/marcus/sidecar'
+license=('MIT')
+depends=()
+source=("${pkgname}-${pkgver}.tar.gz::${url}/releases/download/v${pkgver}/sidecar_${pkgver}_linux_amd64.tar.gz")
+sha256sums=('3d75d19476ab7ac5b15a0ac3bf55d4493eff0d6108340a06268b70a7e9aa26b4')
+
+package() {
+    install -Dm755 "${srcdir}/sidecar" "${pkgdir}/usr/bin/sidecar"
+}

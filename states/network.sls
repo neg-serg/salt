@@ -1,5 +1,6 @@
-{% from '_imports.jinja' import host %}
+{% from '_imports.jinja' import host, home %}
 {% from '_macros_service.jinja' import service_with_unit, ensure_dir %}
+{% from '_macros_pkg.jinja' import paru_install %}
 {% set net = host.features.network %}
 
 # --- VM Bridge: br0 for KVM/libvirt VMs ---
@@ -34,13 +35,19 @@ vm_bridge_firewall:
 {% endif %}
 
 # --- Xray: VLESS/Reality proxy service ---
-# Binary already installed by system_description.sls (install_xray)
-# This adds a systemd service for running xray as a daemon
 {% if net.xray %}
+{{ paru_install('xray', 'xray-bin') }}
+
+# One-time cleanup: remove old manually-installed binary
+xray_legacy_cleanup:
+  file.absent:
+    - name: {{ home }}/.local/bin/xray
+    - onlyif: test -f {{ home }}/.local/bin/xray
+
 {{ ensure_dir('xray_config_dir', '/etc/xray', mode='0750', user='root') }}
 
 # Not enabled by default — needs config.json with secrets from gopass
-{{ service_with_unit('xray', 'salt://units/xray.service', template='jinja', context={'home': host.home}, enabled=False) }}
+{{ service_with_unit('xray', 'salt://units/xray.service', enabled=False, requires=['cmd: install_xray']) }}
 {% endif %}
 
 # --- Sing-box: TUN proxy (manual start) ---

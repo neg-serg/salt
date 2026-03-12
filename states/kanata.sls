@@ -1,12 +1,16 @@
 {% from '_imports.jinja' import host, user, home %}
-{% from '_macros_install.jinja' import curl_extract_zip %}
+{% from '_macros_pkg.jinja' import paru_install %}
 {% from '_macros_service.jinja' import udev_rule, ensure_dir, user_service_with_unit %}
-{% import_yaml 'data/versions.yaml' as ver %}
 # Kanata: software keyboard remapper (uinput-based)
 {% if host.features.kanata %}
-# --- Install kanata binary from GitHub release ---
-# Binary inside the zip is named kanata_linux_x64, not kanata
-{{ curl_extract_zip('kanata', 'https://github.com/jtroo/kanata/releases/download/v' ~ ver.kanata ~ '/linux-binaries-x64.zip', 'kanata_linux_x64', bin='kanata', chmod=True, version=ver.kanata) }}
+# --- Install kanata from AUR ---
+{{ paru_install('kanata', 'kanata-bin') }}
+
+# One-time cleanup: remove old manually-installed binary
+kanata_legacy_cleanup:
+  file.absent:
+    - name: {{ home }}/.local/bin/kanata
+    - onlyif: test -f {{ home }}/.local/bin/kanata
 
 # --- uinput kernel module (required for virtual keyboard device) ---
 kanata_uinput_module:

@@ -1,0 +1,16 @@
+# Maintainer: neg-serg <neg-serg@example.com>
+pkgname=ssh-to-age
+pkgver=1.2.0
+pkgrel=1
+pkgdesc='Convert SSH Ed25519 keys to age keys'
+arch=('x86_64')
+url='https://github.com/Mic92/ssh-to-age'
+license=('MIT')
+depends=()
+source=("${pkgname}-${pkgver}::${url}/releases/download/${pkgver}/ssh-to-age.linux-amd64")
+sha256sums=('9980a9b19c9495d446e825a2639b77cb381db30710d50542c835b86e9efaf8e9')
+noextract=("${pkgname}-${pkgver}")
+
+package() {
+    install -Dm755 "${srcdir}/${pkgname}-${pkgver}" "${pkgdir}/usr/bin/ssh-to-age"
+}
