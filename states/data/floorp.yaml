@@ -63,6 +63,8 @@ extensions:
     slug: beautiful-purple-sky
   - id: ATBC@EasonWong
     slug: adaptive-tab-bar-colour
+  - id: "{03f7f700-a42f-4841-8dfc-c33894bd52d3}"
+    slug: sombre-artcas2
 
 # Extensions to remove (no longer wanted)
 unwanted:
