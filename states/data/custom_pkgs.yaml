@@ -22,6 +22,17 @@ pkgbuild:
   albumdetails: {}
   taoup: {}
 
+  # Binary download PKGBUILDs (migrated from manual curl downloads)
+  proxypilot: {}
+  ssh-to-age: {}
+  sidecar: {}
+
+  # Cargo build PKGBUILDs (migrated from cargo install)
+  tailray: {}
+
+  # Desktop app PKGBUILD (migrated from curl_extract_zip)
+  throne: {}
+
   # neg-serg fork with --style plain; must replace stock duf if present
   duf:
     replace_check: "pacman -Qi duf 2>/dev/null | rg -q neg-serg"
