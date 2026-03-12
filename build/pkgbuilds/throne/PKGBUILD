@@ -1,0 +1,15 @@
+# Maintainer: neg-serg <neg-serg@example.com>
+pkgname=throne
+pkgver=1.0.13
+pkgrel=1
+pkgdesc='Infrastructure-as-code deployment tool'
+arch=('x86_64')
+url='https://github.com/throneproj/Throne'
+license=('MIT')
+depends=()
+source=("${pkgname}-${pkgver}.zip::${url}/releases/download/${pkgver}/Throne-${pkgver}-linux-amd64.zip")
+sha256sums=('03b07f749f37211dcc158d4d788d61b19f45e41925cddb2858a84ed88d6e695d')
+
+package() {
+    install -Dm755 "${srcdir}/Throne/Throne" "${pkgdir}/usr/bin/throne"
+}
