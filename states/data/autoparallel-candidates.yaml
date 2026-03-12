@@ -18,15 +18,15 @@
 # no existing parallelism, measurable compute time per invocation.
 
 high:
-  - name: tesseract  # OCR engine — heavy pixel convolutions and matrix ops
+  - name: tesseract  # OCR engine — already uses OpenMP for pixel ops; benchmark showed 0% gain from auto-par
     language: cpp
-    potential: high
+    potential: moderate
     workload_type: data-parallel
-    existing_parallelism: none
+    existing_parallelism: openmp
     compiler_backend: gcc-graphite
-    risk: low
+    risk: medium
     benchmark_workload: "tesseract sample.png output -l eng"
-    notes: "Recognition pipeline has dense pixel loops; training data loading is I/O but inference is CPU-bound"
+    notes: "Already links libgomp (OpenMP); auto-parallelism benchmark showed no improvement (3.83s→3.82s)"
 
   - name: optipng  # lossless PNG optimizer — deflate search across parameters
     language: c
@@ -162,14 +162,14 @@ moderate:
     risk: low
     notes: "Indexing phase has data-parallel document processing; search is I/O-bound"
 
-  - name: tesseract-data-eng  # Tesseract English training data
-    language: cpp
-    potential: moderate
-    workload_type: data-parallel
+  - name: tesseract-data-eng  # Tesseract English training data — not a binary, just data files
+    language: data
+    potential: not-applicable
+    workload_type: none
     existing_parallelism: none
     compiler_backend: none
     risk: low
-    notes: "Data package — benefit comes from tesseract binary, not this package"
+    notes: "Data package — no executable code to parallelize"
 
   - name: goaccess  # web log analyzer — C, single-threaded parsing
     language: c

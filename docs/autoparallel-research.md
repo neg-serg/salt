@@ -9,7 +9,7 @@ Research into which installed programs could benefit from GCC Graphite auto-para
 ## Summary
 
 Out of 384 unique installed packages:
-- **8 high potential** — single-threaded C/C++ with CPU-bound data processing
+- **7 high potential** — single-threaded C/C++ with CPU-bound data processing
 - **14 moderate** — partially parallelized (OpenMP) with unparallelized loops remaining
 - **27 low** — already parallelized or wrong workload type
 - **335 not applicable** — interpreted languages, I/O-bound, event-driven, or metapackages
@@ -251,3 +251,16 @@ Graphite successfully parallelized loops in 6 modules (deflate, opngreduc, pngxr
 3. **`OMP_NUM_THREADS=1` did not prevent thread creation** — compiled-in thread count of 16 overrode the environment variable, making runtime escape hatch unreliable.
 
 **Conclusion**: Even for a "high potential" candidate with provably parallelizable loops, auto-parallelism degraded performance. The theoretical promise of loop-level parallelism does not survive contact with real-world code where hot loops are too small for thread-pool overhead to amortize.
+
+### Validation Results: tesseract
+
+**Test file**: 2400×3200 PNG with dense text, `--psm 6`
+
+| Variant | Wall-clock | User time | CPU% |
+|---------|-----------|-----------|------|
+| Stock tesseract (CachyOS repo) | **3.83 s ± 0.12** | 10.35 s | 270% |
+| Rebuilt with `-ftree-parallelize-loops=16` | **3.82 s ± 0.09** | 10.80 s | 286% |
+
+**Result: 0% change (within noise).**
+
+Tesseract already links libgomp and uses OpenMP internally. Graphite found no additional loops to parallelize. Reclassified from "high" to "moderate" (existing_parallelism: openmp).
