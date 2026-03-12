@@ -1,0 +1,17 @@
+# Maintainer: neg-serg <neg-serg@example.com>
+pkgname=proxypilot
+pkgver=0.3.0_dev_0.40
+_realver=0.3.0-dev-0.40
+pkgrel=1
+pkgdesc='Local AI proxy for coding tools (Claude Code, OpenCode)'
+arch=('x86_64')
+url='https://github.com/Finesssee/ProxyPilot'
+license=('MIT')
+depends=()
+source=("${pkgname}-${_realver}::${url}/releases/download/v${_realver}/proxypilot-linux-amd64")
+sha256sums=('d611b1bc94e6d3dda03ed1fdc08fc3be5a2b1f66e58e77e638d26c9874a44a10')
+noextract=("${pkgname}-${_realver}")
+
+package() {
+    install -Dm755 "${srcdir}/${pkgname}-${_realver}" "${pkgdir}/usr/bin/proxypilot"
+}

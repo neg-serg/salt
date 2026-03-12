@@ -1,6 +1,7 @@
 {% from '_imports.jinja' import user, home, retry_attempts, retry_interval %}
 {% from '_macros_install.jinja' import curl_bin, pip_pkg, cargo_pkg, curl_extract_tar, curl_extract_zip, git_clone_deploy, http_file %}
 {% from '_macros_github.jinja' import github_tar %}
+{% from '_macros_pkg.jinja' import paru_install %}
 {% import_yaml 'data/installers.yaml' as tools %}
 {% import_yaml 'data/versions.yaml' as ver %}
 
@@ -60,6 +61,17 @@
 {% endfor %}
 
 # ===========================================================================
+# AUR package installs (migrated from manual downloads)
+# ===========================================================================
+{{ paru_install('tdl', 'tdl-bin') }}
+
+# One-time cleanup: remove old manually-installed binary
+tdl_legacy_cleanup:
+  file.absent:
+    - name: {{ home }}/.local/bin/tdl
+    - onlyif: test -f {{ home }}/.local/bin/tdl
+
+# ===========================================================================
 # Custom installs (not data-driven — unique logic or version interpolation)
 # ===========================================================================
 
@@ -83,8 +95,7 @@ aider_install:
 # --- pip: dr14_tmeter (custom git install, needs GIT_CONFIG_GLOBAL override) ---
 {{ pip_pkg('dr14_tmeter', pkg='git+https://github.com/simon-r/dr14_t.meter.git', env='GIT_CONFIG_GLOBAL=/dev/null') }}
 
-# --- cargo: tailray (needs dbus headers, has onlyif guards) ---
-{{ cargo_pkg('tailray', git='https://github.com/NotAShelf/tailray', version=ver.tailray, onlyif=['pkg-config --exists dbus-1', 'command -v cargo']) }}
+# tailray: migrated to PKGBUILD (build/pkgbuilds/tailray/)
 
 {{ http_file('qmk_udev_rules', 'https://raw.githubusercontent.com/qmk/qmk_firmware/master/util/udev/50-qmk.rules', '/etc/udev/rules.d/50-qmk.rules', mode='0644', user=None, parallel=False) }}
 

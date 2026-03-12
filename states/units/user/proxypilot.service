@@ -6,7 +6,7 @@ Wants=network-online.target
 ConditionPathExists=%h/.config/proxypilot/config.yaml
 
 [Service]
-ExecStart=%h/.local/bin/proxypilot -config %h/.config/proxypilot/config.yaml
+ExecStart=/usr/bin/proxypilot -config %h/.config/proxypilot/config.yaml
 Restart=on-failure
 RestartSec=5
 NoNewPrivileges=true

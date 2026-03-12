@@ -6,7 +6,7 @@ Wants=network-online.target
 [Service]
 Type=simple
 DynamicUser=yes
-ExecStart={{ home }}/.local/bin/xray run -config /etc/xray/config.json
+ExecStart=/usr/bin/xray run -config /etc/xray/config.json
 Restart=on-failure
 RestartSec=5
 LimitNOFILE=65535

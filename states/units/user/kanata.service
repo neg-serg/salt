@@ -5,7 +5,7 @@ ConditionPathExists=%h/.config/kanata/config.kbd
 
 [Service]
 Type=simple
-ExecStart=%h/.local/bin/kanata --cfg %h/.config/kanata/config.kbd
+ExecStart=/usr/bin/kanata --cfg %h/.config/kanata/config.kbd
 Restart=on-failure
 RestartSec=3
 NoNewPrivileges=true
