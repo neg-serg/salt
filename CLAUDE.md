@@ -338,6 +338,7 @@ Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full de
 - Config files on disk (010-gaming-performance)
 - Markdown (documentation artifact), Jinja2/YAML (code examples within document) + None — this is a standalone documentation deliverable (017-salt-best-practices)
 - Files in `docs/` directory (017-salt-best-practices)
+- Jinja2/YAML (Salt states), Bash (PKGBUILDs) + Salt (masterless), pacman, paru, makepkg (018-pkgbuild-migration)
 
 ## Recent Changes
 - 001-code-rag-integration: Added Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx)

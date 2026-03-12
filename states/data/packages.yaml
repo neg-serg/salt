@@ -24,6 +24,7 @@ desktop:
   - hyprpolkitagent  # polkit agent for Hyprland (QML)
   - rofi  # app launcher and dmenu replacement
   - loupe  # GNOME image viewer
+  - nyxt  # keyboard-driven extensible web browser
   - swayimg  # lightweight Wayland image viewer
   - swayosd  # on-screen display for volume/caps/brightness
   - wl-clip-persist  # keep Wayland clipboard after app close
@@ -260,6 +261,7 @@ other:
   - podman  # OCI container engine (rootless)
   - powertop  # power consumption diagnostics
   - pre-commit  # multi-language git hook framework
+  - python-faker  # fake data generator for testing
   - prettyping  # colorful ping wrapper
   - progress  # coreutils progress viewer
   - pv  # pipe data throughput monitor
