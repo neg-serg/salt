@@ -6,6 +6,7 @@ Wants=network-online.target proxypilot.service
 ConditionPathExists=%h/.openclaw/openclaw.json
 
 [Service]
+ExecStartPre=%h/.local/bin/openclaw-sanitize-config
 ExecStart=%h/.local/bin/openclaw gateway
 WorkingDirectory=%h/.openclaw
 SyslogIdentifier=openclaw-gateway
