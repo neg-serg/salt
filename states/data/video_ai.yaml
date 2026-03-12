@@ -95,3 +95,18 @@ models:
     default: false
     comfyui_workflow: cogvideox-t2v.json
     notes: "dated (480p/8fps), included for completeness"
+
+  - id: wan21-i2v-14b
+    name: "Wan2.1 I2V 14B GGUF Q5"  # Alibaba, image-to-video
+    enabled: false
+    repo: city96/Wan2.1-I2V-14B-480P-gguf
+    files:
+      - wan2.1-i2v-14b-480P-Q5_K_M.gguf  # Q5 quantized I2V 14B
+    precision: gguf-q5
+    vram_gb: 11
+    modes:
+      - i2v  # image-to-video only
+    max_resolution: 480p
+    default: false
+    comfyui_workflow: wan21-i2v.json
+    notes: "image-to-video variant of Wan2.1 14B"
