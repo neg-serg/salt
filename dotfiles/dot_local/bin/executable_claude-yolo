@@ -1,0 +1,47 @@
+#!/usr/bin/env zsh
+setopt ERR_EXIT NO_UNSET PIPE_FAIL
+
+# claude-yolo: Claude Code in an isolated Podman container with auto-approve.
+# All file changes are confined to the bind-mounted working directory.
+# Network via --network=host to reach ProxyPilot on 127.0.0.1:8317.
+
+local image_name="claude-yolo"
+local image_tag="v2"
+local api_key=${PROXYPILOT_API_KEY:-}
+local base_url=${CLAUDE_PROXY_URL:-http://127.0.0.1:8317}
+
+if [[ -z ${api_key} ]]; then
+  print -u2 -- "error: PROXYPILOT_API_KEY is not set; run chezmoi apply or source secrets first."
+  exit 1
+fi
+
+if ! command -v podman >/dev/null 2>&1; then
+  print -u2 -- "error: podman is not installed."
+  exit 1
+fi
+
+# Lazy image build — only when tag is missing
+if ! podman image exists "${image_name}:${image_tag}" 2>/dev/null; then
+  print -u2 -- "Building ${image_name}:${image_tag} ..."
+  podman build --squash -t "${image_name}:${image_tag}" -f - <<'CONTAINERFILE'
+FROM archlinux:latest
+RUN pacman -Syu --noconfirm --needed nodejs npm git ripgrep && \
+    pacman -Scc --noconfirm
+RUN npm install -g @anthropic-ai/claude-code && \
+    npm cache clean --force
+WORKDIR /workspace
+ENTRYPOINT ["claude", "--dangerously-skip-permissions"]
+CONTAINERFILE
+fi
+
+exec podman run --rm -it \
+  --network=host \
+  --userns=keep-id \
+  --security-opt=no-new-privileges \
+  -v "${PWD}:/workspace:Z" \
+  -v "${HOME}/.config/git/config:/home/$USER/.config/git/config:ro" \
+  -e ANTHROPIC_API_KEY="${api_key}" \
+  -e ANTHROPIC_BASE_URL="${base_url}" \
+  -e TERM="${TERM}" \
+  "${image_name}:${image_tag}" \
+  "$@"
