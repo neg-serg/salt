@@ -1,0 +1,27 @@
+# Maintainer: neg-serg <neg-serg@example.com>
+pkgname=swww-vulkan
+pkgver=0.1.0
+pkgrel=1
+pkgdesc='Wayland wallpaper daemon with Vulkan backend (neg-serg fork of swww)'
+arch=('x86_64')
+url='https://github.com/neg-serg/swww-vulkan'
+license=('GPL-3.0-or-later')
+depends=('wayland' 'libffi')
+makedepends=('rust' 'cargo' 'git' 'wayland-protocols')
+conflicts=('swww')
+provides=('swww')
+source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/main.tar.gz")
+# Update hash after pushing to main: curl -sL ${url}/archive/main.tar.gz | sha256sum
+sha256sums=('67ec8875efcc1ef0b1fc11babc5601e288359f8c98135eb0458f66fd3a750371')
+
+build() {
+    cd "${pkgname}-main"
+    cargo build --release
+}
+
+package() {
+    cd "${pkgname}-main"
+    install -Dm755 "target/release/swww-vulkan" "${pkgdir}/usr/bin/swww-vulkan"
+    install -Dm755 "target/release/swww-vulkan-daemon" "${pkgdir}/usr/bin/swww-vulkan-daemon"
+    install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}
