@@ -1,15 +1,19 @@
 # Loki + Promtail + Grafana monitoring stack (split from monitoring.sls)
 {% from '_imports.jinja' import host, service_ports %}
 {% from '_macros_service.jinja' import service_with_unit, system_daemon_user, service_with_healthcheck, ensure_running, ensure_dir %}
-{% from '_macros_github.jinja' import github_release_system %}
-{% from '_macros_pkg.jinja' import simple_service %}
-{% import_yaml 'data/versions.yaml' as ver %}
+{% from '_macros_pkg.jinja' import simple_service, pacman_install %}
 {% set mon = host.features.monitoring %}
 
 # --- Loki: log aggregation ---
 {% if mon.loki %}
-{{ github_release_system('loki', 'grafana/loki', 'loki-linux-amd64.zip', src_bin='loki-linux-amd64', tag='v' ~ ver.get('loki', ''), hash=ver.get('loki_hash', ''), version=ver.get('loki', '')) }}
+{{ pacman_install('loki', 'loki') }}
 {{ system_daemon_user('loki', '/var/lib/loki') }}
+
+# One-time cleanup: remove old manually-installed binary
+loki_legacy_cleanup:
+  file.absent:
+    - name: /usr/local/bin/loki-linux-amd64
+    - onlyif: test -f /usr/local/bin/loki-linux-amd64
 
 loki_subdirs:
   file.directory:
@@ -42,8 +46,14 @@ loki_config:
 # Note: promtail pushes to Loki — enabling promtail without loki results in
 # a running service that fails to connect. Gate on both flags for safety.
 {% if mon.promtail and mon.loki %}
-{{ github_release_system('promtail', 'grafana/loki', 'promtail-linux-amd64.zip', src_bin='promtail-linux-amd64', tag='v' ~ ver.get('promtail', ''), hash=ver.get('promtail_hash', ''), version=ver.get('promtail', '')) }}
+{{ pacman_install('promtail', 'promtail') }}
 {{ ensure_dir('promtail_cache_dir', '/var/cache/promtail', user='root') }}
+
+# One-time cleanup: remove old manually-installed binary
+promtail_legacy_cleanup:
+  file.absent:
+    - name: /usr/local/bin/promtail-linux-amd64
+    - onlyif: test -f /usr/local/bin/promtail-linux-amd64
 
 promtail_config:
   file.managed:

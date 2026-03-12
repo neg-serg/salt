@@ -7,7 +7,7 @@ Wants=network-online.target
 Type=simple
 User=loki
 Group=loki
-ExecStart=/usr/local/bin/loki -config.file=/etc/loki/config.yaml
+ExecStart=/usr/bin/loki -config.file=/etc/loki/config.yaml
 Restart=on-failure
 RestartSec=5
 NoNewPrivileges=true
