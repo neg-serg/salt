@@ -86,6 +86,7 @@ include:
   - opencode
   - openclaw_agent
   - image_generation
+  - video_ai
   - steam
 
   # Services, monitoring, user units, snapshots
