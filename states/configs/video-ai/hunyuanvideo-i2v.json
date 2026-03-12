@@ -1,0 +1,76 @@
+{
+  "prompt": {
+    "1": {
+      "class_type": "HunyuanVideoModelLoader",
+      "inputs": {
+        "model_name": "checkpoints/hunyuanvideo-15/hunyuan_video_1_5_fp8_e4m3fn.safetensors",
+        "precision": "fp8_e4m3fn",
+        "load_device": "main_device",
+        "enable_flash_attn": true
+      }
+    },
+    "2": {
+      "class_type": "HunyuanVideoCLIPLoader",
+      "inputs": {
+        "text_encoder_path": "text_encoders",
+        "precision": "fp16"
+      }
+    },
+    "3": {
+      "class_type": "HunyuanVideoVAELoader",
+      "inputs": {
+        "vae_name": "hunyuan_video_vae_bf16.safetensors",
+        "precision": "bf16",
+        "enable_tiling": true
+      }
+    },
+    "10": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "input_image.png",
+        "upload": "image"
+      }
+    },
+    "4": {
+      "class_type": "HunyuanVideoI2VEncode",
+      "inputs": {
+        "prompt": "__PROMPT__",
+        "negative_prompt": "worst quality, blurry, distorted, watermark, low resolution",
+        "clip": ["2", 0],
+        "image": ["10", 0]
+      }
+    },
+    "5": {
+      "class_type": "HunyuanVideoSampler",
+      "inputs": {
+        "model": ["1", 0],
+        "conditioning": ["4", 0],
+        "seed": -1,
+        "steps": 30,
+        "cfg": 6.0,
+        "width": __WIDTH__,
+        "height": __HEIGHT__,
+        "num_frames": __FRAMES__,
+        "fps": 24,
+        "scheduler": "flow_match"
+      }
+    },
+    "6": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": ["5", 0],
+        "vae": ["3", 0]
+      }
+    },
+    "7": {
+      "class_type": "SaveAnimatedWEBP",
+      "inputs": {
+        "images": ["6", 0],
+        "filename_prefix": "hunyuanvideo-i2v",
+        "fps": 24,
+        "lossless": false,
+        "quality": 90
+      }
+    }
+  }
+}

@@ -102,4 +102,15 @@ video_ai_workflow_{{ model.id | replace('-', '_') }}:
 {% endif %}
 {% endfor %}
 
+# ── Generation runner deployment ─────────────────────────────────────
+video_ai_generate_script:
+  file.managed:
+    - name: {{ base_dir }}/generate.sh
+    - source: salt://scripts/video-ai-generate.sh
+    - user: {{ user }}
+    - group: {{ user }}
+    - mode: '0755'
+    - require:
+      - cmd: video_ai_comfyui_setup
+
 {% endif %}
