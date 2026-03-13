@@ -12,5 +12,13 @@
    Provides docs-import, docs-manpages, docs-remove, docs-list CLI commands.
    Requires mandoc for man page → markdown rendering.
 #}
+replace_mandb_with_mandoc:
+  cmd.run:
+    - name: pacman -Rdd --noconfirm man-db && pacman -S --noconfirm --needed mandoc
+    - onlyif: pacman -Qi man-db
+    - unless: pacman -Qi mandoc
+    - require:
+      - cmd: pacman_db_warmup
+
 {{ pacman_install('mandoc', pkgs='mandoc') }}
 {{ pip_pkg('docs_rag', pkg=home ~ '/src/1st-level/@rag/docs-rag', bin='docs-import') }}
