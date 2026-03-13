@@ -1375,7 +1375,7 @@ not-applicable-tools:
     reason: "Pre-built binary"
   - name: throne  # desktop app — prebuilt
     reason: "Pre-built binary"
-  - name: swww-vulkan  # wallpaper daemon — Rust
+  - name: wl  # wallpaper daemon — Rust
     reason: "Rust binary; Vulkan GPU rendering"
   - name: albumdetails  # music metadata — Python
     reason: "Python runtime"
