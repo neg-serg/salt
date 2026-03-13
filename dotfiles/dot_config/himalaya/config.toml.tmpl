@@ -1,0 +1,20 @@
+[accounts.gmail]
+email = "{{ gopass "email/gmail/address" }}"
+display-name = "Sergey"
+default = true
+
+backend.type = "imap"
+backend.host = "imap.gmail.com"
+backend.port = 993
+backend.encryption.type = "tls"
+backend.login = "{{ gopass "email/gmail/address" }}"
+backend.auth.type = "password"
+backend.auth.cmd = "gopass show -o email/gmail/app-password"
+
+message.send.backend.type = "smtp"
+message.send.backend.host = "smtp.gmail.com"
+message.send.backend.port = 587
+message.send.backend.encryption.type = "start-tls"
+message.send.backend.login = "{{ gopass "email/gmail/address" }}"
+message.send.backend.auth.type = "password"
+message.send.backend.auth.cmd = "gopass show -o email/gmail/app-password"
