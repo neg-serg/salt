@@ -38,13 +38,14 @@ curl_extract_tar: {}
 curl_bin: {}
 
 paru_install:
-  antigravity: antigravity
-  overskride: overskride-bin
-  roomeqwizard: roomeqwizard
-  bottles: bottles
-  proton-ge: proton-ge-custom-bin
-  xwaylandvideobridge: xwaylandvideobridge
-  yandex-browser: yandex-browser
-  droidcam: droidcam
-  opensoundmeter: opensoundmeter
+  antigravity: antigravity  # VS Code fork with AI providers (OAuth-based)
+  bottles: bottles  # Wine prefix manager with GUI
+  droidcam: droidcam  # use Android phone as webcam via v4l2loopback
+  euporie: euporie  # terminal Jupyter notebook client
+  opensoundmeter: opensoundmeter  # real-time audio spectrum/impedance analyzer
+  overskride: overskride-bin  # Bluetooth GUI manager for Linux
+  proton-ge: proton-ge-custom-bin  # custom Proton (Wine) build for Steam
+  roomeqwizard: roomeqwizard  # room acoustics measurement and EQ tool
+  xwaylandvideobridge: xwaylandvideobridge  # bridge for screen sharing on Wayland via XWayland
+  yandex-browser: yandex-browser  # Chromium-based browser with Yandex services
   # rofi-file-browser-extended: moved to installers_desktop.sls (needs CMAKE_POLICY_VERSION_MINIMUM for CMake 4.0)
