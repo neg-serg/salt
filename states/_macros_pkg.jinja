@@ -86,12 +86,15 @@ install_{{ name | replace('-', '_') }}:
    source: salt:// path to PKGBUILD directory. check: package name for idempotency guard (default: name).
    replace_check: shell command that returns 0 if the correct variant is installed; when provided,
      removes the existing package if the check fails (e.g., replacing stock duf with a fork).
+   conflicts: list of old package names to remove before building (e.g., predecessor packages renamed
+     from a different name — unlike replace_check which handles same-name different-packager).
    extra_sources: list of {source, dest} dicts for additional file.recurse states (e.g., local source trees).
    Usage: {{ pkgbuild_install('raise', 'salt://build/pkgbuilds/raise', user=_user) }}
           {{ pkgbuild_install('iosevka-neg-fonts', 'salt://build/pkgbuilds/iosevka-neg-fonts', user=_user, timeout=7200) }}
           {{ pkgbuild_install('duf', 'salt://build/pkgbuilds/duf', user=_user, replace_check='pacman -Qi duf 2>/dev/null | rg -q neg-serg') }}
+          {{ pkgbuild_install('wl', 'salt://build/pkgbuilds/wl', user=_user, conflicts=['swww-vulkan']) }}
 #}
-{%- macro pkgbuild_install(name, source, user=_user, build_base='/tmp/pkgbuild', timeout=600, check=None, replace_check=None, extra_sources=None) -%}
+{%- macro pkgbuild_install(name, source, user=_user, build_base='/tmp/pkgbuild', timeout=600, check=None, replace_check=None, conflicts=None, extra_sources=None) -%}
 {%- set safe = name | replace('-', '_') -%}
 {{ safe }}_pkgbuild:
   file.recurse:
@@ -120,6 +123,11 @@ build_{{ safe }}:
             pacman -Rdd --noconfirm {{ name }}
         fi
 {%- endif %}
+{%- for conflict in (conflicts or []) %}
+        if pacman -Q {{ conflict }} &>/dev/null; then
+            pacman -Rdd --noconfirm {{ conflict }}
+        fi
+{%- endfor %}
         su - {{ user }} -c 'cd {{ build_base }}/{{ name }} && makepkg -sf --noconfirm'
         pacman -U --noconfirm --needed {{ build_base }}/{{ name }}/*.pkg.tar.zst
         rm -rf {{ build_base }}/{{ name }}{{ ' ' ~ (extra_sources | map(attribute='dest') | join(' ')) if extra_sources else '' }}
