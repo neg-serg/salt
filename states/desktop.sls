@@ -91,7 +91,7 @@ swayimg_local_build:
     - user: {{ user }}
     - group: {{ user }}
 
-# swww-vulkan: installed via custom_pkgs (PKGBUILD → /usr/bin/)
+# wl: installed via custom_pkgs (PKGBUILD → /usr/bin/)
 
 # --- SSH directory setup ---
 {{ ensure_dir('ssh_dir', home ~ '/.ssh', mode='0700') }}

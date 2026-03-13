@@ -38,9 +38,9 @@ pkgbuild:
     replace_check: "pacman -Qi duf 2>/dev/null | rg -q neg-serg"
 
   # Wayland wallpaper daemon with Vulkan backend; replaces stock swww
-  swww-vulkan:
+  wl:
     timeout: 900
-    replace_check: "pacman -Qi swww-vulkan 2>/dev/null | rg -q neg-serg"
+    replace_check: "pacman -Qi wl 2>/dev/null | rg -q neg-serg"
 
   # Needs local source tree from build/pretty-printer/
   neg-pretty-printer:
