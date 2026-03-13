@@ -9,5 +9,6 @@
 {{ pkgbuild_install(name, 'salt://build/pkgbuilds/' ~ name, user=user,
      timeout=opts.get('timeout', 600),
      replace_check=opts.get('replace_check'),
+     conflicts=opts.get('conflicts'),
      extra_sources=opts.get('extra_sources')) }}
 {% endfor %}

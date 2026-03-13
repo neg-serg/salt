@@ -9,6 +9,8 @@
 #     timeout:        (optional) build timeout in seconds (default: 600)
 #     replace_check:  (optional) shell cmd to verify correct variant is installed;
 #                     if it fails, the old package is removed before rebuilding
+#     conflicts:      (optional) list of old package names to remove before building
+#                     (for predecessor packages with different names, e.g. swww-vulkan → wl)
 #     extra_sources:  (optional) list of additional source trees to deploy:
 #       - source: "salt://..."   — salt file path
 #         dest:   "/tmp/..."     — local extraction target
@@ -41,6 +43,9 @@ pkgbuild:
   wl:
     timeout: 900
     replace_check: "pacman -Qi wl 2>/dev/null | rg -q neg-serg"
+    conflicts:
+      - swww-vulkan
+      - swww
 
   # Needs local source tree from build/pretty-printer/
   neg-pretty-printer:
