@@ -41,7 +41,7 @@ paru_install:
   antigravity: antigravity  # VS Code fork with AI providers (OAuth-based)
   bottles: bottles  # Wine prefix manager with GUI
   droidcam: droidcam  # use Android phone as webcam via v4l2loopback
-  euporie: euporie  # terminal Jupyter notebook client
+  # euporie: euporie  # terminal Jupyter notebook client (disabled: AUR deps fail on Python 3.14)
   opensoundmeter: opensoundmeter  # real-time audio spectrum/impedance analyzer
   overskride: overskride-bin  # Bluetooth GUI manager for Linux
   proton-ge: proton-ge-custom-bin  # custom Proton (Wine) build for Steam
