@@ -24,7 +24,10 @@
         "name": "Guest",
         "tools": {
           "profile": "minimal",
-          "deny": ["exec", "browser", "gateway", "cron"]
+          "deny": ["exec", "browser", "gateway", "cron", "write", "edit"],
+          "fs": {
+            "workspaceOnly": true
+          }
         }
       }
     ]
