@@ -113,6 +113,7 @@ snapshot_pre() {
     if command -v snapper &>/dev/null; then
         local num
         num=$("${SUDO_CMD[@]}" snapper create --type pre --print-number \
+              --cleanup-algorithm number \
               --description "salt-pre: ${STATE}" 2>/dev/null) || return 0
         SNAPPER_PRE_NUM="$num"
         echo "(snapshot #${num}: pre-apply)"
@@ -123,7 +124,8 @@ snapshot_post() {
     if [[ -n "${SNAPPER_PRE_NUM:-}" ]]; then
         local num
         num=$("${SUDO_CMD[@]}" snapper create --type post --pre-number "${SNAPPER_PRE_NUM}" \
-              --print-number --description "salt-post: ${STATE}" 2>/dev/null) || return 0
+              --print-number --cleanup-algorithm number \
+              --description "salt-post: ${STATE}" 2>/dev/null) || return 0
         echo "(snapshot #${num}: post-apply, pre=#${SNAPPER_PRE_NUM})"
     fi
 }
