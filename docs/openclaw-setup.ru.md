@@ -112,6 +112,62 @@ just   # Salt пересоздаст конфиг из шаблона
 systemctl --user restart openclaw-gateway
 ```
 
+## Защита systemd
+
+Unit-файл `openclaw-gateway.service` усилен директивами безопасности, снижающими поверхность атаки. Оценка безопасности: **2.9 OK** (было 8.2 EXPOSED).
+
+Основные директивы:
+- `CapabilityBoundingSet=` — сброс всех Linux capabilities
+- `SystemCallFilter=@system-service` — ограничение допустимых системных вызовов
+- `ProtectSystem=strict` — файловая система только для чтения (кроме `WorkingDirectory`)
+- `ProtectKernel{Tunables,Modules,Logs}=yes` — блокировка изменений ядра
+- `NoNewPrivileges=true`, `RestrictSUIDSGID=yes` — предотвращение повышения привилегий
+- `PrivateTmp=yes`, `KeyringMode=private` — изоляция временных файлов и связок ключей
+- `MemoryMax=2G` — ограничение потребления памяти (OOM-kill при превышении)
+- `StartLimitBurst=5` / `StartLimitIntervalSec=300` — защита от циклических перезапусков
+
+**Не включены** (ограничения V8/Node.js):
+- `MemoryDenyWriteExecute=yes` — V8 JIT требует W+X страницы
+- `PrivateDevices=yes` — mpv требует `/dev/dri` для GPU-видеовывода
+
+Проверка оценки безопасности:
+```bash
+systemd-analyze --user security openclaw-gateway.service
+```
+
+## Проверки здоровья (Health Checks)
+
+OpenClaw предоставляет структурированную проверку здоровья через CLI:
+```bash
+openclaw gateway health --json --timeout 5000
+```
+
+Возвращает JSON с `.ok` (общее здоровье), `.channels.telegram.probe.ok` (подключение Telegram), количество сессий и статус агентов.
+
+**Интеграция с salt-monitor**: Демон мониторинга (`salt-monitor`) опрашивает эту команду каждые 15 секунд через `health_cmd` + `health_parse` (jq-выражение). При 2 последовательных неудачных проверках автоматически перезапускает сервис (до 3 раз за 5-минутное окно). При исчерпании попыток алерт повышается до critical.
+
+Проверка здоровья вручную:
+```bash
+openclaw gateway health --json | jq '{ok, channels: .channels.telegram.probe.ok}'
+openclaw gateway status --json   # подробный статус с сессиями
+```
+
+## Защита от злоупотреблений
+
+OpenClaw работает с двухагентной конфигурацией:
+
+| Агент | Уровень доступа |
+|---|---|
+| **Main (Owner)** | Полный доступ к инструментам (`profile: "full"`) |
+| **Guest** | Минимальный — запрещены: `exec`, `browser`, `gateway`, `cron`, `write`, `edit`; файловая система ограничена рабочей директорией |
+
+Дополнительные меры:
+- **Политика DM**: `allowlist` — взаимодействовать могут только пользователи из белого списка
+- **Политика групп**: `disabled` — бот игнорирует групповые чаты
+- **Изоляция сессий**: `per-channel-peer` — каждый отправитель получает свою сессию
+- **Параллелизм**: `maxConcurrent: 4` (по умолчанию OpenClaw) ограничивает одновременные ходы агентов
+- **Привязка агентов**: Гостевые пользователи привязаны по Telegram peer ID — не могут получить доступ к Main-агенту
+
 ## Решение проблем
 
 **Предупреждения о несовпадении версий**: убедитесь, что нет системной установки openclaw (`which -a openclaw` должен показывать только `~/.local/bin/openclaw`).
@@ -120,4 +176,10 @@ systemctl --user restart openclaw-gateway
 
 **Telegram не подключается**: проверьте `gopass show -o api/openclaw-telegram` — должен вернуть валидный токен бота. Проверка: `openclaw status --deep`.
 
-**ProxyPilot недоступен**: убедитесь, что `systemctl --user is-active proxypilot` возвращает `active`. Unit gateway имеет `Wants=proxypilot.service`.
+**ProxyPilot недоступен**: убедитесь, что `systemctl --user is-active proxypilot` возвращает `active`. Unit gateway имеет `Wants=proxypilot.service`. При недоступности ProxyPilot бот возвращает ошибку пользователю в течение ~15 секунд.
+
+**MemoryMax OOM**: если сервис убит по OOM, проверьте `journalctl --user -u openclaw-gateway | grep -i oom`. Лимит 2G покрывает нормальную работу; постоянные OOM могут указывать на утечку — сообщите разработчикам.
+
+**StartLimitBurst исчерпан**: если сервис не запускается (`start-limit-hit`), подождите 5 минут или сбросьте: `systemctl --user reset-failed openclaw-gateway.service`.
+
+**Повреждение конфига**: Санитайзер `ExecStartPre` проверяет синтаксис JSON перед запуском. При невалидном JSON сервис не запустится, в логах будет `openclaw-sanitize: invalid JSON in config`. Исправьте JSON или пересоздайте: `rm ~/.openclaw/openclaw.json && just apply openclaw_agent`.
