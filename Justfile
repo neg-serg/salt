@@ -105,49 +105,9 @@ idempotency STATE="system_description":
 lint-sysctl:
     .venv/bin/python3 scripts/lint-sysctl.py
 
-# Check all state files render without errors (no execution)
-validate:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    # Regenerate .salt_runtime/minion with correct absolute paths
-    # Note: just runs recipes from the Justfile directory, so PWD is correct
-    project_dir="$(pwd)"
-    runtime="${project_dir}/.salt_runtime"
-    mkdir -p "${runtime}/pki/minion" \
-             "${runtime}/var/cache/salt/pillar_cache" \
-             "${runtime}/var/log/salt"
-    cat > "${runtime}/minion" <<MEOF
-    pki_dir: ${runtime}/pki/minion
-    log_file: /dev/null
-    cachedir: ${runtime}/var/cache/salt
-    file_client: local
-    file_roots:
-      base:
-        - ${project_dir}/states/
-        - ${project_dir}/
-    enable_fqdns_grains: False
-    enable_gpu_grains: False
-    grains_cache: False
-    MEOF
-    # Clear stale proc locks from previous runs
-    rm -rf "${runtime}/var/cache/salt/proc/"*
-    # Use sudo when available (CI has NOPASSWD sudo, needed for runas=)
-    sudo_cmd=()
-    if sudo -n true 2>/dev/null; then
-        sudo_cmd=(sudo)
-    fi
-    failed=0
-    for sls in states/*.sls; do
-        name="${sls#states/}"
-        name="${name%.sls}"
-        if ! "${sudo_cmd[@]}" .venv/bin/salt-call --local --config-dir=.salt_runtime \
-                state.show_sls "$name" --out=quiet 2>/dev/null; then
-            echo "FAILED: $name"
-            failed=$((failed + 1))
-        fi
-    done
-    echo "Validated $(ls states/*.sls | wc -l) states, $failed failed"
-    [ "$failed" -eq 0 ]
+# Check all state files render without errors (no execution, parallel)
+validate JOBS="":
+    scripts/salt-validate.sh {{JOBS}}
 
 # Check if salt-daemon is running and responsive
 daemon-health:
