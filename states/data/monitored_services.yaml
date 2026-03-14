@@ -64,6 +64,9 @@ user_services:
     severity: critical
   - name: openclaw-gateway
     severity: warning
+    health_cmd: "openclaw gateway health --json --timeout 5000"
+    health_parse: ".ok and .channels.telegram.probe.ok"
+    auto_restart: true
   - name: mpd
     severity: info
     optional: true
