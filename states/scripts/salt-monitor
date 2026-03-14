@@ -21,20 +21,31 @@ ALERT_CMD="${HOME}/.local/bin/salt-alert"
 # ── Service inventory (injected by Salt/Jinja) ──────────────────────
 {% set svc_data = monitored %}
 # System services to monitor
-typeset -a SYS_SERVICES SYS_SEVERITIES SYS_HEALTH_URLS SYS_OPTIONAL
+typeset -a SYS_SERVICES SYS_SEVERITIES SYS_HEALTH_URLS SYS_HEALTH_CMDS SYS_HEALTH_PARSES SYS_OPTIONAL SYS_AUTO_RESTART SYS_MAX_RESTARTS SYS_RESTART_COOLDOWN
 {% for svc in svc_data.system_services %}
 SYS_SERVICES+=({{ svc.name }})
 SYS_SEVERITIES+=({{ svc.severity }})
 SYS_HEALTH_URLS+=({{ svc.health_url | default('none', true) }})
+SYS_HEALTH_CMDS+=("{{ svc.health_cmd | default('none', true) }}")
+SYS_HEALTH_PARSES+=("{{ svc.health_parse | default('none', true) }}")
 SYS_OPTIONAL+=({{ svc.optional | default(false) | lower }})
+SYS_AUTO_RESTART+=({{ svc.auto_restart | default(false) | lower }})
+SYS_MAX_RESTARTS+=({{ svc.max_restarts | default(3) }})
+SYS_RESTART_COOLDOWN+=({{ svc.restart_cooldown | default(300) }})
 {% endfor %}
 
 # User services to monitor
-typeset -a USR_SERVICES USR_SEVERITIES USR_OPTIONAL
+typeset -a USR_SERVICES USR_SEVERITIES USR_OPTIONAL USR_HEALTH_URLS USR_HEALTH_CMDS USR_HEALTH_PARSES USR_AUTO_RESTART USR_MAX_RESTARTS USR_RESTART_COOLDOWN
 {% for svc in svc_data.user_services %}
 USR_SERVICES+=({{ svc.name }})
 USR_SEVERITIES+=({{ svc.severity }})
 USR_OPTIONAL+=({{ svc.optional | default(false) | lower }})
+USR_HEALTH_URLS+=({{ svc.health_url | default('none', true) }})
+USR_HEALTH_CMDS+=("{{ svc.health_cmd | default('none', true) }}")
+USR_HEALTH_PARSES+=("{{ svc.health_parse | default('none', true) }}")
+USR_AUTO_RESTART+=({{ svc.auto_restart | default(false) | lower }})
+USR_MAX_RESTARTS+=({{ svc.max_restarts | default(3) }})
+USR_RESTART_COOLDOWN+=({{ svc.restart_cooldown | default(300) }})
 {% endfor %}
 
 # User timers to monitor
@@ -62,6 +73,8 @@ BTRFS_WARN_PCT={{ res.btrfs.warning_pct }}
 typeset -A PREV_FAILED           # service → 1 if was failed last poll
 typeset -A HTTP_FAIL_COUNT       # service → consecutive HTTP fail count
 typeset -A INACTIVE_FIRST_SEEN   # service → epoch when first seen inactive
+typeset -A RESTART_COUNTS        # service → restart attempts in current window
+typeset -A RESTART_WINDOW_START  # service → epoch when restart window started
 CPU_HIGH_COUNT=0                  # sustained high CPU counter
 LAST_DRIFT_DATE=""                # date of last drift check
 BOOT_TIME=$EPOCHSECONDS
@@ -98,9 +111,48 @@ dispatch_recover() {
     "$ALERT_CMD" --recover "$@"
 }
 
+# ── Auto-restart logic ────────────────────────────────────────────
+attempt_auto_restart() {
+    local svc="$1" scope="$2" max_restarts="${3:-3}" cooldown="${4:-300}"
+    local key="${scope}_${svc}"
+    local now=$EPOCHSECONDS
+
+    # Reset window if cooldown expired
+    if [[ -n "${RESTART_WINDOW_START[$key]:-}" ]]; then
+        if (( now - RESTART_WINDOW_START[$key] > cooldown )); then
+            RESTART_COUNTS[$key]=0
+            RESTART_WINDOW_START[$key]=$now
+        fi
+    else
+        RESTART_WINDOW_START[$key]=$now
+    fi
+
+    local count=${RESTART_COUNTS[$key]:-0}
+
+    if (( count >= max_restarts )); then
+        return 1  # exhausted
+    fi
+
+    RESTART_COUNTS[$key]=$(( count + 1 ))
+    log "AUTO-RESTART ($((count+1))/${max_restarts}): $svc"
+
+    if [[ "$scope" == "user" ]]; then
+        systemctl --user restart "${svc}.service" 2>/dev/null
+    else
+        systemctl restart "${svc}.service" 2>/dev/null
+    fi
+}
+
+reset_restart_counts() {
+    local svc="$1" scope="$2"
+    local key="${scope}_${svc}"
+    unset "RESTART_COUNTS[$key]" "RESTART_WINDOW_START[$key]" 2>/dev/null
+}
+
 # ── Service state polling ───────────────────────────────────────────
 poll_services() {
     local failed_system failed_user svc severity optional active_state log_lines
+    local auto_restart max_restarts restart_cooldown
 
     # Get current failed units (system scope)
     failed_system=$(systemctl list-units --state=failed --no-legend --plain 2>/dev/null | awk '{print $1}' | sed 's/\.service$//')
@@ -110,6 +162,9 @@ poll_services() {
         svc="${SYS_SERVICES[$i]}"
         severity="${SYS_SEVERITIES[$i]}"
         optional="${SYS_OPTIONAL[$i]}"
+        auto_restart="${SYS_AUTO_RESTART[$i]}"
+        max_restarts="${SYS_MAX_RESTARTS[$i]}"
+        restart_cooldown="${SYS_RESTART_COOLDOWN[$i]}"
 
         # Skip optional services whose unit doesn't exist
         if [[ "$optional" == "true" ]]; then
@@ -119,15 +174,30 @@ poll_services() {
         active_state=$(systemctl show -p ActiveState --value "${svc}.service" 2>/dev/null)
 
         if [[ "$active_state" == "failed" ]]; then
-            # Service failed — always alert (even during grace period)
-            if [[ -z "${PREV_FAILED[$svc]:-}" ]]; then
-                PREV_FAILED[$svc]=1
+            # Attempt auto-restart if configured
+            if [[ "$auto_restart" == "true" ]] && attempt_auto_restart "$svc" system "$max_restarts" "$restart_cooldown"; then
                 log_lines=$(journalctl -u "${svc}.service" -n 5 --no-pager 2>/dev/null || echo "(no logs)")
-                log "FAILED: $svc"
                 dispatch_alert --scope system --service "$svc" --type failed \
                     --severity "$severity" \
-                    --message "Service entered failed state" \
+                    --message "Service failed — auto-restarting (${RESTART_COUNTS[system_${svc}]}/${max_restarts})" \
                     --log-lines "$log_lines"
+            elif [[ -z "${PREV_FAILED[$svc]:-}" ]]; then
+                # No auto-restart or attempts exhausted — alert once
+                PREV_FAILED[$svc]=1
+                log_lines=$(journalctl -u "${svc}.service" -n 5 --no-pager 2>/dev/null || echo "(no logs)")
+                if [[ "$auto_restart" == "true" ]]; then
+                    log "FAILED: $svc — auto-restart exhausted"
+                    dispatch_alert --scope system --service "$svc" --type failed \
+                        --severity critical \
+                        --message "Service failed — auto-restart exhausted (${max_restarts}x in ${restart_cooldown}s), manual intervention required" \
+                        --log-lines "$log_lines"
+                else
+                    log "FAILED: $svc"
+                    dispatch_alert --scope system --service "$svc" --type failed \
+                        --severity "$severity" \
+                        --message "Service entered failed state" \
+                        --log-lines "$log_lines"
+                fi
             fi
         elif [[ "$active_state" == "inactive" ]]; then
             # Inactive — might be intentional stop or not-yet-started
@@ -139,12 +209,25 @@ poll_services() {
                 if [[ -z "${INACTIVE_FIRST_SEEN[$svc]:-}" ]]; then
                     INACTIVE_FIRST_SEEN[$svc]=$EPOCHSECONDS
                 elif (( EPOCHSECONDS - INACTIVE_FIRST_SEEN[$svc] > 30 )); then
-                    if [[ -z "${PREV_FAILED[$svc]:-}" ]]; then
-                        PREV_FAILED[$svc]=1
-                        log "INACTIVE (30s+): $svc"
+                    # Attempt auto-restart if configured
+                    if [[ "$auto_restart" == "true" ]] && attempt_auto_restart "$svc" system "$max_restarts" "$restart_cooldown"; then
+                        log "INACTIVE (30s+): $svc — auto-restarting"
                         dispatch_alert --scope system --service "$svc" --type inactive \
                             --severity "$severity" \
-                            --message "Service inactive for >30 seconds (not failed, possibly stopped)"
+                            --message "Service inactive >30s — auto-restarting (${RESTART_COUNTS[system_${svc}]}/${max_restarts})"
+                    elif [[ -z "${PREV_FAILED[$svc]:-}" ]]; then
+                        PREV_FAILED[$svc]=1
+                        if [[ "$auto_restart" == "true" ]]; then
+                            log "INACTIVE (30s+): $svc — auto-restart exhausted"
+                            dispatch_alert --scope system --service "$svc" --type inactive \
+                                --severity critical \
+                                --message "Service inactive >30s — auto-restart exhausted (${max_restarts}x in ${restart_cooldown}s), manual intervention required"
+                        else
+                            log "INACTIVE (30s+): $svc"
+                            dispatch_alert --scope system --service "$svc" --type inactive \
+                                --severity "$severity" \
+                                --message "Service inactive for >30 seconds (not failed, possibly stopped)"
+                        fi
                     fi
                 fi
             fi
@@ -155,6 +238,7 @@ poll_services() {
                 dispatch_recover --scope system --service "$svc" --type failed
                 dispatch_recover --scope system --service "$svc" --type inactive
                 unset "PREV_FAILED[$svc]"
+                reset_restart_counts "$svc" system
             fi
             unset "INACTIVE_FIRST_SEEN[$svc]" 2>/dev/null
         fi
@@ -168,6 +252,9 @@ poll_services() {
         svc="${USR_SERVICES[$i]}"
         severity="${USR_SEVERITIES[$i]}"
         optional="${USR_OPTIONAL[$i]}"
+        auto_restart="${USR_AUTO_RESTART[$i]}"
+        max_restarts="${USR_MAX_RESTARTS[$i]}"
+        restart_cooldown="${USR_RESTART_COOLDOWN[$i]}"
 
         if [[ "$optional" == "true" ]]; then
             systemctl --user cat "${svc}.service" &>/dev/null || continue
@@ -176,14 +263,29 @@ poll_services() {
         active_state=$(systemctl --user show -p ActiveState --value "${svc}.service" 2>/dev/null)
 
         if [[ "$active_state" == "failed" ]]; then
-            if [[ -z "${PREV_FAILED[user_${svc}]:-}" ]]; then
-                PREV_FAILED[user_${svc}]=1
+            # Attempt auto-restart if configured
+            if [[ "$auto_restart" == "true" ]] && attempt_auto_restart "$svc" user "$max_restarts" "$restart_cooldown"; then
                 log_lines=$(journalctl --user -u "${svc}.service" -n 5 --no-pager 2>/dev/null || echo "(no logs)")
-                log "FAILED (user): $svc"
                 dispatch_alert --scope user --service "$svc" --type failed \
                     --severity "$severity" \
-                    --message "User service entered failed state" \
+                    --message "User service failed — auto-restarting (${RESTART_COUNTS[user_${svc}]}/${max_restarts})" \
                     --log-lines "$log_lines"
+            elif [[ -z "${PREV_FAILED[user_${svc}]:-}" ]]; then
+                PREV_FAILED[user_${svc}]=1
+                log_lines=$(journalctl --user -u "${svc}.service" -n 5 --no-pager 2>/dev/null || echo "(no logs)")
+                if [[ "$auto_restart" == "true" ]]; then
+                    log "FAILED (user): $svc — auto-restart exhausted"
+                    dispatch_alert --scope user --service "$svc" --type failed \
+                        --severity critical \
+                        --message "User service failed — auto-restart exhausted (${max_restarts}x in ${restart_cooldown}s), manual intervention required" \
+                        --log-lines "$log_lines"
+                else
+                    log "FAILED (user): $svc"
+                    dispatch_alert --scope user --service "$svc" --type failed \
+                        --severity "$severity" \
+                        --message "User service entered failed state" \
+                        --log-lines "$log_lines"
+                fi
             fi
         elif [[ "$active_state" == "inactive" ]]; then
             if in_grace_period; then
@@ -193,12 +295,24 @@ poll_services() {
                 if [[ -z "${INACTIVE_FIRST_SEEN[user_${svc}]:-}" ]]; then
                     INACTIVE_FIRST_SEEN[user_${svc}]=$EPOCHSECONDS
                 elif (( EPOCHSECONDS - INACTIVE_FIRST_SEEN[user_${svc}] > 30 )); then
-                    if [[ -z "${PREV_FAILED[user_${svc}]:-}" ]]; then
-                        PREV_FAILED[user_${svc}]=1
-                        log "INACTIVE (user, 30s+): $svc"
+                    if [[ "$auto_restart" == "true" ]] && attempt_auto_restart "$svc" user "$max_restarts" "$restart_cooldown"; then
+                        log "INACTIVE (user, 30s+): $svc — auto-restarting"
                         dispatch_alert --scope user --service "$svc" --type inactive \
                             --severity "$severity" \
-                            --message "User service inactive for >30 seconds"
+                            --message "User service inactive >30s — auto-restarting (${RESTART_COUNTS[user_${svc}]}/${max_restarts})"
+                    elif [[ -z "${PREV_FAILED[user_${svc}]:-}" ]]; then
+                        PREV_FAILED[user_${svc}]=1
+                        if [[ "$auto_restart" == "true" ]]; then
+                            log "INACTIVE (user, 30s+): $svc — auto-restart exhausted"
+                            dispatch_alert --scope user --service "$svc" --type inactive \
+                                --severity critical \
+                                --message "User service inactive >30s — auto-restart exhausted (${max_restarts}x in ${restart_cooldown}s), manual intervention required"
+                        else
+                            log "INACTIVE (user, 30s+): $svc"
+                            dispatch_alert --scope user --service "$svc" --type inactive \
+                                --severity "$severity" \
+                                --message "User service inactive for >30 seconds"
+                        fi
                     fi
                 fi
             fi
@@ -208,6 +322,7 @@ poll_services() {
                 dispatch_recover --scope user --service "$svc" --type failed
                 dispatch_recover --scope user --service "$svc" --type inactive
                 unset "PREV_FAILED[user_${svc}]"
+                reset_restart_counts "$svc" user
             fi
             unset "INACTIVE_FIRST_SEEN[user_${svc}]" 2>/dev/null
         fi
@@ -217,39 +332,115 @@ poll_services() {
 # ── HTTP health checks ──────────────────────────────────────────────
 poll_http_health() {
     in_grace_period && return
-    local svc health_url severity optional active_state
+    local svc health_url health_cmd health_parse severity optional active_state
+    local auto_restart max_restarts restart_cooldown check_ok health_desc
 
+    # System services
     for i in {1..${#SYS_SERVICES[@]}}; do
         svc="${SYS_SERVICES[$i]}"
         health_url="${SYS_HEALTH_URLS[$i]}"
+        health_cmd="${SYS_HEALTH_CMDS[$i]}"
+        health_parse="${SYS_HEALTH_PARSES[$i]}"
         severity="${SYS_SEVERITIES[$i]}"
         optional="${SYS_OPTIONAL[$i]}"
+        auto_restart="${SYS_AUTO_RESTART[$i]}"
+        max_restarts="${SYS_MAX_RESTARTS[$i]}"
+        restart_cooldown="${SYS_RESTART_COOLDOWN[$i]}"
 
-        [[ "$health_url" == "none" ]] && continue
+        # Skip if no health check configured
+        [[ "$health_url" == "none" && "$health_cmd" == "none" ]] && continue
 
-        # Skip if unit doesn't exist
         if [[ "$optional" == "true" ]]; then
             systemctl cat "${svc}.service" &>/dev/null || continue
         fi
 
-        # Skip if service is not running
         active_state=$(systemctl show -p ActiveState --value "${svc}.service" 2>/dev/null)
         [[ "$active_state" != "active" ]] && continue
 
-        if curl -sf --max-time "$HTTP_TIMEOUT" "$health_url" >/dev/null 2>&1; then
-            # Healthy
-            if [[ -n "${HTTP_FAIL_COUNT[$svc]:-}" ]]; then
-                HTTP_FAIL_COUNT[$svc]=0
-                dispatch_recover --scope system --service "$svc" --type unhealthy
+        # Run health check: command-based or URL-based
+        check_ok=false
+        if [[ "$health_cmd" != "none" ]]; then
+            health_desc="cmd:${health_cmd%% *}"
+            if [[ "$health_parse" != "none" ]]; then
+                eval "$health_cmd" 2>/dev/null | jq -e "$health_parse" >/dev/null 2>&1 && check_ok=true
+            else
+                eval "$health_cmd" >/dev/null 2>&1 && check_ok=true
             fi
         else
-            # Unhealthy
+            health_desc="$health_url"
+            curl -sf --max-time "$HTTP_TIMEOUT" "$health_url" >/dev/null 2>&1 && check_ok=true
+        fi
+
+        if $check_ok; then
+            if [[ -n "${HTTP_FAIL_COUNT[$svc]:-}" ]] && (( HTTP_FAIL_COUNT[$svc] > 0 )); then
+                HTTP_FAIL_COUNT[$svc]=0
+                dispatch_recover --scope system --service "$svc" --type unhealthy
+                reset_restart_counts "$svc" system
+            fi
+        else
             HTTP_FAIL_COUNT[$svc]=$(( ${HTTP_FAIL_COUNT[$svc]:-0} + 1 ))
             if (( HTTP_FAIL_COUNT[$svc] >= HTTP_CONSECUTIVE_FAIL )); then
-                log "UNHEALTHY: $svc (${HTTP_FAIL_COUNT[$svc]} consecutive failures)"
+                if [[ "$auto_restart" == "true" ]] && attempt_auto_restart "$svc" system "$max_restarts" "$restart_cooldown"; then
+                    log "UNHEALTHY: $svc — auto-restarting"
+                    HTTP_FAIL_COUNT[$svc]=0
+                fi
                 dispatch_alert --scope system --service "$svc" --type unhealthy \
                     --severity "$severity" \
-                    --message "Running but health endpoint failing (${health_url})"
+                    --message "Running but health check failing (${health_desc})"
+            fi
+        fi
+    done
+
+    # User services
+    for i in {1..${#USR_SERVICES[@]}}; do
+        svc="${USR_SERVICES[$i]}"
+        health_url="${USR_HEALTH_URLS[$i]}"
+        health_cmd="${USR_HEALTH_CMDS[$i]}"
+        health_parse="${USR_HEALTH_PARSES[$i]}"
+        severity="${USR_SEVERITIES[$i]}"
+        optional="${USR_OPTIONAL[$i]}"
+        auto_restart="${USR_AUTO_RESTART[$i]}"
+        max_restarts="${USR_MAX_RESTARTS[$i]}"
+        restart_cooldown="${USR_RESTART_COOLDOWN[$i]}"
+
+        [[ "$health_url" == "none" && "$health_cmd" == "none" ]] && continue
+
+        if [[ "$optional" == "true" ]]; then
+            systemctl --user cat "${svc}.service" &>/dev/null || continue
+        fi
+
+        active_state=$(systemctl --user show -p ActiveState --value "${svc}.service" 2>/dev/null)
+        [[ "$active_state" != "active" ]] && continue
+
+        check_ok=false
+        if [[ "$health_cmd" != "none" ]]; then
+            health_desc="cmd:${health_cmd%% *}"
+            if [[ "$health_parse" != "none" ]]; then
+                eval "$health_cmd" 2>/dev/null | jq -e "$health_parse" >/dev/null 2>&1 && check_ok=true
+            else
+                eval "$health_cmd" >/dev/null 2>&1 && check_ok=true
+            fi
+        else
+            health_desc="$health_url"
+            curl -sf --max-time "$HTTP_TIMEOUT" "$health_url" >/dev/null 2>&1 && check_ok=true
+        fi
+
+        if $check_ok; then
+            if [[ -n "${HTTP_FAIL_COUNT[$svc]:-}" ]] && (( HTTP_FAIL_COUNT[$svc] > 0 )); then
+                HTTP_FAIL_COUNT[$svc]=0
+                dispatch_recover --scope user --service "$svc" --type unhealthy
+                reset_restart_counts "$svc" user
+            fi
+        else
+            HTTP_FAIL_COUNT[$svc]=$(( ${HTTP_FAIL_COUNT[$svc]:-0} + 1 ))
+            if (( HTTP_FAIL_COUNT[$svc] >= HTTP_CONSECUTIVE_FAIL )); then
+                if [[ "$auto_restart" == "true" ]] && attempt_auto_restart "$svc" user "$max_restarts" "$restart_cooldown"; then
+                    log "UNHEALTHY (user): $svc — auto-restarting"
+                    HTTP_FAIL_COUNT[$svc]=0
+                fi
+                dispatch_alert --scope user --service "$svc" --type unhealthy \
+                    --severity "$severity" \
+                    --message "Running but health check failing (${health_desc})"
             fi
         fi
     done
