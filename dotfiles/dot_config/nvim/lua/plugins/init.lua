@@ -7,7 +7,6 @@ return {
   { import = "plugins.edit" },
   { import = "plugins.files" },
   { import = "plugins.filetypes" },
-  { import = "plugins.fun" },
   { import = "plugins.integration" },
   { import = "plugins.keymap" },
   { import = "plugins.navigation" },

@@ -3,8 +3,7 @@
 -- └───────────────────────────────────────────────────────────────────────────────────┘
 return {
   'willothy/flatten.nvim',
-  lazy = false,
-  priority = 1001,
+  event = 'VeryLazy',
   opts = function()
     local env = vim.env or {}
     local function present(val) return val ~= nil and val ~= '' end
