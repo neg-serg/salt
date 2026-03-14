@@ -348,6 +348,8 @@ Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full de
 - Files on `/mnt/one/video-ai/` (models ~10-30 GB each, output MP4s) (022-video-ai-models)
 - Python 3.12+ (consistent with code-rag, notes-rag) + readability-lxml, markdownify, httpx (existing), rag-shared (existing), urllib.robotparser (stdlib) (023-external-docs-rag)
 - LanceDB (existing `note_chunks` table) + JSON state file + YAML source registry (023-external-docs-rag)
+- Jinja2/YAML (Salt states), Python 3.12+ (sanitizer script), INI (systemd unit) + Salt (masterless), systemd, OpenClaw 2026.3.2, salt-monitor/salt-alert (025-openclaw-bot-hardening)
+- Files (`~/.openclaw/openclaw.json`, systemd units, Salt state files) (025-openclaw-bot-hardening)
 
 ## Recent Changes
 - 001-code-rag-integration: Added Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx)

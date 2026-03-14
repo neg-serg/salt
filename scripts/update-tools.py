@@ -47,6 +47,11 @@ GITHUB_REPOS = {
     "proxypilot": "Finesssee/ProxyPilot",
 }
 
+# Mapping from versions.yaml keys to npm package names (for --check)
+NPM_PACKAGES = {
+    "openclaw": "openclaw",
+}
+
 # Custom (non-YAML) tools from installers.sls: name -> (guard_path, sls_name)
 CUSTOM_TOOLS = {
     "zi": (f"{HOME}/.config/zi/bin/zi.zsh", "installers"),
@@ -106,6 +111,18 @@ def fetch_latest_tag(repo):
         with urllib.request.urlopen(req, timeout=10) as resp:
             data = json.loads(resp.read())
             return data.get("tag_name", "?")
+    except Exception:
+        return "?"
+
+
+def fetch_latest_npm(package):
+    """Fetch latest version from npm registry."""
+    url = f"https://registry.npmjs.org/{package}/latest"
+    req = urllib.request.Request(url, headers={"Accept": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read())
+            return data.get("version", "?")
     except Exception:
         return "?"
 
@@ -176,18 +193,25 @@ def cmd_check(ci=False):
         pinned_clean = str(pinned).lstrip("v")
         results.append((key, repo, pinned_clean, latest_clean, latest))
 
+    # npm package checks
+    for key, pkg in sorted(NPM_PACKAGES.items()):
+        pinned = versions.get(key, "?")
+        latest = fetch_latest_npm(pkg)
+        pinned_clean = str(pinned)
+        results.append((key, f"npm:{pkg}", pinned_clean, latest, latest))
+
     if ci:
         outdated = [(k, r, p, lc, tag) for k, r, p, lc, tag in results if lc not in ("?", p)]
         if not outdated:
             print("All pinned versions are up to date.")
             return 0
-        print("| Tool | Pinned | Latest | Repo |")
-        print("|------|--------|--------|------|")
+        print("| Tool | Pinned | Latest | Source |")
+        print("|------|--------|--------|--------|")
         for key, repo, pinned, _, tag in outdated:
             print(f"| {key} | {pinned} | {tag} | {repo} |")
         return 1
 
-    print("Checking pinned versions against latest GitHub releases...\n")
+    print("Checking pinned versions against latest releases...\n")
     for key, repo, pinned_clean, latest_clean, latest in results:
         if latest_clean == "?":
             status = "\033[33m?\033[0m"
