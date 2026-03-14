@@ -352,6 +352,8 @@ Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full de
 - Files (`~/.openclaw/openclaw.json`, systemd units, Salt state files) (025-openclaw-bot-hardening)
 - Bash (script), GNU parallel 20260222 + GNU parallel (installed at `/usr/bin/parallel`), salt-call (`.venv/bin/salt-call`) (026-fast-validate)
 - Shared `.salt_runtime/` directory (read-only during validation) (026-fast-validate)
+- Lua (Neovim 0.11+ embedded Lua runtime) + lazy.nvim (plugin manager), neg.nvim (custom colorscheme), Neovim built-in APIs (027-neovim-startup-speed)
+- File-based (Lua modules in `~/.config/nvim/`, plugins in `~/.local/share/nvim/lazy/`) (027-neovim-startup-speed)
 
 ## Recent Changes
 - 001-code-rag-integration: Added Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx)
