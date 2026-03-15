@@ -1190,12 +1190,7 @@ Scope {
                             LocalMods.MpdFlags {
                                 id: mpdFlagsBar
                                 Layout.alignment: Qt.AlignVCenter
-                                property bool _mediaVisible: (
-                                    Settings.settings.showMediaInBar
-                                    && MusicManager.currentPlayer
-                                    && !MusicManager.isStopped
-                                    && (MusicManager.isPlaying || MusicManager.isPaused || (MusicManager.trackTitle && MusicManager.trackTitle.length > 0))
-                                )
+                                property bool _mediaVisible: Settings.settings.showMediaInBar && MusicManager.hasPlayer
                                 enabled: _mediaVisible && MusicManager.isCurrentMpdPlayer()
                                 iconPx: Math.round(Theme.fontSizeSmall * Theme.scale(rightPanel.screen))
                                 iconColor: Theme.textPrimary
@@ -1307,7 +1302,7 @@ Scope {
                     function maybeShowOnAlbumChange() {
                         try {
                             if (!rightPanel.visible) return;
-                            if (MusicManager.isStopped) return;
+                            if (!MusicManager.hasPlayer) return;
                             const album = String(MusicManager.trackAlbum || "");
                             if (!album || album.length === 0) return;
                             if (album !== rightPanel._lastAlbum) {

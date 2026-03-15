@@ -202,6 +202,7 @@ Item {
         if (np !== currentPlayer) {
             currentPlayer = np;
         }
+        hasPlayer = getAvailablePlayers().length > 0;
     }
 
     Component.onCompleted: {
