@@ -57,6 +57,8 @@ bootstrap_salt() {
 
 # ── Runtime config: generate .salt_runtime/minion ─────────────────────────────
 setup_config() {
+    # Skip if config already exists (content is deterministic for a given PROJECT_DIR)
+    [[ -f "${RUNTIME_CONFIG_DIR}/minion" ]] && return 0
     mkdir -p "${RUNTIME_CONFIG_DIR}/pki/minion" \
              "${RUNTIME_CONFIG_DIR}/var/cache/salt/pillar_cache" \
              "${RUNTIME_CONFIG_DIR}/var/log/salt"
@@ -109,14 +111,31 @@ get_sudo() {
 }
 
 # ── Snapper: pre/post-apply snapshots ──────────────────────────────────────────
+# Pre-snapshot runs in the background while Salt starts up, saving ~2s.
+SNAPPER_PRE_PID=""
+SNAPPER_PRE_TMPFILE=""
+
 snapshot_pre() {
     if command -v snapper &>/dev/null; then
-        local num
-        num=$("${SUDO_CMD[@]}" snapper create --type pre --print-number \
-              --cleanup-algorithm number \
-              --description "salt-pre: ${STATE}" 2>/dev/null) || return 0
-        SNAPPER_PRE_NUM="$num"
-        echo "(snapshot #${num}: pre-apply)"
+        SNAPPER_PRE_TMPFILE=$(mktemp)
+        (
+            num=$("${SUDO_CMD[@]}" snapper create --type pre --print-number \
+                  --cleanup-algorithm number \
+                  --description "salt-pre: ${STATE}" 2>/dev/null) || exit 0
+            echo "$num" > "$SNAPPER_PRE_TMPFILE"
+        ) &
+        SNAPPER_PRE_PID=$!
+    fi
+}
+
+snapshot_pre_collect() {
+    if [[ -n "${SNAPPER_PRE_PID:-}" ]]; then
+        wait "$SNAPPER_PRE_PID" 2>/dev/null || true
+        if [[ -s "${SNAPPER_PRE_TMPFILE:-}" ]]; then
+            SNAPPER_PRE_NUM=$(<"$SNAPPER_PRE_TMPFILE")
+            echo "(snapshot #${SNAPPER_PRE_NUM}: pre-apply)"
+        fi
+        rm -f "${SNAPPER_PRE_TMPFILE:-}" 2>/dev/null
     fi
 }
 
@@ -285,7 +304,11 @@ else
     RC=$?
 fi
 
-snapshot_post
+snapshot_pre_collect
+
+# Post-snapshot runs detached — we don't need to wait for it
+snapshot_post &
+disown
 
 # ── Post-run: check log for errors that may have been missed ──────────────────
 check_log_errors() {
@@ -312,7 +335,20 @@ echo "Full log: ${LOG_FILE}"
 
 if [[ $RC -eq 0 ]]; then
     echo "--- ${STATE}: all states passed ---"
-    echo "--- Applying dotfiles (chezmoi) ---"
+
+    # Skip chezmoi on no-op applies (Salt changed nothing → dotfiles unchanged too)
+    salt_has_changes=false
+    if rg -q 'Succeeded:.*changed=[1-9]' "$LOG_FILE" 2>/dev/null; then
+        salt_has_changes=true
+    fi
+
+    if $salt_has_changes; then
+        echo "--- Applying dotfiles (chezmoi) ---"
+    else
+        echo "--- No Salt changes; skipping chezmoi ---"
+    fi
+
+    if $salt_has_changes; then
     # Bootstrap chezmoi config before apply (needed for gopass template rendering)
     install -Dm644 "${PROJECT_DIR}/dotfiles/dot_config/chezmoi/chezmoi.toml" \
         "${HOME}/.config/chezmoi/chezmoi.toml" 2>/dev/null || true
@@ -329,6 +365,7 @@ if [[ $RC -eq 0 ]]; then
         printf '\033[33m  Re-run: chezmoi apply --force --source %s/dotfiles\033[0m\n' "${PROJECT_DIR}"
         exit 1
     fi
+    fi  # salt_has_changes
 else
     echo "--- ${STATE}: some states failed (see log above) ---"
     exit $RC

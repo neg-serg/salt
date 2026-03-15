@@ -361,6 +361,8 @@ Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full de
 - N/A — research deliverable, no code produced + Salt 3006.x (current), pyinfra v3.7 (comparison target) (030-pyinfra-migration-research)
 - QML 6 (Qt 6), JavaScript (ES5 helpers) + Quickshell runtime, QtQuick, Quickshell.Services.Mpris (032-qs-album-color-cache)
 - In-memory JS object (no persistence) (032-qs-album-color-cache)
+- Jinja2/YAML (Salt states), Zsh (salt-apply.sh wrapper) + Salt 3006.x (masterless), gopass, snapper, chezmoi (033-salt-apply-speedup)
+- Files on disk (Salt state tree, YAML data files) (033-salt-apply-speedup)
 
 ## Recent Changes
 - 001-code-rag-integration: Added Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx)
