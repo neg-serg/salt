@@ -365,6 +365,8 @@ Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full de
 - Files on disk (Salt state tree, YAML data files) (033-salt-apply-speedup)
 - QML 6 (Qt 6), JavaScript (ES5 helpers) + Quickshell runtime, Quickshell.Services.Mpris, QtQuick (034-qs-hide-music-panel)
 - N/A (in-memory QML properties, StateCache for player LIFO stack) (034-qs-hide-music-panel)
+- QML 6 (Qt 6), JavaScript (ES5 helpers), INI (mpdris2 config) + Quickshell runtime, Quickshell.Io (Process, FileView), Quickshell.Services.Mpris (035-qs-fix-cover-art)
+- N/A (in-memory QML properties, existing accent cache) (035-qs-fix-cover-art)
 
 ## Recent Changes
 - 001-code-rag-integration: Added Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx)
