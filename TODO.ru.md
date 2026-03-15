@@ -12,24 +12,6 @@
 3. Идемпотентные проверки для обоих
 
 
-## ProxyPilot: нарушение ToS Google Cloud
-
-Аккаунт Google Cloud (`serg.zorg@gmail.com`) заблокирован за нарушение ToS Cloud Code API.
-Токены Gemini и Antigravity аутентифицируются, но все API-запросы возвращают 403 PERMISSION_DENIED.
-
-**Статус (v0.3.0-dev-0.40)**:
-- Паника `tui` flag: **исправлена** в v0.3.0-dev-0.40
-- `--claude-login`: **работает** — нативный Claude OAuth через Anthropic (не Google)
-- `--antigravity-login` / `--login` (Gemini): аутентификация проходит, но API-вызовы падают (блокировка ToS)
-- Форма апелляции: https://forms.gle/hGzM9MEUv2azZsrb9
-
-**Текущая маршрутизация**: модели Claude используют нативный OAuth-токен. Маршруты Gemini/Antigravity недоступны до рассмотрения апелляции.
-
-- Бинарник: `~/.local/bin/proxypilot` v0.3.0-dev-0.40
-- Конфиг: `~/.config/proxypilot/config.yaml`
-- Репо: https://github.com/Finesssee/ProxyPilot
-
-
 ## Сервис ydotool не включён
 
 `ydotool.service` (systemd user unit) установлен, но **отключён и неактивен**.
