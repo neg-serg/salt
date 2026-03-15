@@ -28,6 +28,8 @@ video_ai_comfyui_setup:
     - creates: {{ comfyui_dir }}/venv/bin/python
     - env:
       - COMFYUI_DIR: {{ comfyui_dir }}
+      - GIT_CONFIG_GLOBAL: /dev/null
+      - GIT_CONFIG_NOSYSTEM: '1'
     - retry:
         attempts: {{ retry_attempts }}
         interval: {{ retry_interval }}
@@ -41,6 +43,9 @@ video_ai_node_{{ node.dir | lower | replace('-', '_') }}:
     - name: git clone {{ node.repo }} {{ comfyui_dir }}/custom_nodes/{{ node.dir }}
     - creates: {{ comfyui_dir }}/custom_nodes/{{ node.dir }}
     - runas: {{ user }}
+    - env:
+      - GIT_CONFIG_GLOBAL: /dev/null
+      - GIT_CONFIG_NOSYSTEM: '1'
     - retry:
         attempts: {{ retry_attempts }}
         interval: {{ retry_interval }}
