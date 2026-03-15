@@ -4,6 +4,7 @@ import "../../Helpers/Format.js" as Format
 import "../../Helpers/RichText.js" as Rich
 import "../../Helpers/Time.js" as Time
 import "../../Helpers/Color.js" as Color
+import "../../Helpers/AccentSampler.js" as AccentSampler
 import qs.Settings
 import qs.Services
 import qs.Components
@@ -82,6 +83,86 @@ Item {
     property bool accentReady: MusicManager.accentReady
     readonly property bool mediaBorderless: Settings.settings.mediaIconBorderless !== false
     onMediaAccentChanged: { accentVersion++; }
+
+    // ── Accent color sampling (Canvas must live in a windowed component) ──
+    property int _accentRetryCount: 0
+
+    function _requestAccentSample() {
+        if (!MusicManager.accentNeedsSample()) return;
+        _accentRetryCount = 0;
+        sampleDebounce.restart();
+    }
+
+    Image {
+        id: accentSamplerImg
+        visible: false
+        width: 64; height: 64
+        sourceSize.width: 64; sourceSize.height: 64
+        fillMode: Image.PreserveAspectCrop
+        source: MusicManager.coverUrl || ""
+        asynchronous: true
+    }
+
+    Canvas {
+        id: colorSampler
+        width: 64; height: 64
+        opacity: 0
+        renderStrategy: Canvas.Cooperative
+        onPaint: {
+            var ctx = getContext("2d");
+            if (!accentSamplerImg || accentSamplerImg.status !== Image.Ready) return;
+            ctx.clearRect(0, 0, 64, 64);
+            ctx.drawImage(accentSamplerImg, 0, 0, 64, 64);
+            var imgData = ctx.getImageData(0, 0, 64, 64);
+            var url = MusicManager.coverUrl || "";
+            var rgb = AccentSampler.sampleAccent(imgData);
+            if (!rgb) {
+                // First paint may yield empty data; retry once
+                accentRetry.restart();
+                return;
+            }
+            MusicManager.accentSetResult(url, rgb);
+            accentRetry.stop();
+        }
+    }
+
+    Timer {
+        id: sampleDebounce
+        interval: Theme.mediaArtDebounceMs
+        repeat: false
+        onTriggered: {
+            if (accentSamplerImg.status === Image.Ready) {
+                colorSampler.requestPaint();
+            } else {
+                accentRetry.restart();
+            }
+        }
+    }
+
+    Timer {
+        id: accentRetry
+        interval: Theme.mediaAccentRetryMs
+        repeat: true
+        onTriggered: {
+            mediaControl._accentRetryCount++;
+            if (mediaControl._accentRetryCount > Theme.mediaAccentRetryMax) {
+                stop();
+                MusicManager.accentSetResult(MusicManager.coverUrl || "", null);
+                return;
+            }
+            if (accentSamplerImg.status === Image.Ready) {
+                stop();
+                colorSampler.requestPaint();
+            }
+        }
+    }
+
+    Connections {
+        target: MusicManager
+        function onCoverUrlChanged() { mediaControl._requestAccentSample(); }
+    }
+    Component.onCompleted: { _requestAccentSample(); }
+
     // Active visualizer profile (if any). Settings are schema-validated, so no clamps here.
     property var _vizProfile: (Settings.settings.visualizerProfiles
                                && Settings.settings.visualizerProfiles[Settings.settings.activeVisualizerProfile])

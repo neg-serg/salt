@@ -6,7 +6,6 @@ import qs.Services
 import qs.Settings
 import qs.Components
 import "../Helpers/MusicIds.js" as MusicIds
-import "../Helpers/AccentSampler.js" as AccentSampler
 // Settings are schema-validated; avoid runtime clamps
 
 Item {
@@ -91,108 +90,44 @@ Item {
     }
     property var cavaValues: cavaLoader.active && cavaLoader.item ? cavaLoader.item.values : []
 
-    // ── Accent color extraction (centralized, cached by cover URL) ──
+    // ── Accent color (shared state, sampled by first consumer in a window) ──
     property color accentColor: Theme.accentPrimary
     property bool accentReady: false
     property string _lastSampledUrl: ""
     property var _accentCache: ({})
-    property int _accentRetryCount: 0
 
-    onCoverUrlChanged: {
+    // Called by consumers before sampling — returns true if sampling is needed
+    function accentNeedsSample() {
         var url = coverUrl || "";
-        // Same URL as last sample → skip entirely (same album, no work needed)
-        if (url === manager._lastSampledUrl) return;
+        if (url === manager._lastSampledUrl) return false;
         manager._lastSampledUrl = url;
-        // Empty URL → reset to theme default
         if (!url) {
             manager.accentColor = Theme.accentPrimary;
             manager.accentReady = false;
-            return;
+            return false;
         }
-        // Cache hit → restore instantly, skip sampling
         if (manager._accentCache && manager._accentCache[url]) {
             manager.accentColor = manager._accentCache[url];
             manager.accentReady = true;
-            return;
+            return false;
         }
-        // Cache miss → debounced sampling
         manager.accentReady = false;
-        manager._accentRetryCount = 0;
-        _accentDebounce.restart();
+        return true;
     }
 
-    // Hidden image for sampling (small, decoupled from display images)
-    Image {
-        id: _accentImage
-        width: Theme.mediaAccentSamplerPx
-        height: Theme.mediaAccentSamplerPx
-        source: manager.coverUrl || ""
-        visible: false
-        fillMode: Image.PreserveAspectCrop
-        onStatusChanged: {
-            if (status === Image.Ready) {
-                manager._accentRetryCount = 0;
-                _accentDebounce.restart();
-            }
-        }
-    }
-
-    Canvas {
-        id: _accentCanvas
-        width: Theme.mediaAccentSamplerPx
-        height: Theme.mediaAccentSamplerPx
-        visible: false
-        onPaint: {
-            try {
-                var ctx = getContext('2d');
-                ctx.clearRect(0, 0, width, height);
-                var url = manager.coverUrl || "";
-                if (_accentImage.status !== Image.Ready) return;
-                ctx.drawImage(_accentImage, 0, 0, width, height);
-                var img = ctx.getImageData(0, 0, width, height);
-                var rgb = AccentSampler.sampleAccent(img, {
-                    satMin: Theme.mediaAccentSatMin,
-                    lumMin: Theme.mediaAccentLumMin,
-                    lumMax: Theme.mediaAccentLumMax,
-                    satRelax: Theme.mediaAccentSatRelax,
-                    lumRelaxMin: Theme.mediaAccentLumRelaxMin,
-                    lumRelaxMax: Theme.mediaAccentLumRelaxMax
-                });
-                if (rgb) {
-                    var col = Qt.rgba(rgb.r / 255.0, rgb.g / 255.0, rgb.b / 255.0, 1);
-                    manager.accentColor = col;
-                    manager.accentReady = true;
-                    if (manager._accentCache) manager._accentCache[url] = col;
-                } else {
-                    var cached = manager._accentCache && manager._accentCache[url];
-                    var fallback = cached || Theme.accentPrimary;
-                    manager.accentColor = fallback;
-                    manager.accentReady = !!cached;
-                    if (manager._accentCache && !cached) manager._accentCache[url] = fallback;
-                }
-            } catch (e) { /* ignore */ }
-        }
-    }
-
-    Timer {
-        id: _accentDebounce
-        interval: Theme.mediaArtDebounceMs
-        repeat: false
-        onTriggered: { _accentCanvas.requestPaint(); _accentRetry.restart(); }
-    }
-
-    Timer {
-        id: _accentRetry
-        interval: Theme.mediaAccentRetryMs
-        repeat: false
-        onTriggered: {
-            _accentCanvas.requestPaint();
-            if (!manager.accentReady && manager._accentRetryCount < Theme.mediaAccentRetryMax) {
-                manager._accentRetryCount++;
-                start();
-            } else {
-                manager._accentRetryCount = 0;
-            }
+    // Called by the consumer's Canvas after sampling
+    function accentSetResult(url, rgb) {
+        if (rgb) {
+            var col = Qt.rgba(rgb.r / 255.0, rgb.g / 255.0, rgb.b / 255.0, 1);
+            manager.accentColor = col;
+            manager.accentReady = true;
+            if (manager._accentCache) manager._accentCache[url] = col;
+        } else {
+            var cached = manager._accentCache && manager._accentCache[url];
+            var fallback = cached || Theme.accentPrimary;
+            manager.accentColor = fallback;
+            manager.accentReady = !!cached;
+            if (manager._accentCache && !cached) manager._accentCache[url] = fallback;
         }
     }
 }
