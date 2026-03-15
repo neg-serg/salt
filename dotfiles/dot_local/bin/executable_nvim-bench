@@ -1,0 +1,51 @@
+#!/usr/bin/env zsh
+# Neovim startup benchmark — measures median/min/max/p95 "NVIM STARTED" time
+setopt ERR_EXIT NO_UNSET PIPE_FAIL
+
+typeset -i runs=${1:-10}
+typeset -i threshold=${2:-25}
+typeset -a times=()
+typeset tmplog=$(mktemp /tmp/nvim-bench-XXXXXX.log)
+
+trap "rm -f ${tmplog}" EXIT
+
+for ((i = 1; i <= runs; i++)); do
+    rm -f "${tmplog}"
+    script -qefc "nvim --startuptime ${tmplog} -c quit" /dev/null >/dev/null 2>&1
+    typeset t=$(grep 'NVIM STARTED' "${tmplog}" | tail -1 | awk '{print $1}')
+    if [[ -n "${t}" ]]; then
+        times+=("${t}")
+    fi
+done
+
+if (( ${#times[@]} == 0 )); then
+    print -u2 "error: no successful measurements"
+    exit 2
+fi
+
+# Sort numerically
+typeset -a sorted=( ${(on)times} )
+typeset -i n=${#sorted[@]}
+
+# Compute stats
+typeset min_val=${sorted[1]}
+typeset max_val=${sorted[${n}]}
+typeset -i mid_idx=$(( (n + 1) / 2 ))
+typeset median_val=${sorted[${mid_idx}]}
+typeset -i p95_idx=$(( (n * 95 + 99) / 100 ))
+(( p95_idx > n )) && p95_idx=${n}
+typeset p95_val=${sorted[${p95_idx}]}
+
+print "nvim-bench: ${n} runs"
+print "  min:    ${min_val}ms"
+print "  median: ${median_val}ms"
+print "  p95:    ${p95_val}ms"
+print "  max:    ${max_val}ms"
+
+# Threshold check (compare integer part of median against threshold)
+typeset -i median_int=${median_val%.*}
+if (( median_int >= threshold )); then
+    print -u2 "FAIL: median ${median_val}ms >= ${threshold}ms threshold"
+    exit 1
+fi
+print "PASS: median ${median_val}ms < ${threshold}ms threshold"

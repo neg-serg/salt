@@ -145,6 +145,16 @@ vim.api.nvim_create_autocmd('BufReadPre', {
   end,
 })
 o.shada=[['1000,<50,s10,h]]                     -- Ultra fast shada settings
+-- Defer ShaDa reading to after first screen render
+local orig_shadafile = vim.o.shadafile
+vim.o.shadafile = 'NONE'
+vim.api.nvim_create_autocmd('UIEnter', {
+  once = true,
+  callback = function()
+    vim.o.shadafile = orig_shadafile
+    pcall(vim.cmd, 'rshada')
+  end,
+})
 o.cdhome=true                                -- :cd without argument goes to the home directory
 o.completeopt='menu,menuone,noselect'        -- Completion options
 o.formatoptions='n1jcroqlj'                  -- Format settings

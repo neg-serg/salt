@@ -354,6 +354,8 @@ Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full de
 - Shared `.salt_runtime/` directory (read-only during validation) (026-fast-validate)
 - Lua (Neovim 0.11+ embedded Lua runtime) + lazy.nvim (plugin manager), neg.nvim (custom colorscheme), Neovim built-in APIs (027-neovim-startup-speed)
 - File-based (Lua modules in `~/.config/nvim/`, plugins in `~/.local/share/nvim/lazy/`) (027-neovim-startup-speed)
+- Lua (Neovim 0.11+ embedded runtime) + lazy.nvim (plugin manager), neg.nvim (custom colorscheme), snacks.nvim (UI) (028-neovim-startup-speed)
+- N/A (file-based Lua config) (028-neovim-startup-speed)
 
 ## Recent Changes
 - 001-code-rag-integration: Added Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx)
