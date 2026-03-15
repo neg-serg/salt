@@ -27,16 +27,29 @@ mkdir -p {{ vd }} && rm -f '{{ vd }}/{{ name }}' {{ vd }}/{{ name }}@* && {% if 
 {#- Resolve a secret from gopass, with optional shell fallback command.
     Returns the secret value, or the fallback result (empty string if no fallback).
     Uses host.user by default; override with runas='other'.
+    Optimisation: the first call probes gopass availability; if gopass is
+    unreachable (daemon context — no GPG agent), subsequent calls skip the
+    gopass attempt entirely and use the fallback command directly.
     Usage: {% set key = gopass_secret('api/my-key') %}
            {% set key = gopass_secret('api/my-key', "awk '...' /path/to/config") %}
 -#}
+{%- set _gopass_ns = namespace(checked=False, available=False) -%}
 {%- macro gopass_secret(key, fallback_cmd='true', runas=None) -%}
 {%- set _u = runas if runas is not none else host.user -%}
+{%- set _try_gopass = (not _gopass_ns.checked) or _gopass_ns.available -%}
+{%- if _try_gopass -%}
 {%- set _r = salt['cmd.run_all']('gopass show -o ' ~ key ~ ' 2>/dev/null', runas=_u, python_shell=True, ignore_retcode=True) -%}
+{%- if not _gopass_ns.checked -%}
+{%- set _gopass_ns.checked = True -%}
+{%- set _gopass_ns.available = (_r.get('retcode', 1) == 0) -%}
+{%- endif -%}
 {%- if _r.get('retcode', 1) == 0 -%}
-{{ _r['stdout'].strip() }}
+{{- _r['stdout'].strip() -}}
 {%- else -%}
-{{ salt['cmd.run_stdout'](fallback_cmd, runas=_u).strip() }}
+{{- salt['cmd.run_stdout'](fallback_cmd, runas=_u).strip() -}}
+{%- endif -%}
+{%- else -%}
+{{- salt['cmd.run_stdout'](fallback_cmd, runas=_u).strip() -}}
 {%- endif -%}
 {%- endmacro -%}
 
