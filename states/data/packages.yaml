@@ -385,7 +385,6 @@ aur:
   - gram-editor-git  # minimal code editor
   - hishtory-bin  # synced, queryable shell history
   - hw-probe  # hardware probe and operability check
-  - hy3  # i3-like tiling plugin for Hyprland
   - iosevka-neg-fonts  # custom Iosevka Nerd Fonts (neg-serg)
   - jdupes  # duplicate file finder and deduplicator
   - lutgen-bin  # LUT-based color palette generator
