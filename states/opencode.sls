@@ -5,7 +5,16 @@
 {% if host.features.opencode %}
 {% set _proxypilot_cfg = home ~ '/.config/proxypilot/config.yaml' %}
 {% set _proxypilot_api_key = gopass_secret('api/proxypilot-local', "awk '/^api-keys:/{getline; sub(/^[[:space:]]*-[[:space:]]*\"?/, \"\"); sub(/\"?[[:space:]]*$/, \"\"); print; exit}' " ~ _proxypilot_cfg ~ " 2>/dev/null || true") %}
-{% set _proxypilot_mgmt_key = gopass_secret('api/proxypilot-management', "awk '/^[[:space:]]*secret-key:[[:space:]]*/{sub(/^[[:space:]]*secret-key:[[:space:]]*\"?/, \"\"); sub(/\"?[[:space:]]*$/, \"\"); print; exit}' " ~ _proxypilot_cfg ~ " 2>/dev/null || true") %}
+{# ProxyPilot bcrypt-hashes secret-key on startup, so re-rendering from gopass
+   would always produce a diff (raw key vs hash). Read the hashed value from the
+   existing config; fall back to gopass only when the config doesn't exist yet. #}
+{% set _mgmt_awk = "awk '/^[[:space:]]*secret-key:[[:space:]]*/{sub(/^[[:space:]]*secret-key:[[:space:]]*\"?/, \"\"); sub(/\"?[[:space:]]*$/, \"\"); print; exit}' " ~ _proxypilot_cfg ~ " 2>/dev/null" %}
+{% set _existing_mgmt = salt['cmd.run_stdout'](_mgmt_awk, runas=user).strip() %}
+{% if _existing_mgmt %}
+{% set _proxypilot_mgmt_key = _existing_mgmt %}
+{% else %}
+{% set _proxypilot_mgmt_key = gopass_secret('api/proxypilot-management', 'true') %}
+{% endif %}
 {% set _codex_api_key = _proxypilot_api_key %}
 
 {# Resolve free fallback provider API keys from gopass (emergency-only providers).
