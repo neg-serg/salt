@@ -1,0 +1,24 @@
+# Salt Idempotent (No-Change) Apply Measurements
+# Command: salt-call --local state.apply system_description
+# Measured from log timestamps (first line → "Total run time" line)
+#
+# Latest log: system_description-20260315-181128.log
+# States: 566 total, 1 changed
+# State execution time: 4.334s
+# Wall-clock time (including Salt startup): ~12s
+#
+# Breakdown:
+#   Salt startup (module loading, grains, pillar): ~5-6s
+#   Jinja2+YAML state compilation: ~2-3s
+#   State execution (idempotent checks): ~4.3s
+#   Total wall-clock: ~12s
+#
+# From profile-trend across 126 log files:
+#   Most states complete in <20ms (idempotent guard checks)
+#   Slowest idempotent states: service.running checks (~100-350ms each)
+#   enable_user_services: avg 158ms (systemctl queries)
+#   flatpak checks: avg 12-13ms each (22 flatpak states)
+#
+# Key observation: On a no-change apply, 64% of wall-clock time is Salt
+# startup overhead, not state execution. pyinfra would save ~5-6s of this.
+# But on a real apply with downloads/builds (5-30 minutes), this is <2%.
