@@ -12,7 +12,8 @@ ROCM_TORCH_INDEX="https://download.pytorch.org/whl/rocm6.4"
 # ── Clone ComfyUI if not present ─────────────────────────────────────
 if [[ ! -d "${COMFYUI_DIR}/.git" ]]; then
     echo "[video-ai] Cloning ComfyUI..."
-    git clone https://github.com/comfyanonymous/ComfyUI.git "${COMFYUI_DIR}"
+    GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 \
+        git clone https://github.com/comfyanonymous/ComfyUI.git "${COMFYUI_DIR}"
 else
     echo "[video-ai] ComfyUI already cloned, pulling updates..."
     git -C "${COMFYUI_DIR}" pull --ff-only || true
