@@ -7,7 +7,6 @@
 # Requires multilib repo for lib32 dependencies.
 # Inline cmd.run (not pacman_install macro): --ask 4 resolves CachyOS
 # lib32-mesa-git vs multilib lib32-mesa conflict; macro doesn't support extra args.
-{% if host.features.steam %}
 {% set modern_skin_version = ver.get('modern_steam', '') %}
 
 multilib_repo:
@@ -113,4 +112,3 @@ dxvk_resolution_fix:
         exit 0
     - require:
       - cmd: steam_pkg
-{% endif %}

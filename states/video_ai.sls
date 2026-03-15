@@ -2,8 +2,6 @@
 {% from '_macros_service.jinja' import ensure_dir %}
 {% import_yaml 'data/video_ai.yaml' as video_ai %}
 # Video AI: ComfyUI + model management for local video generation (7900 XTX)
-{% if host.features.get('video_ai', False) %}
-
 {% set base_dir = host.mnt_one ~ '/video-ai' %}
 {% set comfyui_dir = base_dir ~ '/comfyui' %}
 {% set models_dir = base_dir ~ '/models' %}
@@ -124,5 +122,3 @@ video_ai_generate_script:
     - mode: '0755'
     - require:
       - cmd: video_ai_comfyui_setup
-
-{% endif %}

@@ -3,8 +3,6 @@
 {% from '_macros_service.jinja' import ensure_dir %}
 # TidalCycles live coding: SuperCollider + SuperDirt + GHCi/Tidal
 # Signal: nvim (.tidal) → GHCi REPL → OSC :57120 → scsynth/SuperDirt → PipeWire
-{% if host.features.tidal %}
-
 # --- Packages: audio engine + Haskell runtime ---
 {% for pkg in ['supercollider', 'sc3-plugins', 'ghc', 'haskell-tidal'] %}
 {{ pacman_install(pkg, pkg) }}
@@ -49,5 +47,3 @@ superdirt_boot_noop:
     - mode: '0644'
     - require:
       - file: supercollider_config_dir
-
-{% endif %}

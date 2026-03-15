@@ -2,8 +2,6 @@
 {% from '_macros_pkg.jinja' import npm_pkg %}
 {% from '_macros_service.jinja' import ensure_dir, user_service_file, user_service_enable, user_service_restart, user_unit_override %}
 {% import_yaml 'data/versions.yaml' as ver %}
-{% if host.features.openclaw %}
-
 # ── Secret resolution (gopass primary, credentials-file fallback) ─────
 {% set _proxypilot_cfg = home ~ '/.config/proxypilot/config.yaml' %}
 {% set _proxy_key = gopass_secret('api/proxypilot-local', "awk '/^api-keys:/{getline; sub(/^[[:space:]]*-[[:space:]]*\"?/, \"\"); sub(/\"?[[:space:]]*$/, \"\"); print; exit}' " ~ _proxypilot_cfg ~ " 2>/dev/null || true") %}
@@ -118,5 +116,3 @@ Environment=XDG_RUNTIME_DIR=/run/user/1000
 # ── Health check: REMOVED — now handled by monitoring_alerts.sls ─────
 # Old openclaw-health-check.sh, openclaw-health.{service,timer} replaced
 # by unified salt-monitor + salt-alert system.
-
-{% endif %}

@@ -42,13 +42,14 @@ system_hostname:
 {{ ensure_dir('download_cache_dir', '/var/cache/salt/downloads', mode='0755') }}
 
 include:
-  # Core: user accounts, shell, disk mounts — foundations for everything else
+  # ── Core (always included) ──────────────────────────────────────────
+  # User accounts, shell, disk mounts — foundations for everything else
   - users
   - zsh
   - mounts
   - bind_mounts
 
-  # System: kernel tuning, hardware, sysctl
+  # Kernel tuning, hardware, sysctl
   - kernel_modules
   - kernel_params_limine
   - sysctl
@@ -60,41 +61,71 @@ include:
   - fonts
   - greetd
 
-  # Network: DNS, proxies, VPN
+  # Network: DNS
   - dns
   - network
-  - amnezia
 
-  # Packages: base system packages, CLI tools, desktop apps, themes, custom PKGBUILDs, flatpak
+  # Packages: base system, CLI tools, desktop apps, themes, custom PKGBUILDs
   - packages
   - installers
   - installers_mpv
   - installers_desktop
   - installers_themes
-  - flatpak
   - custom_pkgs
-
-  # Applications
-  - floorp
-  - kanata
-  - mpd
-  - music_analysis
-  - tidal
-  - ollama
-  - llama_embed
-  - code_rag
-  - opencode
-  - openclaw_agent
-  - telethon_bridge
-  - image_generation
-  - video_ai
-  - steam
 
   # Services, monitoring, user units, snapshots
   - services
-  - services_bitcoind
-  - monitoring
   - monitoring_alerts
-  - monitoring_loki
   - user_services
   - snapshots
+  - code_rag
+
+  # ── Feature-gated (skipped entirely when disabled) ──────────────────
+{% if host.features.amnezia %}
+  - amnezia
+{% endif %}
+{% if host.features.flatpak %}
+  - flatpak
+{% endif %}
+{% if host.features.floorp %}
+  - floorp
+{% endif %}
+{% if host.features.kanata %}
+  - kanata
+{% endif %}
+{% if host.features.mpd %}
+  - mpd
+{% endif %}
+{% if host.features.get('music_analysis') %}
+  - music_analysis
+{% endif %}
+{% if host.features.tidal %}
+  - tidal
+{% endif %}
+{% if host.features.ollama %}
+  - ollama
+{% endif %}
+{% if host.features.llama_embed %}
+  - llama_embed
+{% endif %}
+{% if host.features.opencode %}
+  - opencode
+{% endif %}
+{% if host.features.openclaw %}
+  - openclaw_agent
+{% endif %}
+{% if host.features.get('telethon_bridge', false) %}
+  - telethon_bridge
+{% endif %}
+{% if host.features.get('image_gen', True) %}
+  - image_generation
+{% endif %}
+{% if host.features.get('video_ai', False) %}
+  - video_ai
+{% endif %}
+{% if host.features.steam %}
+  - steam
+{% endif %}
+{% if host.features.monitoring.loki %}
+  - monitoring_loki
+{% endif %}
