@@ -68,34 +68,7 @@ error-logs-max-files: 10
 
 # ── Model aliases ───────────────────────────────────────────────────
 # alias = what the client sends, name = upstream model ID.
-# Claude: native OAuth (--claude-login). Antigravity: Gemini models.
-# Google Cloud TOS-blocked — Gemini/Antigravity tokens may not route.
-
-oauth-model-alias:
-  antigravity:
-    # ── Gemini ──
-    - name: "gemini-2.5-pro"
-      alias: "gemini-2.5-pro"
-      fork: true
-    - name: "gemini-2.5-flash"
-      alias: "gemini-2.5-flash"
-      fork: true
-    - name: "gemini-2.5-flash-lite"
-      alias: "gemini-2.5-flash-lite"
-      fork: true
-    - name: "gemini-2.5-flash-lite"
-      alias: "haiku"
-      fork: true
-    # ── Claude (via Antigravity, direct OAuth broken) ──
-    - name: "claude-sonnet-4-6"
-      alias: "claude-sonnet-4-6"
-      fork: true
-    - name: "claude-opus-4-6"
-      alias: "claude-opus-4-6"
-      fork: true
-    - name: "claude-haiku-4-5-20251001"
-      alias: "claude-haiku-4-5-20251001"
-      fork: true
+# Claude: native OAuth (--claude-login).
 
 # ── Free fallback providers (emergency-only) ──────────────────────────
 # Activated via dedicated fallback-* aliases when paid providers are down.
