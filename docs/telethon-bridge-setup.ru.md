@@ -29,18 +29,45 @@ Telegram (MTProto)
 
 - Запущенный ProxyPilot (порт 8317)
 - Настроенный gopass с GPG/Yubikey
-- API-ключи Telegram с [my.telegram.org](https://my.telegram.org) (api_id + api_hash)
+- API-ключи Telegram (см. следующий раздел)
+
+## Получение API-ключей Telegram
+
+Telethon использует MTProto (не Bot API), для чего нужны ключи приложения
+от Telegram:
+
+1. Зайти на [my.telegram.org](https://my.telegram.org)
+2. Авторизоваться по номеру телефона (код придёт в Telegram)
+3. Перейти в **API development tools**
+4. Создать новое приложение (название и short name -- любые)
+5. Записать **App api_id** (числовой, например `12345678`) и
+   **App api_hash** (hex-строка из 32 символов)
+
+Эти ключи привязаны к аккаунту Telegram, а не к боту. Они не истекают
+и могут использоваться для нескольких сессий/устройств.
+
+**Частые проблемы с my.telegram.org:**
+- Регистрация может выдавать ошибку -- повторите через 15-30 минут
+- Заходите без VPN/прокси -- сайт чувствителен к этому
+- Попробуйте другой браузер или приватный/инкогнито режим
+- Если приложение уже создавалось ранее -- используйте те же ключи
 
 ## Шаги установки
 
 ### 1. Создание секретов в gopass
 
+После получения ключей с my.telegram.org:
+
 ```bash
-gopass insert api/telegram-telethon-id    # Числовой API ID
-gopass insert api/telegram-telethon-hash  # API hash (hex-строка)
+gopass insert api/telegram-telethon-id    # Вставить числовой API ID
+gopass insert api/telegram-telethon-hash  # Вставить hex API hash
 ```
 
 `api/proxypilot-local` уже используется другими инструментами -- ничего делать не нужно.
+
+**Примечание:** Salt можно развернуть без этих секретов (конфиг будет с пустыми
+значениями). Сервис просто не запустится, пока ключи не будут добавлены
+и сессия не будет инициализирована.
 
 ### 2. Развертывание через Salt
 

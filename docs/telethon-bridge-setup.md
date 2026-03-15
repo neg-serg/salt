@@ -29,18 +29,45 @@ Telegram (MTProto)
 
 - ProxyPilot running on port 8317
 - gopass configured with GPG/Yubikey
-- Telegram API credentials from [my.telegram.org](https://my.telegram.org) (`api_id` + `api_hash`)
+- Telegram API credentials (see next section)
+
+## Obtaining Telegram API Credentials
+
+Telethon uses MTProto (not Bot API), which requires application credentials
+from Telegram:
+
+1. Go to [my.telegram.org](https://my.telegram.org)
+2. Log in with your phone number (a code is sent via Telegram)
+3. Navigate to **API development tools**
+4. Create a new application (fill in any title and short name)
+5. Note your **App api_id** (numeric, e.g. `12345678`) and
+   **App api_hash** (32-char hex string)
+
+These credentials are tied to your Telegram account, not to a bot. They do
+not expire and can be reused across multiple sessions/devices.
+
+**Common issues with my.telegram.org:**
+- Registration may fail with a generic error -- retry after 15-30 minutes
+- Use your real IP (no VPN/proxy) -- the site is sensitive to this
+- Try a different browser or private/incognito mode
+- If you already have an existing application, reuse those credentials
 
 ## Setup Steps
 
 ### 1. Create Gopass Secrets
 
+Once you have the credentials from my.telegram.org:
+
 ```bash
-gopass insert api/telegram-telethon-id    # Numeric API ID
-gopass insert api/telegram-telethon-hash  # Hex API hash
+gopass insert api/telegram-telethon-id    # Paste the numeric API ID
+gopass insert api/telegram-telethon-hash  # Paste the hex API hash
 ```
 
 `api/proxypilot-local` is already used by other tools -- no action needed.
+
+**Note:** Salt can be deployed without these secrets (the config will have
+empty values). The service simply won't start until credentials are provided
+and the session is initialized.
 
 ### 2. Deploy via Salt
 
