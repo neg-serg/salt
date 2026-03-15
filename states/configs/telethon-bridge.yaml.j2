@@ -1,0 +1,78 @@
+# Telethon Bridge — standalone AI agent via MTProto + ProxyPilot
+# Deployed by Salt, secrets injected at apply time
+
+telegram:
+  api_id: {{ api_id }}
+  api_hash: {{ api_hash | tojson }}
+  session_path: "{{ home }}/.telethon-bridge/telethon.session"
+
+ai:
+  base_url: "http://127.0.0.1:8317/v1"
+  api_key: {{ proxy_key | tojson }}
+  default_model: "claude-sonnet-4-6"
+  fallback_model: "claude-opus-4-6"
+  max_tokens: 16384
+  timeout: 120
+
+profiles:
+  owner:
+    system_prompt: |
+      You are a helpful AI assistant communicating via Telegram.
+      You can use Markdown formatting in your responses.
+      Be concise but thorough. Respond in the language the user writes in.
+    model: "claude-sonnet-4-6"
+    context_window:
+      max_messages: 100
+      max_tokens: 150000
+  guest:
+    system_prompt: |
+      You are a helpful but concise AI assistant.
+      Keep responses brief. Respond in the language the user writes in.
+    model: "claude-sonnet-4-6"
+    context_window:
+      max_messages: 30
+      max_tokens: 50000
+
+allowlist:
+  - user_id: {{ telegram_uid }}
+    profile: "owner"
+  - user_id: {{ telegram_uid_levra }}
+    profile: "guest"
+    name: "Levra"
+  - user_id: {{ telegram_uid_guest2 }}
+    profile: "guest"
+    name: "Guest2"
+
+groups:
+  allowed: []
+  trigger: "mention_or_reply"
+  # Trigger modes: mention_or_reply | command_prefix | reply_only
+
+channels:
+  watch: []
+  # Example:
+  # - id: -1001234567890
+  #   name: "Tech News"
+  #   action: "summarize"
+  #   output: "owner_dm"
+  #   batch_interval: 600
+  #   filter_keywords: []
+
+automation:
+  forward_rules: []
+  # Example:
+  # - source: -1001234567890
+  #   target: -1009876543210
+  #   filter_keywords: ["urgent", "breaking"]
+  reaction_rules: []
+  # Example:
+  # - channel: -1001234567890
+  #   keywords: ["thanks", "thank you"]
+  #   reaction: "\U0001f44d"
+
+service:
+  health_port: 8319
+  log_level: "info"
+  edited_messages: "ignore"
+  db_path: "{{ home }}/.telethon-bridge/conversations.db"
+  media_dir: "{{ home }}/.telethon-bridge/media"

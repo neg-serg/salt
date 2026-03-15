@@ -57,6 +57,7 @@ defaults:
     flatpak: true
     opencode: true
     openclaw: true
+    telethon_bridge: true
     video_ai: false
     music_analysis: false
     tidal: false

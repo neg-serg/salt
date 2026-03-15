@@ -20,6 +20,7 @@ amnezia_vpn: "2.1.2"
 
 # --- AI agents ---
 openclaw: "2026.3.2"
+telethon: "1.42.0"
 
 # --- Desktop apps ---
 
