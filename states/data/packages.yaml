@@ -376,12 +376,14 @@ aur:
   - cmake-language-server  # LSP for CMake
   - dcfldd  # forensic dd replacement with hashing
   - ddccontrol  # DDC monitor parameter control
+  - dool  # versatile resource statistics tool (dstat replacement)
   - dualsensectl  # PS5 DualSense controller tool
   - epr-git  # CLI EPUB reader
   - freeze-bin  # generate images of code/terminal output
   - gitbutler-bin  # visual Git client (Tauri/Rust/Svelte)
   - git-extras  # extra git utilities (summary, effort, etc)
   - gram-editor-git  # minimal code editor
+  - hishtory-bin  # synced, queryable shell history
   - hw-probe  # hardware probe and operability check
   - hy3  # i3-like tiling plugin for Hyprland
   - iosevka-neg-fonts  # custom Iosevka Nerd Fonts (neg-serg)
