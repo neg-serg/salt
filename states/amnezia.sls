@@ -50,13 +50,15 @@ amneziawg_tools_bin:
     - require:
       - cmd: amnezia_build
 
-# Symlinks for sudo access
+# Symlinks for sudo access (root owns /usr/local/bin/)
 {% for bin_name, bin_state in [('amneziawg-go', 'amneziawg_go_bin'), ('awg', 'amneziawg_tools_bin')] %}
 {{ bin_name | replace('-', '_') }}_symlink:
   file.symlink:
     - name: /usr/local/bin/{{ bin_name }}
     - target: {{ home }}/.local/bin/{{ bin_name }}
     - force: True
+    - user: root
+    - group: root
     - require:
       - file: {{ bin_state }}
 {% endfor %}

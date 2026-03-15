@@ -69,7 +69,7 @@ pcscd_socket_enabled:
 # Disable tuned: its throughput-performance profile conflicts with custom
 # I/O tuning (sets read_ahead_kb=8192 on NVMe, may override sysctl values).
 # All tuning is managed manually via sysctl.sls, kernel_params_limine.sls, hardware.sls.
-{{ service_stopped('tuned_stopped', 'tuned') }}
+{{ service_stopped('tuned_stopped', 'tuned', onlyif='systemctl list-unit-files tuned.service 2>/dev/null | rg -q tuned') }}
 
 # --- Hyprland ecosystem packages ---
 {{ pacman_install('hyprland_desktop', desktop.hyprland_packages | join(' ')) }}

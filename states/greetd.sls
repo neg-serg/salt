@@ -7,8 +7,6 @@
 {{ pacman_install('cage', 'cage') }}
 {{ pacman_install('wlr_randr', 'wlr-randr') }}
 
-{{ service_stopped('sddm_stopped', 'sddm') }}
-
 {{ ensure_dir('greetd_config_dir', '/etc/greetd', mode='0755', user='root') }}
 
 greetd_main_config:
