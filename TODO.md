@@ -56,3 +56,13 @@ Without this, `npm list -g` and `npm outdated -g` fail (Salt install works aroun
 
 `nyxt-bin` — binary packaging for the Nyxt browser. Needs investigation:
 current AUR package may be sufficient, or may need custom PKGBUILD.
+
+
+## SaluteSpeech — STT/TTS evaluation
+
+Evaluate [SaluteSpeech](https://developers.sber.ru/docs/ru/salutespeech/overview) (Sber) for Russian-language speech recognition (STT) and synthesis (TTS).
+
+- Freemium: ~1000 min/mo STT free tier
+- Compare with local alternatives: `faster-whisper` (large-v3), Vosk
+- Decision: cloud API (SaluteSpeech) vs self-hosted (Whisper on GPU)
+- If adopted: Salt state for setup, API key in gopass, systemd service

@@ -40,3 +40,13 @@ systemctl --user enable --now ydotool.service
 
 `nyxt-bin` — бинарная упаковка браузера Nyxt. Требуется исследование:
 текущий AUR-пакет может быть достаточным, или может потребоваться собственный PKGBUILD.
+
+
+## SaluteSpeech — оценка STT/TTS
+
+Оценить [SaluteSpeech](https://developers.sber.ru/docs/ru/salutespeech/overview) (Сбер) для распознавания (STT) и синтеза (TTS) русской речи.
+
+- Freemium: ~1000 мин/мес STT бесплатно
+- Сравнить с локальными альтернативами: `faster-whisper` (large-v3), Vosk
+- Решение: облачный API (SaluteSpeech) vs self-hosted (Whisper на GPU)
+- При внедрении: Salt-стейт для установки, API-ключ в gopass, systemd-сервис
