@@ -1,6 +1,6 @@
 # Free AI provider fallback configuration for ProxyPilot.
 # Emergency-only: these providers activate via dedicated fallback-* aliases
-# when paid providers (Anthropic, Antigravity/Gemini) are unavailable.
+# when paid providers (Anthropic) are unavailable.
 #
 # Priority ordering (quality-tiered):
 #   1. Groq       — fastest inference (custom LPU), strong models, generous limits
