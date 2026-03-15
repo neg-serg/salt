@@ -25,7 +25,7 @@ Item {
     property string trackTitle: currentPlayer ? (currentPlayer.trackTitle  || "") : ""
     property string trackArtist: currentPlayer ? (currentPlayer.trackArtist || "") : ""
     property string trackAlbum: currentPlayer ? (currentPlayer.trackAlbum  || "") : ""
-    property string coverUrl: currentPlayer ? (currentPlayer.trackArtUrl || "") : ""
+    property string coverUrl: coverResolver.resolvedCoverUrl || ""
     property real trackLength:currentPlayer ? currentPlayer.length : 0  // raw from backend
     property bool canPlay:currentPlayer ? currentPlayer.canPlay : false
     property bool canPause:currentPlayer ? currentPlayer.canPause : false
@@ -34,6 +34,13 @@ Item {
     property bool canSeek:currentPlayer ? currentPlayer.canSeek : false
     property bool hasPlayer:players.hasPlayer
 
+    CoverResolver {
+        id: coverResolver
+        rawArtUrl: currentPlayer ? (currentPlayer.trackArtUrl || "") : ""
+        trackTitle: currentPlayer ? (currentPlayer.trackTitle || "") : ""
+        trackArtist: currentPlayer ? (currentPlayer.trackArtist || "") : ""
+        currentPlayer: players.currentPlayer
+    }
     MusicMeta { id: meta; currentPlayer: players.currentPlayer }
     property alias trackGenre: meta.trackGenre
     property alias trackLabel: meta.trackLabel
@@ -100,6 +107,12 @@ Item {
     function accentNeedsSample() {
         var url = coverUrl || "";
         if (url === manager._lastSampledUrl) return false;
+        // Invalidate stale cache entry when only the cache-buster changed (same base path)
+        var oldBase = String(manager._lastSampledUrl || "").replace(/\?t=\d+$/, "");
+        var newBase = String(url).replace(/\?t=\d+$/, "");
+        if (oldBase && oldBase === newBase && manager._accentCache) {
+            delete manager._accentCache[manager._lastSampledUrl];
+        }
         manager._lastSampledUrl = url;
         if (!url) {
             manager.accentColor = Theme.accentPrimary;
