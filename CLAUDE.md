@@ -358,6 +358,7 @@ Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full de
 - N/A (file-based Lua config) (028-neovim-startup-speed)
 - Python 3.12+ (system Python on CachyOS), Telethon (async MTProto client) + telethon (MTProto), httpx (ProxyPilot API calls), pyyaml (config), aiohttp (health endpoint) (029-openclaw-telethon)
 - SQLite (conversation history, stdlib `sqlite3`), YAML (config), binary session file (029-openclaw-telethon)
+- N/A — research deliverable, no code produced + Salt 3006.x (current), pyinfra v3.7 (comparison target) (030-pyinfra-migration-research)
 
 ## Recent Changes
 - 001-code-rag-integration: Added Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx)
