@@ -85,6 +85,7 @@ include:
   - code_rag
   - opencode
   - openclaw_agent
+  - telethon_bridge
   - image_generation
   - video_ai
   - steam

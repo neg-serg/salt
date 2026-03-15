@@ -67,6 +67,12 @@ user_services:
     health_cmd: "openclaw gateway health --json --timeout 5000"
     health_parse: ".ok and .channels.telegram.probe.ok"
     auto_restart: true
+  - name: telethon-bridge
+    severity: warning
+    health_cmd: "curl -sf http://127.0.0.1:8319/health"
+    health_parse: ".connected and .proxypilot_ok"
+    auto_restart: true
+    optional: true
   - name: mpd
     severity: info
     optional: true
