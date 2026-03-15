@@ -356,6 +356,8 @@ Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full de
 - File-based (Lua modules in `~/.config/nvim/`, plugins in `~/.local/share/nvim/lazy/`) (027-neovim-startup-speed)
 - Lua (Neovim 0.11+ embedded runtime) + lazy.nvim (plugin manager), neg.nvim (custom colorscheme), snacks.nvim (UI) (028-neovim-startup-speed)
 - N/A (file-based Lua config) (028-neovim-startup-speed)
+- Python 3.12+ (system Python on CachyOS), Telethon (async MTProto client) + telethon (MTProto), httpx (ProxyPilot API calls), pyyaml (config), aiohttp (health endpoint) (029-openclaw-telethon)
+- SQLite (conversation history, stdlib `sqlite3`), YAML (config), binary session file (029-openclaw-telethon)
 
 ## Recent Changes
 - 001-code-rag-integration: Added Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx)
