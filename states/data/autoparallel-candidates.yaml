@@ -1061,8 +1061,6 @@ not-applicable-tools:
     reason: "Hardware probing; I/O-bound"
   - name: hw-probe  # hardware probe — Perl
     reason: "Perl script; system probing"
-  - name: hy3  # Hyprland plugin — C++
-    reason: "Compositor plugin; event-driven, miscompilation risk"
   - name: hypridle  # idle daemon — C++
     reason: "Event-driven idle monitor"
   - name: hyprlock  # screen locker — C++
