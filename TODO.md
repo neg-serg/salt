@@ -28,24 +28,6 @@ Create a dedicated Salt state (`music_analysis.sls` or extend `installers.sls`) 
 3. Guards both with idempotency checks
 
 
-## ProxyPilot: Google Cloud TOS violation
-
-Google Cloud account (`serg.zorg@gmail.com`) is TOS-blocked on Cloud Code API.
-Gemini and Antigravity tokens authenticate but all API requests return 403 PERMISSION_DENIED.
-
-**Status (v0.3.0-dev-0.40)**:
-- `tui` flag panic: **fixed** in v0.3.0-dev-0.40
-- `--claude-login`: **works** — native Claude OAuth via Anthropic (not Google)
-- `--antigravity-login` / `--login` (Gemini): authenticate successfully but API calls fail (TOS block)
-- Appeal form: https://forms.gle/hGzM9MEUv2azZsrb9
-
-**Current routing**: Claude models use native OAuth token. Gemini/Antigravity routes are dead until TOS appeal is resolved.
-
-- Binary: `~/.local/bin/proxypilot` v0.3.0-dev-0.40
-- Config: `~/.config/proxypilot/config.yaml`
-- Repo: https://github.com/Finesssee/ProxyPilot
-
-
 ## ydotool service not enabled
 
 `ydotool.service` (systemd user unit) is installed but **disabled and inactive**.

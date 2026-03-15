@@ -299,7 +299,7 @@ Local proxy for AI coding tools (Claude Code, OpenCode). Routes requests to prov
 | Config (Salt) | `states/configs/proxypilot.yaml.j2` (Jinja2 template with gopass fallback) |
 | Service | `states/units/user/proxypilot.service` (systemd user, always enabled) |
 | Listen | `127.0.0.1:8317` |
-| Auth tokens | `~/.cli-proxy-api/` (OAuth tokens for Gemini, Antigravity) |
+| Auth tokens | `~/.cli-proxy-api/` (OAuth tokens for Claude) |
 | Version | Pinned in `states/data/versions.yaml` |
 
 **How AI tools connect:**

@@ -19,13 +19,13 @@ claude (direct)                  claude-proxy (wrapper)
 │ API       │                 │  127.0.0.1:8317     │
 └───────────┘                 └──────────┬──────────┘
                                          │
-                              ┌──────────┴──────────┐
-                              ▼                     ▼
-                        ┌──────────┐         ┌───────────┐
-                        │ Claude   │         │ Gemini /  │
-                        │ OAuth    │         │ Antigrav. │
-                        └──────────┘         └───────────┘
-                        ~/.cli-proxy-api/    ~/.cli-proxy-api/
+                              │
+                              ▼
+                        ┌──────────┐
+                        │ Claude   │
+                        │ OAuth    │
+                        └──────────┘
+                        ~/.cli-proxy-api/
 ```
 
 ## Components
@@ -77,8 +77,6 @@ ProxyPilot authenticates to upstream providers via OAuth tokens stored in `~/.cl
 | Provider | Login command | Token file | Status |
 |----------|---------------|------------|--------|
 | Claude | `--claude-login` | `claude-<email>.json` | Working (v0.3.0-dev-0.40+) |
-| Gemini | `--login` | `gemini-<email>-all.json` | TOS-blocked (403) |
-| Antigravity | `--antigravity-login` | `antigravity-<email>.json` | TOS-blocked (403) |
 
 ### Claude OAuth
 
@@ -89,19 +87,6 @@ proxypilot -config ~/.config/proxypilot/config.yaml -claude-login
 ```
 
 Opens browser, completes OAuth, saves token. No manual steps needed.
-
-### Google Cloud TOS block
-
-The Google Cloud account is blocked for TOS violation on the Cloud Code API.
-Both Gemini and Antigravity tokens authenticate but all API requests return
-`403 PERMISSION_DENIED` with `TOS_VIOLATION` reason.
-
-This affects:
-- All Gemini model routing through ProxyPilot
-- All Antigravity model routing through ProxyPilot
-- The `opencode-antigravity-auth` plugin for OpenCode
-
-Appeal form: https://forms.gle/hGzM9MEUv2azZsrb9
 
 ## Config Structure
 
@@ -117,12 +102,6 @@ api-keys:
 
 # Model aliases — maps client model names to providers
 # alias = what the client sends, name = upstream model ID
-oauth-model-alias:
-  antigravity:
-    - name: "gemini-2.5-pro"        # Gemini models
-      alias: "gemini-2.5-pro"
-    - name: "claude-sonnet-4-6"     # Claude via Antigravity (backup route)
-      alias: "claude-sonnet-4-6"
 ```
 
 Two template sources must stay in sync:
@@ -171,12 +150,6 @@ systemctl --user stop proxypilot
 
 # Claude (Anthropic OAuth)
 proxypilot -config ~/.config/proxypilot/config.yaml -claude-login
-
-# Gemini (Google OAuth) — currently TOS-blocked
-proxypilot -config ~/.config/proxypilot/config.yaml -login
-
-# Antigravity — currently TOS-blocked
-proxypilot -config ~/.config/proxypilot/config.yaml -antigravity-login
 
 systemctl --user start proxypilot
 ```

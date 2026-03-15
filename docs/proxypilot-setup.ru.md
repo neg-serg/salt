@@ -19,13 +19,13 @@ claude (прямой)                  claude-proxy (обёртка)
 │ API       │                 │  127.0.0.1:8317     │
 └───────────┘                 └──────────┬──────────┘
                                          │
-                              ┌──────────┴──────────┐
-                              ▼                     ▼
-                        ┌──────────┐         ┌───────────┐
-                        │ Claude   │         │ Gemini /  │
-                        │ OAuth    │         │ Antigrav. │
-                        └──────────┘         └───────────┘
-                        ~/.cli-proxy-api/    ~/.cli-proxy-api/
+                              │
+                              ▼
+                        ┌──────────┐
+                        │ Claude   │
+                        │ OAuth    │
+                        └──────────┘
+                        ~/.cli-proxy-api/
 ```
 
 ## Компоненты
@@ -77,8 +77,6 @@ ProxyPilot аутентифицируется у провайдеров чере
 | Провайдер | Команда входа | Файл токена | Статус |
 |-----------|---------------|-------------|--------|
 | Claude | `--claude-login` | `claude-<email>.json` | Работает (v0.3.0-dev-0.40+) |
-| Gemini | `--login` | `gemini-<email>-all.json` | Заблокирован ToS (403) |
-| Antigravity | `--antigravity-login` | `antigravity-<email>.json` | Заблокирован ToS (403) |
 
 ### Claude OAuth
 
@@ -89,19 +87,6 @@ proxypilot -config ~/.config/proxypilot/config.yaml -claude-login
 ```
 
 Открывает браузер, завершает OAuth, сохраняет токен. Ручных действий не требуется.
-
-### Блокировка Google Cloud ToS
-
-Аккаунт Google Cloud заблокирован за нарушение ToS API Cloud Code.
-Токены Gemini и Antigravity аутентифицируются, но все API-запросы возвращают
-`403 PERMISSION_DENIED` с причиной `TOS_VIOLATION`.
-
-Затронуты:
-- Маршрутизация всех моделей Gemini через ProxyPilot
-- Маршрутизация всех моделей Antigravity через ProxyPilot
-- Плагин `opencode-antigravity-auth` для OpenCode
-
-Форма апелляции: https://forms.gle/hGzM9MEUv2azZsrb9
 
 ## Структура конфига
 
@@ -117,12 +102,6 @@ api-keys:
 
 # Алиасы моделей -- маппинг клиентских имён на провайдеров
 # alias = что шлёт клиент, name = ID модели у провайдера
-oauth-model-alias:
-  antigravity:
-    - name: "gemini-2.5-pro"        # Модели Gemini
-      alias: "gemini-2.5-pro"
-    - name: "claude-sonnet-4-6"     # Claude через Antigravity (запасной маршрут)
-      alias: "claude-sonnet-4-6"
 ```
 
 Два шаблона должны быть синхронизированы:
@@ -171,12 +150,6 @@ systemctl --user stop proxypilot
 
 # Claude (Anthropic OAuth)
 proxypilot -config ~/.config/proxypilot/config.yaml -claude-login
-
-# Gemini (Google OAuth) -- сейчас заблокирован ToS
-proxypilot -config ~/.config/proxypilot/config.yaml -login
-
-# Antigravity -- сейчас заблокирован ToS
-proxypilot -config ~/.config/proxypilot/config.yaml -antigravity-login
 
 systemctl --user start proxypilot
 ```
