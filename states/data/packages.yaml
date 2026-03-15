@@ -17,15 +17,21 @@ base:
   - linux-firmware  # firmware blobs for Linux
 
 desktop:
+  - broot  # tree-based file manager and navigator
   - dunst  # lightweight notification daemon
   - hypridle  # Hyprland idle daemon
   - hyprland  # dynamic tiling Wayland compositor
   - hyprlock  # GPU-accelerated screen locker for Hyprland
   - hyprpolkitagent  # polkit agent for Hyprland (QML)
+  - eza  # modern ls replacement (Rust)
+  - matugen  # Material You color generation from images
+  - rmpc  # Rusty MPD Player Client (TUI)
   - rofi  # app launcher and dmenu replacement
   - loupe  # GNOME image viewer
   - nyxt  # keyboard-driven extensible web browser
   - swayimg  # lightweight Wayland image viewer
+  - television  # general purpose terminal fuzzy finder (tv)
+  - yazi  # blazing fast terminal file manager (Rust)
   - swayosd  # on-screen display for volume/caps/brightness
   - wl-clip-persist  # keep Wayland clipboard after app close
   - xdg-desktop-portal-gtk  # xdg-desktop-portal GTK backend
@@ -42,6 +48,7 @@ dev:
   - npm  # JavaScript package manager
   - python-pipx  # install Python apps in isolated envs
   - rust  # systems programming language
+  - uv  # ultra-fast Python package manager (Rust)
   - vim  # classic text editor
 
 network:
@@ -407,3 +414,4 @@ aur:
   - vicinae  # native desktop launcher (fast, extensible)
   - vimiv-qt  # image viewer with vim keybindings
   - vmtouch  # filesystem cache diagnostics and control
+  - xdg-ninja  # check for XDG Base Directory compliance
