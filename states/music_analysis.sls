@@ -4,7 +4,6 @@
 {% import_yaml 'data/versions.yaml' as ver %}
 {% import_yaml 'data/installers.yaml' as tools %}
 
-{% if host.features.get('music_analysis') %}
 # Python dependencies for Annoy-based analysis scripts
 {{ pacman_install('music_analysis_pydeps', 'python-orjson python-numpy') }}
 {{ paru_install('python_annoy', 'python-annoy') }}
@@ -16,5 +15,4 @@
 {% set _ver = ver.get('essentia', '') %}
 {% set resolved_url = essentia.url | replace('${VER}', _ver) %}
 {{ curl_extract_tar('essentia', resolved_url, binary_pattern=essentia.binary_pattern, bin=essentia.get('bin'), hash=essentia.get('hash'), version=_ver if _ver else None) }}
-{% endif %}
 {% endif %}

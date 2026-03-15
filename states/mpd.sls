@@ -3,7 +3,6 @@
 {% from '_macros_service.jinja' import user_service_file, user_service_enable %}
 # MPD Native Deployment
 # Salt state for setting up MPD with systemd user service and pipewire output
-{% if host.features.mpd %}
 include:
   - bind_mounts
 
@@ -88,5 +87,4 @@ mpdas_config:
 
 {% if companion_units %}
 {{ user_service_enable('mpd_companion_services', start_now=companion_units, check='active', requires=companion_reqs) }}
-{% endif %}
 {% endif %}

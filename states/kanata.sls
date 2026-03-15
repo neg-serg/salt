@@ -2,7 +2,6 @@
 {% from '_macros_pkg.jinja' import paru_install %}
 {% from '_macros_service.jinja' import udev_rule, ensure_dir, user_service_with_unit %}
 # Kanata: software keyboard remapper (uinput-based)
-{% if host.features.kanata %}
 # --- Install kanata from AUR ---
 {{ paru_install('kanata', 'kanata-bin') }}
 
@@ -57,4 +56,3 @@ kanata_config:
 
 # --- Systemd user service ---
 {{ user_service_with_unit('kanata', 'kanata.service', requires=['cmd: install_kanata', 'file: kanata_config', 'cmd: kanata_user_groups', 'kmod: kanata_load_uinput']) }}
-{% endif %}

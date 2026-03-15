@@ -13,6 +13,8 @@
 {% set vdirsyncer_timers = ['vdirsyncer.timer'] %}
 # --- Systemd user services for media ---
 # Drop-in override for mpDris2.service: adds MPD ordering
+# Gated on mpd feature — mpd.sls is conditionally included
+{% if host.features.mpd %}
 {% set mpdris2_override %}
 [Unit]
 After=mpd.service
@@ -23,6 +25,7 @@ Restart=always
 RestartSec=3
 {% endset %}
 {{ user_unit_override('mpdris2_user_service', 'mpDris2.service', contents=mpdris2_override) }}
+{% endif %}
 
 chezmoi_source_symlink:
   file.symlink:

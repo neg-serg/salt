@@ -5,7 +5,6 @@
 {% set mon = host.features.monitoring %}
 
 # --- Loki: log aggregation ---
-{% if mon.loki %}
 {{ pacman_install('loki', 'loki') }}
 {{ system_daemon_user('loki', '/var/lib/loki') }}
 
@@ -40,7 +39,6 @@ loki_config:
 {{ service_with_unit('loki', 'salt://units/loki.service', running=True, watch=['file: loki_config'], requires=['cmd: install_loki', 'file: loki_config', 'file: loki_subdirs']) }}
 
 {{ service_with_healthcheck('loki_start', 'loki', 'curl -sf http://127.0.0.1:' ~ service_ports.loki.port ~ service_ports.loki.healthcheck ~ ' >/dev/null 2>&1', requires=['service: loki_enabled']) }}
-{% endif %}
 
 # --- Promtail: log shipper to Loki ---
 # Note: promtail pushes to Loki — enabling promtail without loki results in

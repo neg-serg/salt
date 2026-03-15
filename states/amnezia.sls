@@ -4,8 +4,6 @@
 {% set cache = host.mnt_one ~ '/pkg/cache/amnezia' %}
 # Salt state for Amnezia build and deploy (Local User version)
 # All 3 components build in parallel for faster deployment
-{% if host.features.amnezia %}
-
 {{ ensure_dir('amnezia_bin_dir', home ~ '/.local/bin') }}
 
 {{ ensure_dir('amnezia_cache_dir', cache, require=['mount: mount_one']) }}
@@ -104,4 +102,3 @@ amnezia_desktop_entry:
     - group: {{ user }}
     - require:
       - file: amnezia_apps_dir
-{% endif %}

@@ -2,7 +2,6 @@
 {% from '_macros_service.jinja' import ensure_dir %}
 {% from '_macros_install.jinja' import firefox_extension, git_clone_deploy %}
 # Floorp browser: user.js + userChrome.css + userContent.css + extensions
-{% if host.features.floorp and host.floorp_profile %}
 {% import_yaml 'data/floorp.yaml' as floorp %}
 {% set floorp_profile = home ~ '/.floorp/' ~ host.floorp_profile %}
 {% for state_id, relpath, source in [
@@ -48,4 +47,3 @@ floorp_reset_extensions_json:
 {% for ext in floorp.extensions %}
       - cmd: floorp_ext_{{ ext.slug | replace('-', '_') }}
 {% endfor %}
-{% endif %}

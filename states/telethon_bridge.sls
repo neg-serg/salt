@@ -2,8 +2,6 @@
 {% from '_macros_pkg.jinja' import paru_install %}
 {% from '_macros_service.jinja' import ensure_dir, user_service_file, user_service_enable %}
 {% import_yaml 'data/versions.yaml' as ver %}
-{% if host.features.get('telethon_bridge', false) %}
-
 # ── Secret resolution (gopass primary, credentials-file fallback) ─────
 {% set _proxypilot_cfg = home ~ '/.config/proxypilot/config.yaml' %}
 {% set _proxy_key = gopass_secret('api/proxypilot-local', "awk '/^api-keys:/{getline; sub(/^[[:space:]]*-[[:space:]]*\"?/, \"\"); sub(/\"?[[:space:]]*$/, \"\"); print; exit}' " ~ _proxypilot_cfg ~ " 2>/dev/null || true") %}
@@ -74,5 +72,3 @@ telethon_bridge_lingering:
 {{ user_service_file('telethon_bridge_service', 'telethon-bridge.service') }}
 
 {{ user_service_enable('telethon_bridge_enabled', start_now=['telethon-bridge.service'], requires=['cmd: install_python_telethon', 'file: telethon_bridge_config', 'file: telethon_bridge_script', 'file: telethon_bridge_service']) }}
-
-{% endif %}
