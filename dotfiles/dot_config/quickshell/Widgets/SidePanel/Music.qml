@@ -9,7 +9,6 @@ import qs.Services
 import "../../Helpers/Color.js" as Color
 import "../../Helpers/Format.js" as Format
 import "../../Helpers/RichText.js" as Rich
-import "../../Helpers/AccentSampler.js" as AccentSampler
 import "." as MusicWidgets
 
 Rectangle {
@@ -254,24 +253,6 @@ Rectangle {
                             cache: false
                             source: (MusicManager.coverUrl || "")
                             visible: source && source.toString() !== ""
-                            onStatusChanged: {
-                                if (status === Image.Ready) {
-                                    // Reuse cached accent (if any) to avoid flicker while sampling new cover
-                                    try {
-                                        const url = MusicManager.coverUrl || "";
-                                        if (detailsCol._accentCache && detailsCol._accentCache[url]) {
-                                            detailsCol.musicAccent = detailsCol._accentCache[url];
-                                            detailsCol.musicAccentReady = true;
-                                        } else {
-                                            detailsCol.musicAccentReady = false;
-                                        }
-                                    } catch (e) { console.warn("[Music.albumArt]", e) }
-                                    detailsCol._accentRetryCount = 0;
-                                    accentSampler.requestPaint();
-                                    musicAccentRetry.restart();
-                                }
-                            }
-
                             // Apply rounded-rect mask (corner radius)
                             layer.enabled: true
                             layer.effect: MultiEffect {
@@ -279,45 +260,6 @@ Rectangle {
                                 maskSource: mask
                             }
                         }
-                        // Accent sampler (dominant color); gates icon coloring until ready
-                        Canvas { id: accentSampler; width: Theme.mediaAccentSamplerPx; height: Theme.mediaAccentSamplerPx; visible: false; onPaint: {
-                            try {
-                                var ctx = getContext('2d');
-                                ctx.clearRect(0, 0, width, height);
-                                var url = MusicManager.coverUrl || "";
-                                if (!albumArt.visible) {
-                                    if (detailsCol._accentCache && detailsCol._accentCache[url]) {
-                                        detailsCol.musicAccent = detailsCol._accentCache[url];
-                                        detailsCol.musicAccentReady = true;
-                                    }
-                                    return;
-                                }
-                                ctx.drawImage(albumArt, 0, 0, width, height);
-                                var img = ctx.getImageData(0, 0, width, height);
-                                var rgb = AccentSampler.sampleAccent(img, {
-                                    satMin: Theme.mediaAccentSatMin,
-                                    lumMin: Theme.mediaAccentLumMin,
-                                    lumMax: Theme.mediaAccentLumMax,
-                                    satRelax: Theme.mediaAccentSatRelax,
-                                    lumRelaxMin: Theme.mediaAccentLumRelaxMin,
-                                    lumRelaxMax: Theme.mediaAccentLumRelaxMax
-                                });
-                                if (rgb) {
-                                    var col = Qt.rgba(rgb.r/255.0, rgb.g/255.0, rgb.b/255.0, 1);
-                                    detailsCol.musicAccent = col;
-                                    detailsCol.musicAccentReady = true;
-                                    if (detailsCol._accentCache) detailsCol._accentCache[url] = col;
-                                } else {
-                                    if (detailsCol._accentCache && detailsCol._accentCache[url]) {
-                                        detailsCol.musicAccent = detailsCol._accentCache[url];
-                                        detailsCol.musicAccentReady = true;
-                                    } else {
-                                        detailsCol.musicAccent = Theme.accentPrimary;
-                                        detailsCol.musicAccentReady = false;
-                                    }
-                                }
-                            } catch (e) { console.warn("[Music.accentSampler]", e) }
-                            } }
 
                         Item {
                             id: mask
@@ -368,14 +310,10 @@ Rectangle {
                             anchors.bottomMargin: Theme.uiMarginNone
                             spacing: Math.round(Theme.sidePanelSpacingSmall * Theme.scale(screen))
                             // layout follows tokens; no special table-like props
-                            property color musicAccent: Theme.accentPrimary
+                            // Accent color — centralized in MusicManager
+                            property color musicAccent: MusicManager.accentColor
                             property string musicAccentCss: Format.colorCss(musicAccent, 1)
-                            property bool musicAccentReady: false
-                            // Cache accent per cover URL to avoid flicker on track changes
-                            property var _accentCache: ({})
-                            // Retry sampler a few times until cover is fully ready
-                            property int _accentRetryCount: 0
-                            Timer { id: musicAccentRetry; interval: Theme.mediaAccentRetryMs; repeat: false; onTriggered: { accentSampler.requestPaint(); if (!detailsCol.musicAccentReady && detailsCol._accentRetryCount < Theme.mediaAccentRetryMax) { detailsCol._accentRetryCount++; start(); } else { detailsCol._accentRetryCount = 0 } } }
+                            property bool musicAccentReady: MusicManager.accentReady
                             
 
                     
