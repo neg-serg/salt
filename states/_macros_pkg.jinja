@@ -96,6 +96,7 @@ install_{{ name | replace('-', '_') }}:
 #}
 {%- macro pkgbuild_install(name, source, user=_user, build_base='/tmp/pkgbuild', timeout=600, check=None, replace_check=None, conflicts=None, extra_sources=None) -%}
 {%- set safe = name | replace('-', '_') -%}
+{%- set _pkg_guard = 'rg -qx "' ~ (check or name) ~ '" ' ~ host.pkg_list ~ (' && ' ~ replace_check if replace_check else '') -%}
 {{ safe }}_pkgbuild:
   file.recurse:
     - name: {{ build_base }}/{{ name }}
@@ -103,6 +104,7 @@ install_{{ name | replace('-', '_') }}:
     - makedirs: True
     - user: {{ user }}
     - group: {{ user }}
+    - unless: {{ _pkg_guard }}
 {%- for src in (extra_sources or []) %}
 
 {{ safe }}_source_{{ loop.index }}:
@@ -112,6 +114,7 @@ install_{{ name | replace('-', '_') }}:
     - makedirs: True
     - user: {{ user }}
     - group: {{ user }}
+    - unless: {{ _pkg_guard }}
 {%- endfor %}
 
 build_{{ safe }}:
@@ -133,7 +136,7 @@ build_{{ safe }}:
         rm -rf {{ build_base }}/{{ name }}{{ ' ' ~ (extra_sources | map(attribute='dest') | join(' ')) if extra_sources else '' }}
     - shell: /bin/bash
     - timeout: {{ timeout }}
-    - unless: rg -qx '{{ check or name }}' {{ host.pkg_list }}{{ ' && ' ~ replace_check if replace_check else '' }}
+    - unless: {{ _pkg_guard }}
     - retry:
         attempts: {{ _retry_attempts }}
         interval: {{ _retry_interval }}
