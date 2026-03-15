@@ -83,10 +83,9 @@
 {# Stop and disable a service (service.dead + enable: False), or just disable (service.disabled).
    stop: True (default) = stop + disable; False = disable only (leave running until reboot).
    Usage: {{ service_stopped('disable_tuned', 'tuned') }}
-          {{ service_stopped('disable_sddm', 'sddm') }}
           {{ service_stopped('samba_not_enabled', 'smb', stop=False, requires=['file: samba_config']) }}
 #}
-{%- macro service_stopped(name, svc, stop=True, requires=None) -%}
+{%- macro service_stopped(name, svc, stop=True, requires=None, onlyif=None) -%}
 {{ name }}:
 {%- if stop %}
   service.dead:
@@ -95,6 +94,9 @@
 {%- else %}
   service.disabled:
     - name: {{ svc }}
+{%- endif %}
+{%- if onlyif %}
+    - onlyif: {{ onlyif }}
 {%- endif %}
 {%- if requires %}
     - require:
@@ -298,7 +300,7 @@
         systemctl --user is-{{ check }} '{{ svc }}' >/dev/null 2>&1
 {%- endfor %}
 {%- for svc in now_list %}
-        systemctl --user is-active '{{ svc }}' >/dev/null 2>&1
+        systemctl --user is-enabled '{{ svc }}' >/dev/null 2>&1
 {%- endfor %}
 {%- endif %}
 {%- if onlyif %}
