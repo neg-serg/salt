@@ -1,8 +1,9 @@
 {% from '_imports.jinja' import host, user, home %}
-{% from '_macros_service.jinja' import ensure_dir, service_with_unit, service_stopped, service_with_healthcheck %}
+{% from '_macros_service.jinja' import ensure_dir, service_with_unit, service_stopped, service_with_healthcheck, system_daemon_user, unit_override %}
 {% from '_macros_pkg.jinja' import pacman_install, simple_service %}
 {% import_yaml 'data/services.yaml' as services %}
 {% set svc = host.features.services %}
+{% set mon = host.features.monitoring %}
 
 # ===================================================================
 # Simple services (data-driven: pacman install + service enable)
@@ -129,4 +130,47 @@ transmission_restart_after_settings_change:
     - require:
       - service: transmission_enabled
       - cmd: transmission_start
+{% endif %}
+
+# ===================================================================
+# Monitoring services (merged from monitoring.sls)
+# ===================================================================
+
+{% if mon.sysstat %}
+{{ simple_service('sysstat', 'sysstat') }}
+{% endif %}
+
+{% if mon.vnstat %}
+{{ simple_service('vnstat', 'vnstat') }}
+{% endif %}
+
+{% if mon.netdata %}
+{{ unit_override('netdata_override', 'netdata.service', 'salt://units/netdata-override.conf') }}
+{% endif %}
+
+# ===================================================================
+# Bitcoind: Bitcoin Core node (merged from services_bitcoind.sls)
+# ===================================================================
+
+{% if svc.bitcoind %}
+{{ pacman_install('bitcoind', 'bitcoin-daemon') }}
+
+# One-time cleanup: remove old manually-installed binaries
+bitcoind_legacy_cleanup:
+  file.absent:
+    - names:
+      - /usr/local/bin/bitcoind
+      - /usr/local/bin/bitcoin-cli
+    - onlyif: test -f /usr/local/bin/bitcoind
+
+{{ system_daemon_user('bitcoind', '/var/lib/bitcoind') }}
+
+# Don't enable at boot — manual start: systemctl start bitcoind
+{{ service_with_unit('bitcoind', 'salt://units/bitcoind.service', enabled=False) }}
+
+bitcoind_logrotate:
+  file.managed:
+    - name: /etc/logrotate.d/bitcoind
+    - mode: '0644'
+    - source: salt://configs/bitcoind-logrotate
 {% endif %}
