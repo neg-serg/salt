@@ -3,13 +3,6 @@
 -- └───────────────────────────────────────────────────────────────────────────────────┘
 return {
   'neovim/nvim-lspconfig',
-  dependencies = {
-    {
-      'SmiteshP/nvim-navbuddy',
-      dependencies = { 'SmiteshP/nvim-navic', 'MunifTanjim/nui.nvim' },
-      opts = { lsp = { auto_attach = true } },
-    },
-  },
   event = { "BufReadPre", "BufNewFile" },
   config = function()
     if not (vim.lsp and vim.lsp.config and vim.lsp.enable) then
@@ -46,9 +39,9 @@ return {
       })
     end
 
-    -- Blink interaction
+    -- Blink interaction: merge capabilities without forcing eager load
     local capabilities = vim.lsp.protocol.make_client_capabilities()
-    if pcall(require, 'blink.cmp') then
+    if package.loaded['blink.cmp'] then
       capabilities = require('blink.cmp').get_lsp_capabilities(capabilities)
     end
 
