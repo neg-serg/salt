@@ -359,6 +359,8 @@ Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full de
 - Python 3.12+ (system Python on CachyOS), Telethon (async MTProto client) + telethon (MTProto), httpx (ProxyPilot API calls), pyyaml (config), aiohttp (health endpoint) (029-openclaw-telethon)
 - SQLite (conversation history, stdlib `sqlite3`), YAML (config), binary session file (029-openclaw-telethon)
 - N/A — research deliverable, no code produced + Salt 3006.x (current), pyinfra v3.7 (comparison target) (030-pyinfra-migration-research)
+- QML 6 (Qt 6), JavaScript (ES5 helpers) + Quickshell runtime, QtQuick, Quickshell.Services.Mpris (032-qs-album-color-cache)
+- In-memory JS object (no persistence) (032-qs-album-color-cache)
 
 ## Recent Changes
 - 001-code-rag-integration: Added Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx)

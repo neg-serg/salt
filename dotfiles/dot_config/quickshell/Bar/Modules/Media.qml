@@ -4,7 +4,6 @@ import "../../Helpers/Format.js" as Format
 import "../../Helpers/RichText.js" as Rich
 import "../../Helpers/Time.js" as Time
 import "../../Helpers/Color.js" as Color
-import "../../Helpers/AccentSampler.js" as AccentSampler
 import qs.Settings
 import qs.Services
 import qs.Components
@@ -75,52 +74,19 @@ Item {
                  || (MusicManager.trackTitle && MusicManager.trackTitle.length > 0))
 
     property int musicTextPx: Math.round(Theme.fontSizeSmall * capsuleScale)
-    // Accent derived from current cover art (dominant color)
-    property color mediaAccent: Theme.accentPrimary
+    // Accent derived from current cover art — centralized in MusicManager
+    property color mediaAccent: MusicManager.accentColor
     property string mediaAccentCss: Format.colorCss(mediaAccent, 1)
-    // Cache of computed accents keyed by cover URL to avoid flicker on track changes
-    property var _accentCache: ({})
-    // Use the same accent for minus and brackets (simplified)
     // Version bump to force RichText recompute on accent changes
     property int accentVersion: 0
-    // Accent readiness: hold accent color until palette is ready
-    property bool accentReady: false
+    property bool accentReady: MusicManager.accentReady
     readonly property bool mediaBorderless: Settings.settings.mediaIconBorderless !== false
     onMediaAccentChanged: { accentVersion++; }
-    Component.onCompleted: { _requestSample() }
-    onVisibleChanged: { if (visible) _requestSample() }
-    // Debounce multiple rapid requestPaint() triggers into one
-    Timer { id: sampleDebounce; interval: Theme.mediaArtDebounceMs; repeat: false; onTriggered: { colorSampler.requestPaint(); accentRetry.restart() } }
-    function _requestSample() { sampleDebounce.restart() }
-    function _tryRestoreCachedAccent() {
-        try {
-            const url = MusicManager.coverUrl || "";
-            if (mediaControl._accentCache && mediaControl._accentCache[url]) {
-                mediaControl.mediaAccent = mediaControl._accentCache[url];
-                mediaControl.accentReady = true;
-            }
-        } catch (e) { /* ignore */ }
-    }
-    // When cover/album changes, reuse cached accent (if any) to avoid UI flicker while sampling
-    Connections {
-        target: MusicManager
-        function onCoverUrlChanged() {
-            mediaControl._tryRestoreCachedAccent();
-            mediaControl._requestSample();
-        }
-        function onTrackAlbumChanged() {
-            mediaControl._tryRestoreCachedAccent();
-            mediaControl._requestSample();
-        }
-    }
-    // Retry sampler a few times while UI/cover settles
-    property int _accentRetryCount: 0
     // Active visualizer profile (if any). Settings are schema-validated, so no clamps here.
     property var _vizProfile: (Settings.settings.visualizerProfiles
                                && Settings.settings.visualizerProfiles[Settings.settings.activeVisualizerProfile])
                               ? Settings.settings.visualizerProfiles[Settings.settings.activeVisualizerProfile]
                               : null
-    Timer { id: accentRetry; interval: Theme.mediaAccentRetryMs; repeat: false; onTriggered: { colorSampler.requestPaint(); if (!mediaControl.accentReady && mediaControl._accentRetryCount < Theme.mediaAccentRetryMax) { mediaControl._accentRetryCount++; start() } else { mediaControl._accentRetryCount = 0 } } }
 
     function _resolveIconPx(settingVal, themeVal, fallback) {
         var s = Number(settingVal);
@@ -187,49 +153,6 @@ Item {
                                 source: (MusicManager.coverUrl || "")
                                 fillMode: Image.PreserveAspectCrop
                                 visible: status === Image.Ready
-                                onStatusChanged: {
-                                    if (status === Image.Ready) {
-                                        mediaControl._accentRetryCount = 0;
-                                        mediaControl._requestSample();
-                                    }
-                                }
-                                onSourceChanged: {
-                                    mediaControl._accentRetryCount = 0;
-                                    mediaControl._requestSample();
-                                }
-                            }
-
-                            Canvas {
-                                id: colorSampler
-                                width: Theme.mediaAccentSamplerPx
-                                height: Theme.mediaAccentSamplerPx
-                                visible: false
-                                onPaint: {
-                                    try {
-                                        var ctx = getContext('2d');
-                                        ctx.clearRect(0, 0, width, height);
-                                        var url = MusicManager.coverUrl || "";
-                                        if (!cover.visible) {
-                                            mediaControl._tryRestoreCachedAccent();
-                                            return;
-                                        }
-                                        ctx.drawImage(cover, 0, 0, width, height);
-                                        var img = ctx.getImageData(0, 0, width, height);
-                                        var rgb = AccentSampler.sampleAccent(img);
-                                        if (rgb) {
-                                            var col = Qt.rgba(rgb.r / 255.0, rgb.g / 255.0, rgb.b / 255.0, 1);
-                                            mediaControl.mediaAccent = col;
-                                            mediaControl.accentReady = true;
-                                            if (mediaControl._accentCache) mediaControl._accentCache[url] = col;
-                                        } else {
-                                            var cached = mediaControl._accentCache && mediaControl._accentCache[url];
-                                            var fallback = cached || Theme.accentPrimary;
-                                            mediaControl.mediaAccent = fallback;
-                                            mediaControl.accentReady = !!cached;
-                                            if (mediaControl._accentCache && !cached) mediaControl._accentCache[url] = fallback;
-                                        }
-                                    } catch (e) { /* ignore */ }
-                                }
                             }
 
                             MaterialIcon {
