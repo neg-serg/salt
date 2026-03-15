@@ -22,7 +22,7 @@ _cached_cliphist() {
        && (( EPOCHSECONDS - st[mtime] < 2 )); then
         < "$cache"
     else
-        cliphist list | tee "$cache"
+        cliphist list | tr -d '\0' | tee "$cache"
     fi
 }
 
