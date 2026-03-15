@@ -20,10 +20,16 @@
 # wheels inside the venv (video-ai-setup.sh). No explicit pacman_install needed.
 
 # ── ComfyUI installation (bootstrap script) ──────────────────────────
+video_ai_comfyui_chown:
+  cmd.run:
+    - name: chown -R {{ user }}:{{ user }} {{ comfyui_dir }}
+    - onlyif: test -d {{ comfyui_dir }} && test "$(stat -c %U {{ comfyui_dir }})" = "root"
+
 video_ai_comfyui_setup:
   cmd.script:
     - source: salt://scripts/video-ai-setup.sh
     - shell: /bin/bash
+    - runas: {{ user }}
     - timeout: 3600
     - creates: {{ comfyui_dir }}/venv/bin/python
     - env:
@@ -35,6 +41,7 @@ video_ai_comfyui_setup:
         interval: {{ retry_interval }}
     - require:
       - file: video_ai_base_dir
+      - cmd: video_ai_comfyui_chown
 
 # ── ComfyUI custom nodes ─────────────────────────────────────────────
 {% for node in video_ai.get('comfyui_nodes', []) %}
