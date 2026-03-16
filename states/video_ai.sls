@@ -67,6 +67,7 @@ video_ai_node_{{ node.dir | lower | replace('-', '_') }}:
 video_ai_download_{{ model.id | replace('-', '_') }}_{{ loop.index }}:
   cmd.run:
     - name: >-
+        mkdir -p "$(dirname '{{ models_dir }}/{{ model.id }}/{{ file }}')" &&
         curl -fsSL -C -
         -o {{ models_dir }}/{{ model.id }}/{{ file }}
         "https://huggingface.co/{{ model.repo }}/resolve/main/{{ file }}"
