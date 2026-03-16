@@ -8,9 +8,9 @@ ConditionPathExists=!/etc/fancontrol
 [Service]
 Type=oneshot
 ExecStart=/usr/local/bin/fancontrol-setup
-Environment=MIN_TEMP=35
+Environment=MIN_TEMP=42
 Environment=MAX_TEMP=75
-Environment=MIN_PWM=70
+Environment=MIN_PWM=55
 Environment=MAX_PWM=255
 Environment=HYST=3
 Environment=INTERVAL=2
