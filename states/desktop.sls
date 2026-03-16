@@ -87,9 +87,20 @@ swayimg_local_build:
 # --- Hyprland plugins via hyprpm ---
 # hyprpm needs HYPRLAND_INSTANCE_SIGNATURE (detect from socket dir) and
 # headers must match the running Hyprland version (hyprpm update rebuilds them).
-# hyprpm writes state to /var/cache/hyprpm/<user>/ via sudo — passwordless
-# /usr/bin/install is granted in sudoers-nopasswd.j2 (File operations section).
+# hyprpm writes state to /var/cache/hyprpm/<user>/; ensure user ownership so
+# hyprpm doesn't need sudo (which fails without a TTY in Salt context).
 {% set hypr_sig_cmd = 'ls /run/user/1000/hypr/ 2>/dev/null | head -1' %}
+{% set hyprpm_cache = '/var/cache/hyprpm/' ~ user %}
+
+hyprpm_cache_dir:
+  file.directory:
+    - name: {{ hyprpm_cache }}
+    - user: {{ user }}
+    - group: {{ user }}
+    - makedirs: True
+    - recurse:
+      - user
+      - group
 
 hyprpm_headers_update:
   cmd.run:
@@ -100,12 +111,14 @@ hyprpm_headers_update:
     - onlyif: ls /run/user/1000/hypr/ 2>/dev/null | rg -q .
     - unless: >-
         export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
-        hyprpm list 2>&1 | rg -q 'xtra-dispatchers'
+        hyprpm list 2>&1 | rg -q 'xtra-dispatchers' &&
+        hyprpm list 2>&1 | rg -q 'HyprGlass'
     - env:
       - HOME: {{ home }}
       - XDG_RUNTIME_DIR: /run/user/1000
     - require:
       - cmd: install_hyprland_desktop
+      - file: hyprpm_cache_dir
     - retry:
         attempts: {{ retry_attempts }}
         interval: {{ retry_interval }}
@@ -123,6 +136,29 @@ hyprpm_xtra_dispatchers:
     - unless: >-
         export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
         hyprpm list 2>&1 | rg -q 'xtra-dispatchers.*\[enabled\]'
+    - env:
+      - HOME: {{ home }}
+      - XDG_RUNTIME_DIR: /run/user/1000
+    - require:
+      - cmd: install_hyprland_desktop
+      - cmd: hyprpm_headers_update
+    - retry:
+        attempts: {{ retry_attempts }}
+        interval: {{ retry_interval }}
+    - timeout: 300
+
+hyprpm_hyprglass:
+  cmd.run:
+    - name: >-
+        export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
+        yes | hyprpm add https://github.com/hyprnux/hyprglass &&
+        export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
+        hyprpm enable HyprGlass
+    - runas: {{ user }}
+    - onlyif: ls /run/user/1000/hypr/ 2>/dev/null | rg -q .
+    - unless: >-
+        export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
+        hyprpm list 2>&1 | rg -q 'HyprGlass.*\[enabled\]'
     - env:
       - HOME: {{ home }}
       - XDG_RUNTIME_DIR: /run/user/1000
