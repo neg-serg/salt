@@ -12,10 +12,11 @@ WorkingDirectory={{ home }}
 Environment="HOME={{ home }}"
 Environment="OLLAMA_HOST=127.0.0.1:{{ ollama_port }}"
 Environment="OLLAMA_MODELS={{ mnt_one }}/ollama/models"
+Environment="OLLAMA_VULKAN=1"
 NoNewPrivileges=true
 ProtectSystem=strict
 PrivateTmp=yes
-PrivateDevices=yes
+# PrivateDevices=yes — disabled: Vulkan backend needs /dev/dri for GPU inference
 ReadWritePaths={{ mnt_one }}/ollama
 RestrictNamespaces=yes
 RestrictRealtime=yes
