@@ -42,6 +42,17 @@ systemctl --user enable --now ydotool.service
 текущий AUR-пакет может быть достаточным, или может потребоваться собственный PKGBUILD.
 
 
+## Домашний LLM-кластер — exo / llama.cpp RPC
+
+При сборке многонодового домашнего кластера оценить варианты распределённого LLM-инференса:
+
+- **[exo](https://github.com/exo-explore/exo)** (~42k звёзд) — P2P-кластер, auto-discovery через libp2p, автошардинг по разнородным устройствам. AMD ROCm поддерживается через tinygrad. Нет AUR-пакета (только pip). OpenAI-совместимый API — подключается к ProxyPilot. Лучше всего для: моделей >VRAM (класс 70B–235B).
+- **llama.cpp RPC backend** — уже установлен (`llama.cpp-vulkan`). Запуск `rpc-server` на удалённых нодах, подключение через `--rpc host:50052`. Без дополнительных зависимостей. Поддержка Vulkan. Лучше всего для: расширения текущего стека с минимальными накладными расходами.
+- **Ollama cluster mode** — в разработке upstream, может появиться до сборки кластера. Отслеживать прогресс.
+
+Решение: предпочтителен llama.cpp RPC (уже в стеке, AUR-пакет, Vulkan). Пересмотреть exo, когда созреет поддержка AMD ROCm и/или появится AUR-пакет.
+
+
 ## SaluteSpeech — оценка STT/TTS
 
 Оценить [SaluteSpeech](https://developers.sber.ru/docs/ru/salutespeech/overview) (Сбер) для распознавания (STT) и синтеза (TTS) русской речи.

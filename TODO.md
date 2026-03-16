@@ -58,6 +58,17 @@ Without this, `npm list -g` and `npm outdated -g` fail (Salt install works aroun
 current AUR package may be sufficient, or may need custom PKGBUILD.
 
 
+## Home LLM cluster — exo / llama.cpp RPC
+
+When building a multi-node home cluster, evaluate distributed LLM inference options:
+
+- **[exo](https://github.com/exo-explore/exo)** (~42k stars) — P2P cluster, auto-discovery via libp2p, auto-sharding across heterogeneous devices. AMD ROCm supported via tinygrad. No AUR package (pip-only). OpenAI-compatible API — plugs into ProxyPilot. Best for: models >VRAM (70B–235B class).
+- **llama.cpp RPC backend** — already installed (`llama.cpp-vulkan`). Run `rpc-server` on remote nodes, connect via `--rpc host:50052`. No extra dependencies. Vulkan support. Best for: extending existing stack with minimal overhead.
+- **Ollama cluster mode** — in development upstream, may land before cluster is built. Monitor progress.
+
+Decision: prefer llama.cpp RPC (already in stack, AUR package, Vulkan). Revisit exo when AMD ROCm support matures and/or AUR package appears.
+
+
 ## SaluteSpeech — STT/TTS evaluation
 
 Evaluate [SaluteSpeech](https://developers.sber.ru/docs/ru/salutespeech/overview) (Sber) for Russian-language speech recognition (STT) and synthesis (TTS).
