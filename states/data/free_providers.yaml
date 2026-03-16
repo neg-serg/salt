@@ -76,5 +76,5 @@ providers:
         alias: "fallback-large"
       - name: "qwen2.5-coder:7b"
         alias: "fallback-code"
-      - name: "qwen3:14b"
+      - name: "qwen3:8b-q8_0"
         alias: "fallback-medium"
