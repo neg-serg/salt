@@ -49,9 +49,6 @@ menu:
       - key: "t"
         desc: Torrents
         cmd: pypr toggle torrment
-      - key: "u"
-        desc: VPN
-        cmd: pypr toggle vpn
       - key: "m"
         desc: Mixer
         cmd: pypr toggle mixer
