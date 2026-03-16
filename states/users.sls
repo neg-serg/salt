@@ -1,5 +1,6 @@
 # User accounts, groups, and sudo configuration
 {% from '_imports.jinja' import host, user, home, sudo_timeout_minutes %}
+{% from '_macros_pkg.jinja' import paru_install %}
 {% set uid = host.uid %}
 
 user_root:
@@ -50,3 +51,33 @@ sudo_nopasswd:
     - group: root
     - mode: '0440'
     - check_cmd: /usr/sbin/visudo -c -f
+
+# SSH agent authentication for sudo (Yubikey-backed)
+{{ paru_install('pam_ssh_agent_auth', 'pam_ssh_agent_auth') }}
+
+sudo_pam_config:
+  file.managed:
+    - name: /etc/pam.d/sudo
+    - source: salt://configs/pam-sudo.j2
+    - user: root
+    - group: root
+    - mode: '0644'
+    - require:
+      - cmd: install_pam_ssh_agent_auth
+
+sudo_ssh_agent_env_keep:
+  file.managed:
+    - name: /etc/sudoers.d/ssh-agent-auth
+    - source: salt://configs/sudoers-ssh-agent-auth.j2
+    - user: root
+    - group: root
+    - mode: '0440'
+    - check_cmd: /usr/sbin/visudo -c -f
+
+sudo_ssh_agent_authorized_keys:
+  file.managed:
+    - name: /etc/ssh/sudo_authorized_keys
+    - source: salt://configs/sudo-authorized-keys.j2
+    - user: root
+    - group: root
+    - mode: '0644'
