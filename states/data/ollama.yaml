@@ -7,29 +7,41 @@
 #   - <model>:<tag>                — Ollama model specifier (e.g. "deepseek-r1:8b")
 #                                    pulled via POST /api/pull; guarded by /api/tags check
 #
+# ── Quantization tiers ────────────────────────────────────────────────
+#
+#   Q8_0     — ≤14B dense models (fits 24GB VRAM, near-lossless)
+#   Q6_K     — where available on Ollama (rare, e.g. qwen2.5-coder)
+#   Q5_K_M   — 70B models (RAM+VRAM offload, best available mid-tier)
+#   Q4_K_M   — 27-32B dense / MoE (default, Q8 too large for VRAM)
+#
 # ─────────────────────────────────────────────────────────────────────
 
 models:
   # ── General-purpose ──────────────────────────────────────────────
-  - gemma3:12b             # Google; vision+text, лучший <15B general (вытесняет codegemma)
-  - qwen3:14b              # Alibaba; thinking mode, strong reasoning
-  - qwen3.5:27b            # Alibaba; newest general, лучший <30B general-purpose
+  - qwen3.5:27b              # Alibaba; newest general, лучший <30B general-purpose ~17GB Q4
+  - gemma3:27b               # Google; multimodal 27B, 128K ctx, 140+ языков ~17GB Q4
+  - qwen3:32b                # Alibaba; dense 32B, top quality general ~20GB Q4
+  - llama3.3:70b-instruct-q5_K_M  # Meta; 128K ctx, лучше 3.1 на instruction following ~50GB Q5_K_M (RAM offload)
+  - qwen3:235b-a22b          # Alibaba; MoE 235B (22B active), минимальная цензура ~142GB Q4 (GPU+RAM offload)
   # ── Code-specialized ─────────────────────────────────────────────
-  - qwen2.5-coder:7b       # Alibaba; lightweight FIM/completion, быстрый inference ~4GB
-  - qwen3-coder:30b        # Alibaba; MoE 3.3B active, 256K ctx, agentic coding ~19GB
-  - deepcoder:14b           # Agentica; O3-mini уровень, fully open-source, 128K ctx ~9GB
-  - deepseek-coder-v2:16b  # DeepSeek; MoE, 160K ctx, GPT-4 class (вытесняет deepseek-coder v1) ~9GB
-  - codestral:22b           # Mistral; 32K ctx, мультиязычный code gen, иная база обучения ~13GB
-  - starcoder2:15b          # BigCode; 600+ языков, The Stack v2, лучший для редких языков ~9GB
-  # ── Vision-specialized ─────────────────────────────────────────
-  - qwen2.5vl:7b            # Alibaba; OCR+semantic, лучший <10B vision (charts, docs, screenshots) ~5GB
-  # ── Uncensored / large ────────────────────────────────────────────
-  - qwen3:235b-a22b         # Alibaba; MoE 235B (22B active), минимальная цензура ~142GB (GPU+RAM offload)
-  - qwen3:32b               # Alibaba; dense 32B, полностью в 24GB VRAM Q4 ~20GB
-  - llama3.1:70b            # Meta; 128K ctx, top-tier quality ~43GB (GPU+RAM offload)
-  - mistral-nemo             # Mistral+NVIDIA; 12B, 128K ctx, creative/uncensored ~7.5GB
-  - gemma3:27b              # Google; multimodal 27B, 128K ctx, 140+ языков ~17GB
-  # ── Не включены (строго вытеснены) ───────────────────────────────
-  # deepseek-coder:6.7b    → вытеснен deepseek-coder-v2:16b (та же семья, новее, лучше)
-  # codellama:7b           → вытеснен qwen2.5-coder:7b (проигрывает на всех бенчмарках)
-  # codegemma:7b           → вытеснен gemma3:12b (та же семья Google, старше)
+  - qwen2.5-coder:7b-instruct-q6_K  # Alibaba; lightweight FIM/completion, Q6_K ~6.3GB
+  - qwen3-coder:30b          # Alibaba; MoE 3.3B active, 256K ctx, agentic coding ~18GB Q4
+  - deepcoder:14b-q8_0       # Agentica; reasoning-focused code, 128K ctx ~16GB Q8_0
+  - devstral:24b              # Mistral; agentic coding, SWE-bench top tier ~19GB Q4
+  # ── Reasoning ────────────────────────────────────────────────────
+  - qwq:32b                   # Alibaba; dedicated reasoning/math, extended CoT ~20GB Q4
+  # ── Vision-specialized ───────────────────────────────────────────
+  - qwen2.5vl:7b-q8_0        # Alibaba; OCR+semantic, charts/docs/screenshots ~8GB Q8_0
+  # ── Fast ─────────────────────────────────────────────────────────
+  - qwen3:8b-q8_0             # Alibaba; fast general+thinking mode, hybrid CoT ~9GB Q8_0
+  # ── Вытеснены ────────────────────────────────────────────────────
+  # starcoder2:15b          → вытеснен qwen3-coder:30b (превосходит на всех бенчмарках)
+  # deepseek-coder-v2:16b   → вытеснен qwen3-coder:30b (та же ниша, слабее)
+  # codestral:22b           → заменён devstral:24b (тот же Mistral, новее, agentic)
+  # mistral-nemo            → заменён qwen3:8b-q8_0 (лучше качество при том же размере)
+  # qwen3:14b               → вытеснен qwen3.5:27b (та же семья, новее, сильнее)
+  # gemma3:12b              → вытеснен gemma3:27b (та же семья, multimodal, сильнее)
+  # llama3.1:70b            → заменён llama3.3:70b (тот же размер, лучше качество)
+  # deepseek-coder:6.7b     → вытеснен deepseek-coder-v2:16b (та же семья, новее)
+  # codellama:7b            → вытеснен qwen2.5-coder:7b (проигрывает на всех бенчмарках)
+  # codegemma:7b            → вытеснен gemma3:12b (та же семья Google, старше)
