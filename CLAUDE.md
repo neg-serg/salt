@@ -369,6 +369,8 @@ Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full de
 - N/A (in-memory QML properties, existing accent cache) (035-qs-fix-cover-art)
 - Jinja2/YAML (Salt states) + `pam_ssh_agent_auth` (AUR, v0.10.4-5), existing Salt macros (`_macros_pkg.jinja`) (036-sudo-ssh-keys)
 - N/A (config files on disk) (036-sudo-ssh-keys)
+- YAML (data file), Jinja2 (existing `ollama.sls` template) + Ollama, Salt (masterless) (037-optimal-q6k-models)
+- `/mnt/one/ollama/models` (model storage) (037-optimal-q6k-models)
 
 ## Recent Changes
 - 001-code-rag-integration: Added Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx)
