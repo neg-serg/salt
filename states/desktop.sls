@@ -1,5 +1,5 @@
 # Desktop environment: services, SSH, dconf themes
-{% from '_imports.jinja' import host, user, home %}
+{% from '_imports.jinja' import host, user, home, retry_attempts, retry_interval %}
 {% from '_macros_pkg.jinja' import pacman_install, paru_install %}
 {% from '_macros_service.jinja' import ensure_dir, service_stopped, service_with_unit %}
 {% import_yaml 'data/desktop.yaml' as desktop %}
@@ -83,6 +83,20 @@ swayimg_local_build:
     - group: {{ user }}
 
 # wl: installed via custom_pkgs (PKGBUILD → /usr/bin/)
+
+# --- Hyprland plugins via hyprpm ---
+hyprpm_xtra_dispatchers:
+  cmd.run:
+    - name: hyprpm add https://github.com/hyprwm/hyprland-plugins && hyprpm enable xtra-dispatchers
+    - runas: {{ user }}
+    - unless: hyprpm list | rg -q 'xtra-dispatchers.*\[enabled\]'
+    - env:
+      - HOME: {{ home }}
+    - require:
+      - cmd: install_hyprland_desktop
+    - retry:
+        attempts: {{ retry_attempts }}
+        interval: {{ retry_interval }}
 
 # --- SSH directory setup ---
 {{ ensure_dir('ssh_dir', home ~ '/.ssh', mode='0700') }}
