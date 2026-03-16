@@ -26,7 +26,7 @@ models:
   # ── Code-specialized ─────────────────────────────────────────────
   - qwen2.5-coder:7b-instruct-q6_K  # Alibaba; lightweight FIM/completion, Q6_K ~6.3GB
   - qwen3-coder:30b          # Alibaba; MoE 3.3B active, 256K ctx, agentic coding ~18GB Q4
-  - deepcoder:14b-q8_0       # Agentica; reasoning-focused code, 128K ctx ~16GB Q8_0
+  - deepcoder:14b             # Agentica; reasoning-focused code, 128K ctx ~9GB Q4_K_M
   - devstral:24b              # Mistral; agentic coding, SWE-bench top tier ~19GB Q4
   # ── Reasoning ────────────────────────────────────────────────────
   - qwq:32b                   # Alibaba; dedicated reasoning/math, extended CoT ~20GB Q4
