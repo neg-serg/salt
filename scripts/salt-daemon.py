@@ -57,7 +57,7 @@ salt_compat.patch()
 # ── Defaults ─────────────────────────────────────────────────────────────────
 _DEFAULT_SOCKET = "/run/salt-daemon.sock"
 _DEFAULT_CONFIG_DIR = os.path.join(_SCRIPT_DIR, ".salt_runtime")
-_DEFAULT_TIMEOUT = 600  # 10 minutes per state run
+_DEFAULT_TIMEOUT = 1800  # 30 minutes per state run (large model downloads)
 
 
 class StateTimeout(Exception):
@@ -302,6 +302,11 @@ class DaemonServer:
         state = request.get("state", "system_description")
         kwargs = request.get("kwargs", {})
         log_file = request.get("log_file", "")
+        req_timeout = request.get("timeout")
+        if isinstance(req_timeout, int) and 0 < req_timeout <= 14400:
+            effective_timeout = req_timeout
+        else:
+            effective_timeout = self.timeout
 
         # ── Validate state name ──────────────────────────────────────────
         if state not in _ALLOWED_STATES:
@@ -332,16 +337,16 @@ class DaemonServer:
             state,
             kwargs,
             log_file,
-            self.timeout,
+            effective_timeout,
         )
 
-        signal.alarm(self.timeout)
+        signal.alarm(effective_timeout)
         try:
             run_state(self.opts, self.minion, state, kwargs, log_file, conn)
         except StateTimeout:
-            log.error("State %r timed out after %ds", state, self.timeout)
+            log.error("State %r timed out after %ds", state, effective_timeout)
             try:
-                msg = f"error: state {state!r} timed out after {self.timeout}s"
+                msg = f"error: state {state!r} timed out after {effective_timeout}s"
                 conn.sendall((json.dumps({"type": "stdout", "line": msg}) + "\n").encode())
                 conn.sendall((json.dumps({"type": "exit", "code": 1}) + "\n").encode())
             except OSError:
