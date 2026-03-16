@@ -92,7 +92,6 @@ other:
   - abduco  # session attach/detach support
   - age  # modern file encryption tool
   - android-tools  # Android platform tools (adb, fastboot)
-  - ansible  # IT automation and config management
   - aria2  # multi-protocol download utility
   - asciinema  # terminal session recorder
   - atop  # system and process monitor

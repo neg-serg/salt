@@ -49,7 +49,6 @@ PACMAN_PKGS=(
 
     # --- Development ---
     android-tools       # adb, fastboot
-    ansible             # IT automation / config management
     bpftrace            # eBPF tracing language
     rust                # Rust compiler + cargo
     clang               # LLVM C/C++/ObjC compiler
