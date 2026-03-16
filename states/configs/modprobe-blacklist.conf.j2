@@ -33,6 +33,10 @@ blacklist p8022
 blacklist can
 blacklist atm
 
+# ALSA loopback (conflicts with PipeWire RME routing — snd_aloop
+# creates pro-output nodes that race with USB audio at startup)
+blacklist snd_aloop
+
 # Old/rarely-audited filesystems (attack surface reduction)
 blacklist adfs
 blacklist affs
