@@ -115,7 +115,7 @@ hyprpm_xtra_dispatchers:
   cmd.run:
     - name: >-
         export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
-        hyprpm add https://github.com/hyprwm/hyprland-plugins;
+        yes | hyprpm add https://github.com/hyprwm/hyprland-plugins &&
         export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
         hyprpm enable xtra-dispatchers
     - runas: {{ user }}
