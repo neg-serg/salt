@@ -111,6 +111,7 @@ other:
   - carla  # audio plugin host
   - cava  # console audio visualizer
   - ccid  # USB smart card driver
+  - yubikey-manager  # YubiKey configuration tool (ykman)
   - cdparanoia  # CD audio extraction tool
   - chafa  # image-to-text converter
   - chezmoi  # dotfiles manager
