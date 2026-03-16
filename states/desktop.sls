@@ -102,6 +102,24 @@ hyprpm_cache_dir:
       - user
       - group
 
+# Pre-create repo cache dirs so hyprpm doesn't call sudo mkdir (which fails
+# without a TTY in Salt context).
+hyprpm_repo_cache_hyprland_plugins:
+  file.directory:
+    - name: {{ hyprpm_cache }}/hyprland-plugins
+    - user: {{ user }}
+    - group: {{ user }}
+    - require:
+      - file: hyprpm_cache_dir
+
+hyprpm_repo_cache_hyprglass:
+  file.directory:
+    - name: {{ hyprpm_cache }}/HyprGlass
+    - user: {{ user }}
+    - group: {{ user }}
+    - require:
+      - file: hyprpm_cache_dir
+
 hyprpm_headers_update:
   cmd.run:
     - name: >-
@@ -124,51 +142,85 @@ hyprpm_headers_update:
         interval: {{ retry_interval }}
     - timeout: 300
 
-hyprpm_xtra_dispatchers:
+# hyprpm add + enable are separate: add is guarded by repo presence,
+# enable is guarded by "enabled: <ANSI>true" in hyprpm list output.
+{% set hyprpm_env %}
+      - HOME: {{ home }}
+      - XDG_RUNTIME_DIR: /run/user/1000
+{% endset %}
+{% set hyprpm_onlyif = 'ls /run/user/1000/hypr/ 2>/dev/null | rg -q .' %}
+
+hyprpm_add_hyprland_plugins:
   cmd.run:
     - name: >-
         export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
-        yes | hyprpm add https://github.com/hyprwm/hyprland-plugins &&
-        export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
-        hyprpm enable xtra-dispatchers
+        yes | hyprpm add https://github.com/hyprwm/hyprland-plugins
     - runas: {{ user }}
-    - onlyif: ls /run/user/1000/hypr/ 2>/dev/null | rg -q .
+    - onlyif: {{ hyprpm_onlyif }}
     - unless: >-
         export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
-        hyprpm list 2>&1 | rg -q 'xtra-dispatchers.*\[enabled\]'
+        hyprpm list 2>&1 | rg -q 'Repository hyprland-plugins'
     - env:
-      - HOME: {{ home }}
-      - XDG_RUNTIME_DIR: /run/user/1000
+{{ hyprpm_env }}
     - require:
       - cmd: install_hyprland_desktop
       - cmd: hyprpm_headers_update
+      - file: hyprpm_repo_cache_hyprland_plugins
     - retry:
         attempts: {{ retry_attempts }}
         interval: {{ retry_interval }}
     - timeout: 300
 
-hyprpm_hyprglass:
+hyprpm_enable_xtra_dispatchers:
   cmd.run:
     - name: >-
         export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
-        yes | hyprpm add https://github.com/hyprnux/hyprglass &&
-        export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
-        hyprpm enable HyprGlass
+        hyprpm enable xtra-dispatchers
     - runas: {{ user }}
-    - onlyif: ls /run/user/1000/hypr/ 2>/dev/null | rg -q .
+    - onlyif: {{ hyprpm_onlyif }}
     - unless: >-
         export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
-        hyprpm list 2>&1 | rg -q 'HyprGlass.*\[enabled\]'
+        hyprpm list 2>&1 | rg 'xtra-dispatchers' -A1 | rg -q 'enabled:.*true'
     - env:
-      - HOME: {{ home }}
-      - XDG_RUNTIME_DIR: /run/user/1000
+{{ hyprpm_env }}
+    - require:
+      - cmd: hyprpm_add_hyprland_plugins
+
+hyprpm_add_hyprglass:
+  cmd.run:
+    - name: >-
+        export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
+        yes | hyprpm add https://github.com/hyprnux/hyprglass
+    - runas: {{ user }}
+    - onlyif: {{ hyprpm_onlyif }}
+    - unless: >-
+        export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
+        hyprpm list 2>&1 | rg -q 'Repository HyprGlass'
+    - env:
+{{ hyprpm_env }}
     - require:
       - cmd: install_hyprland_desktop
       - cmd: hyprpm_headers_update
+      - file: hyprpm_repo_cache_hyprglass
     - retry:
         attempts: {{ retry_attempts }}
         interval: {{ retry_interval }}
     - timeout: 300
+
+hyprpm_enable_hyprglass:
+  cmd.run:
+    - name: >-
+        export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
+        hyprpm enable hyprglass
+    - runas: {{ user }}
+    - onlyif: {{ hyprpm_onlyif }}
+    - unless: >-
+        export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
+        hyprpm list 2>&1 | rg 'hyprglass' -A1 | rg -q 'enabled:.*true'
+    - env:
+{{ hyprpm_env }}
+    - require:
+      - cmd: hyprpm_add_hyprglass
 
 # --- SSH directory setup ---
 {{ ensure_dir('ssh_dir', home ~ '/.ssh', mode='0700') }}
