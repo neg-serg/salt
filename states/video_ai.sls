@@ -111,6 +111,17 @@ video_ai_workflow_{{ model.id | replace('-', '_') }}:
     - require:
       - file: video_ai_workflows_dir
 {% endif %}
+{% if model.enabled and model.comfyui_workflow_i2v is defined %}
+video_ai_workflow_i2v_{{ model.id | replace('-', '_') }}:
+  file.managed:
+    - name: {{ workflows_dir }}/{{ model.comfyui_workflow_i2v }}
+    - source: salt://configs/video-ai/{{ model.comfyui_workflow_i2v }}
+    - user: {{ user }}
+    - group: {{ user }}
+    - mode: '0644'
+    - require:
+      - file: video_ai_workflows_dir
+{% endif %}
 {% endfor %}
 
 # ── Generation runner deployment ─────────────────────────────────────

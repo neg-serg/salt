@@ -76,6 +76,15 @@ fi
 if [[ -n "${IMAGE}" ]]; then
     [[ -f "${IMAGE}" ]] || { echo "Error: Image file not found: ${IMAGE}" >&2; exit 1; }
     IMAGE="$(realpath "${IMAGE}")"
+
+    # Switch to i2v workflow variant when image is provided
+    I2V_FILE="${WORKFLOW_FILE//-t2v/-i2v}"
+    if [[ "${I2V_FILE}" != "${WORKFLOW_FILE}" && -f "${I2V_FILE}" ]]; then
+        WORKFLOW_FILE="${I2V_FILE}"
+        echo "[video-ai] Using i2v workflow: $(basename "${WORKFLOW_FILE}")" >&2
+    else
+        echo "[video-ai] Warning: no i2v workflow found, using default (image may be ignored)" >&2
+    fi
 fi
 
 # ── Prepare workflow ─────────────────────────────────────────────────

@@ -27,6 +27,7 @@ models:
     max_resolution: 720p
     default: true
     comfyui_workflow: ltx-video-t2v.json
+    comfyui_workflow_i2v: ltx-video-i2v.json
     notes: "AMD-tested on 7900 XTX, fastest option, uncensored"
 
   - id: ltx-23-fp8
@@ -45,6 +46,7 @@ models:
     max_resolution: 4k
     default: false
     comfyui_workflow: ltx-video-t2v.json
+    comfyui_workflow_i2v: ltx-video-i2v.json
     notes: "22B params, audio+video, 4K/50fps, uncensored, needs full 24GB VRAM"
 
   - id: ltx-23-distilled-gguf
@@ -63,6 +65,7 @@ models:
     max_resolution: 4k
     default: false
     comfyui_workflow: ltx-video-t2v.json
+    comfyui_workflow_i2v: ltx-video-i2v.json
     notes: "distilled for 4-8 step inference, uncensored, fits in 16GB VRAM"
 
   - id: wan21-t2v-14b
