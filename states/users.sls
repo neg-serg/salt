@@ -55,6 +55,8 @@ sudo_nopasswd:
     - check_cmd: /usr/sbin/visudo -c -f
 
 # SSH agent authentication for sudo (Yubikey-backed)
+# Toggle: host.features.sudo_ssh_agent (hosts.yaml)
+{% if host.features.sudo_ssh_agent %}
 {{ paru_install('pam_ssh_agent_auth', 'pam_ssh_agent_auth') }}
 
 sudo_pam_config:
@@ -83,3 +85,21 @@ sudo_ssh_agent_authorized_keys:
     - user: root
     - group: root
     - mode: '0644'
+{% else %}
+# Restore default PAM sudo config (no ssh-agent auth)
+sudo_pam_config:
+  file.managed:
+    - name: /etc/pam.d/sudo
+    - contents: |
+        #%PAM-1.0
+        auth      include     system-auth
+        account   include     system-auth
+        session   include     system-auth
+    - user: root
+    - group: root
+    - mode: '0644'
+
+sudo_ssh_agent_env_keep:
+  file.absent:
+    - name: /etc/sudoers.d/ssh-agent-auth
+{% endif %}
