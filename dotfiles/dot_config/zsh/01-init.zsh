@@ -31,6 +31,7 @@ setopt rc_quotes # quotes with ''
 
 # --- Interactive shell settings ---
 export GPG_TTY=$TTY
+gpg-connect-agent --no-autostart updatestartuptty /bye >/dev/null 2>&1 || true
 export KEYTIMEOUT=10
 export REPORTTIME=60
 export ESCDELAY=1
