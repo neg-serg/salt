@@ -13,6 +13,7 @@ Environment="HOME={{ home }}"
 Environment="OLLAMA_HOST=127.0.0.1:{{ ollama_port }}"
 Environment="OLLAMA_MODELS={{ mnt_one }}/ollama/models"
 Environment="OLLAMA_VULKAN=1"
+Environment="GGML_VK_VISIBLE_DEVICES=0"
 NoNewPrivileges=true
 ProtectSystem=strict
 PrivateTmp=yes
