@@ -10,13 +10,13 @@
 
 window {
     width:                  350px;
-    padding:                16px;
+    padding:                2px 8px;
     border:                 0px;
-    border-radius:          8px;
-    background-color:       #131318CC; /* Semi-transparent Surface */
+    border-radius:          0px;
+    background-color:       #000000;
     location:               south;
     x-offset:               0;
-    y-offset:               -48px;
+    y-offset:               25;
 }
 
 mainbox {
@@ -26,16 +26,24 @@ mainbox {
 inputbar {
     enabled:                true;
     spacing:                8px;
-    children:               [ "entry" ];
+    children:               [ "prompt", "entry" ];
+    background-color:       transparent;
+}
+
+prompt {
+    enabled:                true;
+    background-color:       transparent;
+    text-color:             @on-surface;
+    font:                   "Iosevka Nerd Font 12";
+    vertical-align:         0.5;
 }
 
 entry {
     enabled:                true;
     background-color:       transparent;
     text-color:             @primary;
-    font:                   "Iosevka 18";
+    font:                   "Iosevka 12";
     cursor:                 text;
-    placeholder:            "Password...";
-    placeholder-color:      @outline;
-    horizontal-align:       0.5;
+    placeholder:            "";
+    vertical-align:         0.5;
 }
