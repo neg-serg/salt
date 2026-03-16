@@ -7,16 +7,8 @@ set -e
 cleanup() { rm -f "$_askpass"; unset _pp 2>/dev/null || true; }
 trap cleanup EXIT HUP INT TERM
 
-# Ensure hashed socket symlinks exist (GnuPG 2.4+ with XDG GNUPGHOME)
-_hash_dir="${XDG_RUNTIME_DIR}/gnupg/d.arw7zqof5jnud6ggibnucipd"
-if [ ! -d "$_hash_dir" ]; then
-    systemd-tmpfiles --user --create 2>/dev/null || true
-fi
-
-# Ensure gpg-agent is ready (provides SSH via enable-ssh-support)
-# --no-autostart prevents spawning a rogue --daemon agent that conflicts with systemd
-gpg-connect-agent --no-autostart updatestartuptty /bye >/dev/null 2>&1 || true
-: "${SSH_AUTH_SOCK:=$(gpgconf --list-dirs agent-ssh-socket)}"
+# Ensure ssh-agent socket is active
+: "${SSH_AUTH_SOCK:=${XDG_RUNTIME_DIR}/ssh-agent.socket}"
 export SSH_AUTH_SOCK
 
 # Skip if key already loaded
@@ -26,7 +18,7 @@ if [ -n "$_fp" ] && ssh-add -l 2>/dev/null | grep -qF "$_fp"; then
     exit 0
 fi
 
-# Retrieve passphrase (pinentry handles GPG/Yubikey interaction)
+# Retrieve passphrase from gopass
 _pp="$(gopass show -o ssh-key)"
 
 # Temporary askpass helper — avoids expect dependency

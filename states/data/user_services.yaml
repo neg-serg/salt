@@ -41,7 +41,7 @@ enable_services:
   - vicinae.service
   - openrgb-profile.service
   - gpg-agent.socket
-  - gpg-agent-ssh.socket
+  - ssh-agent.socket
 
 # Timers to enable and start immediately (systemctl --user enable --now)
 enable_now_timers:
