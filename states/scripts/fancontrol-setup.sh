@@ -28,9 +28,8 @@ FANCONTROL_CONF="/etc/fancontrol"
 # Find hwmon device by chip name pattern (nct67* for motherboard, amdgpu for GPU)
 # Optional second arg: require a specific sysfs file (e.g. 'pwm1_enable')
 find_hwmon() {
-    local pattern="$1" required_file="${2:-}"
+    local pattern="$1" required_file="${2:-}" name
     for d in /sys/class/hwmon/hwmon*; do
-        local name
         name=$(cat "$d/name" 2>/dev/null) || continue
         if [[ "$name" =~ $pattern ]]; then
             if [ -n "$required_file" ] && [ ! -f "$d/$required_file" ]; then
@@ -56,13 +55,13 @@ get_devname() {
 
 # Enumerate active PWM channels (those whose corresponding fan is spinning or present)
 get_active_pwm_channels() {
-    local hw="$1"
+    local hw="$1" n idx fan_input
     for pwm_en in "/sys/class/hwmon/$hw"/pwm[0-9]*_enable; do
         [ -e "$pwm_en" ] || continue
-        local n="${pwm_en##*/}"
+        n="${pwm_en##*/}"
         n="${n%%_enable}"   # e.g. "pwm1"
-        local idx="${n#pwm}"
-        local fan_input="/sys/class/hwmon/$hw/fan${idx}_input"
+        idx="${n#pwm}"
+        fan_input="/sys/class/hwmon/$hw/fan${idx}_input"
         # Include channel if fan input exists (even if RPM is 0 — fan may be stopped)
         if [ -e "$fan_input" ]; then
             echo "$n"
