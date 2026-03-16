@@ -34,6 +34,8 @@ sudo_timeout:
     - name: /etc/sudoers.d/timeout
     - contents: |
         Defaults timestamp_timeout={{ sudo_timeout_minutes }}
+        Defaults !tty_tickets
+        Defaults passprompt="{{ '\uf023' }} "
     - user: root
     - group: root
     - mode: '0440'

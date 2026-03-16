@@ -14,7 +14,7 @@
 {%- set sys_ver_dir = '/var/cache/salt/versions' -%}
 {%- set download_cache = '/var/cache/salt/downloads' -%}
 {%- set healthcheck_timeout = 30 -%}
-{%- set sudo_timeout_minutes = 30 -%}
+{%- set sudo_timeout_minutes = -1 -%}
 {%- set ollama_pull_timeout = 14400 -%}
 
 {#- Shell one-liner: create version-encoded marker (used inside cmd.run name: blocks).
