@@ -17,6 +17,12 @@ out="$5"
 # Portal environment has minimal PATH — ensure user binaries are reachable
 export PATH="$HOME/.local/bin:$PATH"
 
+# Debug: YAZI_CHOOSER_DEBUG=1 to log portal args to /tmp/yazi-chooser.log
+if [ "${YAZI_CHOOSER_DEBUG:-0}" = "1" ]; then
+    printf '%s args: multiple=%s directory=%s save=%s path=%s out=%s\n' \
+        "$(date -Iseconds)" "$1" "$2" "$3" "$4" "$5" >> /tmp/yazi-chooser.log
+fi
+
 termcmd="${TERMCMD:-kitty}"
 
 if [ "$save" = "1" ]; then
@@ -28,12 +34,16 @@ if [ "$save" = "1" ]; then
     tmp=$(mktemp /tmp/yazi-chooser-XXXXXX.sh)
     cat > "$tmp" << 'INNER'
 #!/bin/sh
+printf '\033[1mSave file:\033[0m %s\n' "$YAZI_SUGGESTED"
+printf 'Pick a directory in yazi, then confirm the filename.\n\n'
 yazi "$YAZI_STARTDIR" --chooser-file="$YAZI_OUT"
 if [ -s "$YAZI_OUT" ]; then
     selected=$(cat "$YAZI_OUT")
     if [ -d "$selected" ]; then
-        clipboard=$(wl-paste --no-newline 2>/dev/null | head -1)
-        default="${clipboard:-$YAZI_SUGGESTED}"
+        default="$YAZI_SUGGESTED"
+        if [ -z "$default" ]; then
+            default=$(wl-paste --no-newline 2>/dev/null | head -1)
+        fi
         printf '\nSave as [%s]: ' "$default"
         read -r fname
         fname="${fname:-$default}"
