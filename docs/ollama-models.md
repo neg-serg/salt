@@ -26,32 +26,50 @@ A model earns its place by being unique in **at least one** dimension:
 
 | Model | Size | Niche |
 |-------|------|-------|
-| `gemma3:12b` | ~8GB | Google; vision+text multimodal, best general <15B |
-| `qwen3:14b` | ~9GB | Alibaba; thinking mode, strong reasoning |
 | `qwen3.5:27b` | ~17GB | Alibaba; newest general-purpose, best <30B |
+| `qwen3:32b` | ~20GB | Alibaba; dense 32B, top quality general |
+| `qwen3:8b-q8_0` | ~9GB | Alibaba; fast general+thinking mode, hybrid CoT |
+| `llama3.3:70b-instruct-q5_K_M` | ~50GB | Meta; 128K ctx, best instruction following (RAM offload) |
+| `qwen3:235b-a22b` | ~142GB | Alibaba; MoE 235B (22B active), minimal censorship (GPU+RAM offload) |
+
+### Reasoning
+
+| Model | Size | Niche |
+|-------|------|-------|
+| `qwq:32b` | ~20GB | Alibaba; dedicated reasoning/math, extended CoT |
+
+### Vision
+
+| Model | Size | Niche |
+|-------|------|-------|
+| `qwen2.5vl:7b-q8_0` | ~8GB | Alibaba; OCR+semantic, charts/docs/screenshots |
+
+### Uncensored (abliterated)
+
+| Model | Size | Niche |
+|-------|------|-------|
+| `huihui_ai/qwen3-abliterated:30b-a3b` | ~17GB | huihui-ai; uncensored general MoE 3B active |
+| `huihui_ai/qwen3-coder-abliterated` | ~17GB | huihui-ai; uncensored coding MoE 3B active |
+| `huihui_ai/qwen3.5-abliterated:35b-a3b` | ~19GB | huihui-ai; uncensored newest MoE 3B active |
 
 ### Code-specialized
 
 | Model | Size | Architecture | Context | Niche |
 |-------|------|-------------|---------|-------|
-| `qwen2.5-coder:7b` | ~4GB | Dense | 32K | Lightweight FIM/completion, fast inference |
-| `qwen3-coder:30b` | ~19GB | MoE (3.3B active) | 256K | Best code quality, agentic workflows |
+| `qwen2.5-coder:7b-instruct-q6_K` | ~6GB | Dense | 32K | Lightweight FIM/completion, Q6_K quality |
+| `qwen3-coder:30b` | ~18GB | MoE (3.3B active) | 256K | Best code quality, agentic workflows |
 | `deepcoder:14b` | ~9GB | Dense | 128K | O3-mini level reasoning, fully open-source |
-| `deepseek-coder-v2:16b` | ~9GB | MoE | 160K | GPT-4 class on code tasks |
-| `codestral:22b` | ~13GB | Dense | 32K | Mistral family, different training data |
-| `starcoder2:15b` | ~9GB | Dense | 16K | 600+ languages (The Stack v2), best for rare languages |
+| `devstral:24b` | ~19GB | Dense | 128K | Mistral; agentic coding, SWE-bench top tier |
 
 ### Why these and not others
 
 Each code model above has a unique combination of family + architecture + context
 that no other model in the list covers:
 
-- **qwen2.5-coder:7b** — only lightweight (~4GB) code model; nothing else runs this fast
+- **qwen2.5-coder:7b-instruct-q6_K** — only lightweight (~6GB) code model; nothing else runs this fast with Q6_K quality
 - **qwen3-coder:30b** — MoE with only 3.3B active params means near-7B inference speed at 30B quality; 256K context is the largest in the list
-- **deepcoder:14b** — dense 14B with 128K context; fills the mid-size dense slot between 7B and 22B
-- **deepseek-coder-v2:16b** — MoE architecture from DeepSeek family (different training data than Qwen); 160K context
-- **codestral:22b** — Mistral family (French lab, different training methodology); the only non-Chinese/non-US code model
-- **starcoder2:15b** — BigCode consortium (open governance); 600+ languages from The Stack v2; only model optimized for rare/low-resource languages (Julia, Lua, R, Perl, etc.)
+- **deepcoder:14b** — dense 14B with 128K context; fills the mid-size dense slot between 7B and 24B
+- **devstral:24b** — Mistral family (French lab, different training methodology); SWE-bench top tier, agentic coding
 
 ## Excluded Models (superseded)
 
@@ -60,9 +78,17 @@ list is strictly better in the same niche:
 
 | Model | Superseded by | Reason |
 |-------|---------------|--------|
-| `deepseek-coder:6.7b` | `deepseek-coder-v2:16b` | Same family, v2 is newer and better at similar resource cost (MoE) |
-| `codellama:7b` | `qwen2.5-coder:7b` | Same size class, Qwen wins on all code benchmarks |
-| `codegemma:7b` | `gemma3:12b` | Same Google family, Gemma3 is newer and more capable |
+| `deepseek-coder:6.7b` | `deepcoder:14b` | Same niche (DeepSeek code), deepcoder is newer with 128K context |
+| `deepseek-coder-v2:16b` | `qwen3-coder:30b` | Superseded: same MoE niche, qwen3-coder better on all benchmarks |
+| `codellama:7b` | `qwen2.5-coder:7b-instruct-q6_K` | Same size class, Qwen wins on all code benchmarks |
+| `codegemma:7b` | `qwen2.5-coder:7b-instruct-q6_K` | Same size class, Qwen is more capable |
+| `gemma3:12b` | `qwen3.5:27b` | No tool calling support in Ollama API |
+| `gemma3:27b` | `qwen3.5:27b` | No tool calling support in Ollama API |
+| `starcoder2:15b` | `qwen3-coder:30b` | Superseded on all code benchmarks |
+| `codestral:22b` | `devstral:24b` | Same Mistral family, devstral is newer and agentic |
+| `mistral-nemo` | `qwen3:8b-q8_0` | Better quality at same size |
+| `qwen3:14b` | `qwen3.5:27b` | Same family, newer and stronger |
+| `llama3.1:70b` | `llama3.3:70b-instruct-q5_K_M` | Same size, llama3.3 better quality |
 
 ## Adding a New Model
 
@@ -79,8 +105,9 @@ Before adding a model, check:
 
 ## Storage
 
-Models are stored on `/mnt/one/ollama/models`. Current total for code
-models: ~63GB. General-purpose models add ~34GB. Total: ~97GB.
+Models are stored on `/mnt/one/ollama/models`. See `ollama list` for
+current sizes. Total varies with model roster; expect ~300GB+ with all
+models including the 70B and 235B variants.
 
 ## Applying Changes
 

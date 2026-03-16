@@ -25,7 +25,7 @@ Emergency fallback system providing free AI model access when paid providers (An
 | 4 | DeepSeek | deepseek-reasoner | fallback-large | Optional (trial 5M tokens/30d, then $0.28/M) |
 | 5 | Ollama | qwen3.5:27b | fallback-large | Local GPU |
 | 5 | Ollama | qwen2.5-coder:7b | fallback-code | Local GPU |
-| 5 | Ollama | qwen3:14b | fallback-medium | Local GPU |
+| 5 | Ollama | qwen3:8b-q8_0 | fallback-medium | Local GPU |
 
 Excluded providers:
 

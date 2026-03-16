@@ -25,7 +25,7 @@
 | 4 | DeepSeek | deepseek-reasoner | fallback-large | Trial 5M токенов/30д, затем $0.28/M |
 | 5 | Ollama | qwen3.5:27b | fallback-large | Локальный GPU |
 | 5 | Ollama | qwen2.5-coder:7b | fallback-code | Локальный GPU |
-| 5 | Ollama | qwen3:14b | fallback-medium | Локальный GPU |
+| 5 | Ollama | qwen3:8b-q8_0 | fallback-medium | Локальный GPU |
 
 Исключённые провайдеры:
 

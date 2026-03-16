@@ -26,32 +26,50 @@
 
 | Модель | Размер | Ниша |
 |--------|--------|------|
-| `gemma3:12b` | ~8GB | Google; vision+text multimodal, лучший general <15B |
-| `qwen3:14b` | ~9GB | Alibaba; thinking mode, сильный reasoning |
 | `qwen3.5:27b` | ~17GB | Alibaba; новейший general-purpose, лучший <30B |
+| `qwen3:32b` | ~20GB | Alibaba; dense 32B, топовое качество general |
+| `qwen3:8b-q8_0` | ~9GB | Alibaba; быстрый general+thinking mode, гибридный CoT |
+| `llama3.3:70b-instruct-q5_K_M` | ~50GB | Meta; 128K ctx, лучший instruction following (RAM offload) |
+| `qwen3:235b-a22b` | ~142GB | Alibaba; MoE 235B (22B active), минимальная цензура (GPU+RAM offload) |
+
+### Reasoning
+
+| Модель | Размер | Ниша |
+|--------|--------|------|
+| `qwq:32b` | ~20GB | Alibaba; выделенный reasoning/математика, extended CoT |
+
+### Vision
+
+| Модель | Размер | Ниша |
+|--------|--------|------|
+| `qwen2.5vl:7b-q8_0` | ~8GB | Alibaba; OCR+семантика, графики/документы/скриншоты |
+
+### Без цензуры (abliterated)
+
+| Модель | Размер | Ниша |
+|--------|--------|------|
+| `huihui_ai/qwen3-abliterated:30b-a3b` | ~17GB | huihui-ai; без цензуры general MoE 3B active |
+| `huihui_ai/qwen3-coder-abliterated` | ~17GB | huihui-ai; без цензуры coding MoE 3B active |
+| `huihui_ai/qwen3.5-abliterated:35b-a3b` | ~19GB | huihui-ai; без цензуры новейший MoE 3B active |
 
 ### Специализированные на коде
 
 | Модель | Размер | Архитектура | Контекст | Ниша |
 |--------|--------|-------------|----------|------|
-| `qwen2.5-coder:7b` | ~4GB | Dense | 32K | Лёгкий FIM/completion, быстрый inference |
-| `qwen3-coder:30b` | ~19GB | MoE (3.3B active) | 256K | Лучшее качество кода, agentic workflows |
+| `qwen2.5-coder:7b-instruct-q6_K` | ~6GB | Dense | 32K | Лёгкий FIM/completion, качество Q6_K |
+| `qwen3-coder:30b` | ~18GB | MoE (3.3B active) | 256K | Лучшее качество кода, agentic workflows |
 | `deepcoder:14b` | ~9GB | Dense | 128K | Уровень O3-mini, полностью открытый |
-| `deepseek-coder-v2:16b` | ~9GB | MoE | 160K | Класс GPT-4 на задачах кода |
-| `codestral:22b` | ~13GB | Dense | 32K | Семья Mistral, иная база обучения |
-| `starcoder2:15b` | ~9GB | Dense | 16K | 600+ языков (The Stack v2), лучший для редких языков |
+| `devstral:24b` | ~19GB | Dense | 128K | Mistral; agentic coding, топ SWE-bench |
 
 ### Почему именно эти
 
 Каждая code-модель имеет уникальную комбинацию семья + архитектура + контекст,
 которую не покрывает ни одна другая модель в списке:
 
-- **qwen2.5-coder:7b** — единственный лёгкий (~4GB) code model; ничто другое не работает так быстро
+- **qwen2.5-coder:7b-instruct-q6_K** — единственный лёгкий (~6GB) code model; ничто другое не работает так быстро с качеством Q6_K
 - **qwen3-coder:30b** — MoE с всего 3.3B активных параметров: скорость близка к 7B при качестве 30B; 256K контекст — самый большой в списке
-- **deepcoder:14b** — dense 14B с 128K контекстом; заполняет среднеразмерный dense слот между 7B и 22B
-- **deepseek-coder-v2:16b** — MoE архитектура от семьи DeepSeek (иные данные обучения чем Qwen); 160K контекст
-- **codestral:22b** — семья Mistral (французская лаборатория, иная методология обучения); единственная не-китайская/не-американская code-модель
-- **starcoder2:15b** — консорциум BigCode (открытое управление); 600+ языков из The Stack v2; единственная модель оптимизированная для редких языков (Julia, Lua, R, Perl и др.)
+- **deepcoder:14b** — dense 14B с 128K контекстом; заполняет среднеразмерный dense слот между 7B и 24B
+- **devstral:24b** — семья Mistral (французская лаборатория, иная методология обучения); топ SWE-bench, agentic coding
 
 ## Исключённые модели (вытеснены)
 
@@ -60,9 +78,17 @@
 
 | Модель | Вытеснена | Причина |
 |--------|-----------|---------|
-| `deepseek-coder:6.7b` | `deepseek-coder-v2:16b` | Та же семья, v2 новее и лучше при сходной стоимости ресурсов (MoE) |
-| `codellama:7b` | `qwen2.5-coder:7b` | Тот же размерный класс, Qwen выигрывает на всех бенчмарках |
-| `codegemma:7b` | `gemma3:12b` | Та же семья Google, Gemma3 новее и мощнее |
+| `deepseek-coder:6.7b` | `deepcoder:14b` | Та же ниша (DeepSeek code), deepcoder новее с 128K контекстом |
+| `deepseek-coder-v2:16b` | `qwen3-coder:30b` | Та же MoE ниша, qwen3-coder лучше на всех бенчмарках |
+| `codellama:7b` | `qwen2.5-coder:7b-instruct-q6_K` | Тот же размерный класс, Qwen выигрывает на всех бенчмарках |
+| `codegemma:7b` | `qwen2.5-coder:7b-instruct-q6_K` | Тот же размерный класс, Qwen мощнее |
+| `gemma3:12b` | `qwen3.5:27b` | Не поддерживает tool calling в Ollama API |
+| `gemma3:27b` | `qwen3.5:27b` | Не поддерживает tool calling в Ollama API |
+| `starcoder2:15b` | `qwen3-coder:30b` | Проигрывает на всех code-бенчмарках |
+| `codestral:22b` | `devstral:24b` | Та же семья Mistral, devstral новее и agentic |
+| `mistral-nemo` | `qwen3:8b-q8_0` | Лучшее качество при том же размере |
+| `qwen3:14b` | `qwen3.5:27b` | Та же семья, новее и сильнее |
+| `llama3.1:70b` | `llama3.3:70b-instruct-q5_K_M` | Тот же размер, llama3.3 лучше качеством |
 
 ## Добавление новой модели
 
@@ -79,8 +105,9 @@
 
 ## Хранилище
 
-Модели хранятся на `/mnt/one/ollama/models`. Текущий объём для code-моделей:
-~63GB. Модели общего назначения добавляют ~34GB. Итого: ~97GB.
+Модели хранятся на `/mnt/one/ollama/models`. Актуальные размеры — см.
+`ollama list`. Общий объём зависит от состава; ожидайте ~300GB+ со всеми
+моделями включая 70B и 235B варианты.
 
 ## Применение изменений
 
