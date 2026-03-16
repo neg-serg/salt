@@ -1,8 +1,9 @@
 #!/usr/bin/env zsh
-# pinentry-rofi — GPG pinentry using rofi as GUI
+# pinentry-rofi — GPG pinentry with TTY-first, rofi fallback
 # Implements the Assuan pinentry protocol over stdin/stdout.
+# When gpg-agent provides a valid ttyname (terminal context), prompts via
+# that TTY directly. Otherwise falls back to rofi (GUI context).
 # Injects Wayland/DBus env vars for gpg-agent socket activation.
-# Falls back to pinentry-gnome3 if rofi is unavailable.
 
 # --- Env injection (gpg-agent starts before GUI is up) ---
 if [ -z "$WAYLAND_DISPLAY" ] && [ -n "$XDG_RUNTIME_DIR" ]; then
@@ -21,8 +22,8 @@ if [ -z "$DBUS_SESSION_BUS_ADDRESS" ] && [ -n "$XDG_RUNTIME_DIR" ] && [ -S "$XDG
     export DBUS_SESSION_BUS_ADDRESS="unix:path=$XDG_RUNTIME_DIR/bus"
 fi
 
-# --- Fallback chain: rofi → gnome3 → curses → tty ---
-if ! command -v rofi >/dev/null 2>&1 || [ -z "$WAYLAND_DISPLAY" ] && [ -z "$DISPLAY" ]; then
+# --- Last resort: no rofi AND no display ---
+if ! command -v rofi >/dev/null 2>&1 || { [ -z "$WAYLAND_DISPLAY" ] && [ -z "$DISPLAY" ]; }; then
     for fb in pinentry-gnome3 pinentry-curses pinentry-tty; do
         if command -v "$fb" >/dev/null 2>&1; then
             exec "$fb" "$@"
@@ -31,7 +32,44 @@ if ! command -v rofi >/dev/null 2>&1 || [ -z "$WAYLAND_DISPLAY" ] && [ -z "$DISP
 fi
 
 # --- Assuan pinentry protocol ---
-desc="" pin_prompt="" title="GPG" error=""
+desc="" title="GPG" error="" tty_name="" tty_type=""
+
+# ask_pin_tty: prompt for PIN on the agent's TTY
+# Returns pin via stdout, exit 1 on cancel/failure
+ask_pin_tty() {
+    local tty=$1 prompt=$2 err=$3
+    {
+        [[ -n "$err" ]] && printf '\033[31m%s\033[0m\n' "$err"
+        [[ -n "$desc" ]] && printf '%s\n' "$desc"
+        printf '%s ' "${prompt:-PIN:}"
+    } > "$tty"
+    # Read PIN with echo disabled
+    local pin=""
+    if IFS= read -rs pin < "$tty"; then
+        printf '\n' > "$tty"
+        printf '%s' "$pin"
+        return 0
+    fi
+    printf '\n' > "$tty"
+    return 1
+}
+
+# confirm_tty: yes/no prompt on the agent's TTY
+confirm_tty() {
+    local tty=$1 prompt=$2 mesg=$3
+    {
+        [[ -n "$mesg" ]] && printf '%s\n' "$mesg"
+        printf '%s [y/N] ' "${prompt:-Confirm}"
+    } > "$tty"
+    local answer=""
+    IFS= read -r answer < "$tty"
+    [[ "$answer" == [yY]* ]]
+}
+
+# has_valid_tty: check if tty_name points to a usable character device
+has_valid_tty() {
+    [[ -n "$tty_name" ]] && [[ -c "$tty_name" ]] && [[ -w "$tty_name" ]]
+}
 
 echo "OK Pleased to meet you"
 
@@ -45,7 +83,6 @@ while IFS= read -r line; do
             desc=$(echo "$arg" | sed 's/%0A/\n/g; s/%25/%/g; s/<[^>]*>//g')
             echo "OK" ;;
         SETPROMPT)
-            # Ignore — always use lock icon as prompt
             echo "OK" ;;
         SETTITLE)
             title="$arg"
@@ -53,32 +90,58 @@ while IFS= read -r line; do
         SETERROR)
             error="$arg"
             echo "OK" ;;
-        SETOK|SETCANCEL|SETNOTOK|OPTION|SETQUALITYBAR|SETQUALITYBAR_TT)
+        OPTION)
+            case "$arg" in
+                ttyname=*) tty_name="${arg#ttyname=}" ;;
+                ttytype=*) tty_type="${arg#ttytype=}" ;;
+            esac
+            echo "OK" ;;
+        SETOK|SETCANCEL|SETNOTOK|SETQUALITYBAR|SETQUALITYBAR_TT)
             echo "OK" ;;
         GETPIN)
-            pin=$(rofi -dmenu -password -no-fixed-num-lines \
-                -p "$pin_prompt" -theme askpass \
-                -l 0 < /dev/null 2>/dev/null)
-            if [ $? -eq 0 ] && [ -n "$pin" ]; then
-                echo "D $pin"
-                echo "OK"
+            if has_valid_tty; then
+                # TTY path: prompt directly in the terminal
+                pin=$(ask_pin_tty "$tty_name" "$title:" "$error")
+                if [ $? -eq 0 ] && [ -n "$pin" ]; then
+                    echo "D $pin"
+                    echo "OK"
+                else
+                    echo "ERR 83886179 Operation cancelled"
+                fi
             else
-                echo "ERR 83886179 Operation cancelled"
+                # GUI path: rofi
+                pin=$(rofi -dmenu -password -no-fixed-num-lines \
+                    -p "" -theme askpass \
+                    -l 0 < /dev/null 2>/dev/null)
+                if [ $? -eq 0 ] && [ -n "$pin" ]; then
+                    echo "D $pin"
+                    echo "OK"
+                else
+                    echo "ERR 83886179 Operation cancelled"
+                fi
             fi
             error="" ;;
         CONFIRM)
-            result=$(printf "Yes\nNo" | rofi -dmenu -p "$title" -mesg "$desc" \
-                -theme-str 'window {width: 25%;}' 2>/dev/null)
-            if [ "$result" = "Yes" ]; then
-                echo "OK"
+            if has_valid_tty; then
+                if confirm_tty "$tty_name" "$title" "$desc"; then
+                    echo "OK"
+                else
+                    echo "ERR 83886179 Operation cancelled"
+                fi
             else
-                echo "ERR 83886179 Operation cancelled"
+                result=$(printf "Yes\nNo" | rofi -dmenu -p "$title" -mesg "$desc" \
+                    -theme-str 'window {width: 25%;}' 2>/dev/null)
+                if [ "$result" = "Yes" ]; then
+                    echo "OK"
+                else
+                    echo "ERR 83886179 Operation cancelled"
+                fi
             fi ;;
         GETINFO)
             case "$arg" in
                 pid) echo "D $$"; echo "OK" ;;
                 flavor) echo "D rofi"; echo "OK" ;;
-                version) echo "D 0.1"; echo "OK" ;;
+                version) echo "D 0.2"; echo "OK" ;;
                 ttyinfo) echo "D - - -"; echo "OK" ;;
                 *) echo "OK" ;;
             esac ;;
