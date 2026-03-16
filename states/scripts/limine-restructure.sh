@@ -50,7 +50,7 @@ DIRECTORY=$(sed -n '/^\/CachyOS$/,$ p' "$LIMINE")
 # Write restructured config
 TMPFILE=$(mktemp)
 cat > "$TMPFILE" << 'HEADER'
-timeout: 5
+timeout: 1
 default_entry: 1
 interface_branding: CachyOS
 
