@@ -85,18 +85,54 @@ swayimg_local_build:
 # wl: installed via custom_pkgs (PKGBUILD → /usr/bin/)
 
 # --- Hyprland plugins via hyprpm ---
-hyprpm_xtra_dispatchers:
+# hyprpm needs HYPRLAND_INSTANCE_SIGNATURE (detect from socket dir) and
+# headers must match the running Hyprland version (hyprpm update rebuilds them).
+# hyprpm writes state to /var/cache/hyprpm/<user>/ via sudo — passwordless
+# /usr/bin/install is granted in sudoers-nopasswd.j2 (File operations section).
+{% set hypr_sig_cmd = 'ls /run/user/1000/hypr/ 2>/dev/null | head -1' %}
+
+hyprpm_headers_update:
   cmd.run:
-    - name: hyprpm add https://github.com/hyprwm/hyprland-plugins && hyprpm enable xtra-dispatchers
+    - name: >-
+        export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
+        hyprpm update
     - runas: {{ user }}
-    - unless: hyprpm list | rg -q 'xtra-dispatchers.*\[enabled\]'
+    - onlyif: ls /run/user/1000/hypr/ 2>/dev/null | rg -q .
+    - unless: >-
+        export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
+        hyprpm list 2>&1 | rg -q 'xtra-dispatchers'
     - env:
       - HOME: {{ home }}
+      - XDG_RUNTIME_DIR: /run/user/1000
     - require:
       - cmd: install_hyprland_desktop
     - retry:
         attempts: {{ retry_attempts }}
         interval: {{ retry_interval }}
+    - timeout: 300
+
+hyprpm_xtra_dispatchers:
+  cmd.run:
+    - name: >-
+        export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
+        hyprpm add https://github.com/hyprwm/hyprland-plugins;
+        export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
+        hyprpm enable xtra-dispatchers
+    - runas: {{ user }}
+    - onlyif: ls /run/user/1000/hypr/ 2>/dev/null | rg -q .
+    - unless: >-
+        export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
+        hyprpm list 2>&1 | rg -q 'xtra-dispatchers.*\[enabled\]'
+    - env:
+      - HOME: {{ home }}
+      - XDG_RUNTIME_DIR: /run/user/1000
+    - require:
+      - cmd: install_hyprland_desktop
+      - cmd: hyprpm_headers_update
+    - retry:
+        attempts: {{ retry_attempts }}
+        interval: {{ retry_interval }}
+    - timeout: 300
 
 # --- SSH directory setup ---
 {{ ensure_dir('ssh_dir', home ~ '/.ssh', mode='0700') }}
