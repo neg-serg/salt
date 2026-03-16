@@ -42,6 +42,7 @@ enable_services:
   - openrgb-profile.service
   - gpg-agent.socket
   - ssh-agent.socket
+  - systemd-tmpfiles-setup.service  # creates hashed GPG socket dirs from user-tmpfiles.d/
 
 # Timers to enable and start immediately (systemctl --user enable --now)
 enable_now_timers:
