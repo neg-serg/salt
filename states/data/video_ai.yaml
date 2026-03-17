@@ -13,8 +13,8 @@ comfyui_nodes:
 
 models:
   - id: ltx-video-2b
-    name: "LTX-Video 2B Distilled"  # fastest, AMD-tested on 7900 XTX (~66s), uncensored
-    enabled: true
+    name: "LTX-Video 2B Distilled"  # DISABLED: quality too low for practical use
+    enabled: false
     repo: Lightricks/LTX-Video
     files:
       - ltx-video-2b-v0.9.5.safetensors  # 2B distilled checkpoint (~4 GB)
@@ -31,8 +31,8 @@ models:
     notes: "AMD-tested on 7900 XTX, fastest option, uncensored"
 
   - id: ltx-23-fp8
-    name: "LTX-2.3 22B Dev FP8"  # highest quality uncensored, audio+video, 4K
-    enabled: true
+    name: "LTX-2.3 22B Dev FP8"  # DISABLED: exceeds 24GB VRAM on 7900 XTX
+    enabled: false
     repo: Lightricks/LTX-2.3-fp8
     files:
       - ltx-2.3-22b-dev-fp8.safetensors  # FP8 quantized 22B (~29 GB)
@@ -50,8 +50,8 @@ models:
     notes: "22B params, audio+video, 4K/50fps, uncensored, needs full 24GB VRAM"
 
   - id: ltx-23-distilled-gguf
-    name: "LTX-2.3 22B Distilled GGUF Q4"  # fast uncensored, lower VRAM
-    enabled: true
+    name: "LTX-2.3 22B Distilled GGUF Q4"  # DISABLED: GGUF pipeline broken on AMD (OOM + tokenizer issues)
+    enabled: false
     repo: unsloth/LTX-2.3-GGUF
     files:
       - distilled/ltx-2.3-22b-distilled-UD-Q4_K_M.gguf  # Q4 distilled (~15 GB)
@@ -59,14 +59,28 @@ models:
     vram_gb: 16
     modes:
       - t2v  # text-to-video
-      - i2v  # image-to-video
-      - v2v  # video-to-video
-      - a2v  # audio+video generation
     max_resolution: 4k
     default: false
-    comfyui_workflow: ltx-video-t2v.json
-    comfyui_workflow_i2v: ltx-video-i2v.json
-    notes: "distilled for 4-8 step inference, uncensored, fits in 16GB VRAM"
+    notes: "DISABLED: requires separate VAE+text_projection, OOM on 24GB with all components"
+
+  - id: ltx-23-distilled-fp8
+    name: "LTX-2.3 22B Distilled FP8"  # best quality, 4-8 step distilled, uncensored
+    enabled: true
+    repo: Kijai/LTX2.3_comfy
+    file: ltx-2.3-22b-distilled_transformer_only_fp8_input_scaled.safetensors  # 23.5 GB
+    loader: diffusion_model  # UNETLoader with weight_dtype fp8_e4m3fn
+    text_encoder: dual  # DualCLIPLoader: T5-XXL fp8 + LTX23 text projection
+    vae: ltx23-video  # LTX23_video_vae_bf16.safetensors
+    precision: fp8
+    vram_gb: 22  # with lowvram offloading
+    modes:
+      - t2v  # text-to-video
+      - i2v  # image-to-video
+    max_resolution: 4k
+    steps: 8  # distilled model: 4-8 steps optimal
+    default: true
+    comfyui_workflow: ltx23-distilled-t2v.json
+    notes: "22B distilled, 4-8 step inference, uncensored, needs --lowvram on 24GB"
 
   - id: wan21-t2v-14b
     name: "Wan2.1 T2V 14B GGUF Q5"  # Alibaba, best quality among censored models
