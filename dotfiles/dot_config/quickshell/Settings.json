@@ -51,7 +51,7 @@
     "showMediaInBar": true,
     "showMediaVisualizer": false,
     "showSpectrumTopHalf": false,
-    "showWeatherInBar": false,
+    "showWeatherInBar": true,
     "spectrumBarGap": 1,
     "spectrumFillOpacity": 0.35,
     "spectrumHeightFactor": 1.2,
@@ -80,5 +80,5 @@
             "spectrumVerticalRaise": 0.75
         }
     },
-    "weatherCity": "Moscow"
+    "weatherCity": "Saint Petersburg"
 }

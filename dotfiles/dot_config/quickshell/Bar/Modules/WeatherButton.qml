@@ -1,10 +1,10 @@
-
 import QtQuick
 import qs.Components
 import qs.Settings
 import qs.Widgets.SidePanel
 import qs.Services as Services
 import "../../Helpers/TooltipText.js" as TooltipText
+import "../../Helpers/WeatherIcons.js" as WeatherIcons
 
 OverlayToggleCapsule {
     id: root
@@ -14,21 +14,50 @@ OverlayToggleCapsule {
     capsule.centerContent: true
     capsule.cursorShape: Qt.PointingHandCursor
     capsuleVisible: true
-    autoToggleOnTap: false
+    autoToggleOnTap: true
     overlayNamespace: "sideleft-weather"
-    onOpened: { try { Services.Weather.start(); } catch (e) { /* service call guard */ } }
-    onDismissed: { try { Services.Weather.stop(); } catch (e) { /* service call guard */ } }
 
-    PanelIconButton {
-        id: weatherBtn
+    readonly property var _weatherData: Services.Weather.weatherData
+    readonly property var _current: _weatherData && _weatherData.current_weather ? _weatherData.current_weather : null
+    readonly property string weatherIcon: _current && typeof _current.weathercode === 'number'
+        ? WeatherIcons.materialSymbolForCode(_current.weathercode)
+        : "partly_cloudy_day"
+    readonly property string temperatureText: {
+        try {
+            if (_current && typeof _current.temperature === 'number') {
+                var c = Math.round(_current.temperature);
+                var useF = Settings.settings.useFahrenheit || false;
+                return useF ? Math.round(c * 9/5 + 32) + "°F" : c + "°C";
+            }
+        } catch (e) { /* guard */ }
+        return (Settings.settings.useFahrenheit || false) ? "--°F" : "--°C";
+    }
+
+    Row {
+        id: weatherContent
         anchors.centerIn: parent
-        size: iconBox
-        icon: "partly_cloudy_day"
-        onClicked: root.toggle("weather")
-        hoverEnabled: true
-        onEntered: {
-            try { weather.startWeatherFetch(); } catch (e) { /* service call guard */ }
+        spacing: Math.round(4 * capsuleScale)
+
+        MaterialIcon {
+            id: weatherIconItem
+            icon: root.weatherIcon
+            size: iconBox
+            color: Theme.accentPrimary
+            anchors.verticalCenter: parent.verticalCenter
         }
+
+        Text {
+            id: tempLabel
+            text: root.temperatureText
+            font.family: Theme.fontFamily
+            font.pixelSize: Math.round(Theme.fontSizeSmall * capsuleScale)
+            color: Theme.textPrimary
+            anchors.verticalCenter: parent.verticalCenter
+        }
+    }
+
+    HoverHandler {
+        id: hoverArea
     }
 
     overlayChildren: [
@@ -51,9 +80,9 @@ OverlayToggleCapsule {
 
     PanelTooltip {
         id: weatherTip
-        targetItem: weatherBtn
+        targetItem: weatherContent
         text: root.tooltipText()
-        visibleWhen: weatherBtn.hovering
+        visibleWhen: hoverArea.hovered
     }
 
     function tooltipText() {

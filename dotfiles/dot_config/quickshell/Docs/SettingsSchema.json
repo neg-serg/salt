@@ -5,7 +5,7 @@
   "type": "object",
   "additionalProperties": true,
   "properties": {
-    "weatherCity": { "type": "string", "default": "Moscow", "description": "City for weather widget" },
+    "weatherCity": { "type": "string", "default": "Saint Petersburg", "description": "City for weather widget" },
     "userAgent": { "type": "string", "default": "NegPanel", "description": "HTTP User-Agent string" },
 
     "debugLogs": { "type": "boolean", "default": false, "description": "Enable low-importance debug logs" },
@@ -15,7 +15,7 @@
 
     "useFahrenheit": { "type": "boolean", "default": false, "description": "Use Fahrenheit temperatures" },
     "showMediaInBar": { "type": "boolean", "default": false, "description": "Show media block in bar" },
-    "showWeatherInBar": { "type": "boolean", "default": false, "description": "Show weather button in bar" },
+    "showWeatherInBar": { "type": "boolean", "default": true, "description": "Show weather capsule in bar" },
 
     "reverseDayMonth": { "type": "boolean", "default": false, "description": "Flip day and month order" },
     "use12HourClock": { "type": "boolean", "default": false, "description": "12-hour time format" },

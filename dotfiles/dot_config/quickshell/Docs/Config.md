@@ -19,7 +19,7 @@ Settings.json (all options)
 
 General
 
-- weatherCity: string, default "Moscow". City used by the weather widget.
+- weatherCity: string, default "Saint Petersburg". City used by the weather widget.
 - userAgent: string, default "NegPanel". HTTP User‑Agent; include app name and contact if possible.
 - debugLogs: boolean, default false. Enables low‑importance debug logs.
 - debugNetwork: boolean, default false. Extra logging for network layer.
@@ -40,7 +40,7 @@ UI & Typography
 Bar/Widgets
 
 - showMediaInBar: boolean, default false. Show the media block in the bar.
-- showWeatherInBar: boolean, default false. Show weather button in the bar.
+- showWeatherInBar: boolean, default true. Show weather capsule in the bar.
 - collapseSystemTray: boolean, default true. Collapse tray icons.
 - collapsedTrayIcon: string, default "expand_more". Icon when tray is collapsed (Material icon
   name).
@@ -111,9 +111,9 @@ Network
 
 Weather
 
-- showWeatherInBar: boolean, default false. Weather button in bar.
+- showWeatherInBar: boolean, default true. Weather capsule in bar.
 - useFahrenheit: boolean, default false. Show °F.
-- weatherCity: string. City for current weather and forecast.
+- weatherCity: string, default "Saint Petersburg". City for current weather and forecast.
 
 Visualizer profiles notes
 

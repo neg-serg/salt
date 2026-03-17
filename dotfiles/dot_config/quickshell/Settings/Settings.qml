@@ -38,7 +38,7 @@ Singleton {
 
             // Enable wedge clip ShaderEffect path (env vars can override in debug)
             property bool enableWedgeClipShader: false
-            property string weatherCity: "Moscow"
+            property string weatherCity: "Saint Petersburg"
             property string userAgent: "NegPanel"
             // Unified logging toggle for low-importance debug logs
             property bool debugLogs: false
@@ -58,7 +58,7 @@ Singleton {
             property real mediaIconPanelOverlayWidthShare: 0.45
             property real mediaIconPanelOverlayBgOpacity: 0.65
             // Weather button in bar
-            property bool showWeatherInBar: false
+            property bool showWeatherInBar: true
             property bool reverseDayMonth: false
             property bool use12HourClock: false
             property real fontSizeMultiplier: 1.0  // Font size multiplier (1.0 = normal, 1.2 = 20% larger, 0.8 = 20% smaller)
