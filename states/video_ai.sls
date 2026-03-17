@@ -7,12 +7,14 @@
 {% set models_dir = base_dir ~ '/models' %}
 {% set workflows_dir = base_dir ~ '/workflows' %}
 {% set output_dir = base_dir ~ '/output' %}
+{% set images_dir = base_dir ~ '/images' %}
 
 # ── Directory structure ──────────────────────────────────────────────
 {{ ensure_dir('video_ai_base_dir', base_dir, require=['mount: mount_one']) }}
 {{ ensure_dir('video_ai_models_dir', models_dir, require=['file: video_ai_base_dir']) }}
 {{ ensure_dir('video_ai_workflows_dir', workflows_dir, require=['file: video_ai_base_dir']) }}
 {{ ensure_dir('video_ai_output_dir', output_dir, require=['file: video_ai_base_dir']) }}
+{{ ensure_dir('video_ai_images_dir', images_dir, require=['file: video_ai_base_dir']) }}
 
 # NOTE: ffmpeg is a system dep (already installed), ROCm is pulled by PyTorch
 # wheels inside the venv (video-ai-setup.sh). No explicit pacman_install needed.
@@ -124,11 +126,108 @@ video_ai_workflow_i2v_{{ model.id | replace('-', '_') }}:
 {% endif %}
 {% endfor %}
 
+# ── Shared text encoders ────────────────────────────────────────────
+{% for te in video_ai.get('text_encoders', []) %}
+video_ai_text_encoder_{{ te.id | replace('-', '_') }}:
+  cmd.run:
+    - name: >-
+        curl -fsSL -C -
+        -o {{ comfyui_dir }}/models/{{ te.dir }}/{{ te.file }}
+        "https://huggingface.co/{{ te.repo }}/resolve/main/{{ te.file }}"
+    - creates: {{ comfyui_dir }}/models/{{ te.dir }}/{{ te.file }}
+    - runas: {{ user }}
+    - timeout: 7200
+    - parallel: True
+    - retry:
+        attempts: {{ retry_attempts }}
+        interval: {{ retry_interval }}
+    - require:
+      - cmd: video_ai_comfyui_setup
+{% endfor %}
+
+# ── Shared VAE models ──────────────────────────────────────────────
+{% for vae in video_ai.get('vaes', []) %}
+video_ai_vae_{{ vae.id | replace('-', '_') }}:
+  cmd.run:
+    - name: >-
+        mkdir -p {{ comfyui_dir }}/models/{{ vae.dir }} &&
+        curl -fsSL -C -
+        -o {{ comfyui_dir }}/models/{{ vae.dir }}/{{ vae.file }}
+        "https://huggingface.co/{{ vae.repo }}/resolve/main/{{ vae.file }}"
+    - creates: {{ comfyui_dir }}/models/{{ vae.dir }}/{{ vae.file }}
+    - runas: {{ user }}
+    - timeout: 3600
+    - parallel: True
+    - retry:
+        attempts: {{ retry_attempts }}
+        interval: {{ retry_interval }}
+    - require:
+      - cmd: video_ai_comfyui_setup
+{% endfor %}
+
+# ── Image model downloads ──────────────────────────────────────────
+{% for model in video_ai.get('image_models', []) %}
+{% if model.enabled %}
+video_ai_image_download_{{ model.id | replace('-', '_') }}:
+  cmd.run:
+    - name: >-
+        mkdir -p {{ comfyui_dir }}/models/diffusion_models &&
+        curl -fsSL -C -
+        -o {{ comfyui_dir }}/models/diffusion_models/{{ model.file }}
+        "https://huggingface.co/{{ model.repo }}/resolve/main/{{ model.file }}"
+    - creates: {{ comfyui_dir }}/models/diffusion_models/{{ model.file }}
+    - runas: {{ user }}
+    - timeout: 14400
+    - parallel: True
+    - retry:
+        attempts: {{ retry_attempts }}
+        interval: {{ retry_interval }}
+    - require:
+      - cmd: video_ai_comfyui_setup
+{% endif %}
+{% endfor %}
+
+# ── Image workflow deployment ──────────────────────────────────────
+{% for model in video_ai.get('image_models', []) %}
+{% if model.enabled and model.comfyui_workflow is defined %}
+video_ai_image_workflow_{{ model.id | replace('-', '_') }}:
+  file.managed:
+    - name: {{ workflows_dir }}/{{ model.comfyui_workflow }}
+    - source: salt://configs/video-ai/{{ model.comfyui_workflow }}
+    - user: {{ user }}
+    - group: {{ user }}
+    - mode: '0644'
+    - require:
+      - file: video_ai_workflows_dir
+{% endif %}
+{% if model.enabled and model.comfyui_workflow_i2i is defined %}
+video_ai_image_workflow_i2i_{{ model.id | replace('-', '_') }}:
+  file.managed:
+    - name: {{ workflows_dir }}/{{ model.comfyui_workflow_i2i }}
+    - source: salt://configs/video-ai/{{ model.comfyui_workflow_i2i }}
+    - user: {{ user }}
+    - group: {{ user }}
+    - mode: '0644'
+    - require:
+      - file: video_ai_workflows_dir
+{% endif %}
+{% endfor %}
+
 # ── Generation runner deployment ─────────────────────────────────────
 video_ai_generate_script:
   file.managed:
     - name: {{ base_dir }}/generate.sh
     - source: salt://scripts/video-ai-generate.sh
+    - user: {{ user }}
+    - group: {{ user }}
+    - mode: '0755'
+    - require:
+      - cmd: video_ai_comfyui_setup
+
+video_ai_generate_image_script:
+  file.managed:
+    - name: {{ base_dir }}/generate-image.sh
+    - source: salt://scripts/video-ai-generate-image.sh
     - user: {{ user }}
     - group: {{ user }}
     - mode: '0755'

@@ -1,5 +1,5 @@
-# Video AI model registry for video_ai.sls
-# Each model entry defines a downloadable video generation checkpoint.
+# Generative AI model registry for video_ai.sls
+# Video models, image models, shared text encoders and VAEs.
 # Set enabled: true to download via Salt apply.
 
 # ComfyUI custom nodes required by video models
@@ -82,3 +82,37 @@ models:
     default: false
     comfyui_workflow: wan21-t2v.json
     notes: "very good quality, censored (Chinese training data), ~20 min per 4s clip"
+
+# ── Image generation models ────────────────────────────────────────
+image_models:
+  - id: chroma-hd
+    name: "Chroma1-HD"  # 8.9B, uncensored, near FLUX.1 Dev quality, Apache 2.0
+    enabled: true
+    repo: lodestones/Chroma1-HD
+    file: Chroma1-HD.safetensors  # 17.8 GB BF16
+    loader: diffusion_model  # UNETLoader, not CheckpointLoaderSimple
+    text_encoder: t5xxl_fp8  # shared T5-XXL from text_encoders section
+    vae: flux-ae  # FLUX VAE from vaes section
+    vram_gb: 20  # peak with T5 offloaded
+    resolution: 1152x1152  # HD training resolution
+    steps: 26
+    cfg: 3.8
+    sampler: euler
+    scheduler: beta  # BetaSamplingScheduler (0.45/0.45)
+    comfyui_workflow: chroma-t2i.json
+    comfyui_workflow_i2i: chroma-i2i.json
+    notes: "BF16 only (FP8/GGUF broken on RDNA3), fits 24GB with T5 offloading"
+
+# ── Shared text encoders ───────────────────────────────────────────
+text_encoders:
+  - id: t5xxl_fp8
+    file: t5xxl_fp8_e4m3fn.safetensors  # 4.9 GB, shared by LTX Video + Chroma
+    repo: comfyanonymous/flux_text_encoders
+    dir: text_encoders
+
+# ── Shared VAE models ─────────────────────────────────────────────
+vaes:
+  - id: flux-ae
+    file: ae.safetensors  # 335 MB, FLUX VAE (used by Chroma)
+    repo: cocktailpeanut/xulf-dev  # public mirror, no auth required
+    dir: vae

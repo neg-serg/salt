@@ -1,0 +1,165 @@
+#!/usr/bin/env zsh
+# gen-img — CLI for local image generation via ComfyUI + Chroma
+# See: specs/038-chroma-image-gen/contracts/gen-image-cli.md
+# NOTE: gen-image is the cloud API version; gen-img is local GPU.
+
+setopt ERR_EXIT NO_UNSET PIPE_FAIL
+
+typeset -r VIDEO_AI_DIR="${VIDEO_AI_DIR:-/mnt/one/video-ai}"
+typeset -r GENERATE_SH="${VIDEO_AI_DIR}/generate-image.sh"
+typeset -r MODELS_DIR="${VIDEO_AI_DIR}/comfyui/models/diffusion_models"
+typeset -r WORKFLOWS_DIR="${VIDEO_AI_DIR}/workflows"
+typeset -r IMAGES_DIR="${VIDEO_AI_DIR}/images"
+
+# ── Resolution presets ───────────────────────────────────────────────
+typeset -A RES_W RES_H
+RES_W=(square 1152 landscape 1344 portrait 768 photo 1216 "1:1" 1152 "16:9" 1344 "9:16" 768 "3:2" 1216)
+RES_H=(square 1152 landscape 768 portrait 1344 photo 832 "1:1" 1152 "16:9" 768 "9:16" 1344 "3:2" 832)
+
+# ── Defaults ─────────────────────────────────────────────────────────
+typeset model_id=""
+typeset image_path=""
+typeset resolution="square"
+typeset strength="0.7"
+typeset seed="0"
+typeset count="1"
+typeset steps="26"
+typeset cfg="3.8"
+typeset output_dir="${IMAGES_DIR}"
+typeset dry_run=false
+typeset list_mode=false
+typeset prompt_text=""
+
+usage() {
+    cat >&2 <<'EOF'
+Usage: gen-img [OPTIONS] "PROMPT"
+       gen-img [OPTIONS] --image PATH "PROMPT"
+
+Generate images locally via ComfyUI + Chroma (GPU). For cloud API: use gen-image.
+
+Options:
+  -m, --model ID        Model ID (default: chroma-hd)
+  -i, --image PATH      Reference image for img2img
+  -s, --strength FLOAT  i2i denoising strength (default: 0.7, range 0.0-1.0)
+  -r, --resolution RES  Resolution preset or WxH (default: square/1152x1152)
+      --seed N           Random seed (default: random)
+      --count N          Number of images (default: 1)
+      --steps N          Sampling steps (default: 26)
+      --cfg FLOAT        CFG scale (default: 3.8)
+  -o, --output DIR      Output directory (default: /mnt/one/video-ai/images/)
+      --dry-run          Show what would run without executing
+  -l, --list             List installed models and exit
+  -h, --help             Show this help
+
+Resolution Presets:
+  square/1:1      1152x1152   landscape/16:9  1344x768
+  portrait/9:16   768x1344    photo/3:2       1216x832
+  Or custom: WxH  (e.g., 1024x768)
+
+Examples:
+  gen-img "sunset over mountains, oil painting"
+  gen-img -r landscape "cyberpunk city at night"
+  gen-img -i ref.jpg -s 0.6 "make it watercolor"
+  gen-img --seed 42 --count 4 "portrait, dramatic lighting"
+EOF
+    exit "${1:-0}"
+}
+
+# ── Parse arguments ──────────────────────────────────────────────────
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -m|--model)      model_id="$2"; shift 2 ;;
+        -i|--image)      image_path="$2"; shift 2 ;;
+        -s|--strength)   strength="$2"; shift 2 ;;
+        -r|--resolution) resolution="$2"; shift 2 ;;
+        --seed)          seed="$2"; shift 2 ;;
+        --count)         count="$2"; shift 2 ;;
+        --steps)         steps="$2"; shift 2 ;;
+        --cfg)           cfg="$2"; shift 2 ;;
+        -o|--output)     output_dir="$2"; shift 2 ;;
+        --dry-run)       dry_run=true; shift ;;
+        -l|--list)       list_mode=true; shift ;;
+        -h|--help)       usage 0 ;;
+        -*)              echo "Unknown option: $1" >&2; usage 1 ;;
+        *)               prompt_text="$1"; shift ;;
+    esac
+done
+
+# ── List mode ────────────────────────────────────────────────────────
+if $list_mode; then
+    printf "%-20s %-6s %-12s %s\n" "MODEL" "VRAM" "RESOLUTION" "STATUS"
+    printf "%-20s %-6s %-12s %s\n" "────────────────────" "──────" "────────────" "──────"
+
+    typeset mid="" model_state=""
+    if [[ -d "${MODELS_DIR}" ]]; then
+        for model_file in "${MODELS_DIR}"/*.safetensors(N); do
+            mid="${${model_file:t}%.safetensors}"
+            model_state="installed"
+            printf "%-20s %-6s %-12s %s\n" "$mid" "~20GB" "1152x1152" "$model_state"
+        done
+    fi
+
+    (( $(find "${MODELS_DIR}" -name "*.safetensors" 2>/dev/null | wc -l) > 0 )) || {
+        echo "No image models installed. Run: just apply video_ai" >&2
+    }
+    exit 0
+fi
+
+# ── Validate ─────────────────────────────────────────────────────────
+[[ -n "${prompt_text}" ]] || { echo "Error: prompt is required" >&2; usage 1; }
+[[ -f "${GENERATE_SH}" ]] || { echo "Error: generate-image.sh not found at ${GENERATE_SH}" >&2; echo "Run: just apply video_ai" >&2; exit 4; }
+
+# Default model
+if [[ -z "${model_id}" ]]; then
+    model_id="chroma-hd"
+fi
+
+# Resolve resolution
+typeset width="" height=""
+if [[ "${resolution}" == *x* ]]; then
+    width="${resolution%%x*}"
+    height="${resolution#*x}"
+else
+    width="${RES_W[$resolution]:-}"
+    height="${RES_H[$resolution]:-}"
+fi
+[[ -n "${width}" ]] || { echo "Error: unknown resolution '${resolution}'. Use: square, landscape, portrait, photo, or WxH" >&2; exit 1; }
+
+# Random seed if 0
+if [[ "${seed}" == "0" ]]; then
+    seed=$(( RANDOM * RANDOM ))
+fi
+
+# ── Build command ────────────────────────────────────────────────────
+typeset -a cmd_args=(
+    "${GENERATE_SH}"
+    --model "${model_id}"
+    --prompt "${prompt_text}"
+    --width "${width}"
+    --height "${height}"
+    --steps "${steps}"
+    --cfg "${cfg}"
+    --seed "${seed}"
+    --count "${count}"
+)
+[[ -n "${image_path}" ]] && cmd_args+=(--image "${image_path}" --strength "${strength}")
+
+# ── Dry run ──────────────────────────────────────────────────────────
+if $dry_run; then
+    echo "Would execute:" >&2
+    echo "  ${cmd_args[*]}" >&2
+    echo "" >&2
+    echo "Model:      ${model_id}" >&2
+    echo "Resolution: ${width}x${height} (${resolution})" >&2
+    echo "Steps:      ${steps}" >&2
+    echo "CFG:        ${cfg}" >&2
+    echo "Seed:       ${seed}" >&2
+    echo "Count:      ${count}" >&2
+    echo "Output:     ${output_dir}/" >&2
+    [[ -n "${image_path}" ]] && echo "Image:      ${image_path} (strength: ${strength})" >&2
+    exit 0
+fi
+
+# ── Execute ──────────────────────────────────────────────────────────
+export VIDEO_AI_DIR
+exec "${cmd_args[@]}"
