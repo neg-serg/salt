@@ -4,6 +4,39 @@ Backlog of ideas and improvements. When ready to implement, run `/speckit.specif
 
 ---
 
+## Full HD Video Generation (LTX 2.3 22B)
+
+LTX 2.3 22B distilled FP8 works on 7900 XTX (24GB, `--lowvram`). Tested: 512x320, 9 frames, 6 steps → 310s.
+Goal: Full HD (1920x1080) at maximum quality.
+
+**gen-video CLI integration:**
+- [ ] Update `generate.sh` for UNETLoader + DualCLIPLoader (Gemma FP4 + text_projection) + VAELoader — current code hardcoded for CheckpointLoaderSimple
+- [ ] Add `--lowvram` to ComfyUI startup when model needs it
+- [ ] Add `__MODEL_FILE__`, `__STEPS__` placeholder substitution
+- [ ] Update default model to `ltx-23-distilled-fp8`
+- [ ] Add 1080p (1920x1080) and 720p (1280x720) resolution presets
+
+**Quality parameters:**
+- [ ] Steps: 8 (distilled optimal: 4-8)
+- [ ] Test CFG 3.0-5.0 for best quality
+- [ ] Width/height must be divisible by 32, frames = 8N+1 (9, 17, 25, 33...)
+
+**Resolution testing (ascending VRAM):**
+1. 854x480 (480p) — baseline
+2. 1280x720 (720p) — likely fits
+3. 1920x1080 (1080p) — may OOM, test carefully
+
+**i2v workflow:**
+- [ ] Create `ltx23-distilled-i2v.json` (LoadImage + VAEEncode instead of EmptyLTXVLatentVideo)
+
+**Salt state updates:**
+- [ ] Gemma FP4 + text_projection + LTX23 VAE download states
+- [ ] GGUF pip deps state (gguf, sentencepiece, protobuf)
+- [ ] tokenizer.model download state
+- [ ] Workflow deployment for ltx23-distilled-t2v.json
+
+---
+
 ## Browser profiles with persistent sessions
 
 Multiple Floorp profiles with persistent data (cookies, localStorage, sessions). Goal: login to VK, YouTube and other popular sites via cookie import from other browsers.
