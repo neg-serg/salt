@@ -4,6 +4,7 @@ import QtQuick.Controls
 import qs.Settings
 import qs.Components
 import "../../Helpers/Color.js" as Color
+import "../../Helpers/WeatherIcons.js" as WeatherIcons
 import qs.Services as Services
  
 Rectangle {
@@ -71,7 +72,7 @@ Rectangle {
                     MaterialIcon {
                         id: weatherIcon
                         visible: !isLoading
-                        icon: weatherData && weatherData.current_weather ? materialSymbolForCode(weatherData.current_weather.weathercode) : "cloud"
+                        icon: weatherData && weatherData.current_weather ? WeatherIcons.materialSymbolForCode(weatherData.current_weather.weathercode) : "cloud"
                         size: Math.round(Theme.uiIconSizeLarge * Theme.scale(Screen))
                         color: Theme.accentPrimary
                         Layout.alignment: Qt.AlignVCenter
@@ -135,7 +136,7 @@ Rectangle {
                             Component.onCompleted: weatherRoot.warnContrast(card.color, color, 'weather.dailyLabel')
                         }
                         MaterialIcon {
-                            icon: materialSymbolForCode(weatherData.daily.weathercode[index])
+                            icon: WeatherIcons.materialSymbolForCode(weatherData.daily.weathercode[index])
                             size: Math.round(Theme.panelPillIconSize * Theme.scale(Screen))
                             color: Theme.accentPrimary
                             Layout.alignment: Qt.AlignHCenter
@@ -166,17 +167,4 @@ Rectangle {
             }
         }
     }
- 
- 
-    function materialSymbolForCode(code) {
-        if (code === 0) return "sunny";
-        if (code === 1 || code === 2) return "partly_cloudy_day";
-        if (code === 3) return "cloud";
-        if (code >= 45 && code <= 48) return "foggy";
-        if (code >= 51 && code <= 67) return "rainy";
-        if (code >= 71 && code <= 77) return "weather_snowy";
-        if (code >= 80 && code <= 82) return "rainy";
-        if (code >= 95 && code <= 99) return "thunderstorm";
-        return "cloud";
-    }
-} 
+}

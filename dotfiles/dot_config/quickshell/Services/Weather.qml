@@ -11,7 +11,7 @@ Item {
     // Inputs
     property string city: (Settings.settings && Settings.settings.weatherCity) ? Settings.settings.weatherCity : ""
     property int ttlMs: 60000
-    property bool enabled: false
+    property bool enabled: true
 
     // State
     property var weatherData: null
