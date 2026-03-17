@@ -63,12 +63,17 @@ command -v ffmpeg >/dev/null || { echo "Error: ffmpeg not found" >&2; exit 4; }
 WORKFLOW_FILE="${WORKFLOWS_DIR}/${MODEL}.json"
 # Try model-specific workflow, fall back to generic t2v workflow
 if [[ ! -f "${WORKFLOW_FILE}" ]]; then
-    # Try to find any workflow matching model prefix
-    for wf in "${WORKFLOWS_DIR}"/*; do
-        if [[ "$(basename "$wf" .json)" == *"${MODEL%%[-_]*}"* ]]; then
-            WORKFLOW_FILE="$wf"
-            break
-        fi
+    # Extract model family prefix (e.g. "ltx" from "ltx-video-2b")
+    MODEL_PREFIX="${MODEL%%[-_]*}"
+    # Prefer t2v workflow for text-to-video (default mode)
+    for suffix in t2v ""; do
+        for wf in "${WORKFLOWS_DIR}"/*"${suffix}"*; do
+            [[ -f "$wf" ]] || continue
+            if [[ "$(basename "$wf" .json)" == *"${MODEL_PREFIX}"* ]]; then
+                WORKFLOW_FILE="$wf"
+                break 2
+            fi
+        done
     done
 fi
 [[ -f "${WORKFLOW_FILE}" ]] || { echo "Error: No workflow found for model '${MODEL}'" >&2; exit 2; }
@@ -87,6 +92,24 @@ if [[ -n "${IMAGE}" ]]; then
     fi
 fi
 
+# ── Resolve checkpoint name ───────────────────────────────────────────
+# Find the checkpoint file relative to ComfyUI's checkpoints dir
+CKPT_DIR="${COMFYUI_DIR}/models/checkpoints"
+CKPT_NAME=""
+if [[ -d "${CKPT_DIR}/${MODEL}" || -L "${CKPT_DIR}/${MODEL}" ]]; then
+    CKPT_NAME=$(find -L "${CKPT_DIR}/${MODEL}" -maxdepth 2 \
+        \( -name "*.safetensors" -o -name "*.ckpt" -o -name "*.gguf" \) -printf "%P\n" 2>/dev/null | head -1)
+    [[ -n "${CKPT_NAME}" ]] && CKPT_NAME="${MODEL}/${CKPT_NAME}"
+fi
+if [[ -z "${CKPT_NAME}" ]]; then
+    # Fallback: search all checkpoints for model name
+    CKPT_NAME=$(find -L "${CKPT_DIR}" -maxdepth 3 \
+        \( -name "*.safetensors" -o -name "*.ckpt" -o -name "*.gguf" \) -printf "%P\n" 2>/dev/null \
+        | grep -i "${MODEL}" | head -1 || true)
+fi
+[[ -n "${CKPT_NAME}" ]] || { echo "Error: No checkpoint found for model '${MODEL}'" >&2; exit 2; }
+echo "[video-ai] Checkpoint: ${CKPT_NAME}" >&2
+
 # ── Prepare workflow ─────────────────────────────────────────────────
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 SLUG=$(echo "${PROMPT}" | tr '[:upper:]' '[:lower:]' | tr -cs '[:alnum:]' '-' | head -c 40 | sed 's/-$//')
@@ -95,6 +118,7 @@ WORKFLOW_RESOLVED="${WORK_DIR}/workflow.json"
 
 # Substitute placeholders in workflow
 sed -e "s|__PROMPT__|${PROMPT//|/\\|}|g" \
+    -e "s|__CKPT_NAME__|${CKPT_NAME}|g" \
     -e "s|__WIDTH__|${WIDTH}|g" \
     -e "s|__HEIGHT__|${HEIGHT}|g" \
     -e "s|__FRAMES__|${FRAMES}|g" \
@@ -112,6 +136,8 @@ echo "[video-ai] Prompt: ${PROMPT}" >&2
 echo "[video-ai] Resolution: ${WIDTH}x${HEIGHT}, Frames: ${FRAMES}" >&2
 
 # ── Start ComfyUI if not running ─────────────────────────────────────
+COMFYUI_OUTPUT="${VIDEO_AI_DIR}/comfyui-output"
+mkdir -p "${COMFYUI_OUTPUT}"
 COMFYUI_PID=""
 if ! curl -sf "${COMFYUI_URL}/system_stats" >/dev/null 2>&1; then
     echo "[video-ai] Starting ComfyUI on port ${COMFYUI_PORT}..." >&2
@@ -120,7 +146,7 @@ if ! curl -sf "${COMFYUI_URL}/system_stats" >/dev/null 2>&1; then
         --listen 127.0.0.1 \
         --port "${COMFYUI_PORT}" \
         --disable-auto-launch \
-        --output-directory "${WORK_DIR}/raw" \
+        --output-directory "${COMFYUI_OUTPUT}" \
         >/dev/null 2>&1 &
     COMFYUI_PID=$!
 
@@ -162,23 +188,35 @@ echo "[video-ai] Generating..." >&2
 while true; do
     HISTORY=$(curl -sf "${COMFYUI_URL}/history/${PROMPT_ID}" 2>/dev/null || echo "{}")
 
-    # Check if complete
-    if echo "${HISTORY}" | python3 -c "
+    # Check if complete or errored
+    POLL_RESULT=$(echo "${HISTORY}" | python3 -c "
 import sys, json
 h = json.load(sys.stdin)
 if '${PROMPT_ID}' in h:
-    status = h['${PROMPT_ID}'].get('status', {})
-    if status.get('completed', False) or status.get('status_str') == 'success':
-        sys.exit(0)
-    if 'messages' in status:
-        for msg in status['messages']:
+    st = h['${PROMPT_ID}'].get('status', {})
+    if st.get('completed', False) or st.get('status_str') == 'success':
+        print('DONE')
+    elif st.get('status_str') == 'error':
+        for msg in st.get('messages', []):
             if msg[0] == 'execution_error':
-                print(msg[1].get('exception_message', 'Unknown error'), file=sys.stderr)
-                sys.exit(2)
-sys.exit(1)
-" 2>/dev/null; then
+                print('ERROR:' + msg[1].get('exception_message', 'Unknown error'))
+                break
+        else:
+            print('ERROR:unknown')
+    else:
+        print('RUNNING')
+else:
+    print('RUNNING')
+" 2>/dev/null || echo "RUNNING")
+
+    if [[ "${POLL_RESULT}" == "DONE" ]]; then
         echo -e "\n[video-ai] Generation complete!" >&2
         break
+    elif [[ "${POLL_RESULT}" == ERROR:* ]]; then
+        echo -e "\n[video-ai] Error: ${POLL_RESULT#ERROR:}" >&2
+        [[ -n "${COMFYUI_PID}" ]] && kill "${COMFYUI_PID}" 2>/dev/null || true
+        rm -rf "${WORK_DIR}"
+        exit 1
     fi
 
     # Show progress
@@ -197,58 +235,49 @@ done
 
 # ── Find output files ────────────────────────────────────────────────
 mkdir -p "${OUTPUT_DIR}"
-RAW_DIR="${WORK_DIR}/raw"
 
-# ComfyUI saves as webp/png sequences — find the output
-OUTPUT_FILES=$(find "${RAW_DIR}" -name "*.webp" -o -name "*.png" 2>/dev/null | sort | head -1)
+# ComfyUI SaveImage outputs PNG sequence to COMFYUI_OUTPUT
+# Find PNGs newer than the workflow submission
+FIRST_PNG=$(find "${COMFYUI_OUTPUT}" -name "*.png" -newer "${WORKFLOW_RESOLVED}" 2>/dev/null | sort | head -1)
 
-if [[ -z "${OUTPUT_FILES}" ]]; then
-    # Try to find from ComfyUI output directory
-    RAW_DIR="${COMFYUI_DIR}/output"
-    OUTPUT_FILES=$(find "${RAW_DIR}" -name "*.webp" -newer "${WORKFLOW_RESOLVED}" 2>/dev/null | sort | head -1)
+if [[ -z "${FIRST_PNG}" ]]; then
+    # Fallback: any PNG in the output dir
+    FIRST_PNG=$(find "${COMFYUI_OUTPUT}" -name "*.png" 2>/dev/null | sort | head -1)
 fi
 
-if [[ -z "${OUTPUT_FILES}" ]]; then
+if [[ -z "${FIRST_PNG}" ]]; then
     echo "Error: No output files found after generation" >&2
     [[ -n "${COMFYUI_PID}" ]] && kill "${COMFYUI_PID}" 2>/dev/null || true
     exit 1
 fi
+
+PNG_COUNT=$(find "$(dirname "${FIRST_PNG}")" -name "*.png" 2>/dev/null | wc -l)
+echo "[video-ai] Found ${PNG_COUNT} frames" >&2
+
+# Build ffmpeg glob input pattern from the directory
+PNG_DIR=$(dirname "${FIRST_PNG}")
 
 # ── Encode to MP4 ────────────────────────────────────────────────────
 OUTPUT_MP4="${OUTPUT_DIR}/${MODEL}_${TIMESTAMP}_${SLUG}.mp4"
 
 echo "[video-ai] Encoding to MP4..." >&2
 
-# Select encoder: VAAPI hw accel or software fallback
+# Select encoder: software (VAAPI doesn't accept PNG input well)
 if [[ "${COMPAT}" == "true" ]]; then
-    ENCODER_ARGS=(-c:v h264_vaapi)
-    FALLBACK_ARGS=(-c:v libx264 -preset medium -crf 18)
+    ENCODER_ARGS=(-c:v libx264 -preset medium -crf 18)
 else
-    ENCODER_ARGS=(-c:v hevc_vaapi)
-    FALLBACK_ARGS=(-c:v libx265 -preset medium -crf 18)
+    ENCODER_ARGS=(-c:v libx265 -preset medium -crf 18)
 fi
 
-# Try hardware encoding, fall back to software
-if vainfo 2>/dev/null | grep -q "VAEntrypointEncSlice"; then
-    ffmpeg -y -vaapi_device /dev/dri/renderD128 \
-        -i "${OUTPUT_FILES}" \
-        -vf "format=nv12,hwupload" \
-        "${ENCODER_ARGS[@]}" \
-        -f mp4 "${OUTPUT_MP4}" 2>/dev/null || {
-        echo "[video-ai] VAAPI encoding failed, falling back to software..." >&2
-        ffmpeg -y -i "${OUTPUT_FILES}" \
-            "${FALLBACK_ARGS[@]}" \
-            -f mp4 "${OUTPUT_MP4}" 2>/dev/null
-    }
-else
-    echo "[video-ai] VAAPI not available, using software encoding..." >&2
-    ffmpeg -y -i "${OUTPUT_FILES}" \
-        "${FALLBACK_ARGS[@]}" \
-        -f mp4 "${OUTPUT_MP4}" 2>/dev/null
-fi
+# Encode PNG sequence to MP4
+ffmpeg -y -framerate 24 -pattern_type glob -i "${PNG_DIR}/*.png" \
+    -pix_fmt yuv420p \
+    "${ENCODER_ARGS[@]}" \
+    -f mp4 "${OUTPUT_MP4}" 2>/dev/null
 
 # ── Cleanup ──────────────────────────────────────────────────────────
 rm -rf "${WORK_DIR}"
+rm -rf "${COMFYUI_OUTPUT:?}"/*  # Clear ComfyUI output PNGs
 [[ -n "${COMFYUI_PID}" ]] && kill "${COMFYUI_PID}" 2>/dev/null || true
 
 echo "[video-ai] Output: ${OUTPUT_MP4}" >&2

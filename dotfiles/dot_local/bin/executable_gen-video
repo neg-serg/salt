@@ -76,23 +76,24 @@ if $list_mode; then
     printf "%-20s %-8s %-8s %-10s %s\n" "MODEL" "VRAM" "MODES" "RESOLUTION" "STATUS"
     printf "%-20s %-8s %-8s %-10s %s\n" "────────────────────" "────────" "────────" "──────────" "──────"
 
+    typeset mid="" model_state="" has_workflow=false vram="" modes="" max_res=""
     for model_dir in "${MODELS_DIR}"/*(N/); do
-        typeset mid="${model_dir:t}"
-        typeset status="installed"
+        mid="${model_dir:t}"
+        model_state="installed"
 
         # Check if any workflow exists for this model
-        typeset has_workflow=false
+        has_workflow=false
         for wf in "${WORKFLOWS_DIR}"/*.json(N); do
             [[ "${wf:t:r}" == *"${mid%%[-_]*}"* ]] && has_workflow=true && break
         done
-        $has_workflow || status="no workflow"
+        $has_workflow || model_state="no workflow"
 
         # Try to read metadata from the YAML (best effort)
-        typeset vram="?"
-        typeset modes="?"
-        typeset max_res="?"
+        vram="?"
+        modes="?"
+        max_res="?"
 
-        printf "%-20s %-8s %-8s %-10s %s\n" "$mid" "${vram}GB" "$modes" "$max_res" "$status"
+        printf "%-20s %-8s %-8s %-10s %s\n" "$mid" "${vram}GB" "$modes" "$max_res" "$model_state"
     done
 
     # Show if no models installed
@@ -117,11 +118,16 @@ typeset frames=$(( duration * fps + 1 ))
 
 # Find default model if none specified
 if [[ -z "${model_id}" ]]; then
-    # Look for the first installed model directory
-    for model_dir in "${MODELS_DIR}"/*(N/); do
-        model_id="${model_dir:t}"
-        break
-    done
+    # Prefer ltx-23-fp8 (best quality safetensors model)
+    if [[ -d "${MODELS_DIR}/ltx-23-fp8" || -L "${MODELS_DIR}/ltx-23-fp8" ]]; then
+        model_id="ltx-23-fp8"
+    else
+        # Fallback to first installed model
+        for model_dir in "${MODELS_DIR}"/*(N/); do
+            model_id="${model_dir:t}"
+            break
+        done
+    fi
     [[ -n "${model_id}" ]] || { echo "Error: no models installed" >&2; echo "Enable models in states/data/video_ai.yaml and run: just apply video_ai" >&2; exit 2; }
 fi
 
