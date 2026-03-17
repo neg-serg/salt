@@ -16,7 +16,7 @@
     "2": {
       "class_type": "DualCLIPLoader",
       "inputs": {
-        "clip_name1": "t5xxl_fp8_e4m3fn.safetensors",
+        "clip_name1": "gemma_3_12B_it_fp4_mixed.safetensors",
         "clip_name2": "ltx-2.3_text_projection_bf16.safetensors",
         "type": "ltxv"
       }
