@@ -19,8 +19,9 @@ export PATH="$HOME/.local/bin:$PATH"
 
 # Debug: YAZI_CHOOSER_DEBUG=1 to log portal args to /tmp/yazi-chooser.log
 if [ "${YAZI_CHOOSER_DEBUG:-0}" = "1" ]; then
-    printf '%s args: multiple=%s directory=%s save=%s path=%s out=%s\n' \
-        "$(date -Iseconds)" "$1" "$2" "$3" "$4" "$5" >> /tmp/yazi-chooser.log
+    printf '%s args: multiple=%s directory=%s save=%s path=%s out=%s suggested=%s\n' \
+        "$(date -Iseconds)" "$1" "$2" "$3" "$4" "$5" \
+        "$(basename "$4" 2>/dev/null)" >> /tmp/yazi-chooser.log
 fi
 
 termcmd="${TERMCMD:-kitty}"
@@ -33,21 +34,31 @@ if [ "$save" = "1" ]; then
     # Write inner script to a temp file to avoid quoting hell
     tmp=$(mktemp /tmp/yazi-chooser-XXXXXX.sh)
     cat > "$tmp" << 'INNER'
-#!/bin/sh
+#!/bin/bash
 printf '\033[1mSave file:\033[0m %s\n' "$YAZI_SUGGESTED"
 printf 'Pick a directory in yazi, then confirm the filename.\n\n'
 yazi "$YAZI_STARTDIR" --chooser-file="$YAZI_OUT"
 if [ -s "$YAZI_OUT" ]; then
     selected=$(cat "$YAZI_OUT")
-    if [ -d "$selected" ]; then
-        default="$YAZI_SUGGESTED"
-        if [ -z "$default" ]; then
-            default=$(wl-paste --no-newline 2>/dev/null | head -1)
-        fi
-        printf '\nSave as [%s]: ' "$default"
-        read -r fname
-        fname="${fname:-$default}"
+    # If user selected a file (not directory), use its parent directory
+    if [ ! -d "$selected" ]; then
+        selected=$(dirname "$selected")
+    fi
+    default="$YAZI_SUGGESTED"
+    if [ -z "$default" ]; then
+        default=$(wl-paste --no-newline 2>/dev/null | head -1)
+    fi
+    read -e -i "$default" -p $'\nSave as: ' fname
+    if [ -z "$fname" ]; then
+        # Empty filename = cancellation
+        > "$YAZI_OUT"
+    else
         printf '%s/%s' "$selected" "$fname" > "$YAZI_OUT"
+    fi
+    # Debug: log final resolved path
+    if [ "${YAZI_CHOOSER_DEBUG:-0}" = "1" ]; then
+        printf '%s resolved_path=%s\n' \
+            "$(date -Iseconds)" "$(cat "$YAZI_OUT")" >> /tmp/yazi-chooser.log
     fi
 fi
 INNER
@@ -56,7 +67,8 @@ INNER
     export YAZI_STARTDIR="$startdir"
     export YAZI_OUT="$out"
     export YAZI_SUGGESTED="$suggested"
-    "$termcmd" -- sh "$tmp"
+    export YAZI_CHOOSER_DEBUG="${YAZI_CHOOSER_DEBUG:-0}"
+    "$termcmd" -- bash "$tmp"
     rm -f "$tmp"
 else
     "$termcmd" -- sh -c "yazi --chooser-file='$out'"
