@@ -22,8 +22,12 @@ salt_config/var/
 
 # Speech engines — moved to ~/src/speech/
 
+# Node
+.npm/
+
 # Tools
 .claude/
+.claude.json
 .serena/
 _catalog/
 tt
