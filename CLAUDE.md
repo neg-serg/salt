@@ -371,6 +371,8 @@ Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full de
 - N/A (config files on disk) (036-sudo-ssh-keys)
 - YAML (data file), Jinja2 (existing `ollama.sls` template) + Ollama, Salt (masterless) (037-optimal-q6k-models)
 - `/mnt/one/ollama/models` (model storage) (037-optimal-q6k-models)
+- QML 6 (Qt 6), JavaScript (ES5 helpers) + Quickshell runtime, QtQuick, Quickshell.Services (Weather singleton, Timers), Material Symbols font (040-qs-weather-widget)
+- N/A (in-memory weather cache with 5-minute TTL, managed by existing Weather service) (040-qs-weather-widget)
 
 ## Recent Changes
 - 001-code-rag-integration: Added Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx)
