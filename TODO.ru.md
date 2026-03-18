@@ -53,6 +53,19 @@ systemctl --user enable --now ydotool.service
 Решение: предпочтителен llama.cpp RPC (уже в стеке, AUR-пакет, Vulkan). Пересмотреть exo, когда созреет поддержка AMD ROCm и/или появится AUR-пакет.
 
 
+## tg-cli: зарегистрировать собственные API-ключи Telegram
+
+`tg-cli` (pipx, `kabi-tg-cli`) установлен и работает с дефолтными ключами Telegram Desktop (`api_id=2040`).
+Это повышает риск ограничения аккаунта со стороны Telegram.
+
+- [ ] Зарегистрировать приложение на https://my.telegram.org/apps (потребуется SMS/код из Telegram)
+- [ ] Создать `~/.config/tg-cli/.env` с `TG_API_ID` и `TG_API_HASH`
+- [ ] Переавторизоваться: `tg status` (подхватит новые ключи)
+- [ ] Опционально: сохранить ключи в gopass (`api/telegram-api`)
+
+Примечание: форма my.telegram.org может молча отказывать — известная проблема, попробовать позже или из другого браузера/IP.
+
+
 ## SaluteSpeech — оценка STT/TTS
 
 Оценить [SaluteSpeech](https://developers.sber.ru/docs/ru/salutespeech/overview) (Сбер) для распознавания (STT) и синтеза (TTS) русской речи.
