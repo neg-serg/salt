@@ -1,4 +1,3 @@
-{% from '_imports.jinja' import host %}
 {% from '_macros_pkg.jinja' import pacman_install, paru_install %}
 {% from '_macros_install.jinja' import curl_extract_tar %}
 {% import_yaml 'data/versions.yaml' as ver %}

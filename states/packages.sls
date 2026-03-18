@@ -3,7 +3,6 @@
 # This state covers everything else: base system, desktop tools, dev tools, etc.
 #
 # Run: sudo salt-call --local state.apply packages
-{% from '_imports.jinja' import host %}
 {% from '_macros_pkg.jinja' import pacman_install, paru_install %}
 {% import_yaml 'data/packages.yaml' as pkgs %}
 

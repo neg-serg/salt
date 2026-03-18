@@ -1,4 +1,4 @@
-{% from '_imports.jinja' import host, user, retry_attempts, retry_interval %}
+{% from '_imports.jinja' import user, retry_attempts, retry_interval %}
 {% from '_macros_pkg.jinja' import pacman_install, flatpak_install %}
 # Flatpak: install runtime + flathub remote + user-level apps
 {% import_yaml 'data/flatpak.yaml' as flatpak %}

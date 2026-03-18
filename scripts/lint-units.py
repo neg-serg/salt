@@ -20,7 +20,9 @@ UNITS_DIR = os.path.join("states", "units")
 _NOISE = re.compile(
     r"is not executable: No such file|"
     r"No such file or directory|"
-    r"ananicy-cpp\.service"
+    r"ananicy-cpp\.service|"
+    r"Failed to turn off SO_PASSRIGHTS on user lookup socket|"
+    r"Failed to enable SO_PASSCRED on handoff timestamp socket"
 )
 
 # Jinja2 template marker

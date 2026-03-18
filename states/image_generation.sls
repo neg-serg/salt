@@ -1,4 +1,4 @@
-{% from '_imports.jinja' import host, user, home, gopass_secret %}
+{% from '_imports.jinja' import user, home, gopass_secret %}
 {% from '_macros_service.jinja' import ensure_dir %}
 {% import_yaml 'data/image_providers.yaml' as image_providers_data %}
 {% set _image_gen_cfg = home ~ '/.config/image-gen/providers.yaml' %}

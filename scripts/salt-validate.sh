@@ -6,11 +6,13 @@ set -euo pipefail
 #
 # Usage: salt-validate.sh [JOBS]
 #   JOBS: max parallel jobs (default: nproc, or VALIDATE_JOBS env var)
+#   VALIDATE_TIMEOUT: per-state timeout in seconds (default: 300)
 
 project_dir="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$project_dir"
 
 jobs="${1:-${VALIDATE_JOBS:-$(nproc)}}"
+validate_timeout="${VALIDATE_TIMEOUT:-300}"
 
 # --- Runtime directory setup ---
 runtime="${project_dir}/.salt_runtime"
@@ -102,7 +104,7 @@ export sudo_cmd cache_base
 # --- Parallel validation with joblog for accurate failure counting ---
 # {1} and {#} are GNU parallel placeholders, not bash syntax
 # shellcheck disable=SC1083
-parallel --will-cite -j "$jobs" --group --timeout 120 --halt never \
+parallel --will-cite -j "$jobs" --group --timeout "$validate_timeout" --halt never \
     --joblog "$joblog" \
     validate_one {1} {#} ::: "${sls_files[@]}" || true
 

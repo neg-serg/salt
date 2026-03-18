@@ -1,6 +1,6 @@
 {% from '_imports.jinja' import host, user, home %}
 {% from '_macros_pkg.jinja' import pacman_install %}
-{% from '_macros_service.jinja' import service_stopped, ensure_dir %}
+{% from '_macros_service.jinja' import ensure_dir %}
 # greetd display manager: cage kiosk compositor + quickshell greeter
 
 {{ pacman_install('greetd', 'greetd') }}

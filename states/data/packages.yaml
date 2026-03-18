@@ -76,7 +76,6 @@ fonts:
   - noto-fonts-cjk  # Google Noto CJK fonts
 
 gaming:
-  # NOTE: most gaming packages managed by steam.sls — not listed here
 
 system:
   - btop  # resource monitor (C++ bpytop port)

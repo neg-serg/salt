@@ -1,4 +1,4 @@
-{% from '_imports.jinja' import host, user, home, gopass_secret %}
+{% from '_imports.jinja' import user, home, gopass_secret %}
 {% from '_macros_pkg.jinja' import paru_install %}
 {% from '_macros_service.jinja' import ensure_dir, user_service_file, user_service_enable %}
 {% import_yaml 'data/versions.yaml' as ver %}

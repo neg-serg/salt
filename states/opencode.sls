@@ -1,5 +1,4 @@
-{% from '_imports.jinja' import host, user, home, gopass_secret %}
-{% from '_macros_pkg.jinja' import npm_pkg %}
+{% from '_imports.jinja' import user, home %}
 {% from '_macros_service.jinja' import ensure_dir, user_service_restart %}
 {% import_yaml 'data/free_providers.yaml' as free_providers_data %}
 {% set _proxypilot_cfg = home ~ '/.config/proxypilot/config.yaml' %}

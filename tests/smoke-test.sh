@@ -45,10 +45,7 @@ assert() {
     fi
 }
 
-cleanup() {
-    podman rm -f "$CONTAINER_NAME" &>/dev/null || true
-}
-trap cleanup EXIT
+trap 'podman rm -f "$CONTAINER_NAME" &>/dev/null || true' EXIT
 
 echo "=== Salt Smoke Test ==="
 echo "Image: $IMAGE"
