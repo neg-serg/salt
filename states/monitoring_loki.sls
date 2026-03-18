@@ -1,6 +1,6 @@
 # Loki + Promtail + Grafana monitoring stack (split from monitoring.sls)
 {% from '_imports.jinja' import host, service_ports %}
-{% from '_macros_service.jinja' import service_with_unit, system_daemon_user, service_with_healthcheck, ensure_running, ensure_dir %}
+{% from '_macros_service.jinja' import service_with_unit, system_daemon_user, service_with_healthcheck, ensure_running, ensure_dir, unit_override %}
 {% from '_macros_pkg.jinja' import simple_service, pacman_install %}
 {% set mon = host.features.monitoring %}
 
@@ -37,6 +37,10 @@ loki_config:
         loki_port: {{ service_ports.loki.port }}
 
 {{ service_with_unit('loki', 'salt://units/loki.service', running=True, watch=['file: loki_config'], requires=['cmd: install_loki', 'file: loki_config', 'file: loki_subdirs']) }}
+
+# Defer Loki startup until after graphical.target to reduce boot I/O contention.
+# Promtail reads journal retroactively — no early boot logs are lost.
+{{ unit_override('loki_boot_defer', 'loki.service', 'salt://units/loki-boot-defer.conf', filename='boot-defer.conf', requires=['cmd: install_loki']) }}
 
 {{ service_with_healthcheck('loki_start', 'loki', 'curl -sf http://127.0.0.1:' ~ service_ports.loki.port ~ service_ports.loki.healthcheck ~ ' >/dev/null 2>&1', requires=['service: loki_enabled']) }}
 
