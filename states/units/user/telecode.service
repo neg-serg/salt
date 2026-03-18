@@ -1,0 +1,35 @@
+[Unit]
+Description=Telecode — multi-bot Telegram server for AI coding assistants
+After=network-online.target
+Wants=network-online.target
+StartLimitBurst=5
+StartLimitIntervalSec=300
+
+[Service]
+ExecStart=%h/.local/bin/telecode -config %h/.telecode/config.yml
+WorkingDirectory=%h
+SyslogIdentifier=telecode
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+MemoryMax=512M
+Environment=PATH=/usr/local/bin:/usr/bin:/bin:%h/.local/bin
+NoNewPrivileges=true
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+ProtectClock=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectHostname=yes
+PrivateTmp=yes
+KeyringMode=private
+UMask=0077
+
+[Install]
+WantedBy=default.target

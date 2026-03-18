@@ -1,0 +1,36 @@
+[Unit]
+Description=OpenCode API server (opencode serve)
+After=network-online.target proxypilot.service
+Wants=network-online.target proxypilot.service
+StartLimitBurst=5
+StartLimitIntervalSec=300
+
+[Service]
+ExecStart=%h/.local/bin/opencode serve
+WorkingDirectory=%h
+SyslogIdentifier=opencode-serve
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+MemoryMax=2G
+Environment=PATH=/usr/local/bin:/usr/bin:/bin:%h/.local/bin
+Environment=OPENAI_API_KEY=dummy
+NoNewPrivileges=true
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+ProtectClock=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectHostname=yes
+PrivateTmp=yes
+KeyringMode=private
+UMask=0077
+
+[Install]
+WantedBy=default.target

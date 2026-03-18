@@ -65,6 +65,7 @@ Packages managed declaratively via `states/data/packages.yaml` + domain-specific
 | `ollama.sls` | Ollama LLM service + model pulls |
 | `llama_embed.sls` | llama.cpp embedding server (Qwen3-Embedding via Vulkan) |
 | `opencode.sls` | OpenCode AI agent: TUI config + neg custom theme |
+| `opencode_telegram.sls` | OpenCode Telegram bots: opencode-telegram-bot + telecode |
 | `openclaw_agent.sls` | OpenClaw AI agent: gateway daemon, ProxyPilot routing, Telegram |
 | `floorp.sls` | Floorp browser configs + extensions |
 | `hardware.sls` | Fan control, GPU, hardware-specific setup |

@@ -1,0 +1,12 @@
+# Telecode — multi-bot Telegram server for AI coding assistants
+# Managed by Salt. Do not edit manually.
+
+workspaces:
+  - name: salt
+    working_dir: {{ home }}/src/salt
+    bot_token: {{ bot_token | tojson }}
+    allowed_chats:
+      - {{ telegram_uid }}
+    default_cli: opencode
+    model: openai/gpt-5-codex
+    command_timeout: 30m

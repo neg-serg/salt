@@ -4,6 +4,24 @@ Backlog of ideas and improvements. When ready to implement, run `/speckit.specif
 
 ---
 
+## OpenCode Telegram Bots (opencode-telegram-bot + telecode)
+
+Salt state `opencode_telegram.sls` created and validated. Binaries install, unit files deploy.
+Services are guarded — won't start until Telegram bot tokens are provided.
+
+**Pending (Telegram-side):**
+- [ ] Create Telegram bot via @BotFather for opencode-telegram-bot → `gopass insert api/opencode-telegram-bot`
+- [ ] Create Telegram bot via @BotFather for telecode → `gopass insert api/telecode-telegram`
+- [ ] Run `just apply opencode_telegram` after adding tokens
+- [ ] Verify both services start: `systemctl --user status opencode-telegram-bot telecode opencode-serve`
+
+**Optional enhancements:**
+- [ ] Add more workspaces to telecode config (currently only `~/src/salt`)
+- [ ] Configure STT (voice transcription) for opencode-telegram-bot
+- [ ] Add telecode to `salt-monitor` health checks
+
+---
+
 ## Full HD Video Generation (LTX 2.3 22B)
 
 LTX 2.3 22B distilled FP8 works on 7900 XTX (24GB, `--lowvram`). Tested: 512x320, 9 frames, 6 steps → 310s.
@@ -100,6 +118,19 @@ When building a multi-node home cluster, evaluate distributed LLM inference opti
 - **Ollama cluster mode** — in development upstream, may land before cluster is built. Monitor progress.
 
 Decision: prefer llama.cpp RPC (already in stack, AUR package, Vulkan). Revisit exo when AMD ROCm support matures and/or AUR package appears.
+
+
+## tg-cli: register own Telegram API credentials
+
+`tg-cli` (pipx, `kabi-tg-cli`) is installed and working with default Telegram Desktop credentials (`api_id=2040`).
+This increases the risk of account restrictions from Telegram.
+
+- [ ] Register own app at https://my.telegram.org/apps (requires SMS/Telegram code)
+- [ ] Create `~/.config/tg-cli/.env` with `TG_API_ID` and `TG_API_HASH`
+- [ ] Re-authenticate: `tg status` (will pick up new credentials)
+- [ ] Optionally: store credentials in gopass (`api/telegram-api`)
+
+Note: my.telegram.org form may silently reject — known issue, retry later or from a different browser/IP.
 
 
 ## SaluteSpeech — STT/TTS evaluation

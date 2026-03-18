@@ -59,6 +59,7 @@ defaults:
     opencode: true
     openclaw: true
     telethon_bridge: true
+    opencode_telegram: true
     video_ai: true
     music_analysis: false
     tidal: false
