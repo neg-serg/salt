@@ -38,15 +38,23 @@ desktop_services_enabled:
 {% endfor %}
     - enable: True
 
-# libvirtd is socket-activated: systemd starts it on demand and stops it when no VMs run.
-# Keeping it in service.running would re-start it on every Salt apply.
+# libvirtd: socket-activated only. The service must be DISABLED so systemd doesn't
+# start the full daemon at boot (1.2s on critical path). The socket starts it
+# on-demand when a client connects; autostart VMs still trigger activation.
 {{ pacman_install('libvirt', 'libvirt') }}
 
-libvirtd_enabled:
-  service.enabled:
+libvirtd_service_disabled:
+  service.disabled:
     - name: libvirtd
     - require:
       - cmd: install_libvirt
+
+libvirtd_socket_enabled:
+  service.enabled:
+    - name: libvirtd.socket
+    - require:
+      - cmd: install_libvirt
+      - service: libvirtd_service_disabled
 
 # pcscd is socket-activated: scdaemon connects on demand for Yubikey smart card operations.
 {{ pacman_install('pcsclite', 'pcsclite') }}
