@@ -1,0 +1,45 @@
+#!/usr/bin/env zsh
+# Resize the active floating window by a percentage, preserving aspect ratio.
+# Usage: hypr-resize-proportional +10  (grow by 10%)
+#        hypr-resize-proportional -10  (shrink by 10%)
+#        hypr-resize-proportional +20  (grow by 20%)
+
+local pct=${1:?Usage: hypr-resize-proportional [+/-]PERCENT}
+
+local win_json
+win_json=$(hyprctl activewindow -j) || exit 1
+
+local is_floating
+is_floating=$(printf '%s' "$win_json" | jq -r '.floating')
+if [[ "$is_floating" != "true" ]]; then
+    exit 0  # silently skip tiled windows
+fi
+
+local cur_w cur_h
+cur_w=$(printf '%s' "$win_json" | jq -r '.size[0]')
+cur_h=$(printf '%s' "$win_json" | jq -r '.size[1]')
+
+# Calculate new size preserving aspect ratio
+local factor
+factor=$(( 1.0 + pct / 100.0 ))
+local new_w new_h
+new_w=$(( int(cur_w * factor) ))
+new_h=$(( int(cur_h * factor) ))
+
+# Clamp to minimum 200x150, maximum monitor size
+local mon_json
+mon_json=$(hyprctl monitors -j | jq '.[0]')
+local mon_w mon_h
+mon_w=$(printf '%s' "$mon_json" | jq -r '.width / .scale | floor')
+mon_h=$(printf '%s' "$mon_json" | jq -r '.height / .scale | floor')
+
+(( new_w < 200 )) && new_w=200
+(( new_h < 150 )) && new_h=150
+(( new_w > mon_w )) && new_w=$mon_w
+(( new_h > mon_h )) && new_h=$mon_h
+
+# Resize: delta from current
+local dw=$(( new_w - cur_w ))
+local dh=$(( new_h - cur_h ))
+
+hyprctl dispatch resizeactive "$dw $dh"
