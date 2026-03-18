@@ -373,6 +373,8 @@ Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full de
 - `/mnt/one/ollama/models` (model storage) (037-optimal-q6k-models)
 - QML 6 (Qt 6), JavaScript (ES5 helpers) + Quickshell runtime, QtQuick, Quickshell.Services (Weather singleton, Timers), Material Symbols font (040-qs-weather-widget)
 - N/A (in-memory weather cache with 5-minute TTL, managed by existing Weather service) (040-qs-weather-widget)
+- Python 3.12+ (sanitizer script), Jinja2/YAML (Salt states) + Salt 3006.x (masterless), existing `_macros_service.jinja` macros (042-openclaw-model-filter)
+- JSON config file (`~/.openclaw/openclaw.json`), YAML data file (`states/data/openclaw_models.yaml`) (042-openclaw-model-filter)
 
 ## Recent Changes
 - 001-code-rag-integration: Added Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx)

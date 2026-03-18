@@ -1,0 +1,16 @@
+# Per-provider model allowlist for openclaw-sanitize-config
+# Only model IDs listed here survive the sanitizer's allowlist check.
+# Providers not listed here: only zero-value filtering applies (Layer 1).
+#
+# ── Schema ────────────────────────────────────────────────────────────
+#
+#   <provider_name>:
+#     - <model_id>  # description
+#
+# ─────────────────────────────────────────────────────────────────────
+
+proxypilot:
+  - claude-sonnet-4-6   # Claude Sonnet 4.6 (200K ctx, primary)
+  - claude-opus-4-6     # Claude Opus 4.6 (200K ctx, fallback)
+
+groq: []  # STT-only provider — no chat models allowed

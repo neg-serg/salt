@@ -2,6 +2,7 @@
 {% from '_macros_pkg.jinja' import npm_pkg %}
 {% from '_macros_service.jinja' import ensure_dir, user_service_file, user_service_enable, user_service_restart, user_unit_override %}
 {% import_yaml 'data/versions.yaml' as ver %}
+{% import_yaml 'data/openclaw_models.yaml' as allowed_models %}
 # ── Secret resolution (gopass primary, credentials-file fallback) ─────
 {% set _proxypilot_cfg = home ~ '/.config/proxypilot/config.yaml' %}
 {% set _proxy_key = gopass_secret('api/proxypilot-local', "awk '/^api-keys:/{getline; sub(/^[[:space:]]*-[[:space:]]*\"?/, \"\"); sub(/\"?[[:space:]]*$/, \"\"); print; exit}' " ~ _proxypilot_cfg ~ " 2>/dev/null || true") %}
@@ -79,16 +80,20 @@ openclaw_config:
       - cmd: openclaw_telegram_creds
 
 # ── Config sanitizer (ExecStartPre) ─────────────────────────────────
-# OpenClaw auto-populates STT models (e.g. Groq Whisper) into
-# models.providers with contextWindow=0 / maxTokens=0 → crash on next
-# startup. This pre-start script strips invalid model entries.
+# Two-layer model filter run before every gateway start:
+#   Layer 1: strips models with contextWindow/maxTokens <= 0 (STT leaks)
+#   Layer 2: strips models not on the per-provider allowlist
+# Allowlist sourced from data/openclaw_models.yaml, embedded at apply time.
 openclaw_sanitize_script:
   file.managed:
     - name: {{ home }}/.local/bin/openclaw-sanitize-config
-    - source: salt://scripts/openclaw-sanitize-config.py
+    - source: salt://scripts/openclaw-sanitize-config.py.j2
+    - template: jinja
     - user: {{ user }}
     - group: {{ user }}
     - mode: '0755'
+    - context:
+        allowed_models: {{ allowed_models | tojson }}
     - require:
       - file: openclaw_config_dir
 
