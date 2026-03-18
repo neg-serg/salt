@@ -13,6 +13,7 @@ OverlayToggleCapsule {
     capsule.backgroundKey: "weather"
     capsule.centerContent: true
     capsule.cursorShape: Qt.PointingHandCursor
+    capsule.implicitWidth: capsule.horizontalPadding * 2 + weatherContent.implicitWidth
     capsuleVisible: true
     autoToggleOnTap: true
     overlayNamespace: "sideleft-weather"
