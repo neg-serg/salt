@@ -171,7 +171,7 @@ settings.theme = `
   background-image: none !important;
   color: var(--hint-fg) !important;
   border: 1px solid var(--hint-border) !important;
-  border-radius: 0 !important;
+  border-radius: 3px !important;
   box-shadow: none !important;
 }
 `;
@@ -193,7 +193,7 @@ api.Hints.style(`div:not(#_) {
     background-image: none !important;
     color: #94E1F9 !important;
     border: 1px solid #006FCC !important;
-    border-radius: 0;
+    border-radius: 3px;
     box-shadow: none;
 }
 div.hint-scrollable:not(#_) {
