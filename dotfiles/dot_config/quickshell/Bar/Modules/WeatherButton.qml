@@ -32,6 +32,14 @@ OverlayToggleCapsule {
         } catch (e) { /* guard */ }
         return (Settings.settings.useFahrenheit || false) ? "--°F" : "--°C";
     }
+    readonly property string windText: {
+        try {
+            if (_current && typeof _current.windspeed === 'number') {
+                return WeatherIcons.formatWind(_current.windspeed, _current.winddirection);
+            }
+        } catch (e) { /* guard */ }
+        return "";
+    }
 
     Row {
         id: weatherContent
@@ -52,6 +60,25 @@ OverlayToggleCapsule {
             font.family: Theme.fontFamily
             font.pixelSize: Math.round(Theme.fontSizeSmall * capsuleScale)
             color: Theme.textPrimary
+            anchors.verticalCenter: parent.verticalCenter
+        }
+
+        MaterialIcon {
+            id: windIconItem
+            visible: root.windText !== ""
+            icon: root._current ? WeatherIcons.windDirectionIcon(root._current.winddirection) : "air"
+            size: Math.round(iconBox * 0.8)
+            color: Theme.textSecondary
+            anchors.verticalCenter: parent.verticalCenter
+        }
+
+        Text {
+            id: windLabel
+            visible: root.windText !== ""
+            text: root.windText
+            font.family: Theme.fontFamily
+            font.pixelSize: Math.round(Theme.fontSizeSmall * capsuleScale * 0.85)
+            color: Theme.textSecondary
             anchors.verticalCenter: parent.verticalCenter
         }
     }
