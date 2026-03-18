@@ -177,47 +177,54 @@ settings.theme = `
 `;
 
 // ========== Hints Styling (Shadow DOM) ==========
+// Surfingkeys 1.17.11 bug: user CSS is prepended BEFORE default CSS in
+// shadow DOM (w.prepend), so default styles win at equal specificity.
+// The default uses -webkit-gradient(#FFF785→#FFC542) via background shorthand.
+// Fix: use div:not(#_) to raise specificity above bare "div" selector.
 api.Hints.style(`
-  div, mask {
-    font-family: "Iosevka", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
-    font-size: 0.875rem !important;
-    font-weight: 600 !important;
-    padding: 2px 4px !important;
-    background: #002D59 !important;
-    background-image: none !important;
-    color: #94E1F9 !important;
-    border: 1px solid #006FCC !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
+  div:not(#_) {
+    font-family: "Iosevka", ui-monospace, monospace;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 1px 4px;
+    background: #002D59;
+    background-image: none;
+    color: #94E1F9;
+    border: 1px solid #006FCC;
+    border-radius: 0;
+    box-shadow: none;
   }
-
-  mask {
-    background: rgba(0, 111, 204, 0.3) !important;
-    border: 1px solid #006FCC !important;
+  div.hint-scrollable:not(#_) {
+    background: rgba(0, 45, 89, 0.85);
+    background-image: none;
   }
-
-  mask.activeInput {
-    background: rgba(0, 111, 204, 0.6) !important;
-    border: 2px solid #006FCC !important;
+  span {
+    color: #94E1F9;
+  }
+  [mode=input] mask:not(#_) {
+    background: rgba(0, 111, 204, 0.25);
+  }
+  [mode=input] mask.activeInput:not(#_) {
+    background: rgba(0, 111, 204, 0.5);
   }
 `);
 
 // Style for text/visual mode hints
 api.Hints.style(`
-  div {
-    font-family: "Iosevka", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
-    font-size: 0.875rem !important;
-    font-weight: 600 !important;
-    padding: 2px 4px !important;
-    background: #002D59 !important;
-    background-image: none !important;
-    color: #94E1F9 !important;
-    border: 1px solid #006FCC !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
+  div:not(#_) {
+    font-family: "Iosevka", ui-monospace, monospace;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 1px 4px;
+    background: #002D59;
+    background-image: none;
+    color: #94E1F9;
+    border: 1px solid #006FCC;
+    border-radius: 0;
+    box-shadow: none;
   }
-  div.begin {
-    color: #94E1F9 !important;
+  div.begin:not(#_) {
+    color: #94E1F9;
   }
 `, "text");
 
