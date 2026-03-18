@@ -33,13 +33,18 @@ OverlayToggleCapsule {
         } catch (e) { /* guard */ }
         return (Settings.settings.useFahrenheit || false) ? "--°F" : "--°C";
     }
-    readonly property string windText: {
+    readonly property bool hasWind: _current && typeof _current.windspeed === 'number'
+    readonly property string windSpeed: {
         try {
-            if (_current && typeof _current.windspeed === 'number') {
-                return WeatherIcons.formatWind(_current.windspeed, _current.winddirection);
-            }
+            if (hasWind) return WeatherIcons.formatWindSpeed(_current.windspeed);
         } catch (e) { /* guard */ }
         return "";
+    }
+    readonly property real windRotation: {
+        try {
+            if (hasWind) return WeatherIcons.windRotation(_current.winddirection);
+        } catch (e) { /* guard */ }
+        return 0;
     }
 
     Row {
@@ -65,9 +70,29 @@ OverlayToggleCapsule {
         }
 
         Text {
+            id: windSep
+            visible: root.hasWind
+            text: "·"
+            font.family: Theme.fontFamily
+            font.pixelSize: Math.round(Theme.fontSizeSmall * capsuleScale * 0.85)
+            color: Theme.textSecondary
+            anchors.verticalCenter: parent.verticalCenter
+        }
+
+        MaterialIcon {
+            id: windArrow
+            visible: root.hasWind
+            icon: "navigation"
+            rotationAngle: root.windRotation
+            size: Math.round(Theme.fontSizeSmall * capsuleScale * 0.85)
+            color: Theme.textSecondary
+            anchors.verticalCenter: parent.verticalCenter
+        }
+
+        Text {
             id: windLabel
-            visible: root.windText !== ""
-            text: "· " + root.windText
+            visible: root.hasWind
+            text: root.windSpeed
             font.family: Theme.fontFamily
             font.pixelSize: Math.round(Theme.fontSizeSmall * capsuleScale * 0.85)
             color: Theme.textSecondary

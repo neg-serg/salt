@@ -109,7 +109,8 @@ Rectangle {
                             spacing: Math.round(Theme.sidePanelSpacingSmall * 0.5 * Theme.scale(Screen))
                             visible: weatherData && weatherData.current_weather && typeof weatherData.current_weather.windspeed === 'number'
                             MaterialIcon {
-                                icon: weatherData && weatherData.current_weather ? WeatherIcons.windDirectionIcon(weatherData.current_weather.winddirection) : "air"
+                                icon: "navigation"
+                                rotationAngle: weatherData && weatherData.current_weather ? WeatherIcons.windRotation(weatherData.current_weather.winddirection) : 0
                                 size: Math.round(Theme.fontSizeSmall * Theme.scale(Screen))
                                 color: Theme.textOn(card.color)
                                 Layout.alignment: Qt.AlignVCenter
