@@ -35,8 +35,6 @@ extensions:
     slug: return-youtube-dislikes
   - id: "{4a311e5c-1ccc-49b7-9c23-3e2b47b6c6d5}"
     slug: "\u0441\u043A\u0430\u0447\u0430\u0442\u044C-\u043C\u0443\u0437\u044B\u043A\u0443-\u0441-\u0432\u043A-vkd"
-  - id: BetterDark@neopolitan.uk
-    slug: betterdark
   - id: chrome-mask@overengineer.dev
     slug: chrome-mask
   - id: "{036a55b4-5e72-4d05-a06c-cba2dfcc134a}"
@@ -68,3 +66,4 @@ extensions:
 unwanted:
   - "{3c078156-979c-498b-8990-85f7987dd929}"
   - BeautifulPurpleSky@Godie
+  - BetterDark@neopolitan.uk
