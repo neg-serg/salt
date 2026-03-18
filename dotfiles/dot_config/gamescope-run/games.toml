@@ -1,0 +1,42 @@
+# Per-game gamescope preset mappings.
+# Key = Steam App ID (as string). Value = table with preset + optional overrides.
+#
+# Available presets: perf, quality, hdr, targetfps, pinned, unity, skip
+#   perf       — 66% render + FSR upscaling (fast-paced games)
+#   quality    — native resolution, no upscaling
+#   hdr        — native resolution + HDR enabled
+#   targetfps  — dynamic resolution based on TARGET_FPS env var
+#   pinned     — minimal flags (override via GAMESCOPE_FLAGS env)
+#   unity      — nested mode for Unity/Wayland games
+#   skip       — bypass gamescope entirely
+#
+# Optional per-game overrides: scale (float), fsr_sharpness (int), extra_flags (string)
+#
+# Usage in Steam launch options: gamescope-run %command%
+# The launcher reads SteamAppId (set by Steam) to find the matching entry.
+
+default = "quality"
+
+[games.1669000]  # Age of Wonders 4
+preset = "unity"
+
+[games.2066020]  # Soulstone Survivors
+preset = "unity"
+
+[games.730]  # Counter-Strike 2
+preset = "perf"
+
+[games.570]  # Dota 2
+preset = "perf"
+
+[games.1172470]  # Apex Legends
+preset = "perf"
+
+[games.2357570]  # Overwatch 2
+preset = "perf"
+
+[games.440]  # Team Fortress 2
+preset = "perf"
+
+[games.2073850]  # The Finals
+preset = "perf"
