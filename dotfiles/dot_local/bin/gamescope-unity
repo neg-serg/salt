@@ -11,28 +11,37 @@
 # which presents a single stable Wayland surface to Hyprland.
 set -eo pipefail
 
-# Detect native resolution from Hyprland active monitor
-monitor_info=$(hyprctl monitors -j 2>/dev/null | jq -r '.[0] | "\(.width)x\(.height)@\(.refreshRate | floor)"')
+# Detect native resolution and scale from Hyprland active monitor
+monitor_info=$(hyprctl monitors -j 2>/dev/null | jq -r '.[0] | "\(.width)x\(.height)@\(.refreshRate | floor)x\(.scale)"')
 native_w=${monitor_info%%x*}
 rest=${monitor_info#*x}
 native_h=${rest%%@*}
-native_hz=${rest##*@}
+rest2=${rest#*@}
+native_hz=${rest2%%x*}
+monitor_scale=${rest2#*x}
 
-# Fallback to 3840x2160@240 if detection fails
+# Fallback to 3840x2160@240 scale=2 if detection fails
 : ${native_w:=3840}
 : ${native_h:=2160}
 : ${native_hz:=240}
+: ${monitor_scale:=2}
+
+# Logical resolution = physical / scale (what Hyprland's workspace actually is).
+# Game renders at native pixels (-w/-h) but the output window (-W/-H)
+# must match the logical workspace size for correct monocle/fullscreen fit.
+logical_w=$(( native_w / ${monitor_scale%%.*} ))
+logical_h=$(( native_h / ${monitor_scale%%.*} ))
 
 # Gamescope on desktop Wayland (not Steam Deck):
-# - Use nested mode (-w/-h for game, -W/-H for output window)
-# - No -f: let Hyprland handle fullscreen via window rules
+# - Use nested mode (-w/-h for game render, -W/-H for output window)
+# - No -f: let Hyprland handle fullscreen via monocle layout
 # - --expose-wayland: proper Wayland nested compositor
 # - --force-grab-cursor: fix mouse coordinate desync in Unity UI
 exec gamescope \
     -w "${native_w}" \
     -h "${native_h}" \
-    -W "${native_w}" \
-    -H "${native_h}" \
+    -W "${logical_w}" \
+    -H "${logical_h}" \
     -r "${native_hz}" \
     --expose-wayland \
     --force-grab-cursor \
