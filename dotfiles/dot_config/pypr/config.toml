@@ -13,7 +13,7 @@ process_tracking = false
 
 [scratchpads.music]
 animation = ""
-command = "kitty --class music -e rmpc"
+command = "kitty --single-instance --class music -e rmpc"
 margin = 80
 class = "music"
 position = "15% 50%"
@@ -24,7 +24,7 @@ process_tracking = false
 
 [scratchpads.torrment]
 animation = ""
-command = "kitty --class torrment -e rustmission"
+command = "kitty --single-instance --class torrment -e rustmission"
 class = "torrment"
 position = "1% 0%"
 size = "98% 40%"
@@ -34,7 +34,7 @@ process_tracking = false
 
 [scratchpads.teardown]
 animation = ""
-command = "kitty --class teardown -e btop"
+command = "kitty --single-instance --class teardown -e btop"
 class = "teardown"
 position = "1% 0%"
 size = "98% 50%"
@@ -43,7 +43,7 @@ process_tracking = false
 
 [scratchpads.mixer]
 animation = "fromRight"
-command = "kitty --class mixer -e pipemixer"
+command = "kitty --single-instance --class mixer -e pipemixer"
 class = "mixer"
 lazy = true
 size = "40% 90%"
