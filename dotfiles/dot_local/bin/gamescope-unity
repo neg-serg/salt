@@ -1,0 +1,32 @@
+#!/usr/bin/env zsh
+# Gamescope wrapper for Unity games with Wayland input/resize issues.
+# Usage (Steam launch options): gamescope-unity %command%
+#
+# Fixes:
+#   - Window resize glitches (Unity + Proton + Hyprland)
+#   - Mouse click desync on UI elements (EULA, menus)
+#   - Fractional scaling coordinate mismatch
+#
+# The game runs inside gamescope's nested X11 compositor,
+# which presents a single stable Wayland surface to Hyprland.
+set -eo pipefail
+
+# Detect native resolution from Hyprland active monitor
+monitor_info=$(hyprctl monitors -j 2>/dev/null | jq -r '.[0] | "\(.width)x\(.height)@\(.refreshRate | floor)"')
+native_w=${monitor_info%%x*}
+rest=${monitor_info#*x}
+native_h=${rest%%@*}
+native_hz=${rest##*@}
+
+# Fallback to 3840x2160@240 if detection fails
+: ${native_w:=3840}
+: ${native_h:=2160}
+: ${native_hz:=240}
+
+exec gamescope \
+    -W "${native_w}" \
+    -H "${native_h}" \
+    -r "${native_hz}" \
+    -f \
+    --force-grab-cursor \
+    -- "$@"
