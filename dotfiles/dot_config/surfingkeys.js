@@ -177,56 +177,52 @@ settings.theme = `
 `;
 
 // ========== Hints Styling (Shadow DOM) ==========
-// Surfingkeys 1.17.11 bug: user CSS is prepended BEFORE default CSS in
-// shadow DOM (w.prepend), so default styles win at equal specificity.
-// The default uses -webkit-gradient(#FFF785→#FFC542) via background shorthand.
-// Fix: use div:not(#_) to raise specificity above bare "div" selector.
-api.Hints.style(`
-  div:not(#_) {
+// Surfingkeys 1.17.11: user CSS is prepended BEFORE default CSS in shadow DOM
+// (w.prepend), so the default div{background: -webkit-gradient(#FFF785→#FFC542)}
+// wins at equal specificity. Two fixes required:
+//   1. String MUST start with "div" (no leading whitespace) — the regex guard
+//      /^div\b/ wraps the entire block in div{...} if it doesn't match, breaking it.
+//   2. Use !important on background/color/border to beat the default rules, and
+//      div:not(#_) for extra specificity insurance.
+api.Hints.style(`div:not(#_) {
     font-family: "Iosevka", ui-monospace, monospace;
     font-size: 13px;
     font-weight: 700;
     padding: 1px 4px;
-    background: #002D59;
-    background-image: none;
-    color: #94E1F9;
-    border: 1px solid #006FCC;
+    background: #002D59 !important;
+    background-image: none !important;
+    color: #94E1F9 !important;
+    border: 1px solid #006FCC !important;
     border-radius: 0;
     box-shadow: none;
-  }
-  div.hint-scrollable:not(#_) {
-    background: rgba(0, 45, 89, 0.85);
-    background-image: none;
-  }
-  span {
-    color: #94E1F9;
-  }
-  [mode=input] mask:not(#_) {
-    background: rgba(0, 111, 204, 0.25);
-  }
-  [mode=input] mask.activeInput:not(#_) {
-    background: rgba(0, 111, 204, 0.5);
-  }
-`);
+}
+div.hint-scrollable:not(#_) {
+    background: rgba(0, 45, 89, 0.85) !important;
+    background-image: none !important;
+}
+[mode=input] mask:not(#_) {
+    background: rgba(0, 111, 204, 0.25) !important;
+}
+[mode=input] mask.activeInput:not(#_) {
+    background: rgba(0, 111, 204, 0.5) !important;
+}`);
 
 // Style for text/visual mode hints
-api.Hints.style(`
-  div:not(#_) {
+api.Hints.style(`div:not(#_) {
     font-family: "Iosevka", ui-monospace, monospace;
     font-size: 13px;
     font-weight: 700;
     padding: 1px 4px;
-    background: #002D59;
-    background-image: none;
-    color: #94E1F9;
-    border: 1px solid #006FCC;
+    background: #002D59 !important;
+    background-image: none !important;
+    color: #94E1F9 !important;
+    border: 1px solid #006FCC !important;
     border-radius: 0;
     box-shadow: none;
-  }
-  div.begin:not(#_) {
-    color: #94E1F9;
-  }
-`, "text");
+}
+div.begin:not(#_) {
+    color: #94E1F9 !important;
+}`, "text");
 
 // ========== Visual Mode ==========
 api.map('V', 'v');  // V → enter visual/caret mode (v is remapped to scroll)
