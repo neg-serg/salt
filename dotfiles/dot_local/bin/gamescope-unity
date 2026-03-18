@@ -23,10 +23,17 @@ native_hz=${rest##*@}
 : ${native_h:=2160}
 : ${native_hz:=240}
 
+# Gamescope on desktop Wayland (not Steam Deck):
+# - Use nested mode (-w/-h for game, -W/-H for output window)
+# - No -f: let Hyprland handle fullscreen via window rules
+# - --expose-wayland: proper Wayland nested compositor
+# - --force-grab-cursor: fix mouse coordinate desync in Unity UI
 exec gamescope \
+    -w "${native_w}" \
+    -h "${native_h}" \
     -W "${native_w}" \
     -H "${native_h}" \
     -r "${native_hz}" \
-    -f \
+    --expose-wayland \
     --force-grab-cursor \
     -- "$@"
