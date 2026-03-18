@@ -58,6 +58,7 @@ defaults:
     sudo_ssh_agent: false
     opencode: true
     openclaw: true
+    nanoclaw: true
     telethon_bridge: true
     opencode_telegram: true
     video_ai: true

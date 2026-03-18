@@ -115,6 +115,9 @@ include:
 {% if host.features.openclaw %}
   - openclaw_agent
 {% endif %}
+{% if host.features.get('nanoclaw', false) %}
+  - nanoclaw
+{% endif %}
 {% if host.features.get('telethon_bridge', false) %}
   - telethon_bridge
 {% endif %}
