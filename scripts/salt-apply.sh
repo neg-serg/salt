@@ -349,6 +349,8 @@ if [[ $RC -eq 0 ]]; then
     fi
 
     if $salt_has_changes; then
+    # Update gpg-agent's TTY so pinentry prompts in this terminal (not stale GUI)
+    gpg-connect-agent updatestartuptty /bye &>/dev/null || true
     # Bootstrap chezmoi config before apply (needed for gopass template rendering)
     install -Dm644 "${PROJECT_DIR}/dotfiles/dot_config/chezmoi/chezmoi.toml" \
         "${HOME}/.config/chezmoi/chezmoi.toml" 2>/dev/null || true
