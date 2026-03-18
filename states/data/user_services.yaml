@@ -31,6 +31,8 @@ unit_files:
   - {id: openrgb_profile_service, filename: openrgb-profile.service}
   - {id: salt_drift_service, filename: salt-drift.service}
   - {id: salt_drift_timer, filename: salt-drift.timer}
+  - {id: gpu_unstick_service, filename: gpu-unstick.service}
+  - {id: gpu_unstick_timer, filename: gpu-unstick.timer}
 
 # Services/sockets to enable (systemctl --user enable)
 enable_services:
@@ -49,3 +51,4 @@ enable_now_timers:
   - mbsync-gmail.timer
   - vdirsyncer.timer
   - salt-drift.timer
+  - gpu-unstick.timer

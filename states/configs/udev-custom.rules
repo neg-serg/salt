@@ -40,3 +40,8 @@ ACTION=="add|change", KERNEL=="nvme[0-9]*n[0-9]", ATTR{queue/wbt_lat_usec}="0"
 # DRIVERS=="ahci" ensures only real SATA hosts match, not virtual SCSI behind NVMe/USB
 ACTION=="add", SUBSYSTEM=="scsi_host", KERNEL=="host*", DRIVERS=="ahci", \
   ATTR{link_power_management_policy}="max_performance"
+
+# AMDGPU: allow wheel group to write PM sysfs (gpu-unstick workaround for RDNA3 stuck counters)
+ACTION=="add", SUBSYSTEM=="drm", KERNEL=="card[0-9]*", DRIVERS=="amdgpu", \
+  RUN+="/bin/chmod g+w /sys%p/device/power_dpm_force_performance_level", \
+  RUN+="/bin/chgrp wheel /sys%p/device/power_dpm_force_performance_level"
