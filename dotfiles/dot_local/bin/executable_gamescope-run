@@ -126,6 +126,10 @@ PRESETS = {
         "fsr_sharpness": None,
         "extra_flags": ["--expose-wayland", "--force-grab-cursor"],
         "scale_method": "fixed",
+        # Disable gamescope WSI layer in nested mode: the layer expects an
+        # XWayland gamescope surface, but --expose-wayland creates a Wayland
+        # surface instead → "CreateSwapchainKHR: non-Gamescope swapchain" error.
+        "env": {"DISABLE_GAMESCOPE_WSI": "1"},
     },
 }
 
@@ -350,8 +354,16 @@ def main():
             print(f"[gamescope-run] output window: {lw}x{lh} (logical)")
         else:
             print(f"[gamescope-run] game render: {monitor.width}x{monitor.height} (native)")
+        preset_env = preset.get("env", {})
+        if preset_env:
+            env_str = " ".join(f"{k}={v}" for k, v in preset_env.items())
+            print(f"[gamescope-run] env: {env_str}")
         print(f"[gamescope-run] exec: {' '.join(full_cmd)}")
         sys.exit(0)
+
+    # Apply preset environment variables (e.g. DISABLE_GAMESCOPE_WSI for nested mode)
+    for key, val in preset.get("env", {}).items():
+        os.environ[key] = val
 
     # Execute
     os.execvp(full_cmd[0], full_cmd)
