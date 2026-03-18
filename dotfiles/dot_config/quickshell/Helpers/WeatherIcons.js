@@ -38,8 +38,14 @@ function windDirectionIcon(deg) {
     return icons[idx];
 }
 
+// Compact format for bar: "8 W"
 function formatWind(speed, deg) {
     if (typeof speed !== 'number') return "";
-    var dir = windDirection(deg);
-    return Math.round(speed) + " km/h " + dir;
+    return Math.round(speed) + " " + windDirection(deg);
+}
+
+// Verbose format for tooltip/panel: "8 km/h W"
+function formatWindFull(speed, deg) {
+    if (typeof speed !== 'number') return "";
+    return Math.round(speed) + " km/h " + windDirection(deg);
 }

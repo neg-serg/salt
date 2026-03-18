@@ -115,7 +115,7 @@ Rectangle {
                                 Layout.alignment: Qt.AlignVCenter
                             }
                             Text {
-                                text: weatherData && weatherData.current_weather ? WeatherIcons.formatWind(weatherData.current_weather.windspeed, weatherData.current_weather.winddirection) : ""
+                                text: weatherData && weatherData.current_weather ? WeatherIcons.formatWindFull(weatherData.current_weather.windspeed, weatherData.current_weather.winddirection) : ""
                                 font.family: Theme.fontFamily
                                 font.pixelSize: Math.round(Theme.fontSizeSmall * Theme.scale(Screen))
                                 color: Theme.textOn(card.color)
