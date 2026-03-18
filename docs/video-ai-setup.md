@@ -22,8 +22,8 @@ Local video generation using AI models on AMD RX 7900 XTX (24GB VRAM).
 
    ```yaml
    models:
-     - id: ltx-video-2b
-       enabled: true  # fastest, AMD-tested
+     - id: ltx-23-distilled-fp8
+       enabled: true  # best quality, 4-8 step distilled
    ```
 
 3. Apply:
@@ -38,18 +38,25 @@ Local video generation using AI models on AMD RX 7900 XTX (24GB VRAM).
    gen-video "a cat walking on the moon at sunset"
    ```
 
-## Available Models
+## Active Models
 
 | Model | VRAM | Speed (est.) | Quality | Modes |
 |-------|------|-------------|---------|-------|
-| LTX-Video 2B | 12 GB | ~1 min | Fair | t2v, i2v, v2v |
-| HunyuanVideo 1.5 FP8 | 14 GB | ~5 min | Excellent | t2v, i2v |
-| Wan2.1 14B Q5 | 11 GB | ~20 min | Very good | t2v |
-| Wan2.1 1.3B | 8 GB | ~8 min | Decent | t2v |
-| CogVideoX-5B | 16 GB | ~10 min | Fair | t2v, i2v |
-| Wan2.1 I2V 14B Q5 | 11 GB | ~20 min | Very good | i2v |
+| **LTX-2.3 22B Distilled FP8** (default) | 22 GB | ~2 min | Excellent | t2v, i2v |
+| Wan2.1 14B GGUF Q5 | 11 GB | ~20 min | Very good | t2v |
+| Chroma1-HD (image) | 20 GB | ~30 sec | Excellent | t2i, i2i |
 
-Speed estimates assume AMD RX 7900 XTX with ROCm 6.4. Actual times vary by prompt complexity and resolution.
+Speed estimates assume AMD RX 7900 XT with ROCm 6.3+. Actual times vary by prompt complexity and resolution.
+
+## Rejected Models (do not re-add)
+
+| Model | Reason | Date |
+|-------|--------|------|
+| LTX-Video 2B | Quality far below 22B; 720p max, visible artifacts | 2026-03 |
+| LTX-2.3 22B Dev FP8 | 29 GB, exceeds 24 GB VRAM even with --lowvram | 2026-03 |
+| LTX-2.3 22B GGUF Q4 | GGUF pipeline broken on RDNA3; OOM with VAE+text_projection | 2026-03 |
+
+See `states/data/video_ai.yaml` header comments for full rejection details.
 
 ## CLI Usage
 
@@ -100,16 +107,10 @@ rocminfo | grep gfx
 
 ### Out of VRAM
 
-- Use a smaller model (LTX-Video 2B at 12GB is the lightest)
+- Use Wan2.1 14B Q5 (11 GB) instead of LTX-2.3 (22 GB)
 - Reduce resolution: `-r 480p` instead of 720p
 - Ensure Ollama and other GPU services are stopped before generation
-
-### Slow GGUF loading
-
-Known issue with some ROCm versions. Try:
-
-- Upgrading to latest ROCm 6.x
-- Using non-GGUF models (LTX-Video 2B fp16, CogVideoX bf16)
+- ComfyUI `--lowvram` offloads to RAM but is slower
 
 ### VAAPI encoding fails
 
