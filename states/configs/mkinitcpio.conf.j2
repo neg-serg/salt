@@ -1,0 +1,12 @@
+# /etc/mkinitcpio.conf — managed by Salt (states/mkinitcpio.sls)
+# See mkinitcpio(8) for details.
+
+MODULES=()
+BINARIES=()
+FILES=()
+HOOKS=(base systemd autodetect microcode modconf kms keyboard keymap sd-vconsole block lvm2 filesystems fsck)
+
+# zstd -1: optimized for decompression speed (boot time) over compression ratio.
+# On NVMe the larger image (~55MB vs 45MB) adds <1ms I/O; decompression is 3-5x faster.
+COMPRESSION="zstd"
+COMPRESSION_OPTIONS=(-1 -T0)

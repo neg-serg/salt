@@ -52,6 +52,7 @@ include:
   # Kernel tuning, hardware, sysctl
   - kernel_modules
   - kernel_params_limine
+  - mkinitcpio
   - sysctl
   - hardware
 
