@@ -21,22 +21,54 @@
 
 ---
 
-## 2. Контрольный список настроек UEFI
+## 2. Настройки UEFI (ROG CROSSHAIR X870E EXTREME)
 
-Эти изменения вносятся в настройках BIOS/UEFI материнской платы (обычно доступны по клавише Del или F2 при POST).
+Эти изменения вносятся в настройках BIOS/UEFI материнской платы (Del при POST). Настройки указаны с точными путями меню для BIOS 1715+ (AGESA ComboAM5 PI 1.2.0.3g+).
 
-| Настройка | Действие | Ожидаемый выигрыш |
-|---|---|---|
-| Fast Boot / Quick Boot | **Включить** — пропускает полное обучение памяти при тёплой загрузке | 5-10с |
-| Network Boot / PXE | **Отключить** — сетевая загрузка не нужна на рабочей станции | 1-3с |
-| POST Delay | **Установить в 0** — убирает искусственную задержку ожидания клавиши | 0-5с |
-| Инициализация USB-портов | **Минимизировать** — инициализировать только порты, нужные при загрузке (клавиатура) | 1-2с |
-| CSM / Legacy Boot | **Отключить** — режим только UEFI пропускает сканирование устаревших option ROM | варьируется |
-| Поддержка USB-клавиатуры | **Оставить включённой** — необходима для доступа к BIOS при следующей загрузке | 0с |
+### Группа A: Память (экономия 5-15с)
 
-После применения этих настроек фаза прошивки должна сократиться до 5-10с при тёплой загрузке.
+Обучение памяти — основной фактор времени POST на AM5. DDR5 на 6000 МТ/с с 2x32 ГБ DIMM требует обширной калибровки UMC при каждой холодной загрузке. Memory Context Restore (MCR) кеширует подтверждённые результаты обучения в энергонезависимой памяти и восстанавливает их при последующих загрузках.
 
-**Важно**: Fast Boot может помешать доступу к BIOS при следующей перезагрузке. Большинство плат позволяют войти в BIOS удержанием клавиши при холодной загрузке (выключение, затем включение). Убедитесь, что это работает, прежде чем включать настройку.
+| # | Настройка | Путь в UEFI | Значение | Выигрыш |
+|---|---|---|---|---|
+| 1 | Memory Context Restore | `Advanced > AMD CBS > UMC Common Options > DDR Options > DDR Memory Features > Memory Context Restore` | **Enabled** | 5-15с |
+| 2 | Power Down Enable | `Advanced > AMD CBS > UMC Common Options > DDR Options > DDR Controller Configuration > DDR Power Options > Power Down Enable` | **Enabled** | (спутник MCR) |
+| 3 | DDR Training Runtime Reduction | `Advanced > AMD CBS > UMC Common Options > DDR Options > DDR Training Options > DDR Training Runtime Reduction` | **Enabled** | 0-2с |
+
+**Важно**: MCR ДОЛЖЕН быть включён совместно с Power Down Enable — документация AMD подтверждает нестабильность (BSOD, повреждение памяти) без него. Отключайте MCR временно при замене планок RAM или изменении таймингов памяти для принудительного переобучения. Сброс CMOS восстанавливает работу при любых проблемах, связанных с MCR.
+
+### Группа B: Неиспользуемое оборудование (экономия 2-4с)
+
+Каждая отключённая подсистема убирает время инициализации из POST. Эти настройки отключают оборудование, которое не используется.
+
+| # | Настройка | Путь в UEFI | Значение | Выигрыш |
+|---|---|---|---|---|
+| 4 | SATA Controller(s) | `Advanced > SATA Configuration > SATA Controller(s)` | **Disabled** | 0.5-1с |
+| 5 | Network Stack | `Advanced > Network Stack Configuration > Network Stack` | **Disabled** | 1-3с |
+| 6 | Legacy USB Support | `Advanced > USB Configuration > Legacy USB Support` | **Auto** | 1-2с |
+
+**Примечания**: SATA можно отключить, т.к. все накопители — NVMe (проверено через `lsblk`). Network Stack управляет только загрузкой по PXE — сетевые карты остаются функциональными в ОС. Legacy USB установлен в Auto (не Disabled), чтобы сохранить доступ клавиатуры в BIOS.
+
+### Группа C: Конфигурация загрузки (экономия 1-3с)
+
+Быстрые изменения с минимальным риском, устраняющие задержки, сканирование устаревших устройств и ненужные визуальные элементы загрузки.
+
+| # | Настройка | Путь в UEFI | Значение | Выигрыш |
+|---|---|---|---|---|
+| 7 | Fast Boot | `Boot > Boot Configuration > Fast Boot` | **Enabled** | 2-5с |
+| 8 | Post Delay Time | `Boot > Boot Configuration > Post Delay Time` | **0 sec** | 0-5с |
+| 9 | Boot Logo Display | `Boot > Boot Configuration > Boot Logo Display` | **Disabled** | 0-1с |
+| 10 | Wait For F1 If Error | `Boot > Boot Configuration > Wait For F1 If Error` | **Disabled** | 0с (предотвращает зависание) |
+| 11 | Launch CSM | `Boot > CSM > Launch CSM` | **Disabled** | 0-2с |
+| 12 | Core Watchdog Timer | `Advanced > AMD CBS > CPU Common Options > Core Watchdog > Core Watchdog Timer Enable` | **Disabled** | незначительно |
+
+### Откат
+
+Перед внесением изменений сохраните профиль BIOS через `Tool > ASUS User Profile > Save to Profile`.
+
+- **Клавиатура работает**: войдите в BIOS → `Tool > ASUS User Profile > Load from Profile` → восстановите сохранённый слот
+- **Клавиатура не работает в BIOS**: нажмите кнопку CMOS Clear на задней панели (сбрасывает все настройки по умолчанию)
+- **Не проходит POST**: используйте кнопку USB BIOS FlashBack на задней панели (не требует CPU/RAM)
 
 ---
 

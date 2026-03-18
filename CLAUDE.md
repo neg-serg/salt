@@ -380,6 +380,7 @@ Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full de
 - TOML config file at `~/.config/gamescope-run/games.toml` (per-game preset mappings) (043-unified-gamescope)
 - Jinja2/YAML (Salt states), Bash (benchmark script), Zsh (utility scripts) + Salt 3006.x (masterless), mkinitcpio, systemd, Limine bootloader (045-fast-boot)
 - Files on disk (Salt state tree, /etc/mkinitcpio.conf, systemd units) (045-fast-boot)
+- N/A (UEFI firmware configuration + Markdown documentation) + ASUS BIOS 1715+ (AGESA ComboAM5 PI 1.2.0.3g+), `systemd-analyze` (measurement) (046-uefi-boot-optimize)
 
 ## Recent Changes
 - 001-code-rag-integration: Added Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx)

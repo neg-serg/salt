@@ -21,22 +21,54 @@ Firmware accounts for ~65% of total boot time. The sections below target each ph
 
 ---
 
-## 2. UEFI Settings Checklist
+## 2. UEFI Settings (ROG CROSSHAIR X870E EXTREME)
 
-These changes are made in the motherboard BIOS/UEFI setup (typically accessed via Del or F2 at POST).
+These changes are made in the motherboard BIOS/UEFI setup (Del at POST). Settings are listed with exact menu paths for BIOS 1715+ (AGESA ComboAM5 PI 1.2.0.3g+).
 
-| Setting | Action | Expected Savings |
-|---|---|---|
-| Fast Boot / Quick Boot | **Enable** — skips full memory training on warm boots | 5-10s |
-| Network Boot / PXE | **Disable** — no network boot needed on a workstation | 1-3s |
-| POST Delay | **Set to 0** — removes artificial "press key" wait | 0-5s |
-| USB Port Initialization | **Minimize** — init only ports needed at boot (keyboard) | 1-2s |
-| CSM / Legacy Boot | **Disable** — UEFI-only mode skips legacy option ROM scan | variable |
-| USB Keyboard Support | **Keep enabled** — required for BIOS access on next boot | 0s |
+### Group A: Memory (5-15s savings)
 
-After applying these settings, firmware phase should drop to 5-10s on warm boots.
+Memory training is the single largest contributor to AM5 POST time. DDR5 at 6000 MT/s with 2x32GB DIMMs requires extensive UMC calibration on every cold boot. Memory Context Restore (MCR) caches validated training results in non-volatile storage and restores them on subsequent boots.
 
-**Important**: Fast Boot may prevent BIOS access on the next reboot. Most boards still allow access by holding the key during a cold boot (power off, then on). Verify this works before enabling.
+| # | Setting | UEFI Path | Value | Savings |
+|---|---|---|---|---|
+| 1 | Memory Context Restore | `Advanced > AMD CBS > UMC Common Options > DDR Options > DDR Memory Features > Memory Context Restore` | **Enabled** | 5-15s |
+| 2 | Power Down Enable | `Advanced > AMD CBS > UMC Common Options > DDR Options > DDR Controller Configuration > DDR Power Options > Power Down Enable` | **Enabled** | (companion to MCR) |
+| 3 | DDR Training Runtime Reduction | `Advanced > AMD CBS > UMC Common Options > DDR Options > DDR Training Options > DDR Training Runtime Reduction` | **Enabled** | 0-2s |
+
+**Important**: MCR MUST be paired with Power Down Enable — AMD documentation confirms instability (BSOD, memory corruption) without it. Disable MCR temporarily when changing RAM kits or memory timings to force a full retrain. CMOS clear recovers from any MCR-related boot failure.
+
+### Group B: Unused Hardware (2-4s savings)
+
+Each disabled subsystem removes initialization time from POST. These settings disable hardware that is not in use.
+
+| # | Setting | UEFI Path | Value | Savings |
+|---|---|---|---|---|
+| 4 | SATA Controller(s) | `Advanced > SATA Configuration > SATA Controller(s)` | **Disabled** | 0.5-1s |
+| 5 | Network Stack | `Advanced > Network Stack Configuration > Network Stack` | **Disabled** | 1-3s |
+| 6 | Legacy USB Support | `Advanced > USB Configuration > Legacy USB Support` | **Auto** | 1-2s |
+
+**Notes**: SATA can be disabled because all storage is NVMe (verified via `lsblk`). Network Stack controls PXE boot only — NICs remain functional in the OS. Legacy USB set to Auto (not Disabled) preserves keyboard access in BIOS.
+
+### Group C: Boot Configuration (1-3s savings)
+
+Low-risk quick wins that eliminate delays, legacy scanning, and unnecessary boot visuals.
+
+| # | Setting | UEFI Path | Value | Savings |
+|---|---|---|---|---|
+| 7 | Fast Boot | `Boot > Boot Configuration > Fast Boot` | **Enabled** | 2-5s |
+| 8 | Post Delay Time | `Boot > Boot Configuration > Post Delay Time` | **0 sec** | 0-5s |
+| 9 | Boot Logo Display | `Boot > Boot Configuration > Boot Logo Display` | **Disabled** | 0-1s |
+| 10 | Wait For F1 If Error | `Boot > Boot Configuration > Wait For F1 If Error` | **Disabled** | 0s (avoids hangs) |
+| 11 | Launch CSM | `Boot > CSM > Launch CSM` | **Disabled** | 0-2s |
+| 12 | Core Watchdog Timer | `Advanced > AMD CBS > CPU Common Options > Core Watchdog > Core Watchdog Timer Enable` | **Disabled** | negligible |
+
+### Rollback
+
+Before making changes, save a BIOS profile via `Tool > ASUS User Profile > Save to Profile`.
+
+- **Keyboard works**: Enter BIOS → `Tool > ASUS User Profile > Load from Profile` → restore saved slot
+- **Keyboard dead in BIOS**: Press CMOS Clear button on rear I/O (resets all settings to defaults)
+- **Won't POST**: Use USB BIOS FlashBack button on rear I/O (no CPU/RAM needed)
 
 ---
 
