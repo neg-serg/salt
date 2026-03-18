@@ -93,7 +93,9 @@ OverlayToggleCapsule {
                 const c = Math.round(data.current_weather.temperature);
                 const useF = Settings.settings.useFahrenheit || false;
                 const t = useF ? Math.round(c * 9/5 + 32) + "°F" : c + "°C";
-                return TooltipText.compose(city || "Weather", t, []);
+                const wind = WeatherIcons.formatWind(data.current_weather.windspeed, data.current_weather.winddirection);
+                var sub = wind ? [wind] : [];
+                return TooltipText.compose(city || "Weather", t, sub);
             }
             return TooltipText.compose("Weather", city, []);
         } catch (e) {

@@ -13,3 +13,33 @@ function materialSymbolForCode(code) {
     if (code >= 95 && code <= 99) return "thunderstorm";
     return "cloud";
 }
+
+// Wind direction degrees → compass label + Material Symbols arrow icon
+// 0°=N wind (blowing FROM north → arrow points south/down)
+function windDirection(deg) {
+    var dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+    var idx = Math.round(deg / 45) % 8;
+    return dirs[idx];
+}
+
+function windDirectionIcon(deg) {
+    // Arrow shows where wind blows TO (opposite of meteorological "from")
+    var icons = [
+        "south",       // 0°   N wind → blows southward
+        "south_west",  // 45°  NE wind
+        "west",        // 90°  E wind
+        "north_west",  // 135° SE wind
+        "north",       // 180° S wind
+        "north_east",  // 225° SW wind
+        "east",        // 270° W wind
+        "south_east"   // 315° NW wind
+    ];
+    var idx = Math.round(deg / 45) % 8;
+    return icons[idx];
+}
+
+function formatWind(speed, deg) {
+    if (typeof speed !== 'number') return "";
+    var dir = windDirection(deg);
+    return Math.round(speed) + " km/h " + dir;
+}

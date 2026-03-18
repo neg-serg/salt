@@ -105,6 +105,23 @@ Rectangle {
                             color: Theme.textOn(card.color)
                             Component.onCompleted: weatherRoot.warnContrast(card.color, color, 'weather.current')
                         }
+                        RowLayout {
+                            spacing: Math.round(Theme.sidePanelSpacingSmall * 0.5 * Theme.scale(Screen))
+                            visible: weatherData && weatherData.current_weather && typeof weatherData.current_weather.windspeed === 'number'
+                            MaterialIcon {
+                                icon: weatherData && weatherData.current_weather ? WeatherIcons.windDirectionIcon(weatherData.current_weather.winddirection) : "air"
+                                size: Math.round(Theme.fontSizeSmall * Theme.scale(Screen))
+                                color: Theme.textOn(card.color)
+                                Layout.alignment: Qt.AlignVCenter
+                            }
+                            Text {
+                                text: weatherData && weatherData.current_weather ? WeatherIcons.formatWind(weatherData.current_weather.windspeed, weatherData.current_weather.winddirection) : ""
+                                font.family: Theme.fontFamily
+                                font.pixelSize: Math.round(Theme.fontSizeSmall * Theme.scale(Screen))
+                                color: Theme.textOn(card.color)
+                                Layout.alignment: Qt.AlignVCenter
+                            }
+                        }
                     }
                 }
  
