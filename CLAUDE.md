@@ -378,6 +378,8 @@ Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full de
 - JSON config file (`~/.openclaw/openclaw.json`), YAML data file (`states/data/openclaw_models.yaml`) (042-openclaw-model-filter)
 - Python 3.12+ (matches existing 5/6 gamescope scripts; stdlib `tomllib` for config parsing) + None beyond stdlib — `json` (hyprctl parsing), `tomllib` (config), `math` (sqrt for targetfps), `subprocess`, `shlex` (043-unified-gamescope)
 - TOML config file at `~/.config/gamescope-run/games.toml` (per-game preset mappings) (043-unified-gamescope)
+- Jinja2/YAML (Salt states), Bash (benchmark script), Zsh (utility scripts) + Salt 3006.x (masterless), mkinitcpio, systemd, Limine bootloader (045-fast-boot)
+- Files on disk (Salt state tree, /etc/mkinitcpio.conf, systemd units) (045-fast-boot)
 
 ## Recent Changes
 - 001-code-rag-integration: Added Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx)
