@@ -43,6 +43,7 @@ defaults:
       vm_bridge: false
       xray: false
       singbox: false
+      tailscale: false
       wifi: false
     user_services:
       mail: true
@@ -86,6 +87,8 @@ hosts:
       user_services:
         mail: false
         vdirsyncer: false
+      network:
+        tailscale: true
       music_analysis: true
       tidal: true
 

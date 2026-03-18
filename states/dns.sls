@@ -14,6 +14,13 @@ unbound_config:
     - mode: '0644'
     - source: salt://configs/unbound.conf
 
+unbound_confd:
+  file.directory:
+    - name: /etc/unbound/unbound.conf.d
+    - mode: '0755'
+    - require:
+      - cmd: install_unbound
+
 unbound_root_key:
   cmd.run:
     - name: unbound-anchor -a /var/lib/unbound/root.key || true
