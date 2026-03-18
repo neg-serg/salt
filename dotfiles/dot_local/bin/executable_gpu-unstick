@@ -1,0 +1,46 @@
+#!/usr/bin/env zsh
+# gpu-unstick — reset stuck gpu_busy_percent counters on RDNA3 (amdgpu driver bug)
+# Toggles power_dpm_force_performance_level: auto→manual→auto to flush PM counters.
+# Requires group write on sysfs (udev rule grants wheel group access).
+
+setopt ERR_EXIT NO_UNSET PIPE_FAIL
+
+typeset -i fixed=0
+typeset dpm_path
+
+for dev in /sys/class/drm/card*/device; do
+    [[ -f "${dev}/gpu_busy_percent" ]] || continue
+    [[ -f "${dev}/mem_busy_percent" ]] || continue
+
+    dpm_path="${dev}/power_dpm_force_performance_level"
+    [[ -w "${dpm_path}" ]] || continue
+
+    gpu_busy=$(<"${dev}/gpu_busy_percent")
+    mem_busy=$(<"${dev}/mem_busy_percent")
+    card_name="${${dev:h}:t}"
+
+    # Only fix if counter appears stuck (high GPU% but near-zero memory bandwidth)
+    if (( gpu_busy >= 90 && mem_busy <= 5 )); then
+        perf=$(<"${dpm_path}")
+        print "Resetting stuck counter on ${card_name} (gpu=${gpu_busy}%%, mem_bw=${mem_busy}%%)"
+
+        # Toggle performance level to flush PM counters
+        print -n "manual" > "${dpm_path}"
+        sleep 0.2
+        print -n "${perf}" > "${dpm_path}"
+
+        # Verify
+        sleep 0.5
+        new_busy=$(<"${dev}/gpu_busy_percent")
+        if (( new_busy < 90 )); then
+            print "  ${card_name}: ${gpu_busy}%% → ${new_busy}%% ✓"
+        else
+            print -u2 "  ${card_name}: counter still stuck at ${new_busy}%% — driver-level issue"
+        fi
+        (( fixed++ ))
+    fi
+done
+
+if (( fixed == 0 )); then
+    print "No stuck GPU counters detected"
+fi

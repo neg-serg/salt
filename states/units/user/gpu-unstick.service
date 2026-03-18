@@ -1,0 +1,6 @@
+[Unit]
+Description=Reset stuck amdgpu PM counters (RDNA3 workaround)
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/gpu-unstick

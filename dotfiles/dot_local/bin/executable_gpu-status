@@ -1,0 +1,67 @@
+#!/usr/bin/env zsh
+# gpu-status — accurate AMD GPU status using sysfs (works around RDNA3 stuck counters)
+# Shows real utilization by cross-referencing gpu_busy_percent with mem_busy_percent
+
+setopt ERR_EXIT NO_UNSET PIPE_FAIL
+
+typeset -a cards=()
+for p in /sys/class/drm/card*/device/gpu_busy_percent; do
+    cards+=("${p:h}")
+done
+
+if (( ${#cards} == 0 )); then
+    print -u2 "No AMD GPUs found"
+    exit 1
+fi
+
+typeset -i idx=0
+typeset card_name vendor device_id perf_level stuck power
+typeset -i gpu_busy mem_busy vram_pct temp
+typeset -F vram_used_gb vram_total_gb
+typeset vram_used_fmt vram_total_fmt
+
+for dev in "${cards[@]}"; do
+    card_name="${${dev:h}:t}"
+    vendor=$(<"${dev}/vendor")
+    device_id=$(<"${dev}/device")
+    gpu_busy=$(<"${dev}/gpu_busy_percent")
+    mem_busy=0
+    [[ -f "${dev}/mem_busy_percent" ]] && mem_busy=$(<"${dev}/mem_busy_percent")
+    vram_pct=$(( $(<"${dev}/mem_info_vram_used") * 100 / $(<"${dev}/mem_info_vram_total") ))
+    vram_used_gb=$(( $(<"${dev}/mem_info_vram_used") / 1073741824.0 ))
+    vram_total_gb=$(( $(<"${dev}/mem_info_vram_total") / 1073741824.0 ))
+    perf_level=$(<"${dev}/power_dpm_force_performance_level" 2>/dev/null || print "N/A")
+
+    # Detect stuck counter: gpu reports busy but memory bandwidth is near zero
+    stuck=""
+    if (( gpu_busy >= 90 && mem_busy <= 5 )); then
+        stuck=" \e[33m(STUCK — run gpu-unstick)\e[0m"
+        gpu_busy=0
+    fi
+
+    # Read temperature
+    temp=0
+    for hwmon in "${dev}"/hwmon/hwmon*/temp1_input(N); do
+        temp=$(( $(<"${hwmon}") / 1000 ))
+        break
+    done
+
+    # Read power
+    power="N/A"
+    for hwmon in "${dev}"/hwmon/hwmon*/power1_average(N); do
+        printf -v power '%.1fW' "$(( $(<"${hwmon}") / 1000000.0 ))"
+        break
+    done
+
+    printf -v vram_used_fmt '%.1f' "${vram_used_gb}"
+    printf -v vram_total_fmt '%.1f' "${vram_total_gb}"
+
+    print "\e[1m${card_name}\e[0m [${vendor}:${device_id}]"
+    print "  GPU:   ${gpu_busy}%${stuck}"
+    print "  VRAM:  ${vram_pct}% (${vram_used_fmt} / ${vram_total_fmt} GB)"
+    print "  MemBW: ${mem_busy}%"
+    print "  Temp:  ${temp}°C  Power: ${power}  Perf: ${perf_level}"
+
+    idx+=1
+    if (( idx < ${#cards} )); then print; fi
+done
