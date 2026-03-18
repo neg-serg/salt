@@ -3,7 +3,7 @@
 ## Обзор
 
 ProxyPilot -- локальный прокси для AI API, маршрутизирующий запросы от инструментов
-разработки (Claude Code, OpenCode, Codex) к провайдерам через OAuth-токены.
+разработки (Claude Code, OpenCode) к провайдерам через OAuth-токены.
 Работает как systemd user-сервис на `127.0.0.1:8317`.
 
 ## Архитектура
@@ -105,8 +105,8 @@ api-keys:
 ```
 
 Два шаблона должны быть синхронизированы:
-- `dotfiles/dot_config/proxypilot/config.yaml.tmpl` -- шаблон chezmoi (с codex-алиасами)
-- `states/configs/proxypilot.yaml.j2` -- шаблон Salt Jinja (без codex-алиасов)
+- `dotfiles/dot_config/proxypilot/config.yaml.tmpl` -- шаблон chezmoi
+- `states/configs/proxypilot.yaml.j2` -- шаблон Salt Jinja
 
 ## Секреты
 
@@ -116,7 +116,7 @@ api-keys:
 | Ключ управления | `api/proxypilot-management` | Доступ к веб-дашборду |
 
 Клиентский API-ключ также экспортируется как `PROXYPILOT_API_KEY` и `OPENAI_API_KEY`
-в `~/.config/zsh/10-secrets.zsh` (для shell-инструментов и Codex CLI).
+в `~/.config/zsh/10-secrets.zsh` (для shell-инструментов).
 
 ## Использование
 
