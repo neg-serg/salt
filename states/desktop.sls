@@ -2,6 +2,7 @@
 {% from '_imports.jinja' import host, user, home, retry_attempts, retry_interval %}
 {% from '_macros_pkg.jinja' import pacman_install, paru_install %}
 {% from '_macros_service.jinja' import ensure_dir, service_stopped, service_with_unit %}
+{% from '_macros_desktop.jinja' import hyprpm_update, hyprpm_add, hyprpm_enable, dconf_settings %}
 {% import_yaml 'data/desktop.yaml' as desktop %}
 
 # --- Pacman hook: regenerate installed-package cache after every transaction ---
@@ -97,7 +98,6 @@ swayimg_local_build:
 # headers must match the running Hyprland version (hyprpm update rebuilds them).
 # hyprpm writes state to /var/cache/hyprpm/<user>/; ensure user ownership so
 # hyprpm doesn't need sudo (which fails without a TTY in Salt context).
-{% set hypr_sig_cmd = 'ls /run/user/1000/hypr/ 2>/dev/null | head -1' %}
 {% set hyprpm_cache = '/var/cache/hyprpm/' ~ user %}
 
 hyprpm_cache_dir:
@@ -128,131 +128,36 @@ hyprpm_repo_cache_hyprglass:
     - require:
       - file: hyprpm_cache_dir
 
-hyprpm_headers_update:
-  cmd.run:
-    - name: >-
-        export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
-        hyprpm update
-    - runas: {{ user }}
-    - onlyif: ls /run/user/1000/hypr/ 2>/dev/null | rg -q .
-    - unless: >-
-        export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
-        hyprpm list 2>&1 | rg -q 'xtra-dispatchers' &&
-        hyprpm list 2>&1 | rg -q 'HyprGlass'
-    - env:
-      - HOME: {{ home }}
-      - XDG_RUNTIME_DIR: /run/user/1000
-    - require:
-      - cmd: install_hyprland_desktop
-      - file: hyprpm_cache_dir
-    - retry:
-        attempts: {{ retry_attempts }}
-        interval: {{ retry_interval }}
-    - timeout: 300
+{{ hyprpm_update('hyprpm_headers_update',
+    check_plugins=['xtra-dispatchers', 'HyprGlass'],
+    require=['cmd: install_hyprland_desktop', 'file: hyprpm_cache_dir']) }}
 
 # hyprpm add + enable are separate: add is guarded by repo presence,
 # enable is guarded by "enabled: <ANSI>true" in hyprpm list output.
-{% set hyprpm_env %}
-      - HOME: {{ home }}
-      - XDG_RUNTIME_DIR: /run/user/1000
-{% endset %}
-{% set hyprpm_onlyif = 'ls /run/user/1000/hypr/ 2>/dev/null | rg -q .' %}
+{{ hyprpm_add('hyprpm_add_hyprland_plugins',
+    'https://github.com/hyprwm/hyprland-plugins',
+    'Repository hyprland-plugins',
+    require=['cmd: install_hyprland_desktop', 'cmd: hyprpm_headers_update', 'file: hyprpm_repo_cache_hyprland_plugins']) }}
 
-hyprpm_add_hyprland_plugins:
-  cmd.run:
-    - name: >-
-        export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
-        yes | hyprpm add https://github.com/hyprwm/hyprland-plugins
-    - runas: {{ user }}
-    - onlyif: {{ hyprpm_onlyif }}
-    - unless: >-
-        export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
-        hyprpm list 2>&1 | rg -q 'Repository hyprland-plugins'
-    - env:
-{{ hyprpm_env }}
-    - require:
-      - cmd: install_hyprland_desktop
-      - cmd: hyprpm_headers_update
-      - file: hyprpm_repo_cache_hyprland_plugins
-    - retry:
-        attempts: {{ retry_attempts }}
-        interval: {{ retry_interval }}
-    - timeout: 300
+{{ hyprpm_enable('hyprpm_enable_xtra_dispatchers',
+    'xtra-dispatchers',
+    require=['cmd: hyprpm_add_hyprland_plugins']) }}
 
-hyprpm_enable_xtra_dispatchers:
-  cmd.run:
-    - name: >-
-        export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
-        hyprpm enable xtra-dispatchers
-    - runas: {{ user }}
-    - onlyif: {{ hyprpm_onlyif }}
-    - unless: >-
-        export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
-        hyprpm list 2>&1 | rg 'xtra-dispatchers' -A1 | rg -q 'enabled:.*true'
-    - env:
-{{ hyprpm_env }}
-    - require:
-      - cmd: hyprpm_add_hyprland_plugins
+{{ hyprpm_add('hyprpm_add_hyprglass',
+    'https://github.com/hyprnux/hyprglass',
+    'Repository HyprGlass',
+    require=['cmd: install_hyprland_desktop', 'cmd: hyprpm_headers_update', 'file: hyprpm_repo_cache_hyprglass']) }}
 
-hyprpm_add_hyprglass:
-  cmd.run:
-    - name: >-
-        export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
-        yes | hyprpm add https://github.com/hyprnux/hyprglass
-    - runas: {{ user }}
-    - onlyif: {{ hyprpm_onlyif }}
-    - unless: >-
-        export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
-        hyprpm list 2>&1 | rg -q 'Repository HyprGlass'
-    - env:
-{{ hyprpm_env }}
-    - require:
-      - cmd: install_hyprland_desktop
-      - cmd: hyprpm_headers_update
-      - file: hyprpm_repo_cache_hyprglass
-    - retry:
-        attempts: {{ retry_attempts }}
-        interval: {{ retry_interval }}
-    - timeout: 300
-
-hyprpm_enable_hyprglass:
-  cmd.run:
-    - name: >-
-        export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
-        hyprpm enable hyprglass
-    - runas: {{ user }}
-    - onlyif: {{ hyprpm_onlyif }}
-    - unless: >-
-        export HYPRLAND_INSTANCE_SIGNATURE=$( {{ hypr_sig_cmd }} ) &&
-        hyprpm list 2>&1 | rg 'hyprglass' -A1 | rg -q 'enabled:.*true'
-    - env:
-{{ hyprpm_env }}
-    - require:
-      - cmd: hyprpm_add_hyprglass
+{{ hyprpm_enable('hyprpm_enable_hyprglass',
+    'hyprglass',
+    require=['cmd: hyprpm_add_hyprglass']) }}
 
 # --- SSH directory setup ---
 {{ ensure_dir('ssh_dir', home ~ '/.ssh', mode='0700') }}
 
 
 # --- dconf: GTK/icon/font theme for Wayland apps ---
-dconf_themes:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-{% for key, val in desktop.dconf_settings.items() %}
-{%- set safe = val | replace('\\', '\\\\') | replace('"', '\\"') | replace('`', '\\`') | replace('$', '\\$') %}
-        dconf write {{ key }} "'{{ safe }}'"
-{% endfor %}
-    - shell: /bin/bash
-    - runas: {{ user }}
-    - env:
-      - DBUS_SESSION_BUS_ADDRESS: "unix:path={{ host.runtime_dir }}/bus"
-    - unless: |
-        export DBUS_SESSION_BUS_ADDRESS=unix:path={{ host.runtime_dir }}/bus
-{% for key, val in desktop.dconf_settings.items() %}
-{%- set safe = val | replace('\\', '\\\\') | replace('"', '\\"') | replace('`', '\\`') | replace('$', '\\$') %}
-        test "$(dconf read {{ key }})" = "'{{ safe }}'"{{ ' &&' if not loop.last else '' }}
-{% endfor %}
+{{ dconf_settings('dconf_themes', desktop.dconf_settings) }}
 
 # --- Salt daemon systemd unit ---
 salt_daemon_venv_ready:

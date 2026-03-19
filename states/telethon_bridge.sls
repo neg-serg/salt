@@ -1,6 +1,6 @@
 {% from '_imports.jinja' import user, home, gopass_secret %}
 {% from '_macros_pkg.jinja' import paru_install %}
-{% from '_macros_service.jinja' import ensure_dir, user_service_file, user_service_enable %}
+{% from '_macros_service.jinja' import ensure_dir, user_service_file, user_service_enable, user_linger %}
 {% import_yaml 'data/versions.yaml' as ver %}
 # ── Secret resolution (gopass primary, credentials-file fallback) ─────
 {% set _proxypilot_cfg = home ~ '/.config/proxypilot/config.yaml' %}
@@ -63,10 +63,7 @@ telethon_bridge_init_script:
       - file: telethon_bridge_config
 
 # ── Lingering (user services survive logout) ─────────────────────────
-telethon_bridge_lingering:
-  cmd.run:
-    - name: loginctl enable-linger {{ user }}
-    - unless: loginctl show-user {{ user }} 2>/dev/null | rg -q '^Linger=yes'
+{{ user_linger('telethon_bridge_lingering') }}
 
 # ── Systemd user service ─────────────────────────────────────────────
 {{ user_service_file('telethon_bridge_service', 'telethon-bridge.service') }}

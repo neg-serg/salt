@@ -1,4 +1,5 @@
 {% from '_imports.jinja' import host %}
+{% from '_macros_config.jinja' import config_file_edit %}
 # Kernel boot parameters for CachyOS (Limine bootloader).
 # Manages kernel_cmdline entries in /boot/limine.conf.
 #
@@ -45,12 +46,11 @@ limine_set_default_deployed:
 
 # Set bootloader timeout to 1 second — enough to catch the menu on panic,
 # fast enough to not delay normal boot.
-limine_timeout:
-  cmd.run:
-    - name: "sed -i 's/^timeout:.*/timeout: 1/' /boot/limine.conf"
-    - unless: "rg -q '^timeout: 1$' /boot/limine.conf"
-    - require:
-      - cmd: limine_flat_boot_entries
+{{ config_file_edit('limine_timeout',
+    cmd="sed -i 's/^timeout:.*/timeout: 1/' /boot/limine.conf",
+    check_pattern='^timeout: 1$',
+    check_file='/boot/limine.conf',
+    require=['cmd: limine_flat_boot_entries']) }}
 
 # Append missing kernel params to all kernel_cmdline entries in limine.conf.
 # Preserves existing root= and other boot-critical params.

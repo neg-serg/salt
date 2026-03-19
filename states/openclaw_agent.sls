@@ -1,6 +1,6 @@
 {% from '_imports.jinja' import user, home, gopass_secret %}
 {% from '_macros_pkg.jinja' import npm_pkg %}
-{% from '_macros_service.jinja' import ensure_dir, user_service_file, user_service_enable, user_service_restart, user_unit_override %}
+{% from '_macros_service.jinja' import ensure_dir, user_service_file, user_service_enable, user_service_restart, user_unit_override, user_linger %}
 {% import_yaml 'data/versions.yaml' as ver %}
 {% import_yaml 'data/openclaw_models.yaml' as allowed_models %}
 # ── Secret resolution (gopass primary, credentials-file fallback) ─────
@@ -98,10 +98,7 @@ openclaw_sanitize_script:
       - file: openclaw_config_dir
 
 # ── Lingering (user services survive logout) ─────────────────────────
-openclaw_lingering:
-  cmd.run:
-    - name: loginctl enable-linger {{ user }}
-    - unless: loginctl show-user {{ user }} 2>/dev/null | rg -q '^Linger=yes'
+{{ user_linger('openclaw_lingering') }}
 
 # ── Systemd user service ─────────────────────────────────────────────
 {{ user_service_file('openclaw_service', 'openclaw-gateway.service') }}

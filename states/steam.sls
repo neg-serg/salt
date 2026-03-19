@@ -2,6 +2,7 @@
 {% from '_macros_service.jinja' import ensure_dir %}
 {% from '_macros_pkg.jinja' import pacman_install %}
 {% from '_macros_install.jinja' import curl_extract_7z %}
+{% from '_macros_config.jinja' import config_file_edit %}
 {% import_yaml 'data/versions.yaml' as ver %}
 # Steam + gaming tools (native pacman install)
 # Requires multilib repo for lib32 dependencies.
@@ -9,17 +10,11 @@
 # lib32-mesa-git vs multilib lib32-mesa conflict; macro doesn't support extra args.
 {% set modern_skin_version = ver.get('modern_steam', '') %}
 
-multilib_repo:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        printf '\n[multilib]\nInclude = /etc/pacman.d/mirrorlist\n' >> /etc/pacman.conf
-        pacman -Sy
-    - shell: /bin/bash
-    - unless: rg -q '^\[multilib\]' /etc/pacman.conf
-    - retry:
-        attempts: {{ retry_attempts }}
-        interval: {{ retry_interval }}
+{{ config_file_edit('multilib_repo',
+    cmd="printf '\\n[multilib]\\nInclude = /etc/pacman.d/mirrorlist\\n' >> /etc/pacman.conf && pacman -Sy",
+    check_pattern='^\\[multilib\\]',
+    check_file='/etc/pacman.conf',
+    retry=True) }}
 
 vulkan_radeon_pkg:
   cmd.run:
