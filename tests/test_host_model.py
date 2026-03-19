@@ -165,3 +165,103 @@ def test_load_feature_matrix():
     assert len(matrix) > 0
     for entry in matrix:
         assert "name" in entry
+
+
+# --- US2: host config assembly pipeline ---
+
+
+def test_full_assembly_pipeline():
+    """Build a real host config and verify defaults + overrides + derived fields."""
+    data = host_model.load_hosts_yaml()
+    host = host_model.build_host("telfir", data)
+    # Defaults should be present
+    assert host["user"] == data["defaults"]["user"]
+    assert host["home"] == data["defaults"]["home"]
+    # Telfir-specific overrides should be applied
+    assert "display" in host
+    assert "floorp_profile" in host
+    # Derived fields should be computed
+    assert host["runtime_dir"] == f"/run/user/{host['uid']}"
+    assert host["project_dir"] == host["home"] + "/src/salt"
+
+
+def test_alias_produces_identical_config():
+    """Alias (cachyos→telfir) must produce an identical config dict."""
+    data = host_model.load_hosts_yaml()
+    via_alias = host_model.build_host("cachyos", data)
+    direct = host_model.build_host("telfir", data)
+    assert via_alias == direct
+
+
+def test_derived_fields_from_custom_uid():
+    """Override uid → derived runtime_dir should reflect the new uid."""
+    data = host_model.load_hosts_yaml()
+    data = data.copy()
+    data["hosts"] = {"custom-uid-host": {"uid": 9999}}
+    host = host_model.build_host("custom-uid-host", data)
+    assert host["runtime_dir"] == "/run/user/9999"
+
+
+def test_feature_flag_override_preserves_siblings():
+    """Overriding one feature flag preserves sibling flags from defaults."""
+    data = host_model.load_hosts_yaml()
+    defaults_features = data["defaults"].get("features", {})
+    data = data.copy()
+    data["hosts"] = {"flag-test": {"features": {"steam": False}}}
+    host = host_model.build_host("flag-test", data)
+    assert host["features"]["steam"] is False
+    # Other feature flags from defaults should still be present
+    for key in defaults_features:
+        if key != "steam":
+            assert key in host["features"], f"Feature '{key}' missing after override"
+
+
+# --- US4: deep merge edge cases ---
+
+
+def test_merge_three_level_nesting():
+    """3-level nested dicts merge recursively."""
+    base = {"a": {"b": {"c": 1}}}
+    override = {"a": {"b": {"d": 2}}}
+    result = host_model.recursive_merge(base, override)
+    assert result == {"a": {"b": {"c": 1, "d": 2}}}
+
+
+def test_merge_list_replaces_entirely():
+    """Lists are replaced, not appended."""
+    base = {"k": [1, 2, 3]}
+    override = {"k": [4, 5]}
+    result = host_model.recursive_merge(base, override)
+    assert result["k"] == [4, 5]
+
+
+def test_merge_scalar_replaces_dict():
+    """Scalar override replaces a dict base value."""
+    base = {"k": {"nested": True}}
+    override = {"k": "string"}
+    result = host_model.recursive_merge(base, override)
+    assert result["k"] == "string"
+
+
+def test_merge_dict_replaces_scalar():
+    """Dict override replaces a scalar base value."""
+    base = {"k": "string"}
+    override = {"k": {"nested": True}}
+    result = host_model.recursive_merge(base, override)
+    assert result["k"] == {"nested": True}
+
+
+def test_merge_empty_dict_preserves_base():
+    """Empty dict override does not clobber base nested dict."""
+    base = {"a": {"x": 1}}
+    override = {"a": {}}
+    result = host_model.recursive_merge(base, override)
+    assert result == {"a": {"x": 1}}
+
+
+def test_merge_none_override():
+    """None override replaces base value."""
+    base = {"k": "val"}
+    override = {"k": None}
+    result = host_model.recursive_merge(base, override)
+    assert result["k"] is None
