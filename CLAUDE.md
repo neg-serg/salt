@@ -382,6 +382,10 @@ Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full de
 - Files on disk (Salt state tree, /etc/mkinitcpio.conf, systemd units) (045-fast-boot)
 - N/A (UEFI firmware configuration + Markdown documentation) + ASUS BIOS 1715+ (AGESA ComboAM5 PI 1.2.0.3g+), `systemd-analyze` (measurement) (046-uefi-boot-optimize)
 - Jinja2/YAML (Salt states), Markdown (documentation) + Salt 3006.x (masterless), existing `_macros_pkg.jinja` macros, Unbound (047-tailscale-setup)
+- Jinja2/YAML (Salt 3006.x state files) + Salt macros (`_macros_pkg.jinja`, `_macros_service.jinja`), `import_yaml` (049-data-driven-services)
+- YAML data files (`states/data/services.yaml`) (049-data-driven-services)
+- Python 3.12+ (CachyOS system Python, executed via `.venv/bin/python3`) + PyYAML (existing), jinja2 (existing). No new dependencies. (050-host-model-single-source)
+- N/A (reads YAML files, returns dicts) (050-host-model-single-source)
 
 ## Recent Changes
 - 001-code-rag-integration: Added Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx)
