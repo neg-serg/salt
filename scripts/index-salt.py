@@ -19,8 +19,12 @@ from datetime import datetime
 
 import yaml
 
-# Reuse lint-jinja.py infrastructure (hyphenated filename requires importlib)
+# Host model from shared module; lint-jinja.py for Jinja rendering infrastructure
 SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
+if SCRIPTS_DIR not in sys.path:
+    sys.path.insert(0, SCRIPTS_DIR)
+
+# lint-jinja.py has a hyphenated name — must use importlib.util
 _lint_path = os.path.join(SCRIPTS_DIR, "lint-jinja.py")
 _spec = importlib.util.spec_from_file_location("lint_jinja", _lint_path)
 if not _spec or not _spec.loader:  # pragma: no cover - defensive
@@ -31,8 +35,6 @@ _spec.loader.exec_module(_lint_jinja)  # type: ignore[attr-defined]
 SaltTagExtension = _lint_jinja.SaltTagExtension
 _make_render_env = _lint_jinja._make_render_env
 _resolve_import_yaml = _lint_jinja._resolve_import_yaml
-_build_lint_host = _lint_jinja._build_lint_host
-_enable_all_features = _lint_jinja._enable_all_features
 
 STATES_DIR = "states"
 MEMORY_DIR = os.path.join(

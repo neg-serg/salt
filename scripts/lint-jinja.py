@@ -3,7 +3,6 @@
 naming conventions, unused imports, require resolution, dangling includes."""
 
 import collections
-import getpass
 import glob
 import os
 import re
@@ -12,9 +11,14 @@ import subprocess
 import sys
 import tempfile
 
-import jinja2
-import jinja2.ext
-import yaml
+SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
+if SCRIPTS_DIR not in sys.path:
+    sys.path.insert(0, SCRIPTS_DIR)
+
+import host_model  # noqa: E402
+import jinja2  # noqa: E402
+import jinja2.ext  # noqa: E402
+import yaml  # noqa: E402
 
 # --- Salt-specific Jinja2 tags ---
 # Salt adds tags like {% import_yaml %}, {% load_yaml %} etc.
@@ -63,24 +67,6 @@ def _resolve_import_yaml(source, states_dir="states"):
     return yaml_vars
 
 
-def _deep_enable(d):
-    """Recursively set all False booleans to True."""
-    return {
-        k: _deep_enable(v) if isinstance(v, dict) else (True if v is False else v)
-        for k, v in d.items()
-    }
-
-
-def _enable_all_features(d):
-    """Enable all feature flags in host config for maximum lint coverage."""
-    if not isinstance(d, dict):
-        return d
-    result = d.copy()
-    if "features" in result and isinstance(result["features"], dict):
-        result["features"] = _deep_enable(result["features"])
-    return result
-
-
 class _MockSalt:
     """Mock salt function namespace so host_config.jinja can call slsutil.merge."""
 
@@ -96,56 +82,11 @@ class _MockSalt:
     @staticmethod
     def _merge(base, override, strategy="recurse"):
         if strategy == "recurse":
-            merged = _recursive_merge(base, override)
+            merged = host_model.recursive_merge(base, override)
         else:
             merged = base.copy()
             merged.update(override)
-        return _enable_all_features(merged)
-
-
-def _fallback_host():
-    """Build a minimal fallback host config from the current environment."""
-    user = os.environ.get("USER", getpass.getuser())
-    home = os.path.expanduser("~")
-    return {"user": user, "home": home, "pkg_list": "/var/cache/salt/pacman_installed.txt"}
-
-
-_HOSTS_YAML_PATH = os.path.join("states", "data", "hosts.yaml")
-_GRAINS_HOSTNAME_SENTINEL = "{{ grains['host'] }}"
-
-
-def _load_hosts_yaml():
-    """Load states/data/hosts.yaml (defaults, host overrides, aliases)."""
-    try:
-        with open(_HOSTS_YAML_PATH) as fh:
-            data = yaml.safe_load(fh) or {}
-    except FileNotFoundError:
-        return {}
-    except yaml.YAMLError:
-        return {}
-    if not isinstance(data, dict):
-        return {}
-    return data
-
-
-def _build_lint_host():
-    """Build a synthetic host config with all features enabled for linting.
-
-    Loads defaults from states/data/hosts.yaml, enables all feature flags, and
-    adds derived fields.  This is needed because macros in _macros_pkg.jinja
-    and _macros_service.jinja reference ``host`` directly (not via import).
-    """
-    data = _load_hosts_yaml()
-    defaults = data.get("defaults")
-    if not isinstance(defaults, dict):
-        return _fallback_host()
-    host = _enable_all_features(defaults)
-    host = _recursive_merge(host, {})
-    host["runtime_dir"] = f"/run/user/{host['uid']}"
-    host["pkg_list"] = "/var/cache/salt/pacman_installed.txt"
-    host["project_dir"] = host["home"] + "/src/salt"
-    host["hostname"] = "lint-check"
-    return host
+        return host_model.enable_all_features(merged)
 
 
 def _make_render_env():
@@ -155,7 +96,7 @@ def _make_render_env():
         extensions=["jinja2.ext.do", SaltTagExtension],
         undefined=jinja2.Undefined,
     )
-    host = _build_lint_host()
+    host = host_model.build_lint_host()
     env.globals["grains"] = {"host": "lint-check"}
     env.globals["salt"] = _MockSalt()
     # Macros in _macros_pkg/_macros_service access these directly (not via import)
@@ -244,104 +185,6 @@ def check_state_id_naming(sls_files, rendered_ids):
                             f" — install_*/build_* prefix reserved for macros\033[0m"
                         )
                         errors += 1
-
-    return errors
-
-
-def _recursive_merge(base, override):
-    """Recursive dict merge mimicking slsutil.merge(strategy='recurse')."""
-    result = base.copy()
-    for k, v in override.items():
-        if k in result and isinstance(result[k], dict) and isinstance(v, dict):
-            result[k] = _recursive_merge(result[k], v)
-        else:
-            result[k] = v
-    return result
-
-
-def _check_unknown_keys(config, defaults, hostname, prefix=""):
-    """Check for keys in host config that don't exist in defaults."""
-    errors = 0
-    for k, v in config.items():
-        path = f"{prefix}.{k}" if prefix else k
-        if k not in defaults:
-            print(f"\033[31mHost config: '{hostname}': unknown key '{path}'\033[0m")
-            errors += 1
-        elif isinstance(v, dict) and isinstance(defaults.get(k), dict):
-            errors += _check_unknown_keys(v, defaults[k], hostname, path)
-    return errors
-
-
-_VALID_CPU_VENDORS = {"amd", "intel"}
-_KVM_MODULES = {"amd": "kvm_amd", "intel": "kvm_intel"}
-_DISPLAY_RE = re.compile(r"^\d+x\d+@\d+$")
-
-
-def check_host_config():
-    """Validate host configuration YAML: field types, allowed values, unknown keys."""
-    data = _load_hosts_yaml()
-    defaults = data.get("defaults")
-    hosts = data.get("hosts", {})
-    if not isinstance(defaults, dict):
-        return 0
-
-    errors = 0
-    for hostname, config in hosts.items():
-        if not isinstance(config, dict):
-            msg = type(config).__name__
-            print(f"\033[31mHost config: '{hostname}': expected mapping, got {msg}\033[0m")
-            errors += 1
-            continue
-        merged = _recursive_merge(defaults, config)
-
-        # Unknown keys (typo protection)
-        errors += _check_unknown_keys(config, defaults, hostname)
-
-        # cpu_vendor must be amd or intel
-        cpu = merged.get("cpu_vendor")
-        if cpu not in _VALID_CPU_VENDORS:
-            print(
-                f"\033[31mHost config: '{hostname}':"
-                f" cpu_vendor '{cpu}' not in {_VALID_CPU_VENDORS}\033[0m"
-            )
-            errors += 1
-
-        # kvm_module must match cpu_vendor
-        expected_kvm = _KVM_MODULES.get(cpu)
-        if expected_kvm and merged.get("kvm_module") != expected_kvm:
-            print(
-                f"\033[31mHost config: '{hostname}':"
-                f" kvm_module '{merged.get('kvm_module')}' doesn't match"
-                f" cpu_vendor '{cpu}' (expected '{expected_kvm}')\033[0m"
-            )
-            errors += 1
-
-        # display format: WxH@Hz (if set)
-        display = merged.get("display", "")
-        if display and not _DISPLAY_RE.match(display):
-            print(
-                f"\033[31mHost config: '{hostname}':"
-                f" display '{display}' doesn't match WxH@Hz format\033[0m"
-            )
-            errors += 1
-
-        # hostname field should match dict key
-        h = merged.get("hostname")
-        if h not in (hostname, "__grains__", _GRAINS_HOSTNAME_SENTINEL):
-            print(
-                f"\033[31mHost config: '{hostname}':"
-                f" hostname field '{h}' doesn't match dict key\033[0m"
-            )
-            errors += 1
-
-        # Numeric fields
-        for field in ("uid", "greetd_scale", "cursor_size"):
-            if not isinstance(merged.get(field), int):
-                print(
-                    f"\033[31mHost config: '{hostname}':"
-                    f" {field} must be int, got {type(merged.get(field)).__name__}\033[0m"
-                )
-                errors += 1
 
     return errors
 
@@ -1033,7 +876,7 @@ def check_systemd_units():
 
     # Render Jinja templates (.j2 and plain files with Jinja syntax) and verify
     env = _make_render_env()
-    host = _build_lint_host()
+    host = host_model.build_lint_host()
     j2_context = {
         "user": host.get("user", "neg"),
         "home": host.get("home", "/home/neg"),
@@ -1107,7 +950,7 @@ def main():
     print(f"State ID naming: {naming_errors} violations")
 
     # 4. Host config validation
-    host_errors = check_host_config()
+    host_errors = host_model.check_host_config()
     total_errors += host_errors
     print(f"Host config: {host_errors} errors")
 

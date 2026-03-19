@@ -11,9 +11,13 @@ import importlib.util
 import os
 import sys
 
-import yaml
-
 SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
+if SCRIPTS_DIR not in sys.path:
+    sys.path.insert(0, SCRIPTS_DIR)
+
+import host_model  # noqa: E402
+
+# lint-jinja.py has a hyphenated name — must use importlib.util
 _lint_path = os.path.join(SCRIPTS_DIR, "lint-jinja.py")
 _spec = importlib.util.spec_from_file_location("lint_jinja", _lint_path)
 if not _spec:  # pragma: no cover - defensive
@@ -26,23 +30,11 @@ _spec.loader.exec_module(_lint)  # type: ignore[attr-defined]
 _make_render_env = _lint._make_render_env
 _resolve_import_yaml = _lint._resolve_import_yaml
 
-MATRIX_FILE = os.path.join("states", "data", "feature_matrix.yaml")
-HOSTS_FILE = os.path.join("states", "data", "hosts.yaml")
-
 
 def _load_global_yaml_vars():
     data = {}
-    try:
-        with open(HOSTS_FILE) as fh:
-            data["hosts_data"] = yaml.safe_load(fh) or {}
-    except FileNotFoundError:
-        data["hosts_data"] = {}
-
-    try:
-        with open(MATRIX_FILE) as fh:
-            data["feature_matrix"] = yaml.safe_load(fh) or []
-    except FileNotFoundError:
-        data["feature_matrix"] = []
+    data["hosts_data"] = host_model.load_hosts_yaml()
+    data["feature_matrix"] = host_model.load_feature_matrix()
     return data
 
 
@@ -50,12 +42,9 @@ GLOBAL_YAML_VARS = _load_global_yaml_vars()
 
 
 def load_matrix():
-    if not os.path.exists(MATRIX_FILE):
+    data = host_model.load_feature_matrix()
+    if not data:
         return []
-    with open(MATRIX_FILE) as fh:
-        data = yaml.safe_load(fh) or []
-    if not isinstance(data, list):
-        raise SystemExit("feature_matrix.yaml must be a list of scenarios")
     for entry in data:
         name = entry.get("name")
         if not name:
