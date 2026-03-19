@@ -66,7 +66,7 @@ fi
 # Build it once, then copy to per-worker caches so each starts warm.
 cache_base=$(mktemp -d)
 joblog=$(mktemp)
-trap 'rm -rf "$cache_base" "$joblog"' EXIT
+trap '$sudo_cmd rm -rf "$cache_base"; rm -f "$joblog"' EXIT
 
 template_cache="${cache_base}/template"
 mkdir -p "$template_cache"
@@ -83,7 +83,7 @@ validate_one() {
     name="${name%.sls}"
     local worker_cache="${cache_base}/worker-${slot}"
     if [[ ! -d "$worker_cache" ]]; then
-        cp -a "${cache_base}/template" "$worker_cache"
+        $sudo_cmd cp -a "${cache_base}/template" "$worker_cache"
     fi
     if $sudo_cmd .venv/bin/salt-call --local --config-dir=.salt_runtime \
             --cachedir="$worker_cache" \
