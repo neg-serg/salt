@@ -82,8 +82,6 @@ var DEFAULTS = {
     timeoutMs: 8000                      // 8s timeout
 };
 
-// Use httpGetJson from Helpers/Http.js
-
 function fetchCoordinates(city, callback, errorCallback, options) {
     options = options || {};
     var cfg = {
@@ -176,6 +174,7 @@ function fetchWeather(latitude, longitude, callback, errorCallback, options) {
         current_weather: "true",
         current: "relativehumidity_2m,surface_pressure",
         daily: "temperature_2m_max,temperature_2m_min,weathercode",
+        wind_speed_unit: "ms",
         timezone: "auto"
     });
     var _ua = (options && options.userAgent) ? String(options.userAgent) : "Quickshell";

@@ -28,14 +28,14 @@ function windRotation(deg) {
     return (typeof deg === 'number') ? (deg + 180) % 360 : 0;
 }
 
-// Compact format for bar: "8"
+// Compact format for bar: "3.2"
 function formatWindSpeed(speed) {
     if (typeof speed !== 'number') return "";
-    return String(Math.round(speed));
+    return speed.toFixed(1);
 }
 
-// Verbose format for tooltip/panel: "8 km/h N"
+// Verbose format for tooltip/panel: "3.2 m/s N"
 function formatWindFull(speed, deg) {
     if (typeof speed !== 'number') return "";
-    return Math.round(speed) + " km/h " + windDirection(deg);
+    return speed.toFixed(1) + " m/s " + windDirection(deg);
 }
