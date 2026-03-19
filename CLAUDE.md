@@ -392,6 +392,8 @@ Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full de
 - N/A (YAML data file on disk) (052-service-catalog-registry)
 - Justfile (just 1.x), Bash, YAML (GitHub Actions), Python 3.12+ (lint scripts) + just, ruff, shellcheck, yamllint, taplo, salt-lint, Podman (053-justfile-ci-contract)
 - N/A (build/CI tooling only) (053-justfile-ci-contract)
+- Python 3.12+ (CachyOS system Python, via `.venv/bin/python3`) + pytest (add to requirements.txt), PyYAML (existing) (054-salt-unit-tests)
+- N/A (reads `states/data/*.yaml` files at test time) (054-salt-unit-tests)
 
 ## Recent Changes
 - 001-code-rag-integration: Added Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx)
