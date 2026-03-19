@@ -386,6 +386,8 @@ Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full de
 - YAML data files (`states/data/services.yaml`) (049-data-driven-services)
 - Python 3.12+ (CachyOS system Python, executed via `.venv/bin/python3`) + PyYAML (existing), jinja2 (existing). No new dependencies. (050-host-model-single-source)
 - N/A (reads YAML files, returns dicts) (050-host-model-single-source)
+- Jinja2 (Salt 3006.x template engine), YAML (Salt state format) + Salt 3006.x (masterless), existing `_macros_common.jinja` constants (051-normalize-cmd-macros)
+- N/A (template files on disk) (051-normalize-cmd-macros)
 
 ## Recent Changes
 - 001-code-rag-integration: Added Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx)
