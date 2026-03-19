@@ -2,14 +2,17 @@
 # XDG-compliant bash history
 HISTFILE="${XDG_STATE_HOME:-$HOME/.local/state}/bash/history"
 
+# Everything below is interactive-only (prompt, completions, aliases)
+[[ $- != *i* ]] && return
+
 # Aliae integration for bash
 if command -v aliae >/dev/null 2>&1; then
   cfg="${XDG_CONFIG_HOME:-$HOME/.config}/aliae/config.yaml"
   eval "$(aliae init bash --config "$cfg" --print)"
 fi
 
-# Carapace universal completions (only in interactive shells)
-if [[ $- == *i* ]] && command -v carapace >/dev/null 2>&1; then
+# Carapace universal completions
+if command -v carapace >/dev/null 2>&1; then
   eval "$(carapace _carapace bash)"
 fi
 
