@@ -108,11 +108,29 @@
 
 {# Restart service and poll a health-check command until it succeeds.
    Skips entirely if the check already passes (unless guard).
-   check_cmd: shell command that returns 0 when service is ready (e.g. curl probe).
-   timeout: seconds to poll before failing (default: healthcheck_timeout from _macros_common).
-   Usage: {{ service_with_healthcheck('ollama_start', 'ollama', 'curl -sf http://127.0.0.1:' ~ service_ports.ollama.port ~ service_ports.ollama.healthcheck ~ ' >/dev/null 2>&1', requires=['service: ollama_enabled']) }}
+   check_cmd: shell command that returns 0 when service is ready (explicit override).
+   catalog: imported service_catalog.yaml dict — when provided and check_cmd is omitted,
+   the macro looks up `service` in the catalog and constructs the healthcheck automatically:
+     - catalog[service].health_cmd → use directly (non-HTTP checks like unbound-control)
+     - catalog[service].port + health_path → curl -sf http://<host>:<port><path> >/dev/null 2>&1
+   timeout: seconds to poll (default: healthcheck_timeout). Catalog entry timeout overrides default.
+   Usage: {{ service_with_healthcheck('ollama_start', 'ollama', catalog=catalog, requires=['service: ollama_enabled']) }}
+          {{ service_with_healthcheck('custom_start', 'custom', 'my-check-cmd', requires=[...]) }}
 #}
-{%- macro service_with_healthcheck(name, service, check_cmd, timeout=_healthcheck_timeout, requires=None) -%}
+{%- macro service_with_healthcheck(name, service, check_cmd=None, timeout=_healthcheck_timeout, requires=None, catalog=None) -%}
+{#- Resolve check_cmd from catalog when not explicitly provided -#}
+{%- if check_cmd is none and catalog is not none and service in catalog -%}
+  {%- set _entry = catalog[service] -%}
+  {%- if _entry.get('health_cmd') -%}
+    {%- set check_cmd = _entry.health_cmd -%}
+  {%- elif _entry.get('port') and _entry.get('health_path') -%}
+    {%- set _host = _entry.get('health_host', '127.0.0.1') -%}
+    {%- set check_cmd = 'curl -sf http://' ~ _host ~ ':' ~ _entry.port ~ _entry.health_path ~ ' >/dev/null 2>&1' -%}
+  {%- endif -%}
+  {%- if _entry.get('timeout') -%}
+    {%- set timeout = _entry.timeout -%}
+  {%- endif -%}
+{%- endif -%}
 {{ name }}:
   cmd.run:
     - name: |

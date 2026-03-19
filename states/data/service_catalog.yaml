@@ -1,0 +1,66 @@
+# Unified service catalog — single source of truth for ports, health
+# endpoints, unit names, and scope. Consumed via import_yaml by
+# _macros_service.jinja (service_with_healthcheck) and individual .sls files.
+#
+# Fields:
+#   port:        HTTP port (optional — omit for non-HTTP services)
+#   health_path: URL path for HTTP healthcheck (optional)
+#   health_cmd:  Custom healthcheck command (optional — overrides port+health_path)
+#   unit:        systemd unit name (required)
+#   scope:       system | user (required)
+#   timeout:     healthcheck timeout override in seconds (optional, default 30)
+#   health_host: bind address override (optional, default 127.0.0.1)
+
+loki:                          # Log aggregation (Grafana Loki)
+  port: 3100
+  health_path: /ready
+  unit: loki
+  scope: system
+
+promtail:                      # Log shipper for Loki
+  port: 9080
+  health_path: /ready
+  unit: promtail
+  scope: system
+
+grafana:                       # Monitoring dashboard
+  port: 3030
+  health_path: /api/health
+  unit: grafana
+  scope: system
+
+adguardhome:                   # DNS-level ad blocker
+  port: 3000
+  health_path: /
+  unit: adguardhome
+  scope: system
+
+ollama:                        # Local LLM inference server
+  port: 11434
+  health_path: /api/tags
+  unit: ollama
+  scope: system
+
+llama_embed:                   # llama.cpp embedding server (Vulkan)
+  port: 11435
+  health_path: /health
+  unit: llama_embed
+  scope: system
+  timeout: 90
+
+jellyfin:                      # Media server
+  port: 8096
+  health_path: /health
+  unit: jellyfin
+  scope: system
+
+transmission:                  # BitTorrent client daemon
+  port: 9091
+  health_path: /transmission/web/
+  unit: transmission
+  scope: system
+
+unbound:                       # Recursive DNS resolver
+  health_cmd: "unbound-control status >/dev/null 2>&1"
+  unit: unbound
+  scope: system
