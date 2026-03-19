@@ -34,6 +34,7 @@ desktop:
   - yazi  # blazing fast terminal file manager (Rust)
   - swayosd  # on-screen display for volume/caps/brightness
   - wl-clip-persist  # keep Wayland clipboard after app close
+  - wl-clipboard  # Wayland clipboard utilities (wl-copy/wl-paste)
   - xdg-desktop-portal-gtk  # xdg-desktop-portal GTK backend
   - xdg-desktop-portal-hyprland  # xdg-desktop-portal Hyprland backend
 

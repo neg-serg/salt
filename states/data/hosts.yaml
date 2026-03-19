@@ -54,6 +54,7 @@ defaults:
     ollama: true
     llama_embed: true
     floorp: true
+    espanso: false
     kanata: true
     flatpak: true
     sudo_ssh_agent: false

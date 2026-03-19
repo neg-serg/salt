@@ -88,6 +88,9 @@ include:
 {% if host.features.flatpak %}
   - flatpak
 {% endif %}
+{% if host.features.get('espanso', false) %}
+  - espanso
+{% endif %}
 {% if host.features.floorp %}
   - floorp
 {% endif %}
