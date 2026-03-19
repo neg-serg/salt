@@ -75,7 +75,7 @@ hosts:
     floorp_profile: c85pjaxk.default-default
     hostname: telfir
     extra_modules:
-      - ec_sys
+      - ec_sys  # raw EC register access for hwmon sensors
     features:
       fancontrol: true
       monitoring:
