@@ -1,39 +1,45 @@
 # Unified service catalog — single source of truth for ports, health
-# endpoints, unit names, and scope. Consumed via import_yaml by
+# endpoints, unit names, packages, and scope. Consumed via import_yaml by
 # _macros_service.jinja (service_with_healthcheck) and individual .sls files.
 #
 # Fields:
-#   port:        HTTP port (optional — omit for non-HTTP services)
-#   health_path: URL path for HTTP healthcheck (optional)
-#   health_cmd:  Custom healthcheck command (optional — overrides port+health_path)
-#   unit:        systemd unit name (required)
-#   scope:       system | user (required)
-#   timeout:     healthcheck timeout override in seconds (optional, default 30)
-#   health_host: bind address override (optional, default 127.0.0.1)
+#   port:         HTTP port (optional — omit for non-HTTP services)
+#   health_path:  URL path for HTTP healthcheck (optional)
+#   health_cmd:   Custom healthcheck command (optional — overrides port+health_path)
+#   unit:         systemd unit name (required)
+#   scope:        system | user (required)
+#   packages:     pacman/AUR package name(s) (optional — omit if installed externally)
+#   manual_start: true if service should NOT be enabled at boot (optional, default false)
+#   timeout:      healthcheck timeout override in seconds (optional, default 30)
+#   health_host:  bind address override (optional, default 127.0.0.1)
 
 loki:                          # Log aggregation (Grafana Loki)
   port: 3100
   health_path: /ready
   unit: loki
   scope: system
+  packages: loki
 
 promtail:                      # Log shipper for Loki
   port: 9080
   health_path: /ready
   unit: promtail
   scope: system
+  packages: promtail
 
 grafana:                       # Monitoring dashboard
   port: 3030
   health_path: /api/health
   unit: grafana
   scope: system
+  packages: grafana
 
 adguardhome:                   # DNS-level ad blocker
   port: 3000
   health_path: /
   unit: adguardhome
   scope: system
+  packages: adguardhome
 
 ollama:                        # Local LLM inference server
   port: 11434
@@ -46,6 +52,7 @@ llama_embed:                   # llama.cpp embedding server (Vulkan)
   health_path: /health
   unit: llama_embed
   scope: system
+  packages: llama.cpp-vulkan
   timeout: 90
 
 jellyfin:                      # Media server
@@ -53,14 +60,29 @@ jellyfin:                      # Media server
   health_path: /health
   unit: jellyfin
   scope: system
+  packages: jellyfin-server jellyfin-web
 
 transmission:                  # BitTorrent client daemon
   port: 9091
   health_path: /transmission/web/
   unit: transmission
   scope: system
+  packages: transmission-cli
 
 unbound:                       # Recursive DNS resolver
   health_cmd: "unbound-control status >/dev/null 2>&1"
   unit: unbound
   scope: system
+  packages: unbound
+
+samba:                         # SMB file sharing
+  unit: smb
+  scope: system
+  packages: samba
+  manual_start: true
+
+bitcoind:                      # Bitcoin Core node
+  unit: bitcoind
+  scope: system
+  packages: bitcoin-daemon
+  manual_start: true
