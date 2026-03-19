@@ -388,6 +388,8 @@ Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full de
 - N/A (reads YAML files, returns dicts) (050-host-model-single-source)
 - Jinja2 (Salt 3006.x template engine), YAML (Salt state format) + Salt 3006.x (masterless), existing `_macros_common.jinja` constants (051-normalize-cmd-macros)
 - N/A (template files on disk) (051-normalize-cmd-macros)
+- Jinja2 (Salt 3006.x template engine), YAML (Salt state format + data files) + Salt 3006.x (masterless), existing `_macros_service.jinja` macro (052-service-catalog-registry)
+- N/A (YAML data file on disk) (052-service-catalog-registry)
 
 ## Recent Changes
 - 001-code-rag-integration: Added Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx)
