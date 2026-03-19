@@ -1,4 +1,4 @@
-{# Service-related macros: ensure_dir, udev_rule, ensure_running, service_stopped, service_with_healthcheck, unit_override, service_with_unit, user_service_file, user_unit_override, user_service_enable, user_linger, system_daemon_user #}
+{# Service-related macros: ensure_dir, udev_rule, ensure_running, service_stopped, service_with_healthcheck, unit_override, service_with_unit, service_with_unit_and_healthcheck, user_service_file, user_unit_override, user_service_enable, user_linger, system_daemon_user #}
 
 {% from '_macros_common.jinja' import user as _user, home as _home, healthcheck_timeout as _healthcheck_timeout, host %}
 
@@ -512,5 +512,22 @@
     - require:
       - service: {{ name }}_enabled
       - cmd: {{ name }}_reset_failed
+{%- endif %}
+{%- endmacro -%}
+
+{# Deploy unit file + manage service + run healthcheck — all in one.
+   Combines service_with_unit() + service_with_healthcheck() for the common
+   pattern where both are always used together.
+   healthcheck_requires: custom requisites for the healthcheck state
+     (defaults to ['service: <name>_enabled']).
+   catalog/check_cmd: if neither is provided, no healthcheck is generated.
+   Usage: {{ service_with_unit_and_healthcheck('loki', 'salt://units/loki.service', running=True, watch=['file: loki_config'], requires=['cmd: install_loki', 'file: loki_config'], catalog=catalog) }}
+          {{ service_with_unit_and_healthcheck('ollama', 'salt://units/ollama.service.j2', template='jinja', context={...}, onlyif='command -v ollama', catalog=catalog) }}
+#}
+{%- macro service_with_unit_and_healthcheck(name, source, unit_type='service', running=False, enabled=True, requires=None, template=None, context=None, onlyif=None, companion=None, watch=None, check_cmd=None, timeout=_healthcheck_timeout, catalog=None, healthcheck_requires=None) -%}
+{{ service_with_unit(name, source, unit_type=unit_type, running=running, enabled=enabled, requires=requires, template=template, context=context, onlyif=onlyif, companion=companion, watch=watch) }}
+{%- if catalog is not none or check_cmd is not none %}
+
+{{ service_with_healthcheck(name ~ '_start', name, check_cmd=check_cmd, timeout=timeout, catalog=catalog, requires=healthcheck_requires or ['service: ' ~ name ~ '_enabled']) }}
 {%- endif %}
 {%- endmacro -%}

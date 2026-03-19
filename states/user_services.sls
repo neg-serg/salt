@@ -1,5 +1,5 @@
 {% from '_imports.jinja' import host, user, home %}
-{% from '_macros_service.jinja' import user_service_file, user_unit_override, user_service_enable, user_service_disable %}
+{% from '_macros_service.jinja' import user_service_disable, user_service_enable, user_service_file, user_unit_override %}
 {% import_yaml 'data/user_services.yaml' as us %}
 # Systemd user services: mail, calendar, chezmoi, media, surfingkeys
 

@@ -1,7 +1,7 @@
 {% from '_imports.jinja' import user, home, gopass_secret %}
 {% from '_macros_pkg.jinja' import npm_pkg %}
 {% from '_macros_install.jinja' import curl_bin %}
-{% from '_macros_service.jinja' import ensure_dir, user_service_file, user_service_enable %}
+{% from '_macros_service.jinja' import ensure_dir, user_service_enable, user_service_file %}
 {% import_yaml 'data/versions.yaml' as ver %}
 
 # ── Secret resolution (gopass primary, credentials-file fallback) ─────

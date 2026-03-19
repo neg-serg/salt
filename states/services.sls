@@ -1,5 +1,5 @@
 {% from '_imports.jinja' import host, user, home %}
-{% from '_macros_service.jinja' import ensure_dir, service_with_unit, service_stopped, service_with_healthcheck, system_daemon_user, unit_override %}
+{% from '_macros_service.jinja' import ensure_dir, service_stopped, service_with_healthcheck, service_with_unit, system_daemon_user, unit_override %}
 {% from '_macros_pkg.jinja' import pacman_install, simple_service %}
 {% import_yaml 'data/services.yaml' as services %}
 {% import_yaml 'data/service_catalog.yaml' as catalog %}

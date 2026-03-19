@@ -1,6 +1,6 @@
 {% from '_imports.jinja' import user, home, gopass_secret %}
 {% from '_macros_pkg.jinja' import paru_install %}
-{% from '_macros_service.jinja' import ensure_dir, user_service_file, user_service_enable, user_linger %}
+{% from '_macros_service.jinja' import ensure_dir, user_linger, user_service_enable, user_service_file %}
 {% import_yaml 'data/versions.yaml' as ver %}
 # ── Secret resolution (gopass primary, credentials-file fallback) ─────
 {% set _proxypilot_cfg = home ~ '/.config/proxypilot/config.yaml' %}

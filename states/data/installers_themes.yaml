@@ -1,0 +1,25 @@
+# Theme and icon pack definitions (consumed by installers_themes.sls)
+git_clone_deploy:
+  matugen-themes:                                  # matugen color themes
+    repo: https://github.com/InioX/matugen-themes.git
+    dest: ~/.config/matugen/templates
+    items:
+      - '*/'                                     # all template directories
+
+  kora-icons:                                      # Kora icon theme (4 variants)
+    repo: https://github.com/bikass/kora.git
+    dest: ~/.local/share/icons
+    creates: /.local/share/icons/kora
+    items:
+      - kora                                       # default icon theme
+      - kora-light                                 # light variant
+      - kora-light-panel                           # light panel icons
+      - kora-pgrey                                 # grey variant
+
+  flight-gtk:                                      # Flight GTK theme (dark + light)
+    repo: https://github.com/neg-serg/Flight-Plasma-Themes.git
+    dest: ~/.local/share/themes
+    creates: /.local/share/themes/Flight-Dark-GTK
+    items:
+      - Flight-Dark-GTK                            # dark GTK theme
+      - Flight-light-GTK                           # light GTK theme

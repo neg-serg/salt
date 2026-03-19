@@ -1,6 +1,6 @@
 {% from '_imports.jinja' import user, home %}
 {% from '_macros_pkg.jinja' import paru_install %}
-{% from '_macros_service.jinja' import udev_rule, ensure_dir, user_service_with_unit %}
+{% from '_macros_service.jinja' import ensure_dir, udev_rule, user_service_with_unit %}
 # Kanata: software keyboard remapper (uinput-based)
 # --- Install kanata from AUR ---
 {{ paru_install('kanata', 'kanata-bin') }}

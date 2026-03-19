@@ -1,7 +1,7 @@
 # Loki + Promtail + Grafana monitoring stack (split from monitoring.sls)
 {% from '_imports.jinja' import host %}
 {% import_yaml 'data/service_catalog.yaml' as catalog %}
-{% from '_macros_service.jinja' import service_with_unit, system_daemon_user, service_with_healthcheck, ensure_running, ensure_dir, unit_override %}
+{% from '_macros_service.jinja' import ensure_dir, ensure_running, service_with_healthcheck, service_with_unit_and_healthcheck, system_daemon_user, unit_override %}
 {% from '_macros_pkg.jinja' import simple_service, pacman_install %}
 {% set mon = host.features.monitoring %}
 
@@ -37,13 +37,11 @@ loki_config:
     - context:
         loki_port: {{ catalog.loki.port }}
 
-{{ service_with_unit('loki', 'salt://units/loki.service', running=True, watch=['file: loki_config'], requires=['cmd: install_loki', 'file: loki_config', 'file: loki_subdirs']) }}
+{{ service_with_unit_and_healthcheck('loki', 'salt://units/loki.service', running=True, watch=['file: loki_config'], requires=['cmd: install_loki', 'file: loki_config', 'file: loki_subdirs'], catalog=catalog) }}
 
 # Defer Loki startup until after graphical.target to reduce boot I/O contention.
 # Promtail reads journal retroactively — no early boot logs are lost.
 {{ unit_override('loki_boot_defer', 'loki.service', 'salt://units/loki-boot-defer.conf', filename='boot-defer.conf', requires=['cmd: install_loki']) }}
-
-{{ service_with_healthcheck('loki_start', 'loki', catalog=catalog, requires=['service: loki_enabled']) }}
 
 # --- Promtail: log shipper to Loki ---
 # Note: promtail pushes to Loki — enabling promtail without loki results in
@@ -69,10 +67,8 @@ promtail_config:
         loki_port: {{ catalog.loki.port }}
         promtail_port: {{ catalog.promtail.port }}
 
-{{ service_with_unit('promtail', 'salt://units/promtail.service', running=True, watch=['file: promtail_config'], requires=['cmd: install_promtail', 'file: promtail_config']) }}
-
-{% set promtail_requires = ['service: promtail_enabled'] + (['cmd: loki_start'] if mon.loki else []) %}
-{{ service_with_healthcheck('promtail_start', 'promtail', catalog=catalog, requires=promtail_requires) }}
+{% set promtail_hc_requires = ['service: promtail_enabled'] + (['cmd: loki_start'] if mon.loki else []) %}
+{{ service_with_unit_and_healthcheck('promtail', 'salt://units/promtail.service', running=True, watch=['file: promtail_config'], requires=['cmd: install_promtail', 'file: promtail_config'], catalog=catalog, healthcheck_requires=promtail_hc_requires) }}
 {% endif %}
 
 # --- Grafana: dashboard with Loki datasource ---

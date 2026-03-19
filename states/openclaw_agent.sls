@@ -1,6 +1,6 @@
 {% from '_imports.jinja' import user, home, gopass_secret %}
 {% from '_macros_pkg.jinja' import npm_pkg %}
-{% from '_macros_service.jinja' import ensure_dir, user_service_file, user_service_enable, user_service_restart, user_unit_override, user_linger %}
+{% from '_macros_service.jinja' import ensure_dir, user_linger, user_service_enable, user_service_file, user_service_restart, user_unit_override %}
 {% import_yaml 'data/versions.yaml' as ver %}
 {% import_yaml 'data/openclaw_models.yaml' as allowed_models %}
 # ── Secret resolution (gopass primary, credentials-file fallback) ─────

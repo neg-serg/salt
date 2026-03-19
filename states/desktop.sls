@@ -2,7 +2,7 @@
 {% from '_imports.jinja' import host, user, home, retry_attempts, retry_interval %}
 {% from '_macros_pkg.jinja' import pacman_install, paru_install %}
 {% from '_macros_service.jinja' import ensure_dir, service_stopped, service_with_unit %}
-{% from '_macros_desktop.jinja' import hyprpm_update, hyprpm_add, hyprpm_enable, dconf_settings %}
+{% from '_macros_desktop.jinja' import dconf_settings, hyprpm_add, hyprpm_enable, hyprpm_update %}
 {% import_yaml 'data/desktop.yaml' as desktop %}
 
 # --- Pacman hook: regenerate installed-package cache after every transaction ---

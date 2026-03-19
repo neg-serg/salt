@@ -1,5 +1,5 @@
 {% from '_imports.jinja' import user, home, gopass_secret, retry_attempts, retry_interval %}
-{% from '_macros_service.jinja' import ensure_dir, user_service_file, user_service_enable, user_service_restart, user_linger %}
+{% from '_macros_service.jinja' import ensure_dir, user_linger, user_service_enable, user_service_file, user_service_restart %}
 {% from '_macros_install.jinja' import npm_build_workflow %}
 {% import_yaml 'data/versions.yaml' as ver %}
 

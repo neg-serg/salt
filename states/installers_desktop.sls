@@ -1,5 +1,5 @@
 {% from '_imports.jinja' import user, home, pkg_list, retry_attempts, retry_interval %}
-{% from '_macros_install.jinja' import curl_bin, curl_extract_zip, curl_extract_tar %}
+{% from '_macros_install.jinja' import curl_bin, curl_extract_tar, curl_extract_zip %}
 {% from '_macros_pkg.jinja' import paru_install %}
 {% import_yaml 'data/installers_desktop.yaml' as apps %}
 {% import_yaml 'data/versions.yaml' as ver %}

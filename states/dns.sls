@@ -1,6 +1,6 @@
 {% from '_imports.jinja' import host %}
 {% import_yaml 'data/service_catalog.yaml' as catalog %}
-{% from '_macros_service.jinja' import unit_override, system_daemon_user, service_with_unit, service_with_healthcheck, ensure_running %}
+{% from '_macros_service.jinja' import ensure_running, service_with_healthcheck, service_with_unit, system_daemon_user, unit_override %}
 {% from '_macros_pkg.jinja' import simple_service, pacman_install %}
 {% set dns = host.features.dns %}
 
