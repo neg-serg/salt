@@ -76,7 +76,6 @@ hosts:
     hostname: telfir
     extra_modules:
       - ec_sys
-      - asus_ec_sensors
     features:
       fancontrol: true
       monitoring:
