@@ -36,6 +36,10 @@ help:
 test STATE="system_description":
     scripts/salt-apply.sh {{STATE}} --test
 
+# Run unit tests (data validation, host config, merge)
+test-unit *ARGS:
+    .venv/bin/pytest tests/ -v {{ARGS}}
+
 # Run CachyOS VM smoke test inside Podman
 vm-smoke ROOTFS="/mnt/one/cachyos-root":
     sudo scripts/vm-smoke.sh {{ROOTFS}}

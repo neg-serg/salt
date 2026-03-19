@@ -53,6 +53,9 @@ jobs:
       - name: Run just lint
         run: just lint
 
+      - name: Run just test-unit
+        run: just test-unit
+
       - name: Run just validate
         run: just validate
 
