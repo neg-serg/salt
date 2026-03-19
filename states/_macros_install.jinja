@@ -480,3 +480,59 @@ install_{{ name | replace('-', '_') }}:
 {%- endfor %}
 {%- endif %}
 {%- endmacro -%}
+
+{# npm build workflow: npm install + build + optional version pin.
+   Generates 2–3 chained cmd.run states:
+     {{ name }}_npm_install — npm install (network op, with retry)
+     {{ name }}_build — npm run build (requires install)
+     {{ name }}_version — git checkout + rebuild (only if version set, with retry)
+   dir: project working directory (must already contain package.json).
+   version: git tag to pin; when set, generates a version state.
+   install_creates: file marker for npm install (default: dir/node_modules/.package-lock.json).
+   build_creates: file marker for build (default: dir/dist/index.js).
+   Usage: {{ npm_build_workflow('nanoclaw', dir=home ~ '/.local/share/nanoclaw', version=ver.nanoclaw, require=['cmd: nanoclaw_clone']) }}
+#}
+{%- macro npm_build_workflow(name, dir, version=None, install_creates=None, build_creates=None, user=_user, require=None) -%}
+{%- set _install_creates = install_creates or (dir ~ '/node_modules/.package-lock.json') -%}
+{%- set _build_creates = build_creates or (dir ~ '/dist/index.js') -%}
+{{ name }}_npm_install:
+  cmd.run:
+    - name: cd {{ dir }} && npm install --no-fund --no-audit 2>&1
+    - runas: {{ user }}
+    - creates: {{ _install_creates }}
+    - retry:
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
+{%- if require %}
+    - require:
+{%- for req in require %}
+      - {{ req }}
+{%- endfor %}
+{%- endif %}
+
+{{ name }}_build:
+  cmd.run:
+    - name: cd {{ dir }} && npm run build 2>&1
+    - runas: {{ user }}
+    - creates: {{ _build_creates }}
+    - require:
+      - cmd: {{ name }}_npm_install
+{%- if version %}
+
+{{ name }}_version:
+  cmd.run:
+    - name: |
+        cd {{ dir }}
+        git fetch --tags --depth=1
+        git checkout v{{ version }} 2>/dev/null || git checkout {{ version }}
+        npm install --no-fund --no-audit 2>&1
+        npm run build 2>&1
+    - runas: {{ user }}
+    - unless: cd {{ dir }} && git describe --tags --exact-match 2>/dev/null | rg -qx 'v{{ version }}'
+    - retry:
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
+    - require:
+      - cmd: {{ name }}_build
+{%- endif %}
+{%- endmacro -%}

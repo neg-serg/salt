@@ -1,0 +1,43 @@
+{# Config-editing macros: config_file_edit #}
+
+{% from '_macros_common.jinja' import user as _user, home as _home, retry_attempts as _retry_attempts, retry_interval as _retry_interval %}
+
+{# Wrap a config-file edit command with idempotency guard and optional retry.
+   cmd: shell command to apply the edit (sed, btrfs property set, printf >>, etc.).
+   unless: explicit guard command (overrides auto-guard). Auto-guard: if check_pattern
+   and check_file are set, generates: rg -q '<check_pattern>' <check_file>.
+   onlyif: conditional execution guard (state skipped when onlyif fails).
+   retry: True to add network retry (3 attempts, 10s interval) — use for commands
+   that touch the network (e.g. pacman -Sy after config edit).
+   Usage: {{ config_file_edit('limine_timeout', cmd="sed -i 's/^timeout:.*/timeout: 1/' /boot/limine.conf", check_pattern='^timeout: 1$', check_file='/boot/limine.conf') }}
+          {{ config_file_edit('multilib_repo', cmd="printf ... >> /etc/pacman.conf && pacman -Sy", check_pattern='^\[multilib\]', check_file='/etc/pacman.conf', retry=True) }}
+#}
+{%- macro config_file_edit(name, cmd, unless=None, check_pattern=None, check_file=None, onlyif=None, require=None, retry=False, shell=None) -%}
+{%- set _guard = unless if unless is not none else ("rg -q '" ~ check_pattern ~ "' " ~ check_file if check_pattern and check_file else None) -%}
+{{ name }}:
+  cmd.run:
+    - name: |
+        {{ cmd | trim | indent(8) }}
+{%- if shell %}
+    - shell: {{ shell }}
+{%- endif %}
+{%- if _guard %}
+    - unless: |
+        {{ _guard | trim | indent(8) }}
+{%- endif %}
+{%- if onlyif %}
+    - onlyif: |
+        {{ onlyif | trim | indent(8) }}
+{%- endif %}
+{%- if retry %}
+    - retry:
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
+{%- endif %}
+{%- if require %}
+    - require:
+{%- for req in require %}
+      - {{ req }}
+{%- endfor %}
+{%- endif %}
+{%- endmacro -%}

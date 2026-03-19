@@ -1,0 +1,135 @@
+{# Desktop session macros: hyprpm_update, hyprpm_add, hyprpm_enable, dconf_settings #}
+
+{% from '_macros_common.jinja' import user as _user, home as _home, host, retry_attempts as _retry_attempts, retry_interval as _retry_interval %}
+
+{# --- Internal: shared hyprpm environment block ---
+   All hyprpm operations need HYPRLAND_INSTANCE_SIGNATURE from the running
+   compositor. The onlyif guard skips gracefully when Hyprland is not running.
+#}
+{%- set _hypr_sig_cmd = 'ls /run/user/' ~ host.uid ~ '/hypr/ 2>/dev/null | head -1' -%}
+{%- set _hypr_onlyif = 'ls /run/user/' ~ host.uid ~ '/hypr/ 2>/dev/null | rg -q .' -%}
+
+{# Update hyprpm headers (rebuilds plugin headers for current Hyprland version).
+   check_plugins: optional list of plugin names to verify (all must exist in hyprpm list
+   for the state to be skipped).
+   Usage: {{ hyprpm_update('hyprpm_headers_update', check_plugins=['xtra-dispatchers', 'HyprGlass'], require=['cmd: install_hyprland_desktop', 'file: hyprpm_cache_dir']) }}
+#}
+{%- macro hyprpm_update(name, check_plugins=None, require=None, timeout=300) -%}
+{{ name }}:
+  cmd.run:
+    - name: >-
+        export HYPRLAND_INSTANCE_SIGNATURE=$( {{ _hypr_sig_cmd }} ) &&
+        hyprpm update
+    - runas: {{ _user }}
+    - onlyif: {{ _hypr_onlyif }}
+{%- if check_plugins %}
+    - unless: >-
+        export HYPRLAND_INSTANCE_SIGNATURE=$( {{ _hypr_sig_cmd }} ) &&
+{%- for plugin in check_plugins %}
+        hyprpm list 2>&1 | rg -q '{{ plugin }}'{{ ' &&' if not loop.last else '' }}
+{%- endfor %}
+{%- endif %}
+    - env:
+      - HOME: {{ _home }}
+      - XDG_RUNTIME_DIR: /run/user/{{ host.uid }}
+{%- if require %}
+    - require:
+{%- for req in require %}
+      - {{ req }}
+{%- endfor %}
+{%- endif %}
+    - retry:
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
+    - timeout: {{ timeout }}
+{%- endmacro -%}
+
+{# Add a hyprpm plugin repository.
+   repo_url: git URL of the plugin repo.
+   check_plugin: string to verify in hyprpm list (e.g. 'Repository hyprland-plugins').
+   Usage: {{ hyprpm_add('hyprpm_add_hyprland_plugins', 'https://github.com/hyprwm/hyprland-plugins', 'Repository hyprland-plugins', require=['cmd: hyprpm_headers_update']) }}
+#}
+{%- macro hyprpm_add(name, repo_url, check_plugin, require=None, timeout=300) -%}
+{{ name }}:
+  cmd.run:
+    - name: >-
+        export HYPRLAND_INSTANCE_SIGNATURE=$( {{ _hypr_sig_cmd }} ) &&
+        yes | hyprpm add {{ repo_url }}
+    - runas: {{ _user }}
+    - onlyif: {{ _hypr_onlyif }}
+    - unless: >-
+        export HYPRLAND_INSTANCE_SIGNATURE=$( {{ _hypr_sig_cmd }} ) &&
+        hyprpm list 2>&1 | rg -q '{{ check_plugin }}'
+    - env:
+      - HOME: {{ _home }}
+      - XDG_RUNTIME_DIR: /run/user/{{ host.uid }}
+{%- if require %}
+    - require:
+{%- for req in require %}
+      - {{ req }}
+{%- endfor %}
+{%- endif %}
+    - retry:
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
+    - timeout: {{ timeout }}
+{%- endmacro -%}
+
+{# Enable a hyprpm plugin.
+   plugin: plugin name to enable.
+   Usage: {{ hyprpm_enable('hyprpm_enable_xtra_dispatchers', 'xtra-dispatchers', require=['cmd: hyprpm_add_hyprland_plugins']) }}
+#}
+{%- macro hyprpm_enable(name, plugin, require=None) -%}
+{{ name }}:
+  cmd.run:
+    - name: >-
+        export HYPRLAND_INSTANCE_SIGNATURE=$( {{ _hypr_sig_cmd }} ) &&
+        hyprpm enable {{ plugin }}
+    - runas: {{ _user }}
+    - onlyif: {{ _hypr_onlyif }}
+    - unless: >-
+        export HYPRLAND_INSTANCE_SIGNATURE=$( {{ _hypr_sig_cmd }} ) &&
+        hyprpm list 2>&1 | rg '{{ plugin }}' -A1 | rg -q 'enabled:.*true'
+    - env:
+      - HOME: {{ _home }}
+      - XDG_RUNTIME_DIR: /run/user/{{ host.uid }}
+{%- if require %}
+    - require:
+{%- for req in require %}
+      - {{ req }}
+{%- endfor %}
+{%- endif %}
+{%- endmacro -%}
+
+{# Apply dconf settings from a key-value dictionary.
+   Handles escaping of special chars (backslash, quotes, backticks, $) in both
+   the write commands and the mirrored unless guard.
+   settings: dict of dconf path → value (e.g. {'/org/gnome/desktop/interface/gtk-theme': 'adw-gtk3-dark'}).
+   Usage: {{ dconf_settings('dconf_themes', desktop.dconf_settings) }}
+#}
+{%- macro dconf_settings(name, settings, user=_user, require=None) -%}
+{{ name }}:
+  cmd.run:
+    - name: |
+        set -eo pipefail
+{%- for key, val in settings.items() %}
+{%- set safe = val | replace('\\', '\\\\') | replace('"', '\\"') | replace('`', '\\`') | replace('$', '\\$') %}
+        dconf write {{ key }} "'{{ safe }}'"
+{%- endfor %}
+    - shell: /bin/bash
+    - runas: {{ user }}
+    - env:
+      - DBUS_SESSION_BUS_ADDRESS: "unix:path={{ host.runtime_dir }}/bus"
+    - unless: |
+        export DBUS_SESSION_BUS_ADDRESS=unix:path={{ host.runtime_dir }}/bus
+{%- for key, val in settings.items() %}
+{%- set safe = val | replace('\\', '\\\\') | replace('"', '\\"') | replace('`', '\\`') | replace('$', '\\$') %}
+        test "$(dconf read {{ key }})" = "'{{ safe }}'"{{ ' &&' if not loop.last else '' }}
+{%- endfor %}
+{%- if require %}
+    - require:
+{%- for req in require %}
+      - {{ req }}
+{%- endfor %}
+{%- endif %}
+{%- endmacro -%}

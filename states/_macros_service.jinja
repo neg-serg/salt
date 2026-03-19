@@ -1,4 +1,4 @@
-{# Service-related macros: ensure_dir, udev_rule, ensure_running, service_stopped, service_with_healthcheck, unit_override, service_with_unit, user_service_file, user_unit_override, user_service_enable, system_daemon_user #}
+{# Service-related macros: ensure_dir, udev_rule, ensure_running, service_stopped, service_with_healthcheck, unit_override, service_with_unit, user_service_file, user_unit_override, user_service_enable, user_linger, system_daemon_user #}
 
 {% from '_macros_common.jinja' import user as _user, home as _home, healthcheck_timeout as _healthcheck_timeout, host %}
 
@@ -382,6 +382,24 @@
         systemctl --user is-enabled '{{ unit }}' >/dev/null 2>&1 && exit 0
 {%- endfor %}
         exit 1
+{%- endmacro -%}
+
+{# Enable loginctl lingering for a user (services survive logout).
+   Generates a single cmd.run with unless guard.
+   Usage: {{ user_linger('nanoclaw_lingering') }}
+          {{ user_linger('openclaw_lingering', require=['cmd: install_openclaw']) }}
+#}
+{%- macro user_linger(name, user=_user, require=None) -%}
+{{ name }}:
+  cmd.run:
+    - name: loginctl enable-linger {{ user }}
+    - unless: loginctl show-user {{ user }} 2>/dev/null | rg -q '^Linger=yes'
+{%- if require %}
+    - require:
+{%- for req in require %}
+      - {{ req }}
+{%- endfor %}
+{%- endif %}
 {%- endmacro -%}
 
 {# Deploy systemd unit file + manage service (file + daemon-reload + enable/disable + optional running).
