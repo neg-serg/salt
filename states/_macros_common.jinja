@@ -52,12 +52,3 @@ mkdir -p {{ vd }} && rm -f '{{ vd }}/{{ name }}' {{ vd }}/{{ name }}@* && {% if 
 {{- salt['cmd.run_stdout'](fallback_cmd, runas=_u).strip() -}}
 {%- endif -%}
 {%- endmacro -%}
-
-{%- set service_ports = {
-    'loki':         {'port': 3100, 'healthcheck': '/ready'},
-    'promtail':     {'port': 9080, 'healthcheck': '/ready'},
-    'grafana':      {'port': 3030, 'healthcheck': '/api/health'},
-    'adguardhome':  {'port': 3000, 'healthcheck': '/'},
-    'ollama':       {'port': 11434, 'healthcheck': '/api/tags'},
-    'llama_embed':  {'port': 11435, 'healthcheck': '/health'},
-} -%}

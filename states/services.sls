@@ -2,6 +2,7 @@
 {% from '_macros_service.jinja' import ensure_dir, service_with_unit, service_stopped, service_with_healthcheck, system_daemon_user, unit_override %}
 {% from '_macros_pkg.jinja' import pacman_install, simple_service %}
 {% import_yaml 'data/services.yaml' as services %}
+{% import_yaml 'data/service_catalog.yaml' as catalog %}
 {% set svc = host.features.services %}
 {% set mon = host.features.monitoring %}
 
@@ -17,11 +18,11 @@
 
 # --- Health checks for network services ---
 {% if svc.get('jellyfin', False) %}
-{{ service_with_healthcheck('jellyfin_start', 'jellyfin', 'curl -sf http://127.0.0.1:8096/health >/dev/null 2>&1', requires=['service: jellyfin_enabled']) }}
+{{ service_with_healthcheck('jellyfin_start', 'jellyfin', catalog=catalog, requires=['service: jellyfin_enabled']) }}
 {% endif %}
 
 {% if svc.get('transmission', False) %}
-{{ service_with_healthcheck('transmission_start', 'transmission', 'curl -sf http://127.0.0.1:9091/transmission/web/ >/dev/null 2>&1', requires=['service: transmission_enabled']) }}
+{{ service_with_healthcheck('transmission_start', 'transmission', catalog=catalog, requires=['service: transmission_enabled']) }}
 {% endif %}
 
 # ===================================================================

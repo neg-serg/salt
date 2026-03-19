@@ -1,5 +1,6 @@
 # Loki + Promtail + Grafana monitoring stack (split from monitoring.sls)
-{% from '_imports.jinja' import host, service_ports %}
+{% from '_imports.jinja' import host %}
+{% import_yaml 'data/service_catalog.yaml' as catalog %}
 {% from '_macros_service.jinja' import service_with_unit, system_daemon_user, service_with_healthcheck, ensure_running, ensure_dir, unit_override %}
 {% from '_macros_pkg.jinja' import simple_service, pacman_install %}
 {% set mon = host.features.monitoring %}
@@ -34,7 +35,7 @@ loki_config:
     - source: salt://configs/loki.yaml.j2
     - template: jinja
     - context:
-        loki_port: {{ service_ports.loki.port }}
+        loki_port: {{ catalog.loki.port }}
 
 {{ service_with_unit('loki', 'salt://units/loki.service', running=True, watch=['file: loki_config'], requires=['cmd: install_loki', 'file: loki_config', 'file: loki_subdirs']) }}
 
@@ -42,7 +43,7 @@ loki_config:
 # Promtail reads journal retroactively — no early boot logs are lost.
 {{ unit_override('loki_boot_defer', 'loki.service', 'salt://units/loki-boot-defer.conf', filename='boot-defer.conf', requires=['cmd: install_loki']) }}
 
-{{ service_with_healthcheck('loki_start', 'loki', 'curl -sf http://127.0.0.1:' ~ service_ports.loki.port ~ service_ports.loki.healthcheck ~ ' >/dev/null 2>&1', requires=['service: loki_enabled']) }}
+{{ service_with_healthcheck('loki_start', 'loki', catalog=catalog, requires=['service: loki_enabled']) }}
 
 # --- Promtail: log shipper to Loki ---
 # Note: promtail pushes to Loki — enabling promtail without loki results in
@@ -65,13 +66,13 @@ promtail_config:
     - source: salt://configs/promtail.yaml.j2
     - template: jinja
     - context:
-        loki_port: {{ service_ports.loki.port }}
-        promtail_port: {{ service_ports.promtail.port }}
+        loki_port: {{ catalog.loki.port }}
+        promtail_port: {{ catalog.promtail.port }}
 
 {{ service_with_unit('promtail', 'salt://units/promtail.service', running=True, watch=['file: promtail_config'], requires=['cmd: install_promtail', 'file: promtail_config']) }}
 
 {% set promtail_requires = ['service: promtail_enabled'] + (['cmd: loki_start'] if mon.loki else []) %}
-{{ service_with_healthcheck('promtail_start', 'promtail', 'curl -sf http://127.0.0.1:' ~ service_ports.promtail.port ~ service_ports.promtail.healthcheck ~ ' >/dev/null 2>&1', requires=promtail_requires) }}
+{{ service_with_healthcheck('promtail_start', 'promtail', catalog=catalog, requires=promtail_requires) }}
 {% endif %}
 
 # --- Grafana: dashboard with Loki datasource ---
@@ -88,7 +89,7 @@ grafana_loki_datasource:
     - source: salt://configs/grafana-loki-datasource.yaml.j2
     - template: jinja
     - context:
-        loki_port: {{ service_ports.loki.port }}
+        loki_port: {{ catalog.loki.port }}
 {% endif %}
 
 grafana_config:
@@ -99,7 +100,7 @@ grafana_config:
     - template: jinja
     - context:
         hostname: {{ host.hostname }}
-        grafana_port: {{ service_ports.grafana.port }}
+        grafana_port: {{ catalog.grafana.port }}
 
 grafana_dashboards_provider:
   file.managed:
@@ -118,5 +119,5 @@ grafana_proxypilot_dashboard:
 {% set grafana_watch = ['file: grafana_config', 'file: grafana_dashboards_provider', 'file: grafana_proxypilot_dashboard'] + (['file: grafana_loki_datasource'] if mon.loki else []) %}
 {{ ensure_running('grafana', service='grafana', watch=grafana_watch) }}
 
-{{ service_with_healthcheck('grafana_start', 'grafana', 'curl -sf http://127.0.0.1:' ~ service_ports.grafana.port ~ service_ports.grafana.healthcheck ~ ' >/dev/null 2>&1', requires=['service: grafana_enabled']) }}
+{{ service_with_healthcheck('grafana_start', 'grafana', catalog=catalog, requires=['service: grafana_enabled']) }}
 {% endif %}

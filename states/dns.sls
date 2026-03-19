@@ -1,4 +1,5 @@
-{% from '_imports.jinja' import host, service_ports %}
+{% from '_imports.jinja' import host %}
+{% import_yaml 'data/service_catalog.yaml' as catalog %}
 {% from '_macros_service.jinja' import unit_override, system_daemon_user, service_with_unit, service_with_healthcheck, ensure_running %}
 {% from '_macros_pkg.jinja' import simple_service, pacman_install %}
 {% set dns = host.features.dns %}
@@ -39,7 +40,7 @@ unbound_control_certs:
 
 {{ ensure_running('unbound', watch=['file: unbound_config', 'file: unbound_restart_override']) }}
 
-{{ service_with_healthcheck('unbound_ready', 'unbound', 'unbound-control status >/dev/null 2>&1', requires=['service: unbound_running']) }}
+{{ service_with_healthcheck('unbound_ready', 'unbound', catalog=catalog, requires=['service: unbound_running']) }}
 {% endif %}
 
 # --- AdGuardHome: DNS filtering + ad blocking ---
@@ -67,7 +68,7 @@ adguardhome_config:
 
 {{ service_with_unit('adguardhome', 'salt://units/adguardhome.service.j2', template='jinja', context={'dns_unbound': dns.unbound}, requires=['cmd: install_adguardhome', 'file: adguardhome_config'], running=True, watch=['file: adguardhome_config']) }}
 
-{{ service_with_healthcheck('adguardhome_start', 'adguardhome', 'curl -sf http://127.0.0.1:' ~ service_ports.adguardhome.port ~ service_ports.adguardhome.healthcheck ~ ' >/dev/null 2>&1', requires=['service: adguardhome_enabled']) }}
+{{ service_with_healthcheck('adguardhome_start', 'adguardhome', catalog=catalog, requires=['service: adguardhome_enabled']) }}
 
 # Configure systemd-resolved to forward to AdGuardHome
 resolved_adguardhome:
