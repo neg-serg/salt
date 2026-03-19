@@ -7,64 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install system dependencies
-        run: sudo apt-get update -qq && sudo apt-get install -yqq zsh
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install salt-lint ruff jinja2 pyyaml yamllint
-
-      - name: Lint Salt states and Jinja templates
-        run: python3 scripts/lint-jinja.py
-
-      - name: Lint Salt states (salt-lint)
-        run: salt-lint states/*.sls < /dev/null
-
-      - name: Lint Python scripts
-        run: |
-          ruff check .
-          ruff format --check .
-
-      - name: Lint dotfiles (shebangs, zsh syntax, XDG paths)
-        run: python3 scripts/lint-dotfiles.py
-
-      - name: Lint systemd units
-        run: python3 scripts/lint-units.py
-
-      - name: Lint QML files
-        run: python3 scripts/lint-qml.py
-
-      - name: Lint YAML files
-        run: yamllint states/data/*.yaml states/configs/*.yaml .github/workflows/*.yaml
-
-      - name: Lint shell scripts
-        run: |
-          # ShellCheck only understands sh/bash; skip zsh scripts
-          files=()
-          for f in scripts/*.sh states/scripts/*.sh; do
-            [ -f "$f" ] || continue
-            case "$(head -n1 "$f")" in
-              "#!/usr/bin/env bash"*|"#!/bin/bash"*|"#!/usr/bin/env sh"*|"#!/bin/sh"*|"#!/usr/bin/env dash"*|"#!/bin/dash"*) files+=("$f");;
-            esac
-          done
-          if [ ${#files[@]} -gt 0 ]; then
-            shellcheck -e SC2129 "${files[@]}"
-          else
-            echo "No bash/sh scripts to check"
-          fi
-
-  just:
+  ci:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
@@ -91,7 +34,7 @@ jobs:
           sudo apt-get install -yqq \
             python3 python3-venv python3-pip \
             build-essential pkg-config libssl-dev libffi-dev \
-            ripgrep fd-find shellcheck yamllint cargo zsh
+            ripgrep fd-find shellcheck yamllint cargo zsh podman
           sudo ln -sf $(command -v fdfind) /usr/local/bin/fd
 
       - name: Install cargo tools
@@ -106,7 +49,6 @@ jobs:
           python3 -m venv .venv
           .venv/bin/pip install --upgrade pip
           .venv/bin/pip install -r requirements.txt
-          .venv/bin/pip install ruff
 
       - name: Run just lint
         run: just lint
@@ -120,5 +62,8 @@ jobs:
           SALT_LOG_FILE: /tmp/salt-ci.log
         run: just test
 
-      - name: Render feature matrix templates
-        run: .venv/bin/python3 scripts/render-matrix.py
+      - name: Run just render-matrix
+        run: just render-matrix
+
+      - name: Run just smoke-test
+        run: just smoke-test
