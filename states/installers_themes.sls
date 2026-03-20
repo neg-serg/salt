@@ -7,3 +7,11 @@
 {{ git_clone_deploy(name, cfg.repo, cfg.dest, cfg.get('items'), creates=(home ~ cfg.creates) if cfg.get('creates') else None, user=user, home=home) }}
 
 {% endfor %}
+
+vicinae_theme:
+  file.managed:
+    - name: {{ home }}/.local/share/vicinae/themes/flight-dark.toml
+    - source: salt://configs/vicinae/flight-dark.toml
+    - user: {{ user }}
+    - group: {{ user }}
+    - makedirs: True

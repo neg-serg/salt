@@ -1,0 +1,78 @@
+# Flight Dark — Flight-Dark-GTK desktop palette for Vicinae
+# Colors sourced from the Quickshell dark theme (.theme.json),
+# harmonized with Rofi, Kitty, and Flight-Dark-GTK.
+
+[meta]
+version = 1
+name = "Flight Dark"
+description = "Flight-Dark-GTK desktop palette"
+variant = "dark"
+
+[colors.core]
+background = "#000000"
+foreground = "#CBD6E5"
+secondary_background = "#242A35"
+border = "#3B4C5C"
+accent = "#006FCC"
+accent_foreground = "#FFFFFF"
+
+[colors.accents]
+blue = "#006FCC"
+green = "#0E6B4D"
+magenta = "#D62E6E"
+orange = "#FFB347"
+red = "#FF6B81"
+yellow = "#FFB347"
+cyan = "#94E1F9"
+purple = "#c1c1ff"
+
+[colors.text]
+default = "colors.core.foreground"
+muted = "#AEB9C8"
+danger = "#FF6B81"
+success = "#0E6B4D"
+placeholder = "#6B718A"
+selection = { background = "#006FCC", foreground = "#FFFFFF" }
+
+[colors.text.links]
+default = "#006FCC"
+visited = "#c1c1ff"
+
+[colors.input]
+border = "#3B4C5C"
+border_focus = "#006FCC"
+border_error = "#FF6B81"
+
+[colors.button.primary]
+background = "#242A35"
+foreground = "#CBD6E5"
+hover = { background = "#3B4C5C" }
+focus = { outline = "#006FCC" }
+
+[colors.list.item.selection]
+background = "#242A35"
+foreground = "#CBD6E5"
+secondary_background = "#3B4C5C"
+secondary_foreground = "#AEB9C8"
+
+[colors.grid.item]
+background = "#242A35"
+hover = { outline = "#CBD6E5" }
+selection = { outline = "#006FCC" }
+
+[colors.scrollbars]
+background = "#3B4C5C"
+
+[colors.loading]
+bar = "#006FCC"
+spinner = "#CBD6E5"
+
+[colors.main_window]
+border = "#3B4C5C"
+footer = { background = "colors.core.secondary_background" }
+
+[colors.settings_window]
+border = "#3B4C5C"
+
+[colors.shortcut]
+border = "colors.core.border"
