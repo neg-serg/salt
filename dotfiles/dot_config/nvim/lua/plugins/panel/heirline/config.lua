@@ -464,6 +464,20 @@ return function()
       end,
     })
 
+    -- Refresh palette when neg.nvim signals a color change (mode accent, theme commands, etc.)
+    api.nvim_create_autocmd('User', {
+      group = AUG,
+      pattern = 'NegColorUpdate',
+      callback = function()
+        _hl_cache = {}
+        local fresh = themed_colors(colors_fallback)
+        apply_palette_adjustments(fresh)
+        colors_assign(colors, fresh)
+        apply_statusline_highlights()
+        vim.cmd('redrawstatus')
+      end,
+    })
+
     if DEBUG then dbg_notify('initialized (debug ON)') end
   end)
 end
