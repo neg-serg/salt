@@ -344,8 +344,6 @@ alias:
     value: mpv
   - name: mpv-hdr
     value: mpv --profile=hdr
-  - name: rg
-    value: rg --max-columns=0 --max-columns-preview --glob '!*.git*' --glob '!*.obsidian' --colors=match:fg:25 --colors=match:style:underline --colors=line:fg:cyan --colors=line:style:bold --colors=path:fg:249 --colors=path:style:bold --smart-case --hidden
   - name: nmap-vulners
     value: nmap -sV --script=vulners/vulners.nse
   - name: nmap-vulscan

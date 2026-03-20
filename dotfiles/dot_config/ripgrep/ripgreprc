@@ -1,6 +1,7 @@
 --no-heading
 --hidden
 --follow
+--smart-case
 --max-columns=0
 --max-columns-preview
 --glob=!.git/
@@ -11,6 +12,7 @@
 --glob=!_build/
 --glob=!tags
 --glob=!.pub-cache
+--glob=!.obsidian/
 --colors=match:fg:25
 --colors=match:style:bold
 --colors=match:style:underline
