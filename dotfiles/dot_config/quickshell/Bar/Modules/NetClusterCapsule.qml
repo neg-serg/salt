@@ -97,6 +97,15 @@ ConnectivityCapsule {
         return Color.towardsBlack(satAgain, 0.3);
     })()
     readonly property string _slashAccentCss: Format.colorCss(slashAccentColor, 1)
+    readonly property string _dimZeroCss: Format.colorCss(Theme.textDisabled, 1)
+
+    // Dim leading zeros in a "NNNN.D U" formatted string
+    function _dimLeadingZeros(side) {
+        var i = 0;
+        while (i < side.length && side[i] === "0") i++;
+        if (i === 0) return Rich.esc(side);
+        return Rich.colorSpan(_dimZeroCss, side.slice(0, i)) + Rich.esc(side.slice(i));
+    }
 
     function _formatThroughputRich(text) {
         const raw = (text === undefined || text === null) ? "" : String(text);
@@ -105,8 +114,8 @@ ConnectivityCapsule {
         const slashIdx = raw.indexOf("/");
         if (slashIdx === -1)
             return Rich.esc(raw);
-        const left = Rich.esc(raw.slice(0, slashIdx));
-        const right = Rich.esc(raw.slice(slashIdx + 1));
+        const left = _dimLeadingZeros(raw.slice(0, slashIdx));
+        const right = _dimLeadingZeros(raw.slice(slashIdx + 1));
         return left + Rich.sepSpan(_slashAccentCss, "/", true) + right;
     }
 
