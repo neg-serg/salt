@@ -11,6 +11,15 @@
 apply STATE="system_description":
     scripts/salt-apply.sh {{STATE}}
 
+# Apply dotfiles only (chezmoi, no Salt)
+dotfiles:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    gpg-connect-agent updatestartuptty /bye &>/dev/null || true
+    install -Dm644 dotfiles/dot_config/chezmoi/chezmoi.toml \
+        "${HOME}/.config/chezmoi/chezmoi.toml" 2>/dev/null || true
+    chezmoi apply --force --source dotfiles
+
 apply-opencode:
     scripts/salt-apply.sh opencode
 
