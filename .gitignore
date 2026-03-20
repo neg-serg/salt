@@ -26,6 +26,7 @@ salt_config/var/
 .npm/
 
 # Tools
+CLAUDE.md
 .claude/
 .claude.json
 .serena/
