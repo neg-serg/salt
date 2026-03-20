@@ -47,10 +47,9 @@ function timeSpan(colorCss, text) {
     return "<span style='vertical-align: middle; line-height:1; color:" + c + "'>" + t + "</span>";
 }
 
-// Compact decimal dot — rendered at reduced font-size to save horizontal space
-function dotSpan(sizePct) {
-    var s = (sizePct === undefined) ? "80%" : String(sizePct);
-    return "<span style='font-size:" + s + "'>.</span>";
+// Compact decimal dot — proportional font so "." takes less horizontal space
+function dotSpan() {
+    return "<span style='font-family:sans-serif; font-size:70%'>.</span>";
 }
 
 // Generic colored span for arbitrary text
