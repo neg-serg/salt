@@ -36,7 +36,13 @@ Item {
                 root.errorString = String(err || "Weather error");
                 root.isLoading = false;
             },
-            { userAgent: Settings.settings.userAgent, debug: Settings.settings.debugNetwork }
+            {
+                userAgent: Settings.settings.userAgent,
+                debug: Settings.settings.debugNetwork,
+                timeoutMs: Theme.weatherHttpTimeoutMs,
+                weatherApiBaseUrl: Settings.settings.weatherApiBaseUrl || undefined,
+                geocodingApiBaseUrl: Settings.settings.weatherGeocodingBaseUrl || undefined
+            }
         );
     }
 

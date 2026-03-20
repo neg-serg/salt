@@ -108,7 +108,8 @@ function fetchCoordinates(city, callback, errorCallback, options) {
     }
 
     // Open-Meteo geocoding API (free, no key required)
-    var geoUrl = _buildUrl("https://geocoding-api.open-meteo.com/v1/search", {
+    var geoBase = (options && options.geocodingApiBaseUrl) ? String(options.geocodingApiBaseUrl) : "https://geocoding-api.open-meteo.com/v1";
+    var geoUrl = _buildUrl(geoBase + "/search", {
         name: city,
         language: "en",
         format: "json",
@@ -168,7 +169,8 @@ function fetchWeather(latitude, longitude, callback, errorCallback, options) {
     }
 
     // Open-Meteo forecast API (free, no key required)
-    var url = _buildUrl("https://api.open-meteo.com/v1/forecast", {
+    var weatherBase = (options && options.weatherApiBaseUrl) ? String(options.weatherApiBaseUrl) : "https://api.open-meteo.com/v1";
+    var url = _buildUrl(weatherBase + "/forecast", {
         latitude: String(latitude),
         longitude: String(longitude),
         current_weather: "true",
@@ -207,11 +209,13 @@ function fetchCityWeather(city, callback, errorCallback, options) {
             weatherTtlMs: options.weatherTtlMs || DEFAULTS.weatherTtlMs,
             errorTtlMs: options.errorTtlMs || DEFAULTS.errorTtlMs,
             timeoutMs: options.timeoutMs || DEFAULTS.timeoutMs,
-            cityKey: cityKey
+            cityKey: cityKey,
+            weatherApiBaseUrl: options.weatherApiBaseUrl
         });
     }, errorCallback, {
         geocodeTtlMs: options.geocodeTtlMs || DEFAULTS.geocodeTtlMs,
         errorTtlMs: options.errorTtlMs || DEFAULTS.errorTtlMs,
-        timeoutMs: options.timeoutMs || DEFAULTS.timeoutMs
+        timeoutMs: options.timeoutMs || DEFAULTS.timeoutMs,
+        geocodingApiBaseUrl: options.geocodingApiBaseUrl
     });
 } 
