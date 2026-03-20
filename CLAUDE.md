@@ -399,6 +399,8 @@ Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full de
 - Jinja2/YAML (Salt 3006.x state files) + `espanso-wayland` (AUR), `wl-clipboard` (pacman), existing Salt macros (`_macros_pkg.jinja`, `_macros_service.jinja`) (057-espanso-setup)
 - POSIX shell (yazi-wrapper.sh), Hyprland config DSL (window rules) + kitty (terminal emulator), yazi (file manager), xdg-desktop-portal-termfilechooser (portal backend), Hyprland (compositor), hyprscratch (scratchpad manager) (058-yazi-picker-float)
 - Jinja2/YAML (Salt 3006.x states), Hyprland config DSL + Salt macros (`_macros_desktop.jinja`), hyprpm, chezmoi (059-hyprland-plugins-setup)
+- QML 6 (Qt 6) + JavaScript (ES5 helpers) + Quickshell runtime, QtQuick, Material Symbols font (existing) (060-qs-system-monitor)
+- N/A — in-memory reactive properties only (060-qs-system-monitor)
 
 ## Recent Changes
 - 001-code-rag-integration: Added Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx)
