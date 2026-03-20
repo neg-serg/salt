@@ -734,8 +734,9 @@ Singleton {
     property color _wpAccent: "#000000"
     property bool _wpHasAccent: false
     property color accentPrimary: _wpHasAccent ? _wpAccent : val('colors.accent.primary', "#006FCC")
-    // Error state
+    // Status colors
     property color error: val('colors.status.error', "#FF6B81")
+    property color warning: val('colors.status.warning', "#FFB347")
     // Highlights & Focus
     property color highlight: val('colors.highlight', "#94E1F9")
 

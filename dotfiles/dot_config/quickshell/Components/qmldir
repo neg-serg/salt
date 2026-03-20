@@ -17,6 +17,7 @@ IconButton 1.0 IconButton.qml
 InlineTrayCapsule 1.0 InlineTrayCapsule.qml
 LinearSpectrum 1.0 LinearSpectrum.qml
 MaterialIcon 1.0 MaterialIcon.qml
+MonitorBar 1.0 MonitorBar.qml
 NumberFadeBehavior 1.0 NumberFadeBehavior.qml
 NumberStdInBehavior 1.0 NumberStdInBehavior.qml
 NumberStdOutBehavior 1.0 NumberStdOutBehavior.qml

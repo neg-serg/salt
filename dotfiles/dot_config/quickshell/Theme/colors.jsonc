@@ -16,7 +16,8 @@
     },
     "shadow": "#000000",
     "status": {
-      "error": "#FF6B81"
+      "error": "#FF6B81",
+      "warning": "#FFB347"
     },
     "highlight": "#94E1F9",
     "onAccent": "#FFFFFF"

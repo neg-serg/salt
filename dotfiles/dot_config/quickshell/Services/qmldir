@@ -10,4 +10,5 @@ MusicPosition 1.0 MusicPosition.qml
 singleton Timers 1.0 Timers.qml
 singleton TrayController 1.0 TrayController.qml
 singleton WallpaperAccent 1.0 WallpaperAccent.qml
+singleton SystemMonitor 1.0 SystemMonitor.qml
 singleton Weather 1.0 Weather.qml

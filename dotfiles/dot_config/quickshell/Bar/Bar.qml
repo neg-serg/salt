@@ -1195,6 +1195,11 @@ Scope {
                                 iconPx: Math.round(Theme.fontSizeSmall * Theme.scale(rightPanel.screen))
                                 iconColor: Theme.textPrimary
                             }
+                            LocalMods.SystemMonitorCapsule {
+                                id: systemMonitorCapsule
+                                Layout.alignment: Qt.AlignVCenter
+                                screen: modelData
+                            }
                             Item {
                                 id: systemTrayWrapper
                                 Layout.alignment: Qt.AlignVCenter

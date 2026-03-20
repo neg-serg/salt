@@ -124,6 +124,15 @@
     "networkPingIntervalMs": { "type": "integer", "default": 30000, "minimum": 1000, "maximum": 600000, "description": "Network ping interval (ms)" },
     "networkPingTarget": { "type": "string", "default": "8.8.8.8", "description": "Host to ping for internet reachability check" },
     "networkNoInternetColor": { "type": "string", "default": "#FF6E00", "description": "No-internet status color" },
-    "networkNoLinkColor": { "type": "string", "default": "#D81B60", "description": "No-link status color" }
+    "networkNoLinkColor": { "type": "string", "default": "#D81B60", "description": "No-link status color" },
+
+    "showCpuMonitor": { "type": "boolean", "default": true, "description": "Show CPU usage in system monitor capsule" },
+    "showRamMonitor": { "type": "boolean", "default": true, "description": "Show RAM usage in system monitor capsule" },
+    "showIoMonitor": { "type": "boolean", "default": true, "description": "Show disk I/O in system monitor capsule" },
+    "showGpuMonitor": { "type": "boolean", "default": true, "description": "Show GPU usage in system monitor capsule" },
+    "showTempMonitor": { "type": "boolean", "default": true, "description": "Show CPU temperature in system monitor capsule" },
+    "showSwapMonitor": { "type": "boolean", "default": true, "description": "Show swap usage in system monitor capsule" },
+    "systemMonitorPollMs": { "type": "integer", "default": 2000, "minimum": 500, "maximum": 60000, "description": "System monitor polling interval (ms)" },
+    "systemMonitorIoMaxMiBps": { "type": "integer", "default": 500, "minimum": 10, "maximum": 10000, "description": "Disk I/O reference max for bar normalization (MiB/s)" }
   }
 }
