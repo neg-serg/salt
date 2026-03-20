@@ -1,0 +1,68 @@
+# Maintainer: neg-serg <neg-serg@example.com>
+pkgname=swayimg
+pkgver=5.0
+pkgrel=1
+pkgdesc='A lightweight image viewer for Wayland (neg-serg fork)'
+arch=('x86_64')
+url='https://github.com/neg-serg/swayimg'
+license=('MIT')
+makedepends=('git' 'bash-completion' 'meson' 'ninja' 'wayland-protocols')
+depends=(
+    'cairo'
+    'hicolor-icon-theme'
+    'libavif'
+    'libdrm'
+    'libexiv2.so'
+    'libfontconfig.so'
+    'libfreetype.so'
+    'libgif.so'
+    'libgobject-2.0.so'
+    'libheif'
+    'libjpeg.so'
+    'libjxl.so'
+    'libpng'
+    'libraw'
+    'librsvg-2.so'
+    'libsixel'
+    'libtiff.so'
+    'libwayland-client.so'
+    'libwebp.so'
+    'libwebpdemux.so'
+    'libxkbcommon'
+    'luajit'
+    'openexr'
+)
+conflicts=('swayimg')
+provides=('swayimg')
+source=("${pkgname}::git+${url}.git")
+sha256sums=('SKIP')
+
+pkgver() {
+    cd "${srcdir}/${pkgname}"
+    git describe --tags --long --always | sed 's/-g.*//;s/^v//;s/-/./'
+}
+
+build() {
+    arch-meson build ${pkgname} \
+        -D bash=enabled \
+        -D desktop=true \
+        -D exif=enabled \
+        -D gif=enabled \
+        -D heif=enabled \
+        -D jpeg=enabled \
+        -D jxl=enabled \
+        -D man=true \
+        -D png=enabled \
+        -D sixel=enabled \
+        -D svg=enabled \
+        -D tiff=enabled \
+        -D webp=enabled \
+        -D zsh=enabled
+    ninja -C build
+}
+
+package() {
+    DESTDIR="${pkgdir}" ninja -C build install
+    cd "${pkgname}"
+    install -Dm644 LICENSE -t "${pkgdir}/usr/share/licenses/${pkgname}/"
+}

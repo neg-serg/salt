@@ -35,6 +35,10 @@ pkgbuild:
   # Desktop app PKGBUILD (migrated from curl_extract_zip)
   throne: {}
 
+  # neg-serg fork of Wayland image viewer; must replace stock swayimg
+  swayimg:
+    replace_check: "pacman -Qi swayimg 2>/dev/null | rg -q neg-serg"
+
   # neg-serg fork with --style plain; must replace stock duf if present
   duf:
     replace_check: "pacman -Qi duf 2>/dev/null | rg -q neg-serg"

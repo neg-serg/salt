@@ -29,7 +29,6 @@ desktop:
   - rofi  # app launcher and dmenu replacement
   - loupe  # GNOME image viewer
   - nyxt  # keyboard-driven extensible web browser
-  - swayimg  # lightweight Wayland image viewer
   - television  # general purpose terminal fuzzy finder (tv)
   - yazi  # blazing fast terminal file manager (Rust)
   - swayosd  # on-screen display for volume/caps/brightness
