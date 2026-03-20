@@ -199,6 +199,7 @@ return function()
       if vim.g.colors_name == 'neg' then
         -- Force Color 25 (#005faf) as the main accent for neg theme
         local c25 = '#005faf'
+        t.white = '#d1e5ff' -- neg p.white_color — bypass StatusLine.fg init race
         t.blue = c25
         t.cyan = c25
         t.dir_mid = '#005faf' -- make path segments match strict blue
