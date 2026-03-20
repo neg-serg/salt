@@ -99,12 +99,14 @@ ConnectivityCapsule {
     readonly property string _slashAccentCss: Format.colorCss(slashAccentColor, 1)
     readonly property string _dimZeroCss: Format.colorCss(Theme.textDisabled, 1)
 
-    // Dim leading zeros in a "NNN.D U" formatted string
+    // Dim leading zeros and unit suffix in a "NNN.DU" formatted string
     function _dimLeadingZeros(side) {
         var i = 0;
         while (i < side.length && side[i] === "0") i++;
-        if (i === 0) return Rich.esc(side);
-        return Rich.colorSpan(_dimZeroCss, side.slice(0, i)) + Rich.esc(side.slice(i));
+        var unit = side.slice(-1);
+        var numPart = side.slice(i, -1);
+        var dimmed = (i > 0) ? Rich.colorSpan(_dimZeroCss, side.slice(0, i)) : "";
+        return dimmed + Rich.esc(numPart) + Rich.colorSpan(_dimZeroCss, unit);
     }
 
     function _formatThroughputRich(text) {
