@@ -403,6 +403,8 @@ Secrets use **gopass** (GPG + Yubikey). See `docs/secrets-scheme.md` for full de
 - N/A — in-memory reactive properties only (060-qs-system-monitor)
 - QML 6 (Qt 6) + JavaScript (ES5 helpers) + Quickshell runtime, QtQuick, Quickshell.Io (061-qs-panel-layout-fix)
 - N/A (in-memory QML properties only) (061-qs-panel-layout-fix)
+- QML 6 (Qt 6) + JavaScript (ES5 helpers) + Quickshell runtime, QtQuick, Quickshell.Io (FileView, Process) (062-qs-data-driven)
+- JSON files on disk (Settings.json, Theme/.theme.json) (062-qs-data-driven)
 
 ## Recent Changes
 - 001-code-rag-integration: Added Python 3.12+ (code-rag), Jinja2/YAML (Salt states) + tree-sitter-language-pack, lancedb, mcp[cli], httpx (all Python, managed by pipx)
