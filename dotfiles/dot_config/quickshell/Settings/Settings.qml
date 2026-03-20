@@ -149,6 +149,19 @@ Singleton {
             property string networkPingTarget: "8.8.8.8"
             property string networkNoInternetColor: "#FF6E00"
             property string networkNoLinkColor: "#D81B60"
+
+            // Panel layout: ordered widget identifiers per section
+            property var panelLayout: ({
+                left: ["clock", "workspaces", "keyboard", "network", "weather"],
+                right: ["media", "mpdFlags", "sysmon", "systray", "microphone", "volume"]
+            })
+
+            // Weather/geocoding API base URLs (configurable for proxies/firewalls)
+            property string weatherApiBaseUrl: "https://api.open-meteo.com/v1"
+            property string weatherGeocodingBaseUrl: "https://geocoding-api.open-meteo.com/v1"
+
+            // Wallpaper accent extraction
+            property bool wallpaperAccent: true
         }
     }
 
