@@ -207,6 +207,9 @@ return function()
         if not t.white_dim or t.white_dim == fallback.white_dim then
           t.white_dim = '#8998a7'
         end
+        -- Darken leading zeros: col15 from neg palette (hue 213° sat 21% L48)
+        -- Contrast vs primary (#9fabbb): 1.98:1, vs bg (~#242424): 3.38:1
+        t.line_zero = '#607794'
       end
       return t
     end
