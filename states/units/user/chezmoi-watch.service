@@ -1,0 +1,12 @@
+[Unit]
+Description=Auto-apply chezmoi on dotfile changes
+After=default.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/chezmoi-watch
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

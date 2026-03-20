@@ -33,6 +33,7 @@ unit_files:
   - {id: salt_drift_timer, filename: salt-drift.timer}
   - {id: gpu_unstick_service, filename: gpu-unstick.service}
   - {id: gpu_unstick_timer, filename: gpu-unstick.timer}
+  - {id: chezmoi_watch_service, filename: chezmoi-watch.service}
 
 # Services/sockets to enable (systemctl --user enable)
 enable_services:
@@ -42,6 +43,7 @@ enable_services:
   - pic-dirs-list.service
   - vicinae.service
   - openrgb-profile.service
+  - chezmoi-watch.service
   - gpg-agent.socket
   - ssh-agent.socket
   - systemd-tmpfiles-setup.service  # creates hashed GPG socket dirs from user-tmpfiles.d/

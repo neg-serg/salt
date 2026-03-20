@@ -1,0 +1,35 @@
+#!/usr/bin/env zsh
+
+# Watch chezmoi source directory and auto-apply on changes.
+# Debounces rapid saves (2s window) to avoid redundant applies.
+
+set -euo pipefail
+
+src_dir="${HOME}/src/salt/dotfiles"
+cooldown=2
+last_apply=0
+
+apply_dotfiles() {
+    local now=${EPOCHSECONDS}
+    if (( now - last_apply < cooldown )); then
+        return
+    fi
+    last_apply=${now}
+
+    gpg-connect-agent updatestartuptty /bye &>/dev/null || true
+    if chezmoi apply --force --source "${src_dir}" 2>&1; then
+        echo "[$(date -Iseconds)] applied"
+    else
+        echo "[$(date -Iseconds)] apply failed" >&2
+    fi
+}
+
+zmodload zsh/datetime
+
+echo "Watching ${src_dir} for changes..."
+inotifywait -r -m -e close_write,create,delete,move \
+    --exclude '(\.git|__pycache__|\.swp$|\.tmp$|~$)' \
+    "${src_dir}" 2>/dev/null |
+while IFS= read -r _line; do
+    apply_dotfiles
+done
