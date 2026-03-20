@@ -1,6 +1,5 @@
 pragma Singleton
 import QtQuick
-import Quickshell
 import qs.Components
 import qs.Settings
 
@@ -8,7 +7,7 @@ import qs.Settings
  * SystemMonitor — singleton service that polls procfs/sysfs for system metrics.
  * Uses ProcessRunner (poll mode) with one-line shell output per probe.
  */
-Singleton {
+Item {
     id: root
 
     // ── CPU ──
