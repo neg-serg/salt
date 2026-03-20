@@ -10,7 +10,11 @@ Rectangle {
     id: root
 
     property real value: 0.0
-    property int barWidth: Math.max(2, Math.round(3 * Theme.scale(screen)))
+    property int barWidth: {
+        var v = Settings.settings.systemMonitorBarWidth;
+        var base = (typeof v === "number" && v > 0) ? v : 3;
+        return Math.max(2, Math.round(base * Theme.scale(screen)));
+    }
     property int barHeight: Math.round(Theme.panelHeight * 0.6 * Theme.scale(screen))
     property var screen: null
 

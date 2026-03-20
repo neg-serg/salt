@@ -133,6 +133,13 @@
     "showTempMonitor": { "type": "boolean", "default": true, "description": "Show CPU temperature in system monitor capsule" },
     "showSwapMonitor": { "type": "boolean", "default": true, "description": "Show swap usage in system monitor capsule" },
     "systemMonitorPollMs": { "type": "integer", "default": 2000, "minimum": 500, "maximum": 60000, "description": "System monitor polling interval (ms)" },
-    "systemMonitorIoMaxMiBps": { "type": "integer", "default": 500, "minimum": 10, "maximum": 10000, "description": "Disk I/O reference max for bar normalization (MiB/s)" }
+    "systemMonitorIoMaxMiBps": { "type": "integer", "default": 500, "minimum": 10, "maximum": 10000, "description": "Disk I/O reference max for bar normalization (MiB/s)" },
+    "systemMonitorHideIdle": { "type": "boolean", "default": true, "description": "Hide metric icon+bar when value is below idle threshold" },
+    "systemMonitorIdleThreshold": { "type": "number", "default": 0.03, "minimum": 0, "maximum": 0.5, "description": "Threshold below which idle metrics are hidden (0.03 = 3%)" },
+    "systemMonitorBarWidth": { "type": "integer", "default": 3, "minimum": 1, "maximum": 10, "description": "Bar width in logical pixels" },
+    "systemMonitorIconScale": { "type": "number", "default": 0.75, "minimum": 0.3, "maximum": 1.5, "description": "Icon size as fraction of capsule inner height" },
+    "systemMonitorSpacing": { "type": "integer", "default": 5, "minimum": 1, "maximum": 20, "description": "Spacing between metric groups in logical pixels" },
+    "systemMonitorWarnThreshold": { "type": "number", "default": 0.5, "minimum": 0.1, "maximum": 0.9, "description": "Percentage threshold for warning color (0.5 = 50%)" },
+    "systemMonitorCritThreshold": { "type": "number", "default": 0.8, "minimum": 0.2, "maximum": 1.0, "description": "Percentage threshold for critical color (0.8 = 80%)" }
   }
 }

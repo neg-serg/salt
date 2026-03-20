@@ -21,18 +21,51 @@ OverlayToggleCapsule {
     autoToggleOnTap: true
     overlayNamespace: "sysmon-popup"
 
+    // ── Settings ──
+    readonly property bool _hideIdle: Settings.settings.systemMonitorHideIdle !== false
+    readonly property real _idleThreshold: {
+        var v = Settings.settings.systemMonitorIdleThreshold;
+        return (typeof v === "number" && v >= 0) ? v : 0.03;
+    }
+    readonly property real _iconScale: {
+        var v = Settings.settings.systemMonitorIconScale;
+        return (typeof v === "number" && v > 0) ? v : 0.75;
+    }
+    readonly property int _metricSpacing: {
+        var v = Settings.settings.systemMonitorSpacing;
+        return (typeof v === "number" && v >= 0) ? Math.round(v * capsuleScale) : Math.round(5 * capsuleScale);
+    }
+    readonly property real _warnThr: {
+        var v = Settings.settings.systemMonitorWarnThreshold;
+        return (typeof v === "number" && v > 0) ? v : 0.5;
+    }
+    readonly property real _critThr: {
+        var v = Settings.settings.systemMonitorCritThreshold;
+        return (typeof v === "number" && v > 0) ? v : 0.8;
+    }
+    readonly property int _iconSz: Math.round(iconBox * _iconScale)
+
+    // ── Visibility (settings + idle hide) ──
     readonly property bool _showCpu: Settings.settings.showCpuMonitor !== false
+        && (!_hideIdle || Services.SystemMonitor.cpuPercent >= _idleThreshold)
     readonly property bool _showRam: Settings.settings.showRamMonitor !== false
+        && (!_hideIdle || Services.SystemMonitor.ramPercent >= _idleThreshold)
     readonly property bool _showIo: Settings.settings.showIoMonitor !== false
-    readonly property bool _showGpu: Services.SystemMonitor.gpuAvailable && Settings.settings.showGpuMonitor !== false
+        && (!_hideIdle || Services.SystemMonitor.ioPercent >= _idleThreshold)
+    readonly property bool _showGpu: Services.SystemMonitor.gpuAvailable
+        && Settings.settings.showGpuMonitor !== false
+        && (!_hideIdle || Services.SystemMonitor.gpuPercent >= _idleThreshold)
     readonly property bool _showTemp: Settings.settings.showTempMonitor !== false
-    readonly property bool _showSwap: Services.SystemMonitor.swapAvailable && Settings.settings.showSwapMonitor !== false
+        && (!_hideIdle || Services.SystemMonitor.cpuTempPercent >= _idleThreshold)
+    readonly property bool _showSwap: Services.SystemMonitor.swapAvailable
+        && Settings.settings.showSwapMonitor !== false
+        && (!_hideIdle || Services.SystemMonitor.swapPercent >= _idleThreshold)
     readonly property bool _anyVisible: _showCpu || _showRam || _showIo || _showGpu || _showTemp || _showSwap
 
     Row {
         id: metricsRow
         anchors.centerIn: parent
-        spacing: Math.round(5 * capsuleScale)
+        spacing: root._metricSpacing
 
         // ── CPU ──
         Row {
@@ -41,14 +74,16 @@ OverlayToggleCapsule {
             anchors.verticalCenter: parent.verticalCenter
             MaterialIcon {
                 icon: "memory_alt"
-                size: Math.round(iconBox * 0.75)
+                size: root._iconSz
                 color: SysUi.thresholdColor(Services.SystemMonitor.cpuPercent,
-                    Theme.textSecondary, Theme.warning, Theme.error, 0.5, 0.8)
+                    Theme.textSecondary, Theme.warning, Theme.error, root._warnThr, root._critThr)
                 anchors.verticalCenter: parent.verticalCenter
             }
             MonitorBar {
                 value: Services.SystemMonitor.cpuPercent
                 barHeight: root.barH
+                warnThreshold: root._warnThr
+                critThreshold: root._critThr
                 screen: root.screen
                 anchors.verticalCenter: parent.verticalCenter
             }
@@ -61,14 +96,16 @@ OverlayToggleCapsule {
             anchors.verticalCenter: parent.verticalCenter
             MaterialIcon {
                 icon: "memory"
-                size: Math.round(iconBox * 0.75)
+                size: root._iconSz
                 color: SysUi.thresholdColor(Services.SystemMonitor.ramPercent,
-                    Theme.textSecondary, Theme.warning, Theme.error, 0.5, 0.8)
+                    Theme.textSecondary, Theme.warning, Theme.error, root._warnThr, root._critThr)
                 anchors.verticalCenter: parent.verticalCenter
             }
             MonitorBar {
                 value: Services.SystemMonitor.ramPercent
                 barHeight: root.barH
+                warnThreshold: root._warnThr
+                critThreshold: root._critThr
                 screen: root.screen
                 anchors.verticalCenter: parent.verticalCenter
             }
@@ -81,14 +118,16 @@ OverlayToggleCapsule {
             anchors.verticalCenter: parent.verticalCenter
             MaterialIcon {
                 icon: "storage"
-                size: Math.round(iconBox * 0.75)
+                size: root._iconSz
                 color: SysUi.thresholdColor(Services.SystemMonitor.ioPercent,
-                    Theme.textSecondary, Theme.warning, Theme.error, 0.5, 0.8)
+                    Theme.textSecondary, Theme.warning, Theme.error, root._warnThr, root._critThr)
                 anchors.verticalCenter: parent.verticalCenter
             }
             MonitorBar {
                 value: Services.SystemMonitor.ioPercent
                 barHeight: root.barH
+                warnThreshold: root._warnThr
+                critThreshold: root._critThr
                 screen: root.screen
                 anchors.verticalCenter: parent.verticalCenter
             }
@@ -101,14 +140,16 @@ OverlayToggleCapsule {
             anchors.verticalCenter: parent.verticalCenter
             MaterialIcon {
                 icon: "developer_board"
-                size: Math.round(iconBox * 0.75)
+                size: root._iconSz
                 color: SysUi.thresholdColor(Services.SystemMonitor.gpuPercent,
-                    Theme.textSecondary, Theme.warning, Theme.error, 0.5, 0.8)
+                    Theme.textSecondary, Theme.warning, Theme.error, root._warnThr, root._critThr)
                 anchors.verticalCenter: parent.verticalCenter
             }
             MonitorBar {
                 value: Services.SystemMonitor.gpuPercent
                 barHeight: root.barH
+                warnThreshold: root._warnThr
+                critThreshold: root._critThr
                 screen: root.screen
                 anchors.verticalCenter: parent.verticalCenter
             }
@@ -121,7 +162,7 @@ OverlayToggleCapsule {
             anchors.verticalCenter: parent.verticalCenter
             MaterialIcon {
                 icon: "thermostat"
-                size: Math.round(iconBox * 0.75)
+                size: root._iconSz
                 color: SysUi.thresholdColor(Services.SystemMonitor.cpuTempPercent,
                     Theme.textSecondary, Theme.warning, Theme.error, 0.43, 0.71)
                 anchors.verticalCenter: parent.verticalCenter
@@ -143,14 +184,16 @@ OverlayToggleCapsule {
             anchors.verticalCenter: parent.verticalCenter
             MaterialIcon {
                 icon: "swap_horiz"
-                size: Math.round(iconBox * 0.75)
+                size: root._iconSz
                 color: SysUi.thresholdColor(Services.SystemMonitor.swapPercent,
-                    Theme.textSecondary, Theme.warning, Theme.error, 0.5, 0.8)
+                    Theme.textSecondary, Theme.warning, Theme.error, root._warnThr, root._critThr)
                 anchors.verticalCenter: parent.verticalCenter
             }
             MonitorBar {
                 value: Services.SystemMonitor.swapPercent
                 barHeight: root.barH
+                warnThreshold: root._warnThr
+                critThreshold: root._critThr
                 screen: root.screen
                 anchors.verticalCenter: parent.verticalCenter
             }
