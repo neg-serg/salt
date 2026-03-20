@@ -3,7 +3,7 @@
    "keybinding": "emacs",
    "theme": {
       "dark": {
-         "name": "tokyo-night"
+         "name": "flight-dark"
       }
    },
    "launcher_window": {
