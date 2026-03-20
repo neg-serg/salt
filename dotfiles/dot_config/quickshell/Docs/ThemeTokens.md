@@ -223,6 +223,30 @@ Core mappings (examples):
 - Spectrum: spectrumPeakDecayIntervalMs → spectrum.peakDecayIntervalMs; spectrumBarAnimMs →
   spectrum.barAnimMs
 
+greeter.* — Greeter/lock screen tokens (Theme/greeter.jsonc)
+
+Timing tokens:
+- greeter.lockAnimationMs: int, default 500. Lock slide animation duration.
+- greeter.slideshowDurationMs: int, default 3000. Slide view enter/exit animation duration.
+- greeter.contextTimerMs: int, default 300. Test auth timer delay.
+- greeter.animFastMs: int, default 150. Fast animation tier (UI transitions).
+- greeter.animMediumMs: int, default 250. Medium animation tier.
+- greeter.animSlowMs: int, default 500. Slow animation tier.
+
+Color tokens:
+- greeter.barColor: color, default "#30c0ffff". Greeter bar background.
+- greeter.barOutline: color, default "#50ffffff". Greeter bar outline.
+- greeter.widgetColor: color, default "#25ceffff". Greeter widget background.
+- greeter.widgetActiveColor: color, default "#80ceffff". Greeter widget active/hover.
+- greeter.widgetOutline: color, default "#40ffffff". Greeter widget outline.
+- greeter.widgetOutlineSeparate: color, default "#20ffffff". Greeter widget outline (separate).
+- greeter.separatorColor: color, default "#60ffffff". Greeter separator.
+
+Additional timing tokens (various sources):
+- timers.genericTickMs: int, default 2000. Generic UI dedupe tick interval (Theme/timers.jsonc).
+- panel.slideTimerTickMs: int, default 50. Bar slide debounce timer (Theme/panel.jsonc).
+- weather.httpTimeoutMs: int, default 8000. Weather API HTTP timeout (Theme/weather.jsonc).
+
 Notes
 
 - The nested schema is authoritative going forward. New tokens are added only in nested form.

@@ -37,6 +37,14 @@ UI & Typography
 - dimPanels: boolean, default true. Dim panels appearance.
 - fontSizeMultiplier: number, default 1.0. Global font multiplier (e.g. 1.2 = +20%).
 
+Panel Layout
+
+- panelLayout: object, default `{"left":["clock","workspaces","keyboard","network","weather"],"right":["media","mpdFlags","sysmon","systray","microphone","volume"]}`.
+  Controls which widgets appear in the bar and in which section. Widgets not listed are hidden.
+  Valid widget identifiers: clock, workspaces, keyboard, network, weather, media, mpdFlags, sysmon,
+  systray, microphone, volume. Unknown identifiers are silently ignored. Each identifier may appear
+  at most once (duplicates ignored, first occurrence wins).
+
 Bar/Widgets
 
 - showMediaInBar: boolean, default false. Show the media block in the bar.
@@ -106,6 +114,7 @@ Contrast & Accessibility
 Network
 
 - networkPingIntervalMs: integer, default 30000. Network/ping refresh interval.
+- networkPingTarget: string, default "8.8.8.8". Host to ping for internet reachability check.
 - networkNoInternetColor: color string, default "#FF6E00". No‑internet status color.
 - networkNoLinkColor: color string, default "#D81B60". No‑link status color.
 
@@ -114,6 +123,8 @@ Weather
 - showWeatherInBar: boolean, default true. Weather capsule in bar.
 - useFahrenheit: boolean, default false. Show °F.
 - weatherCity: string, default "Saint Petersburg". City for current weather and forecast.
+- weatherApiBaseUrl: string, default "https://api.open-meteo.com/v1". Weather API base URL.
+- weatherGeocodingBaseUrl: string, default "https://geocoding-api.open-meteo.com/v1". Geocoding API base URL.
 
 Visualizer profiles notes
 
@@ -130,7 +141,7 @@ Theme/.theme.json (short)
 - Up‑to‑date example schema: `Docs/ThemeHierarchical.json`.
 - Important groups: `colors.*`, `panel.*`, `shape.*`, `tooltip.*`, `ui.*`, `ws.*`, `timers.*`,
   `network.*`, `media.*`, `spectrum.*`, `calendar.*`, `weather.*`, `vpn.*`, `time.*`, `volume.*`,
-  `sidePanel.*`.
+  `sidePanel.*`, `greeter.*`.
 - Strict mode (`Settings.settings.strictThemeTokens = true`) logs warnings for missing tokens and
   deprecated flat keys. Flat keys are removed after 2025‑11‑01.
 
