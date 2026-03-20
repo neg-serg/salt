@@ -68,8 +68,8 @@ INNER
     export YAZI_OUT="$out"
     export YAZI_SUGGESTED="$suggested"
     export YAZI_CHOOSER_DEBUG="${YAZI_CHOOSER_DEBUG:-0}"
-    "$termcmd" -- bash "$tmp"
+    "$termcmd" --class yazi-chooser -- bash "$tmp"
     rm -f "$tmp"
 else
-    "$termcmd" -- sh -c "yazi --chooser-file='$out'"
+    "$termcmd" --class yazi-chooser -- sh -c "yazi --chooser-file='$out'"
 fi
