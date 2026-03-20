@@ -47,6 +47,12 @@ function timeSpan(colorCss, text) {
     return "<span style='vertical-align: middle; line-height:1; color:" + c + "'>" + t + "</span>";
 }
 
+// Compact decimal dot — rendered at reduced font-size to save horizontal space
+function dotSpan(sizePct) {
+    var s = (sizePct === undefined) ? "80%" : String(sizePct);
+    return "<span style='font-size:" + s + "'>.</span>";
+}
+
 // Generic colored span for arbitrary text
 function colorSpan(colorCss, text) {
     var c = (colorCss === undefined || colorCss === null) ? "inherit" : String(colorCss);
@@ -91,6 +97,7 @@ var RichRT = {
     bracketPair: bracketPair,
     bracketSpan: bracketSpan,
     timeSpan: timeSpan,
+    dotSpan: dotSpan,
     colorSpan: colorSpan,
     isPUA: isPUA,
     isOldItalic: isOldItalic,
