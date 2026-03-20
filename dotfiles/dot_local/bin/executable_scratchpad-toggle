@@ -1,0 +1,46 @@
+#!/usr/bin/env zsh
+# Toggle a hyprscratch scratchpad and fix position.
+# Hyprland 0.54 ignores windowrule `move` for windows on special workspaces,
+# so we apply movewindowpixel after toggle if the window is visible.
+#
+# Usage: scratchpad-toggle <name>
+
+local name=$1
+[[ -z $name ]] && { print -u2 "usage: scratchpad-toggle <name>"; exit 1 }
+
+# Desired positions (x y) per scratchpad — scaled pixels for 1920x1080
+typeset -A positions
+positions=(
+    im      "1334 10"
+    music   "288 540"
+)
+
+hyprscratch toggle "$name"
+
+# Only fix position if we have an override for this scratchpad
+local pos=${positions[$name]}
+[[ -z $pos ]] && exit 0
+
+# Brief pause for the window to be mapped
+sleep 0.08
+
+# Read the scratchpad's class from config to find the window
+local config=${XDG_CONFIG_HOME:-$HOME/.config}/hypr/hyprscratch.conf
+local class=$(awk -v n="$name" '$0 ~ "^"n" \\{" {found=1} found && /class =/ {print $3; exit}' "$config")
+[[ -z $class ]] && exit 0
+
+# Get window address and workspace (address works with any class name)
+local info=$(hyprctl clients -j | python3 -c "
+import json, sys
+for c in json.load(sys.stdin):
+    if c['class'] == '$class':
+        print(c['address'], c['workspace']['name'])
+        break
+" 2>/dev/null)
+local addr=${info%% *}
+local ws=${info#* }
+
+# If workspace is not special:*, the window is visible — fix position
+if [[ -n $addr && $ws != special:* ]]; then
+    hyprctl dispatch movewindowpixel "exact ${=pos},address:$addr"
+fi
