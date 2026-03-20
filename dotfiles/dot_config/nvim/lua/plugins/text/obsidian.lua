@@ -21,7 +21,7 @@ return {'obsidian-nvim/obsidian.nvim', version='*', ft='markdown',
                     end
                 end,
 
-                wiki_link_func='prepend_note_path',
+                link={style='wiki', prepend_note_path=true},
 
                 attachments={folder=''},
                 ui={enable=false}, -- render-markdown.nvim handles rendering
