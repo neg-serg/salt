@@ -14,7 +14,7 @@ QtObject {
     readonly property var interfaces: (Services.Connectivity && Services.Connectivity.interfaces) || []
 
     // Derived data
-    readonly property string throughputText: ConnUi.formatThroughput(rxKiBps, txKiBps) || "0"
+    readonly property string throughputText: ConnUi.formatThroughput(rxKiBps, txKiBps) || "-/-"
     property bool vpnConnected: false
     property string vpnInterface: ""
 
