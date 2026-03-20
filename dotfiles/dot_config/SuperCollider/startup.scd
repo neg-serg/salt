@@ -1,5 +1,4 @@
 // Auto-boot SuperDirt on sclang start
-// Deployed by Salt — edits will be overwritten
 (
 Server.killAll;
 s.options.numBuffers = 1024 * 256;

@@ -1,5 +1,5 @@
 matches:
-  - trigger: ":date"
+  - trigger: ":date:"
     replace: "{{date}}"
     vars:
       - name: date
@@ -7,7 +7,7 @@ matches:
         params:
           format: "%Y-%m-%d"
 
-  - trigger: ":time"
+  - trigger: ":time:"
     replace: "{{time}}"
     vars:
       - name: time
@@ -15,7 +15,7 @@ matches:
         params:
           format: "%H:%M"
 
-  - trigger: ":now"
+  - trigger: ":now:"
     replace: "{{now}}"
     vars:
       - name: now
