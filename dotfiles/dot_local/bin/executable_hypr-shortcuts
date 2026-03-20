@@ -60,11 +60,12 @@ pick_secret() {
 }
 
 fetch_window() {
-  if ! command -v pypr-client > /dev/null 2>&1; then
-    log "pypr-client helper not found"
-    return 1
-  fi
-  pypr-client fetch_client_menu
+  local line address workspace_id
+  line="$(hyprctl clients -j | jq -r '.[] | select(.mapped) | "\(.address) [\(.class)] \(.title)"' | "$vicinae_bin" dmenu --placeholder "fetch window" --section-title "Windows {count}" --navigation-title "Fetch")" || return 0
+  address="${line%% *}"
+  workspace_id="$(hyprctl activeworkspace -j | jq -r '.id')"
+  hyprctl dispatch movetoworkspacesilent "$workspace_id,address:$address"
+  hyprctl dispatch focuswindow "address:$address"
 }
 
 open_socket_reader() {

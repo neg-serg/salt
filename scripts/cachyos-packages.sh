@@ -397,7 +397,6 @@ AUR_PKGS=(
     par                 # paragraph reformatter
     claude-code         # Claude AI coding assistant CLI
     salt                # infrastructure configuration management
-    pyprland            # Hyprland plugin framework (Python)
     wlogout             # Wayland logout menu
     # abuse               # side-scrolling action game
     # dosbox-staging      # DOS emulator (modern fork)

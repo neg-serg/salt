@@ -39,19 +39,19 @@ menu:
     submenu:
       - key: "d"
         desc: Teardown
-        cmd: pypr toggle teardown
+        cmd: hyprscratch toggle teardown
       - key: "e"
         desc: IM
-        cmd: pypr toggle im
+        cmd: hyprscratch toggle im
       - key: "f"
         desc: Music
-        cmd: pypr toggle music
+        cmd: hyprscratch toggle music
       - key: "t"
         desc: Torrents
-        cmd: pypr toggle torrment
+        cmd: hyprscratch toggle torrment
       - key: "m"
         desc: Mixer
-        cmd: pypr toggle mixer
+        cmd: hyprscratch toggle mixer
 
   # --- Power ---
   - key: "p"

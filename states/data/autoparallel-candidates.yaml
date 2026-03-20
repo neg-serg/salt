@@ -814,10 +814,6 @@ not-applicable-interpreted:
     language: python
     reason: "Python runtime"
 
-  - name: pyprland  # Hyprland plugins — Python
-    language: python
-    reason: "Python runtime"
-
 # ── Not Applicable — Metapackages/Data/Libraries ───────────────────
 # Packages that are not standalone executables or where the benefit
 # comes from the consuming program, not the package itself.

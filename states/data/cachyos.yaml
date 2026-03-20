@@ -142,7 +142,6 @@ package_checks:
     - doggo                           # DNS client (dig alternative)
     - newsraft                        # RSS/Atom feed reader (TUI)
     - pipemixer                       # PipeWire TUI mixer
-    - pyprland                        # Hyprland plugin manager
     - salt                            # infrastructure automation
     - wlogout                         # Wayland logout menu
   custom:

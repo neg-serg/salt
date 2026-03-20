@@ -387,6 +387,7 @@ aur:
   - gram-editor-git  # minimal code editor
   - hishtory-bin  # synced, queryable shell history
   - hw-probe  # hardware probe and operability check
+  - hyprscratch  # Rust scratchpad manager for Hyprland
   - iosevka-neg-fonts  # custom Iosevka Nerd Fonts (neg-serg)
   - jdupes  # duplicate file finder and deduplicator
   - lutgen-bin  # LUT-based color palette generator
@@ -402,7 +403,6 @@ aur:
   - pinentry-rofi  # rofi-based GPG pinentry
   - pipemixer  # TUI PipeWire volume control
   - pup-bin  # CLI HTML parser (like jq for HTML)
-  - pyprland  # Hyprland plugin manager (scratchpads, etc)
   - python-rapidgzip  # parallel gzip decompressor (Python)
   - raise  # run-or-raise for Hyprland (neg-serg fork)
   - raysession  # NSM session manager for audio apps
