@@ -20,7 +20,7 @@ Singleton {
 
 	Behavior on lockSlide {
 		NumberAnimation {
-			duration: 500
+			duration: GreeterTheme.lockAnimationMs
 			easing.type: Easing.BezierSpline
 			easing.bezierCurve: [0.1, 0.75, 0.15, 1.0, 1.0, 1.0]
 		}
@@ -28,7 +28,7 @@ Singleton {
 
 	Behavior on bkgSlide {
 		NumberAnimation {
-			duration: 500
+			duration: GreeterTheme.lockAnimationMs
 			easing.type: Easing.OutCirc
 		}
 	}
@@ -45,7 +45,7 @@ Singleton {
 
 	Timer {
 		id: lockClearTimer
-		interval: 500
+		interval: GreeterTheme.lockAnimationMs
 		onTriggered: {
 			lock.locked = false;
 			lockContextLoader.active = false;

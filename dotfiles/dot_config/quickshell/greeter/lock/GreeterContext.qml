@@ -21,7 +21,7 @@ Scope {
 
 	Timer {
 		id: testAuthTimer
-		interval: 300
+		interval: GreeterTheme.contextTimerMs
 		onTriggered: {
 			root.state.isUnlocking = false;
 			root.launch();
