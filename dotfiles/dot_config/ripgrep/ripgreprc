@@ -20,3 +20,4 @@
 --colors=path:style:bold
 --colors=column:fg:24
 --colors=column:style:bold
+--hyperlink-format=default
