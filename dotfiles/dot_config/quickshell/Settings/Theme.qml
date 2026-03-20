@@ -1063,4 +1063,25 @@ Singleton {
     property color borderSubtle: (val('colors.overrides.borderSubtle', themeData.borderSubtleOverride) !== undefined) ? val('colors.overrides.borderSubtle', themeData.borderSubtleOverride) : Color.withAlpha(textPrimary, 0.15)
     property color overlayWeak: (val('colors.overrides.overlayWeak', themeData.overlayWeakOverride) !== undefined) ? val('colors.overrides.overlayWeak', themeData.overlayWeakOverride) : Color.withAlpha(shadow, 0.08)
     property color overlayStrong: (val('colors.overrides.overlayStrong', themeData.overlayStrongOverride) !== undefined) ? val('colors.overrides.overlayStrong', themeData.overlayStrongOverride) : Color.withAlpha(shadow, 0.18)
+    // Generic tick timer (UI dedupe)
+    property int genericTickMs: val('timers.genericTickMs', 2000)
+    // Bar slide debounce timer
+    property int panelSlideTimerTickMs: val('panel.slideTimerTickMs', 50)
+    // Weather HTTP timeout
+    property int weatherHttpTimeoutMs: val('weather.httpTimeoutMs', 8000)
+    // Greeter timing tokens
+    property int greeterLockAnimationMs: val('greeter.lockAnimationMs', 500)
+    property int greeterSlideshowDurationMs: val('greeter.slideshowDurationMs', 3000)
+    property int greeterContextTimerMs: val('greeter.contextTimerMs', 300)
+    property int greeterAnimFastMs: val('greeter.animFastMs', 150)
+    property int greeterAnimMediumMs: val('greeter.animMediumMs', 250)
+    property int greeterAnimSlowMs: val('greeter.animSlowMs', 500)
+    // Greeter color tokens
+    property color greeterBarColor: val('greeter.barColor', "#30c0ffff")
+    property color greeterBarOutline: val('greeter.barOutline', "#50ffffff")
+    property color greeterWidgetColor: val('greeter.widgetColor', "#25ceffff")
+    property color greeterWidgetActiveColor: val('greeter.widgetActiveColor', "#80ceffff")
+    property color greeterWidgetOutline: val('greeter.widgetOutline', "#40ffffff")
+    property color greeterWidgetOutlineSeparate: val('greeter.widgetOutlineSeparate', "#20ffffff")
+    property color greeterSeparatorColor: val('greeter.separatorColor', "#60ffffff")
 }

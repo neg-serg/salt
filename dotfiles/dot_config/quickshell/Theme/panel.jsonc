@@ -75,6 +75,7 @@
     },
     "backdrop": {
       "opacity": 0.6536
-    }
+    },
+    "slideTimerTickMs": 50
   }
 }

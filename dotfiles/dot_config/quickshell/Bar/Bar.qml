@@ -319,7 +319,7 @@ Scope {
                 }
                 Timer {
                     id: barSlideTimer
-                    interval: 50
+                    interval: Theme.panelSlideTimerTickMs
                     repeat: false
                     onTriggered: {
                         monitorItem.barSlideProgress = 0;
@@ -737,9 +737,10 @@ Scope {
                             anchors.left: leftBarBackground.left
                             anchors.leftMargin: leftPanel.sideMargin
                             spacing: leftPanel.interWidgetSpacing
-                            ClockWidget { Layout.alignment: Qt.AlignVCenter }
+                            ClockWidget { Layout.alignment: Qt.AlignVCenter; visible: WidgetRegistry.isVisible("clock") }
                             WsIndicator {
                                 id: wsindicator
+                                visible: WidgetRegistry.isVisible("workspaces")
                                 Layout.alignment: Qt.AlignVCenter
                                 workspaceGlyphDetached: true
                                 showSubmapIcon: false
@@ -747,6 +748,7 @@ Scope {
                             }
                             RowLayout {
                                 id: kbCluster
+                                visible: WidgetRegistry.isVisible("keyboard")
                                 Layout.alignment: Qt.AlignVCenter
                                 spacing: Math.round(Theme.panelNetClusterSpacing * leftPanel.s)
 
@@ -774,6 +776,7 @@ Scope {
                             }
                             Row {
                                 id: netCluster
+                                visible: WidgetRegistry.isVisible("network")
                                 Layout.alignment: Qt.AlignVCenter
                                 spacing: Math.round(Theme.panelNetClusterSpacing * leftPanel.s)
                                 LocalMods.NetClusterCapsule {
@@ -786,7 +789,7 @@ Scope {
                             }
                             LocalMods.WeatherButton {
                                 id: weatherButton
-                                visible: Settings.settings.showWeatherInBar === true
+                                visible: WidgetRegistry.isVisible("weather") && Settings.settings.showWeatherInBar === true
                                 Layout.alignment: Qt.AlignVCenter
                             }
                             PanelSeparator {
@@ -1182,7 +1185,7 @@ Scope {
                                 Layout.preferredWidth: implicitWidth
                                 implicitWidth: mediaModule.parent === mediaRowSlot ? Math.max(mediaModule.implicitWidth, 1) : 0
                                 implicitHeight: mediaModule.parent === mediaRowSlot ? Math.max(mediaModule.implicitHeight, 1) : 0
-                                visible: mediaModule.parent === mediaRowSlot
+                                visible: WidgetRegistry.isVisible("media") && mediaModule.parent === mediaRowSlot
 
                                 Media {
                                     id: mediaModule
@@ -1192,6 +1195,7 @@ Scope {
                             }
                             LocalMods.MpdFlags {
                                 id: mpdFlagsBar
+                                visible: WidgetRegistry.isVisible("mpdFlags") && _mediaVisible
                                 Layout.alignment: Qt.AlignVCenter
                                 property bool _mediaVisible: Settings.settings.showMediaInBar && MusicManager.hasPlayer
                                 enabled: _mediaVisible && MusicManager.isCurrentMpdPlayer()
@@ -1200,6 +1204,7 @@ Scope {
                             }
                             LocalMods.SystemMonitorCapsule {
                                 id: systemMonitorCapsule
+                                visible: WidgetRegistry.isVisible("sysmon")
                                 Layout.alignment: Qt.AlignVCenter
                                 screen: modelData
                             }
@@ -1209,7 +1214,7 @@ Scope {
                                 Layout.fillHeight: true
                                 Layout.preferredHeight: rightPanel.barHeightPx
                                 readonly property bool trayCapsuleHidden: Settings.settings.hideSystemTrayCapsule === true
-                                readonly property bool trayVisible: (!trayCapsuleHidden || systemTrayModule.expanded)
+                                readonly property bool trayVisible: WidgetRegistry.isVisible("systray") && (!trayCapsuleHidden || systemTrayModule.expanded)
                                 readonly property bool tightSpacing: Settings.settings.systemTrayTightSpacing !== false
                                 readonly property int horizontalPadding: tightSpacing ? 0 : Math.max(4, Math.round(Theme.panelTrayInlinePadding * rightPanel.s * 0.75))
                                 readonly property color capsuleColor: WidgetBg.color(Settings.settings, "systemTray", Theme.background)
@@ -1252,11 +1257,13 @@ Scope {
                             CustomTrayMenu { id: externalTrayMenu }
                             Microphone {
                                 id: widgetsMicrophone
+                                visible: WidgetRegistry.isVisible("microphone")
                                 Layout.alignment: Qt.AlignVCenter
                                 panelHovering: rightPanel.panelHovering
                             }
                             Volume {
                                 id: widgetsVolume
+                                visible: WidgetRegistry.isVisible("volume")
                                 Layout.alignment: Qt.AlignVCenter
                                 panelHovering: rightPanel.panelHovering
                             }

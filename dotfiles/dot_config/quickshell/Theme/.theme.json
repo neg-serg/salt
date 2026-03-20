@@ -14,7 +14,8 @@
     },
     "shadow": "#000000",
     "status": {
-      "error": "#FF6B81"
+      "error": "#FF6B81",
+      "warning": "#FFB347"
     },
     "highlight": "#94E1F9",
     "onAccent": "#FFFFFF"
@@ -87,7 +88,14 @@
       "borderOpacity": 0.08,
       "borderColor": "#000000"
     },
-    "computedFontScale": 0.6
+    "computedFontScale": 0.6,
+    "seam": {
+      "opacity": 0.6536
+    },
+    "backdrop": {
+      "opacity": 0.6536
+    },
+    "slideTimerTickMs": 50
   },
   "shape": {
     "cornerRadius": 0,
@@ -206,7 +214,8 @@
     "wsRefreshDebounceMs": 120,
     "musicPositionPollMs": 1000,
     "musicPlayersPollMs": 5000,
-    "musicMetaRecalcDebounceMs": 80
+    "musicMetaRecalcDebounceMs": 80,
+    "genericTickMs": 2000
   },
   "network": {
     "vpnPollMs": 2500,
@@ -225,7 +234,7 @@
     },
     "time": {
       "alpha": {
-        "playing": 1.0,
+        "playing": 1,
         "paused": 0.8
       }
     },
@@ -304,7 +313,8 @@
     "card": {
       "opacity": 0.85
     },
-    "centerOffset": -2
+    "centerOffset": -2,
+    "httpTimeoutMs": 8000
   },
   "vpn": {
     "accent": {
@@ -315,7 +325,7 @@
   },
   "time": {
     "font": {
-      "scale": 1.0,
+      "scale": 1,
       "weight": 500
     },
     "text": {
@@ -332,5 +342,20 @@
       "autoHidePauseMs": 2500,
       "showDelayMs": 500
     }
+  },
+  "greeter": {
+    "lockAnimationMs": 500,
+    "slideshowDurationMs": 3000,
+    "contextTimerMs": 300,
+    "animFastMs": 150,
+    "animMediumMs": 250,
+    "animSlowMs": 500,
+    "barColor": "#30c0ffff",
+    "barOutline": "#50ffffff",
+    "widgetColor": "#25ceffff",
+    "widgetActiveColor": "#80ceffff",
+    "widgetOutline": "#40ffffff",
+    "widgetOutlineSeparate": "#20ffffff",
+    "separatorColor": "#60ffffff"
   }
 }
