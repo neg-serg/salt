@@ -140,6 +140,34 @@
     "systemMonitorIconScale": { "type": "number", "default": 0.75, "minimum": 0.3, "maximum": 1.5, "description": "Icon size as fraction of capsule inner height" },
     "systemMonitorSpacing": { "type": "integer", "default": 5, "minimum": 1, "maximum": 20, "description": "Spacing between metric groups in logical pixels" },
     "systemMonitorWarnThreshold": { "type": "number", "default": 0.5, "minimum": 0.1, "maximum": 0.9, "description": "Percentage threshold for warning color (0.5 = 50%)" },
-    "systemMonitorCritThreshold": { "type": "number", "default": 0.8, "minimum": 0.2, "maximum": 1.0, "description": "Percentage threshold for critical color (0.8 = 80%)" }
+    "systemMonitorCritThreshold": { "type": "number", "default": 0.8, "minimum": 0.2, "maximum": 1.0, "description": "Percentage threshold for critical color (0.8 = 80%)" },
+
+    "mediaTitleSeparator": { "type": "string", "default": "—", "description": "Separator between artist and title in media display" },
+    "panelSideMarginPx": { "type": ["integer", "null"], "default": null, "minimum": 0, "description": "Panel side margin override in pixels (null = use theme default)" },
+
+    "panelLayout": {
+      "type": "object",
+      "default": {
+        "left": ["clock", "workspaces", "keyboard", "network", "weather"],
+        "right": ["media", "mpdFlags", "sysmon", "systray", "microphone", "volume"]
+      },
+      "properties": {
+        "left": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Ordered widget identifiers for the left panel"
+        },
+        "right": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Ordered widget identifiers for the right panel"
+        }
+      },
+      "description": "Widget placement in the top bar. Keys are section names, values are ordered arrays of widget identifiers."
+    },
+
+    "weatherApiBaseUrl": { "type": "string", "default": "https://api.open-meteo.com/v1", "description": "Base URL for weather API requests" },
+    "weatherGeocodingBaseUrl": { "type": "string", "default": "https://geocoding-api.open-meteo.com/v1", "description": "Base URL for geocoding API requests" },
+    "wallpaperAccent": { "type": "boolean", "default": true, "description": "Extract accent color from current wallpaper" }
   }
 }
