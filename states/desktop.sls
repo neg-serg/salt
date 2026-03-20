@@ -128,8 +128,24 @@ hyprpm_repo_cache_hyprglass:
     - require:
       - file: hyprpm_cache_dir
 
+hyprpm_repo_cache_hyprtasking:
+  file.directory:
+    - name: {{ hyprpm_cache }}/hyprtasking
+    - user: {{ user }}
+    - group: {{ user }}
+    - require:
+      - file: hyprpm_cache_dir
+
+hyprpm_repo_cache_darkwindow:
+  file.directory:
+    - name: {{ hyprpm_cache }}/Hypr-DarkWindow
+    - user: {{ user }}
+    - group: {{ user }}
+    - require:
+      - file: hyprpm_cache_dir
+
 {{ hyprpm_update('hyprpm_headers_update',
-    check_plugins=['xtra-dispatchers', 'HyprGlass'],
+    check_plugins=['xtra-dispatchers', 'HyprGlass', 'hyprtasking', 'Hypr-DarkWindow'],
     require=['cmd: install_hyprland_desktop', 'file: hyprpm_cache_dir']) }}
 
 # hyprpm add + enable are separate: add is guarded by repo presence,
@@ -151,6 +167,24 @@ hyprpm_repo_cache_hyprglass:
 {{ hyprpm_enable('hyprpm_enable_hyprglass',
     'hyprglass',
     require=['cmd: hyprpm_add_hyprglass']) }}
+
+{{ hyprpm_add('hyprpm_add_hyprtasking',
+    'https://github.com/raybbian/hyprtasking',
+    'Repository hyprtasking',
+    require=['cmd: install_hyprland_desktop', 'cmd: hyprpm_headers_update', 'file: hyprpm_repo_cache_hyprtasking']) }}
+
+{{ hyprpm_enable('hyprpm_enable_hyprtasking',
+    'hyprtasking',
+    require=['cmd: hyprpm_add_hyprtasking']) }}
+
+{{ hyprpm_add('hyprpm_add_darkwindow',
+    'https://github.com/micha4w/Hypr-DarkWindow',
+    'Repository Hypr-DarkWindow',
+    require=['cmd: install_hyprland_desktop', 'cmd: hyprpm_headers_update', 'file: hyprpm_repo_cache_darkwindow']) }}
+
+{{ hyprpm_enable('hyprpm_enable_darkwindow',
+    'Hypr-DarkWindow',
+    require=['cmd: hyprpm_add_darkwindow']) }}
 
 # --- SSH directory setup ---
 {{ ensure_dir('ssh_dir', home ~ '/.ssh', mode='0700') }}
