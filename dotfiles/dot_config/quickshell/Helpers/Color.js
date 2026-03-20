@@ -164,3 +164,13 @@ function desaturate(c, amount) {
         return mix(c, Qt.rgba(y, y, y, rgb.a), clamped);
     } catch(e) { console.warn("[Color.desaturate]", e); return c }
 }
+// Take hue+saturation from source, lightness from reference
+function matchLightness(source, lightnessRef) {
+    try {
+        var srcHsl = toHsl(source);
+        var refHsl = toHsl(lightnessRef);
+        if (!srcHsl || !refHsl) return source;
+        srcHsl.l = refHsl.l;
+        return _hslToRgb(srcHsl);
+    } catch(e) { console.warn("[Color.matchLightness]", e); return source }
+}
