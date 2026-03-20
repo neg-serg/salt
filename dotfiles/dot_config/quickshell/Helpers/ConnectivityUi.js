@@ -1,15 +1,15 @@
 .pragma library
 
-// Format a KiB/s value as a fixed-width "NNNN.D U" string (8 chars).
-// Auto-scales: K → M → G → T when integer part would exceed 4 digits.
-// Zero-pads integer part to exactly 4 digits.
+// Format a KiB/s value as a fixed-width "NNN.D U" string (7 chars).
+// Auto-scales: K → M → G → T when integer part would exceed 3 digits.
+// Zero-pads integer part to exactly 3 digits.
 var _units = ["K", "M", "G", "T"];
 
 function formatScaledKiBps(value) {
     var v = Number(value);
     if (!isFinite(v) || v < 0) v = 0;
     var ui = 0;
-    while (v >= 9999.95 && ui < 3) {
+    while (v >= 999.95 && ui < 3) {
         v = v / 1024;
         ui++;
     }
@@ -17,7 +17,7 @@ function formatScaledKiBps(value) {
     var dot = fixed.indexOf(".");
     var intStr = fixed.slice(0, dot);
     var dec = fixed.slice(dot + 1);
-    var padded = ("0000" + intStr).slice(-4);
+    var padded = ("000" + intStr).slice(-3);
     return padded + "." + dec + " " + _units[ui];
 }
 

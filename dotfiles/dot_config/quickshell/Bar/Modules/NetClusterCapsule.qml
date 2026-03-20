@@ -99,7 +99,7 @@ ConnectivityCapsule {
     readonly property string _slashAccentCss: Format.colorCss(slashAccentColor, 1)
     readonly property string _dimZeroCss: Format.colorCss(Theme.textDisabled, 1)
 
-    // Dim leading zeros in a "NNNN.D U" formatted string
+    // Dim leading zeros in a "NNN.D U" formatted string
     function _dimLeadingZeros(side) {
         var i = 0;
         while (i < side.length && side[i] === "0") i++;
