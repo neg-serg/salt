@@ -784,19 +784,22 @@ Scope {
                                         throughputText: ConnectivityState.throughputText
                                 }
                             }
-                            PanelSeparator {
-                                scaleFactor: leftPanel.s
-                                panelHeightPx: leftPanel.barHeightPx
-                                triangleEnabled: true
-                                triangleWidthFactor: 0.75
-                                mirrorTriangle: false
-                                widthScale: 0.75
-                                backgroundKey: "network"
-                            }
                             LocalMods.WeatherButton {
                                 id: weatherButton
                                 visible: Settings.settings.showWeatherInBar === true
                                 Layout.alignment: Qt.AlignVCenter
+                            }
+                            PanelSeparator {
+                                scaleFactor: leftPanel.s
+                                panelHeightPx: leftPanel.barHeightPx
+                                triangleEnabled: true
+                                triangleWidthFactor: 0.95
+                                mirrorTriangle: false
+                                widthScale: 1.0
+                                highlightHypotenuse: true
+                                highlightColor: Color.towardsBlack(Color.saturate(Color.towardsBlack(Color.saturate(rootScope.vpnAccentColor(), 0.2), 0.3), 0.2), 0.3)
+                                highlightWidth: Math.max(2, Math.round(leftPanel.s * 3))
+                                backgroundKey: "weather"
                             }
                         }
                     }
