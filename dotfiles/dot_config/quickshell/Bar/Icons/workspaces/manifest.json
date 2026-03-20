@@ -5,7 +5,7 @@
     "pattern": "Font Awesome 6 Pro",
     "family": "Font Awesome 6 Pro,Font Awesome 6 Pro Regular",
     "style": "Regular",
-    "file": "/home/neg/.local/share/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
+    "file": "$XDG_DATA_HOME/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
   },
   "icons": [
     {
@@ -24,7 +24,7 @@
         "pattern": "Font Awesome 6 Pro",
         "family": "Font Awesome 6 Pro,Font Awesome 6 Pro Regular",
         "style": "Regular",
-        "file": "/home/neg/.local/share/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
+        "file": "$XDG_DATA_HOME/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
       }
     },
     {
@@ -42,7 +42,7 @@
         "pattern": "FiraCode Nerd Font Mono",
         "family": "FiraCode Nerd Font Mono",
         "style": "Regular",
-        "file": "/home/neg/.local/share/fonts/fonts/FiraCodeNerdFontMono-Regular.ttf"
+        "file": "$XDG_DATA_HOME/fonts/fonts/FiraCodeNerdFontMono-Regular.ttf"
       }
     },
     {
@@ -60,7 +60,7 @@
         "pattern": "Font Awesome 6 Pro",
         "family": "Font Awesome 6 Pro,Font Awesome 6 Pro Regular",
         "style": "Regular",
-        "file": "/home/neg/.local/share/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
+        "file": "$XDG_DATA_HOME/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
       }
     },
     {
@@ -78,7 +78,7 @@
         "pattern": "FiraCode Nerd Font Mono",
         "family": "FiraCode Nerd Font Mono",
         "style": "Regular",
-        "file": "/home/neg/.local/share/fonts/fonts/FiraCodeNerdFontMono-Regular.ttf"
+        "file": "$XDG_DATA_HOME/fonts/fonts/FiraCodeNerdFontMono-Regular.ttf"
       }
     },
     {
@@ -96,7 +96,7 @@
         "pattern": "Font Awesome 6 Pro",
         "family": "Font Awesome 6 Pro,Font Awesome 6 Pro Regular",
         "style": "Regular",
-        "file": "/home/neg/.local/share/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
+        "file": "$XDG_DATA_HOME/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
       }
     },
     {
@@ -114,7 +114,7 @@
         "pattern": "Font Awesome 6 Pro",
         "family": "Font Awesome 6 Pro,Font Awesome 6 Pro Regular",
         "style": "Regular",
-        "file": "/home/neg/.local/share/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
+        "file": "$XDG_DATA_HOME/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
       }
     },
     {
@@ -132,7 +132,7 @@
         "pattern": "Font Awesome 6 Pro",
         "family": "Font Awesome 6 Pro,Font Awesome 6 Pro Regular",
         "style": "Regular",
-        "file": "/home/neg/.local/share/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
+        "file": "$XDG_DATA_HOME/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
       }
     },
     {
@@ -168,7 +168,7 @@
         "pattern": "Font Awesome 6 Pro",
         "family": "Font Awesome 6 Pro,Font Awesome 6 Pro Regular",
         "style": "Regular",
-        "file": "/home/neg/.local/share/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
+        "file": "$XDG_DATA_HOME/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
       }
     },
     {
@@ -186,7 +186,7 @@
         "pattern": "Font Awesome 6 Pro",
         "family": "Font Awesome 6 Pro,Font Awesome 6 Pro Regular",
         "style": "Regular",
-        "file": "/home/neg/.local/share/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
+        "file": "$XDG_DATA_HOME/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
       }
     },
     {
@@ -204,7 +204,7 @@
         "pattern": "Font Awesome 6 Pro",
         "family": "Font Awesome 6 Pro,Font Awesome 6 Pro Regular",
         "style": "Regular",
-        "file": "/home/neg/.local/share/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
+        "file": "$XDG_DATA_HOME/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
       }
     },
     {
@@ -222,7 +222,7 @@
         "pattern": "FiraCode Nerd Font Mono",
         "family": "FiraCode Nerd Font Mono",
         "style": "Regular",
-        "file": "/home/neg/.local/share/fonts/fonts/FiraCodeNerdFontMono-Regular.ttf"
+        "file": "$XDG_DATA_HOME/fonts/fonts/FiraCodeNerdFontMono-Regular.ttf"
       }
     },
     {
@@ -240,7 +240,7 @@
         "pattern": "Font Awesome 6 Pro",
         "family": "Font Awesome 6 Pro,Font Awesome 6 Pro Regular",
         "style": "Regular",
-        "file": "/home/neg/.local/share/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
+        "file": "$XDG_DATA_HOME/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
       }
     },
     {
@@ -258,7 +258,7 @@
         "pattern": "Font Awesome 6 Pro",
         "family": "Font Awesome 6 Pro,Font Awesome 6 Pro Regular",
         "style": "Regular",
-        "file": "/home/neg/.local/share/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
+        "file": "$XDG_DATA_HOME/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
       }
     },
     {
@@ -276,7 +276,7 @@
         "pattern": "Font Awesome 6 Pro",
         "family": "Font Awesome 6 Pro,Font Awesome 6 Pro Regular",
         "style": "Regular",
-        "file": "/home/neg/.local/share/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
+        "file": "$XDG_DATA_HOME/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
       }
     },
     {
@@ -294,7 +294,7 @@
         "pattern": "Font Awesome 6 Pro",
         "family": "Font Awesome 6 Pro,Font Awesome 6 Pro Regular",
         "style": "Regular",
-        "file": "/home/neg/.local/share/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
+        "file": "$XDG_DATA_HOME/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
       }
     },
     {
@@ -312,7 +312,7 @@
         "pattern": "Font Awesome 6 Pro",
         "family": "Font Awesome 6 Pro,Font Awesome 6 Pro Regular",
         "style": "Regular",
-        "file": "/home/neg/.local/share/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
+        "file": "$XDG_DATA_HOME/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
       }
     },
     {
@@ -330,7 +330,7 @@
         "pattern": "Font Awesome 6 Pro",
         "family": "Font Awesome 6 Pro,Font Awesome 6 Pro Regular",
         "style": "Regular",
-        "file": "/home/neg/.local/share/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
+        "file": "$XDG_DATA_HOME/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
       }
     },
     {
@@ -348,7 +348,7 @@
         "pattern": "Font Awesome 6 Pro",
         "family": "Font Awesome 6 Pro,Font Awesome 6 Pro Regular",
         "style": "Regular",
-        "file": "/home/neg/.local/share/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
+        "file": "$XDG_DATA_HOME/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
       }
     },
     {
@@ -366,7 +366,7 @@
         "pattern": "Font Awesome 6 Pro",
         "family": "Font Awesome 6 Pro,Font Awesome 6 Pro Regular",
         "style": "Regular",
-        "file": "/home/neg/.local/share/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
+        "file": "$XDG_DATA_HOME/fonts/OTF/Font Awesome 6 Pro-Regular-400.otf"
       }
     }
   ]
