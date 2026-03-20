@@ -32,6 +32,7 @@ models:
   - qwq:32b                   # Alibaba; dedicated reasoning/math, extended CoT ~20GB Q4
   # ── Vision-specialized ───────────────────────────────────────────
   - qwen2.5vl:7b-q8_0        # Alibaba; OCR+semantic, charts/docs/screenshots ~8GB Q8_0
+  - glm-ocr                   # Zhipu AI; 0.9B OCR specialist, #1 OmniDocBench V1.5 ~1.8GB F16
   # ── Uncensored (abliterated) ─────────────────────────────────────
   - huihui_ai/qwen3-abliterated:30b-a3b      # huihui-ai; uncensored general MoE 3B active ~17GB Q4
   - huihui_ai/qwen3-coder-abliterated        # huihui-ai; uncensored coding MoE 3B active ~17GB Q4
