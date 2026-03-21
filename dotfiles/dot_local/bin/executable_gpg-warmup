@@ -1,0 +1,26 @@
+#!/usr/bin/env zsh
+# gpg-warmup — trigger one GPG decryption to cache Yubikey PIN
+# After this, all subsequent gopass/gpg calls use cached PIN
+# (default-cache-ttl 60480000 ≈ 700 days in gpg-agent.conf).
+# Run after login or before batch GPG operations.
+
+setopt ERR_EXIT NO_UNSET PIPE_FAIL
+
+# Pick a lightweight gopass entry to decrypt
+warmup_key="yubikey-pin"
+if ! gopass ls -f 2>/dev/null | grep -qx "$warmup_key"; then
+    warmup_key=$(gopass ls -f 2>/dev/null | head -1)
+fi
+
+if [[ -z "$warmup_key" ]]; then
+    echo "gpg-warmup: no gopass entries found" >&2
+    exit 1
+fi
+
+echo "gpg-warmup: decrypting '$warmup_key' to cache Yubikey PIN..."
+if gopass show -o "$warmup_key" > /dev/null 2>&1; then
+    echo "gpg-warmup: PIN cached, subsequent calls won't prompt"
+else
+    echo "gpg-warmup: decryption failed (cancelled or Yubikey absent)" >&2
+    exit 1
+fi
