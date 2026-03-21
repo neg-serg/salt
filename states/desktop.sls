@@ -77,6 +77,7 @@ pcscd_socket_enabled:
 {{ pacman_install('rsync', 'rsync') }}
 {{ pacman_install('localsend', 'localsend') }}
 {{ pacman_install('chromium', 'chromium') }}
+{{ pacman_install('zen_browser', 'zen-browser-bin') }}
 
 {{ paru_install('xdg-termfilechooser', 'xdg-desktop-portal-termfilechooser-boydaihungst-git') }}
 
