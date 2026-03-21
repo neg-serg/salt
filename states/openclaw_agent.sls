@@ -9,8 +9,8 @@
 {% set _creds = home ~ '/.openclaw/credentials' %}
 {% set _telegram_token = gopass_secret('api/openclaw-telegram', "cat " ~ _creds ~ "/telegram-token 2>/dev/null || true") %}
 {% set _telegram_uid = gopass_secret('api/openclaw-telegram-uid', "cat " ~ _creds ~ "/telegram-uid 2>/dev/null || true") %}
-{% set _telegram_uid_levra = 'REDACTED_UID_LEVRA' %}
-{% set _telegram_uid_guest2 = 'REDACTED_UID_GUEST2' %}
+{% set _telegram_uid_levra = gopass_secret('api/telegram-uid-levra', "cat " ~ _creds ~ "/telegram-uid-levra 2>/dev/null || true") %}
+{% set _telegram_uid_guest2 = gopass_secret('api/telegram-uid-guest2', "cat " ~ _creds ~ "/telegram-uid-guest2 2>/dev/null || true") %}
 {% set _groq_key = gopass_secret('api/groq', "true") %}
 
 # ── Install OpenClaw via npm (version-pinned) ────────────────────────
