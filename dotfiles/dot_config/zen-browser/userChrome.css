@@ -1,53 +1,45 @@
 /* --- Bottom navbar for Zen Browser ---
  * Moves the navigation bar (URL bar + toolbar) to the bottom of the window.
- * Targets: #zen-appcontent-navbar-container, #browser
- * Approach: flexbox order reordering (preserves document flow)
+ * DOM: #zen-appcontent-wrapper (vbox) > #zen-appcontent-navbar-wrapper + #zen-tabbox-wrapper
+ * Approach: flexbox order reordering on the vbox children
  * Known limitation: may conflict with Zen Mods that also modify navbar position.
  */
 
-/* Reorder navbar below content within the flex parent */
-#zen-appcontent-navbar-container {
+/* Ensure the parent wrapper is a flex column (it's a XUL vbox, but reinforce) */
+#zen-appcontent-wrapper {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Reorder: content first, navbar second (moves navbar to bottom) */
+#zen-appcontent-navbar-wrapper {
   order: 2 !important;
 }
 
-#browser {
+#zen-tabbox-wrapper {
   order: 1 !important;
 }
 
 /* --- Autocomplete dropdown: open upward (above bottom navbar) --- */
 #urlbar .urlbarView {
-  /* Flip the dropdown to appear above the URL bar */
   bottom: 100% !important;
   top: auto !important;
 }
 
 #urlbar-results {
-  /* Ensure results panel renders above, not below */
   display: flex !important;
   flex-direction: column-reverse !important;
 }
 
-/* Prevent the urlbar expanding downward when focused */
 #urlbar[open] > .urlbarView {
   bottom: 100% !important;
   top: auto !important;
 }
 
-/* --- Floating (autohide) mode: slide from bottom instead of top --- */
-#zen-appcontent-navbar-container[zen-navbar-floating="true"] {
-  /* Override default top-slide to bottom-slide */
-  transform-origin: bottom center !important;
-}
-
-#zen-appcontent-navbar-container[zen-navbar-floating="true"][zen-navbar-hidden="true"] {
-  /* Slide down to hide (instead of up) */
-  transform: translateY(100%) !important;
-  opacity: 0 !important;
-}
-
-#zen-appcontent-navbar-container[zen-navbar-floating="true"][zen-navbar-hidden="false"],
-#zen-appcontent-navbar-container[zen-navbar-floating="true"]:hover {
-  /* Slide up to show */
-  transform: translateY(0) !important;
-  opacity: 1 !important;
+/* --- Compact mode: adjust autohide to slide from bottom --- */
+#zen-appcontent-navbar-wrapper[zen-has-hover],
+#zen-appcontent-navbar-wrapper[has-popup-menu],
+#zen-appcontent-navbar-wrapper[zen-compact-mode-active] {
+  /* Ensure visible state works at bottom position */
+  order: 2 !important;
 }
