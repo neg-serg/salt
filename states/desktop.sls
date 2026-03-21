@@ -82,10 +82,8 @@ pcscd_socket_enabled:
 {{ pacman_install('chromium', 'chromium') }}
 # zen-browser: performance-focused Firefox fork with compact UI
 {{ pacman_install('zen_browser', 'zen-browser-bin') }}
-
 # xdg-termfilechooser: route file picker dialogs to terminal file manager
 {{ paru_install('xdg-termfilechooser', 'xdg-desktop-portal-termfilechooser-boydaihungst-git') }}
-
 # wlr-which-key: on-screen keybinding cheatsheet for Hyprland (leader key menu)
 {{ paru_install('wlr-which-key', 'wlr-which-key') }}
 
@@ -99,7 +97,6 @@ swayimg_local_build:
     - group: {{ user }}
 
 # wl: installed via custom_pkgs (PKGBUILD → /usr/bin/)
-
 # --- Hyprland plugins via hyprpm ---
 # hyprpm needs HYPRLAND_INSTANCE_SIGNATURE (detect from socket dir) and
 # headers must match the running Hyprland version (hyprpm update rebuilds them).
@@ -195,7 +192,6 @@ hyprpm_repo_cache_darkwindow:
 
 # --- SSH directory setup ---
 {{ ensure_dir('ssh_dir', home ~ '/.ssh', mode='0700') }}
-
 
 # --- dconf: GTK/icon/font theme for Wayland apps ---
 {{ dconf_settings('dconf_themes', desktop.dconf_settings) }}
