@@ -36,7 +36,9 @@ api/
   proxypilot-management   # API-ключ management API ProxyPilot
   anthropic               # API-ключ Anthropic (прямой, для OpenClaw)
   openclaw-telegram       # Токен Telegram-бота OpenClaw
-  openclaw-telegram-uid   # Telegram user ID для allowlist OpenClaw
+  openclaw-telegram-uid   # Telegram user ID для allowlist OpenClaw (основной)
+  telegram-uid-levra      # Telegram user ID гостевого пользователя levra
+  telegram-uid-guest2     # Telegram user ID гостевого пользователя guest2
   groq                    # API-ключ Groq (бесплатный fallback-провайдер)
   cerebras                # API-ключ Cerebras (бесплатный fallback-провайдер)
   openrouter              # API-ключ OpenRouter (бесплатный fallback-провайдер)
@@ -102,7 +104,8 @@ Salt states, использующие макрос `gopass_secret()` (с gracefu
 |---|---|---|
 | `mpd.sls` | `lastfm/username`, `lastfm/password` | Пустая строка |
 | `opencode.sls` | `api/proxypilot-local`, `api/proxypilot-management`, `api/groq`, `api/cerebras`, `api/openrouter` | Парсинг существующего конфига ProxyPilot (AWK-фолбэк) |
-| `openclaw_agent.sls` | `api/proxypilot-local`, `api/anthropic`, `api/openclaw-telegram`, `api/openclaw-telegram-uid` | Парсинг существующего конфига / пустая строка |
+| `openclaw_agent.sls` | `api/proxypilot-local`, `api/openclaw-telegram`, `api/openclaw-telegram-uid`, `api/telegram-uid-levra`, `api/telegram-uid-guest2`, `api/groq` | Парсинг существующего конфига / credential-файлы |
+| `telethon_bridge.sls` | `api/proxypilot-local`, `api/telegram-telethon-id`, `api/telegram-telethon-hash`, `api/openclaw-telegram-uid`, `api/telegram-uid-levra`, `api/telegram-uid-guest2` | Credential-файлы |
 
 ## Шаги настройки
 

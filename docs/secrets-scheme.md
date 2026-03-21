@@ -36,7 +36,9 @@ api/
   proxypilot-management   # ProxyPilot management API key
   anthropic               # Anthropic API key (direct, for OpenClaw)
   openclaw-telegram       # OpenClaw Telegram bot token
-  openclaw-telegram-uid   # OpenClaw Telegram allowlist user ID
+  openclaw-telegram-uid   # OpenClaw Telegram allowlist user ID (primary)
+  telegram-uid-levra      # Telegram user ID for guest user levra
+  telegram-uid-guest2     # Telegram user ID for guest user guest2
   groq                    # Groq API key (free fallback provider)
   cerebras                # Cerebras API key (free fallback provider)
   openrouter              # OpenRouter API key (free fallback provider)
@@ -102,7 +104,8 @@ Salt states using `gopass_secret()` macro (graceful fallback if gopass unavailab
 |---|---|---|
 | `mpd.sls` | `lastfm/username`, `lastfm/password` | Empty string |
 | `opencode.sls` | `api/proxypilot-local`, `api/proxypilot-management`, `api/groq`, `api/cerebras`, `api/openrouter` | Parse existing ProxyPilot config (AWK fallback) |
-| `openclaw_agent.sls` | `api/proxypilot-local`, `api/anthropic`, `api/openclaw-telegram`, `api/openclaw-telegram-uid` | Parse existing config / empty string |
+| `openclaw_agent.sls` | `api/proxypilot-local`, `api/openclaw-telegram`, `api/openclaw-telegram-uid`, `api/telegram-uid-levra`, `api/telegram-uid-guest2`, `api/groq` | Parse existing config / credential files |
+| `telethon_bridge.sls` | `api/proxypilot-local`, `api/telegram-telethon-id`, `api/telegram-telethon-hash`, `api/openclaw-telegram-uid`, `api/telegram-uid-levra`, `api/telegram-uid-guest2` | Credential files |
 
 ## Setup Steps
 
