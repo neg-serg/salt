@@ -94,6 +94,9 @@ include:
 {% if host.features.floorp %}
   - floorp
 {% endif %}
+{% if host.zen_profile %}
+  - zen_browser
+{% endif %}
 {% if host.features.kanata %}
   - kanata
 {% endif %}

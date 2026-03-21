@@ -8,3 +8,7 @@
 .config/floorp/userChrome.css
 .config/floorp/userContent.css
 .config/floorp/custom/
+
+# Zen Browser: source files for Salt deployment to ~/.config/zen/<profile>/
+.config/zen-browser/user.js
+.config/zen-browser/userChrome.css
