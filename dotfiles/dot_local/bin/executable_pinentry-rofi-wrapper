@@ -1,8 +1,9 @@
 #!/usr/bin/env zsh
-# pinentry-rofi — GPG pinentry with TTY-first, rofi fallback
+# pinentry-rofi — GPG pinentry with rofi-first, TTY opt-in
 # Implements the Assuan pinentry protocol over stdin/stdout.
-# When gpg-agent provides a valid ttyname (terminal context), prompts via
-# that TTY directly. Otherwise falls back to rofi (GUI context).
+# Default: rofi GUI prompt (safe for pipe/subprocess/IDE callers).
+# TTY opt-in: set PINENTRY_USER_DATA=force-tty before gpg call.
+# Headless/SSH: falls back to pinentry-curses when no display.
 # Injects Wayland/DBus env vars for gpg-agent socket activation.
 
 # --- Env injection (gpg-agent starts before GUI is up) ---
@@ -32,7 +33,7 @@ if ! command -v rofi >/dev/null 2>&1 || { [ -z "$WAYLAND_DISPLAY" ] && [ -z "$DI
 fi
 
 # --- Assuan pinentry protocol ---
-desc="" title="GPG" error="" tty_name="" tty_type=""
+desc="" title="GPG" error="" tty_name="" tty_type="" user_data=""
 
 # ask_pin_tty: prompt for PIN on the agent's TTY
 # Returns pin via stdout, exit 1 on cancel/failure
@@ -66,8 +67,11 @@ confirm_tty() {
     [[ "$answer" == [yY]* ]]
 }
 
-# has_valid_tty: check if tty_name points to a usable character device
+# has_valid_tty: check if TTY should be used for PIN entry
+# Default: rofi (safe for any caller). TTY only via explicit opt-in
+# (PINENTRY_USER_DATA=force-tty passed through gpg-agent Assuan protocol).
 has_valid_tty() {
+    [[ "$user_data" == *force-tty* ]] || return 1
     [[ -n "$tty_name" ]] && [[ -c "$tty_name" ]] && [[ -w "$tty_name" ]]
 }
 
@@ -94,6 +98,7 @@ while IFS= read -r line; do
             case "$arg" in
                 ttyname=*) tty_name="${arg#ttyname=}" ;;
                 ttytype=*) tty_type="${arg#ttytype=}" ;;
+                pinentry-user-data=*) user_data="${arg#pinentry-user-data=}" ;;
             esac
             echo "OK" ;;
         SETOK|SETCANCEL|SETNOTOK|SETQUALITYBAR|SETQUALITYBAR_TT)
