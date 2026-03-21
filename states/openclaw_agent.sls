@@ -114,7 +114,3 @@ Environment=XDG_RUNTIME_DIR=/run/user/1000
 {{ user_service_enable('openclaw_enabled', start_now=['openclaw-gateway.service'], requires=['cmd: install_openclaw', 'file: openclaw_config', 'file: openclaw_service', 'file: openclaw_wayland_env', 'file: openclaw_sanitize_script']) }}
 
 {{ user_service_restart('restart_openclaw_on_config_change', 'openclaw-gateway.service', onlyif='systemctl --user is-active openclaw-gateway.service >/dev/null 2>&1', onchanges=['file: openclaw_config']) }}
-
-# ── Health check: REMOVED — now handled by monitoring_alerts.sls ─────
-# Old openclaw-health-check.sh, openclaw-health.{service,timer} replaced
-# by unified salt-monitor + salt-alert system.
