@@ -774,6 +774,7 @@ Scope {
                                 highlightWidth: Math.max(2, Math.round(leftPanel.s * 3))
                                 backgroundKey: "keyboard"
                             }
+                            Item { Layout.fillWidth: true }
                             Row {
                                 id: netCluster
                                 visible: WidgetRegistry.isVisible("network")
@@ -786,6 +787,12 @@ Scope {
                                         vpnIconRounded: true
                                         throughputText: ConnectivityState.throughputText
                                 }
+                            }
+                            LocalMods.SystemMonitorCapsule {
+                                id: systemMonitorCapsule
+                                visible: WidgetRegistry.isVisible("sysmon")
+                                Layout.alignment: Qt.AlignVCenter
+                                screen: modelData
                             }
                             LocalMods.WeatherButton {
                                 id: weatherButton
@@ -1201,12 +1208,6 @@ Scope {
                                 enabled: _mediaVisible && MusicManager.isCurrentMpdPlayer()
                                 iconPx: Math.round(Theme.fontSizeSmall * Theme.scale(rightPanel.screen))
                                 iconColor: Theme.textPrimary
-                            }
-                            LocalMods.SystemMonitorCapsule {
-                                id: systemMonitorCapsule
-                                visible: WidgetRegistry.isVisible("sysmon")
-                                Layout.alignment: Qt.AlignVCenter
-                                screen: modelData
                             }
                             Item {
                                 id: systemTrayWrapper
