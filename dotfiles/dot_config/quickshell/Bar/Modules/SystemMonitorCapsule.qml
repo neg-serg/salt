@@ -45,22 +45,23 @@ OverlayToggleCapsule {
     }
     readonly property int _iconSz: Math.round(iconBox * _iconScale)
 
-    // ── Visibility (settings + idle hide) ──
-    readonly property bool _showCpu: Settings.settings.showCpuMonitor !== false
-        && (!_hideIdle || Services.SystemMonitor.cpuPercent >= _idleThreshold)
-    readonly property bool _showRam: Settings.settings.showRamMonitor !== false
-        && (!_hideIdle || Services.SystemMonitor.ramPercent >= _idleThreshold)
-    readonly property bool _showIo: Settings.settings.showIoMonitor !== false
-        && (!_hideIdle || Services.SystemMonitor.ioPercent >= _idleThreshold)
-    readonly property bool _showGpu: Services.SystemMonitor.gpuAvailable
+    // ── Visibility (setting gate) and idle state (for dimming) ──
+    readonly property bool _visCpu: Settings.settings.showCpuMonitor !== false
+    readonly property bool _visRam: Settings.settings.showRamMonitor !== false
+    readonly property bool _visIo: Settings.settings.showIoMonitor !== false
+    readonly property bool _visGpu: Services.SystemMonitor.gpuAvailable
         && Settings.settings.showGpuMonitor !== false
-        && (!_hideIdle || Services.SystemMonitor.gpuPercent >= _idleThreshold)
-    readonly property bool _showTemp: Settings.settings.showTempMonitor !== false
-        && (!_hideIdle || Services.SystemMonitor.cpuTempPercent >= _idleThreshold)
-    readonly property bool _showSwap: Services.SystemMonitor.swapAvailable
+    readonly property bool _visTemp: Settings.settings.showTempMonitor !== false
+    readonly property bool _visSwap: Services.SystemMonitor.swapAvailable
         && Settings.settings.showSwapMonitor !== false
-        && (!_hideIdle || Services.SystemMonitor.swapPercent >= _idleThreshold)
-    readonly property bool _anyVisible: _showCpu || _showRam || _showIo || _showGpu || _showTemp || _showSwap
+    readonly property bool _anyVisible: _visCpu || _visRam || _visIo || _visGpu || _visTemp || _visSwap
+
+    readonly property bool _idleCpu: _hideIdle && Services.SystemMonitor.cpuPercent < _idleThreshold
+    readonly property bool _idleRam: _hideIdle && Services.SystemMonitor.ramPercent < _idleThreshold
+    readonly property bool _idleIo: _hideIdle && Services.SystemMonitor.ioPercent < _idleThreshold
+    readonly property bool _idleGpu: _hideIdle && Services.SystemMonitor.gpuPercent < _idleThreshold
+    readonly property bool _idleTemp: _hideIdle && Services.SystemMonitor.cpuTempPercent < _idleThreshold
+    readonly property bool _idleSwap: _hideIdle && Services.SystemMonitor.swapPercent < _idleThreshold
 
     Row {
         id: metricsRow
@@ -69,17 +70,19 @@ OverlayToggleCapsule {
 
         // ── CPU ──
         Row {
-            visible: root._showCpu
+            visible: root._visCpu
             spacing: Math.round(2 * capsuleScale)
             anchors.verticalCenter: parent.verticalCenter
             MaterialIcon {
                 icon: "memory_alt"
                 size: root._iconSz
-                color: SysUi.thresholdColor(Services.SystemMonitor.cpuPercent,
+                color: root._idleCpu ? Theme.textDisabled : SysUi.thresholdColor(Services.SystemMonitor.cpuPercent,
                     Theme.textSecondary, Theme.warning, Theme.error, root._warnThr, root._critThr)
+                Behavior on color { ColorFastInOutBehavior {} }
                 anchors.verticalCenter: parent.verticalCenter
             }
             MonitorBar {
+                visible: !root._idleCpu
                 value: Services.SystemMonitor.cpuPercent
                 barHeight: root.barH
                 warnThreshold: root._warnThr
@@ -91,17 +94,19 @@ OverlayToggleCapsule {
 
         // ── RAM ──
         Row {
-            visible: root._showRam
+            visible: root._visRam
             spacing: Math.round(2 * capsuleScale)
             anchors.verticalCenter: parent.verticalCenter
             MaterialIcon {
                 icon: "memory"
                 size: root._iconSz
-                color: SysUi.thresholdColor(Services.SystemMonitor.ramPercent,
+                color: root._idleRam ? Theme.textDisabled : SysUi.thresholdColor(Services.SystemMonitor.ramPercent,
                     Theme.textSecondary, Theme.warning, Theme.error, root._warnThr, root._critThr)
+                Behavior on color { ColorFastInOutBehavior {} }
                 anchors.verticalCenter: parent.verticalCenter
             }
             MonitorBar {
+                visible: !root._idleRam
                 value: Services.SystemMonitor.ramPercent
                 barHeight: root.barH
                 warnThreshold: root._warnThr
@@ -113,17 +118,19 @@ OverlayToggleCapsule {
 
         // ── I/O ──
         Row {
-            visible: root._showIo
+            visible: root._visIo
             spacing: Math.round(2 * capsuleScale)
             anchors.verticalCenter: parent.verticalCenter
             MaterialIcon {
                 icon: "storage"
                 size: root._iconSz
-                color: SysUi.thresholdColor(Services.SystemMonitor.ioPercent,
+                color: root._idleIo ? Theme.textDisabled : SysUi.thresholdColor(Services.SystemMonitor.ioPercent,
                     Theme.textSecondary, Theme.warning, Theme.error, root._warnThr, root._critThr)
+                Behavior on color { ColorFastInOutBehavior {} }
                 anchors.verticalCenter: parent.verticalCenter
             }
             MonitorBar {
+                visible: !root._idleIo
                 value: Services.SystemMonitor.ioPercent
                 barHeight: root.barH
                 warnThreshold: root._warnThr
@@ -135,17 +142,19 @@ OverlayToggleCapsule {
 
         // ── GPU ──
         Row {
-            visible: root._showGpu
+            visible: root._visGpu
             spacing: Math.round(2 * capsuleScale)
             anchors.verticalCenter: parent.verticalCenter
             MaterialIcon {
                 icon: "developer_board"
                 size: root._iconSz
-                color: SysUi.thresholdColor(Services.SystemMonitor.gpuPercent,
+                color: root._idleGpu ? Theme.textDisabled : SysUi.thresholdColor(Services.SystemMonitor.gpuPercent,
                     Theme.textSecondary, Theme.warning, Theme.error, root._warnThr, root._critThr)
+                Behavior on color { ColorFastInOutBehavior {} }
                 anchors.verticalCenter: parent.verticalCenter
             }
             MonitorBar {
+                visible: !root._idleGpu
                 value: Services.SystemMonitor.gpuPercent
                 barHeight: root.barH
                 warnThreshold: root._warnThr
@@ -157,17 +166,19 @@ OverlayToggleCapsule {
 
         // ── Temperature ──
         Row {
-            visible: root._showTemp
+            visible: root._visTemp
             spacing: Math.round(2 * capsuleScale)
             anchors.verticalCenter: parent.verticalCenter
             MaterialIcon {
                 icon: "thermostat"
                 size: root._iconSz
-                color: SysUi.thresholdColor(Services.SystemMonitor.cpuTempPercent,
+                color: root._idleTemp ? Theme.textDisabled : SysUi.thresholdColor(Services.SystemMonitor.cpuTempPercent,
                     Theme.textSecondary, Theme.warning, Theme.error, 0.43, 0.71)
+                Behavior on color { ColorFastInOutBehavior {} }
                 anchors.verticalCenter: parent.verticalCenter
             }
             MonitorBar {
+                visible: !root._idleTemp
                 value: Services.SystemMonitor.cpuTempPercent
                 barHeight: root.barH
                 warnThreshold: 0.43
@@ -179,17 +190,19 @@ OverlayToggleCapsule {
 
         // ── Swap ──
         Row {
-            visible: root._showSwap
+            visible: root._visSwap
             spacing: Math.round(2 * capsuleScale)
             anchors.verticalCenter: parent.verticalCenter
             MaterialIcon {
                 icon: "swap_horiz"
                 size: root._iconSz
-                color: SysUi.thresholdColor(Services.SystemMonitor.swapPercent,
+                color: root._idleSwap ? Theme.textDisabled : SysUi.thresholdColor(Services.SystemMonitor.swapPercent,
                     Theme.textSecondary, Theme.warning, Theme.error, root._warnThr, root._critThr)
+                Behavior on color { ColorFastInOutBehavior {} }
                 anchors.verticalCenter: parent.verticalCenter
             }
             MonitorBar {
+                visible: !root._idleSwap
                 value: Services.SystemMonitor.swapPercent
                 barHeight: root.barH
                 warnThreshold: root._warnThr
