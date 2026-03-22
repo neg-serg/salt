@@ -46,6 +46,14 @@ OverlayToggleCapsule {
         } catch (e) { /* guard */ }
         return 0;
     }
+    readonly property var _currentExtra: _weatherData && _weatherData.current ? _weatherData.current : null
+    readonly property bool hasHumidity: _currentExtra && typeof _currentExtra.relativehumidity_2m === 'number'
+    readonly property string humidityText: {
+        try {
+            if (hasHumidity) return Math.round(_currentExtra.relativehumidity_2m) + "%";
+        } catch (e) { /* guard */ }
+        return "";
+    }
 
     Row {
         id: weatherContent
@@ -69,10 +77,19 @@ OverlayToggleCapsule {
             anchors.verticalCenter: parent.verticalCenter
         }
 
+        MaterialIcon {
+            id: humidityIcon
+            icon: "water_drop"
+            size: Math.round(Theme.fontSizeSmall * capsuleScale * 0.85)
+            color: root.hasHumidity ? Theme.textSecondary : Theme.textDisabled
+            anchors.verticalCenter: parent.verticalCenter
+            Behavior on color { ColorFastInOutBehavior {} }
+        }
+
         Text {
-            id: windSep
-            visible: root.hasWind
-            text: "·"
+            id: humidityLabel
+            visible: root.hasHumidity
+            text: root.humidityText
             font.family: Theme.fontFamily
             font.pixelSize: Math.round(Theme.fontSizeSmall * capsuleScale * 0.85)
             color: Theme.textSecondary
@@ -81,12 +98,12 @@ OverlayToggleCapsule {
 
         MaterialIcon {
             id: windArrow
-            visible: root.hasWind
             icon: "navigation"
             rotationAngle: root.windRotation
             size: Math.round(Theme.fontSizeSmall * capsuleScale * 0.85)
-            color: Theme.textSecondary
+            color: root.hasWind ? Theme.textSecondary : Theme.textDisabled
             anchors.verticalCenter: parent.verticalCenter
+            Behavior on color { ColorFastInOutBehavior {} }
         }
 
         Text {
@@ -139,6 +156,9 @@ OverlayToggleCapsule {
                 const t = useF ? Math.round(c * 9/5 + 32) + "°F" : c + "°C";
                 const wind = WeatherIcons.formatWindFull(data.current_weather.windspeed, data.current_weather.winddirection);
                 var sub = wind ? [wind] : [];
+                const extra = data && data.current ? data.current : null;
+                if (extra && typeof extra.relativehumidity_2m === 'number')
+                    sub.push("Humidity: " + Math.round(extra.relativehumidity_2m) + "%");
                 return TooltipText.compose(city || "Weather", t, sub);
             }
             return TooltipText.compose("Weather", city, []);
