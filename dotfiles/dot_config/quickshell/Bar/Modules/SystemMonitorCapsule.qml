@@ -82,7 +82,6 @@ OverlayToggleCapsule {
                 anchors.verticalCenter: parent.verticalCenter
             }
             MonitorBar {
-                visible: !root._idleCpu
                 value: Services.SystemMonitor.cpuPercent
                 barHeight: root.barH
                 warnThreshold: root._warnThr
@@ -106,7 +105,6 @@ OverlayToggleCapsule {
                 anchors.verticalCenter: parent.verticalCenter
             }
             MonitorBar {
-                visible: !root._idleRam
                 value: Services.SystemMonitor.ramPercent
                 barHeight: root.barH
                 warnThreshold: root._warnThr
@@ -130,7 +128,6 @@ OverlayToggleCapsule {
                 anchors.verticalCenter: parent.verticalCenter
             }
             MonitorBar {
-                visible: !root._idleIo
                 value: Services.SystemMonitor.ioPercent
                 barHeight: root.barH
                 warnThreshold: root._warnThr
@@ -154,7 +151,6 @@ OverlayToggleCapsule {
                 anchors.verticalCenter: parent.verticalCenter
             }
             MonitorBar {
-                visible: !root._idleGpu
                 value: Services.SystemMonitor.gpuPercent
                 barHeight: root.barH
                 warnThreshold: root._warnThr
@@ -178,7 +174,6 @@ OverlayToggleCapsule {
                 anchors.verticalCenter: parent.verticalCenter
             }
             MonitorBar {
-                visible: !root._idleTemp
                 value: Services.SystemMonitor.cpuTempPercent
                 barHeight: root.barH
                 warnThreshold: 0.43
@@ -202,7 +197,6 @@ OverlayToggleCapsule {
                 anchors.verticalCenter: parent.verticalCenter
             }
             MonitorBar {
-                visible: !root._idleSwap
                 value: Services.SystemMonitor.swapPercent
                 barHeight: root.barH
                 warnThreshold: root._warnThr
