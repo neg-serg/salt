@@ -47,10 +47,10 @@ OverlayToggleCapsule {
         return 0;
     }
     readonly property var _currentExtra: _weatherData && _weatherData.current ? _weatherData.current : null
-    readonly property bool hasHumidity: _currentExtra && typeof _currentExtra.relativehumidity_2m === 'number'
+    readonly property bool hasHumidity: _currentExtra && typeof _currentExtra.relative_humidity_2m === 'number'
     readonly property string humidityText: {
         try {
-            if (hasHumidity) return Math.round(_currentExtra.relativehumidity_2m) + "%";
+            if (hasHumidity) return Math.round(_currentExtra.relative_humidity_2m) + "%";
         } catch (e) { /* guard */ }
         return "";
     }
@@ -157,8 +157,8 @@ OverlayToggleCapsule {
                 const wind = WeatherIcons.formatWindFull(data.current_weather.windspeed, data.current_weather.winddirection);
                 var sub = wind ? [wind] : [];
                 const extra = data && data.current ? data.current : null;
-                if (extra && typeof extra.relativehumidity_2m === 'number')
-                    sub.push("Humidity: " + Math.round(extra.relativehumidity_2m) + "%");
+                if (extra && typeof extra.relative_humidity_2m === 'number')
+                    sub.push("Humidity: " + Math.round(extra.relative_humidity_2m) + "%");
                 return TooltipText.compose(city || "Weather", t, sub);
             }
             return TooltipText.compose("Weather", city, []);

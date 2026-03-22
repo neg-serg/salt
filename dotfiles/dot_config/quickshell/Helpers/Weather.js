@@ -174,7 +174,7 @@ function fetchWeather(latitude, longitude, callback, errorCallback, options) {
         latitude: String(latitude),
         longitude: String(longitude),
         current_weather: "true",
-        current: "relativehumidity_2m,surface_pressure",
+        current: "relative_humidity_2m,surface_pressure",
         daily: "temperature_2m_max,temperature_2m_min,weathercode",
         wind_speed_unit: "ms",
         timezone: "auto"
