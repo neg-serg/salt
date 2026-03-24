@@ -69,7 +69,7 @@ Over-engineering a configuration management system increases surface area for br
 All contributions MUST follow established conventions:
 
 - **State IDs**: `target_descriptor` pattern (e.g., `loki_config`, `greetd_enabled`). Never use file paths as state IDs
-- **Commit style**: `[scope] description` where scope matches what changed (e.g., `[nvim]`, `[zsh]`, `[dns]`)
+- **Commit style**: `[scope] imperative description` where scope matches what changed (e.g., `[nvim] add formatter toggle`, `[zsh] fix PATH order`, `[dns] refresh blocklist`); multiple scopes are allowed when the change genuinely spans them, and subjects must not end with a period
 - **Shell scripts**: `#!/usr/bin/env zsh` for all scripts in `dotfiles/dot_local/bin/`
 - **Inline content thresholds**: configs >=10 lines go to `configs/`, systemd units to `units/`, scripts to `scripts/`
 - **Documentation**: English primary, Russian `.ru.md` translation for each doc in `docs/`

@@ -56,9 +56,9 @@ Style / contribution
 Commit style
 
 - Use bracketed scope prefix consistent with this repo’s history, for example:
-  `[gui/quickshell] Bar: …`, `[gui/quickshell] Settings: …`, `[gui/quickshell] Docs: …`.
-- Keep the subject in imperative mood, short and specific; no trailing period.
+  `[gui/quickshell] fix bar spacing`, `[gui/quickshell] add workspace tooltip`, `[gui/quickshell] update shader docs`.
+- Keep the subject in lowercase imperative mood, short and specific; no trailing period.
 - Examples:
-  - `[gui/quickshell] Feature: add wedge_clip shader and compile script`
-  - `[gui/quickshell] Docs: add SHADERS quick checklist and top-level README links`
-  - `[gui/quickshell] Fix: hide base fill and tint when wedge shader is active`
+  - `[gui/quickshell] add wedge_clip shader and compile script`
+  - `[gui/quickshell] add SHADERS quick checklist and top-level README links`
+  - `[gui/quickshell] hide base fill and tint when wedge shader is active`
