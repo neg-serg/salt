@@ -142,3 +142,6 @@ include:
 {% if host.features.monitoring.loki %}
   - monitoring_loki
 {% endif %}
+{% if host.features.network.get('zapret2', false) %}
+  - zapret2
+{% endif %}

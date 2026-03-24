@@ -1,0 +1,26 @@
+# Managed by Salt: safe Zapret2 rollout profile
+
+[package]
+source={{ package_source }}
+name={{ package_name }}
+
+[rollout]
+default_mode={{ default_mode }}
+profile={{ profile }}
+helper_path={{ helper_path }}
+approval_file={{ approval_file }}
+rollback_file={{ rollback_file }}
+
+[traffic]
+tcp_ports={{ tcp_ports }}
+udp_ports={{ udp_ports }}
+
+[safe_mode]
+render_only=true
+preview_only=true
+activation_requires_explicit_approval=true
+
+[activation]
+enabled_by_default=false
+running_by_default=false
+scope=zapret2-owned-package,config,unit,traffic-handling

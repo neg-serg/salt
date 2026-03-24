@@ -1,0 +1,104 @@
+package:
+  source: aur
+  name: zapret2
+  helper: paru
+
+config:
+  dir: /etc/zapret2
+  path: /etc/zapret2/zapret2.conf
+  profile: safe-preview
+  tcp_ports: "80,443"
+  udp_ports: "443"
+  default_mode: prepare
+
+service:
+  name: zapret2
+  unit: zapret2.service
+  enabled_by_default: false
+  running_by_default: false
+
+helper:
+  repo_script: scripts/zapret2-rollout.sh
+  deployed_path: /usr/local/libexec/zapret2-rollout
+  approval_file: /var/lib/zapret2/activation-approval.json
+  rollback_file: /var/lib/zapret2/rollback-inputs.json
+
+managed_artifacts:
+  - id: zapret2_package
+    artifact_type: package
+    repository_path: states/zapret2.sls
+    target_path: aur://zapret2
+    previewable: true
+    activation_needed: false
+  - id: zapret2_config
+    artifact_type: config
+    repository_path: states/configs/zapret2.conf.j2
+    target_path: /etc/zapret2/zapret2.conf
+    previewable: true
+    activation_needed: true
+  - id: zapret2_unit
+    artifact_type: unit
+    repository_path: states/units/zapret2.service.j2
+    target_path: /etc/systemd/system/zapret2.service
+    previewable: true
+    activation_needed: true
+  - id: zapret2_helper
+    artifact_type: script
+    repository_path: scripts/zapret2-rollout.sh
+    target_path: /usr/local/libexec/zapret2-rollout
+    previewable: true
+    activation_needed: false
+  - id: zapret2_state
+    artifact_type: state
+    repository_path: states/zapret2.sls
+    target_path: states/zapret2.sls
+    previewable: true
+    activation_needed: false
+
+prerequisites:
+  - id: kernel_support
+    category: kernel
+    description: Linux kernel environment is available
+  - id: packet_filter
+    category: packet_filter
+    description: nftables or iptables tooling is available
+  - id: queueing_support
+    category: queueing
+    description: netfilter queue support can be detected
+  - id: package_source
+    category: package_source
+    description: paru is available for the AUR package path
+  - id: service_dependency
+    category: service_dependency
+    description: systemd is available for unit management
+  - id: permissions
+    category: permissions
+    description: activation would have a privileged execution path
+
+conflicts:
+  - id: xray_active
+    component_type: proxy
+    component_name: xray
+    impact: medium
+  - id: singbox_active
+    component_type: tunnel
+    component_name: sing-box-tun
+    impact: high
+  - id: tailscale_active
+    component_type: tunnel
+    component_name: tailscaled
+    impact: low
+  - id: proxypilot_present
+    component_type: proxy
+    component_name: proxypilot
+    impact: low
+
+approval_gate:
+  gate_name: explicit-operator-approval
+  grant_method: file
+  scope:
+    - package_install
+    - config_activation
+    - service_enable
+    - traffic_handling
+  expires_when: approval file is removed or replaced

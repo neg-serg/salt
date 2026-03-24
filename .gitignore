@@ -14,6 +14,8 @@ build/pretty-printer/src/*.egg-info/
 # Python
 .venv/
 __pycache__/
+*.pyc
+.pytest_cache/
 
 # Salt runtime (keep minion config, ignore runtime dirs)
 salt_config/pki/
@@ -32,3 +34,5 @@ CLAUDE.md
 .serena/
 _catalog/
 tt
+*.tmp
+*.swp

@@ -1,0 +1,18 @@
+[Unit]
+Description=Zapret2 rollout gate
+Documentation=https://github.com/bol-van/zapret2
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists={{ config_path }}
+
+[Service]
+Type=oneshot
+ExecStart={{ helper_path }} activate --config {{ config_path }} --approval-file {{ approval_file }} --rollback-file {{ rollback_file }} --execute-live
+RemainAfterExit=no
+NoNewPrivileges=true
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
+
+[Install]
+WantedBy=multi-user.target

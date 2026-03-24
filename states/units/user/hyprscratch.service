@@ -1,0 +1,20 @@
+[Unit]
+Description=Hyprscratch daemon
+After=graphical-session.target
+Requires=dbus.socket
+PartOf=graphical-session.target
+ConditionPathExists=%h/.config/hypr/hyprscratch.conf
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/hyprscratch init config %h/.config/hypr/hyprscratch.conf
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=true
+PrivateTmp=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+LockPersonality=yes
+
+[Install]
+WantedBy=graphical-session.target

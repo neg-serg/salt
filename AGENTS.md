@@ -1,6 +1,6 @@
 # salt Development Guidelines
 
-Auto-generated from active feature plans. Last updated: 2026-03-24
+Auto-generated from active feature plans. Last updated: 2026-03-25
 
 ## Active Technologies
 - Jinja2 + YAML Salt states, Python 3, Bash/Zsh helper scripts
@@ -9,6 +9,8 @@ Auto-generated from active feature plans. Last updated: 2026-03-24
 - Repository artifacts under `states/`, `scripts/`, `tests/`, `docs/`, `.github/workflows/`
 - Markdown documentation, shell-based operator workflow, existing `gopass` CLI usage in Salt/chezmoi scripts + `gopass` 1.16.x, current git-backed password store, `chezmoi`, Salt masterless workflow, existing docs under `docs/` (072-gopass-age-migration)
 - File-based `gopass` store plus git history and local backup artifacts (072-gopass-age-migration)
+- Jinja2 + YAML Salt states, Python 3, Bash/Zsh helper scripts + Salt 3006.x masterless workflow, existing `_macros_*.jinja`, systemd, Arch/CachyOS package management, `zapret2` AUR package (`0.9.4.5-1` observed during planning) (073-zapret2-dry-run)
+- Repository-managed config templates and data files plus local file-based readiness/rollback metadata on the target machine (073-zapret2-dry-run)
 
 ## Project Structure
 
@@ -38,10 +40,10 @@ specs/
 - Treat `states/**/*.sls` as the supported state tree for lint/render/index tooling.
 
 ## Recent Changes
+- 073-zapret2-dry-run: Added Jinja2 + YAML Salt states, Python 3, Bash/Zsh helper scripts + Salt 3006.x masterless workflow, existing `_macros_*.jinja`, systemd, Arch/CachyOS package management, `zapret2` AUR package (`0.9.4.5-1` observed during planning)
 - 072-gopass-age-migration: Added Markdown documentation, shell-based operator workflow, existing `gopass` CLI usage in Salt/chezmoi scripts + `gopass` 1.16.x, current git-backed password store, `chezmoi`, Salt masterless workflow, existing docs under `docs/`
 
 - `071-salt-refactor-program`: normalized runtime-dir handling, unified Hugging Face downloads, moved user-service feature tags into YAML, extracted shared Salt runtime bootstrap and lint script, added service/perf guardrails, and decomposed `video_ai` / `desktop` into explicit include trees.
-- `048-salt`: established the baseline Salt/Jinja + helper-script workflow and profiling/index tooling.
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->

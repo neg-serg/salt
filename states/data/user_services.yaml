@@ -30,6 +30,7 @@ unit_files:
   - {id: surfingkeys_server_service, filename: surfingkeys-server.service}
   - {id: pic_dirs_list_service, filename: pic-dirs-list.service}
   - {id: vicinae_service, filename: vicinae.service}
+  - {id: hyprscratch_service, filename: hyprscratch.service}
   - {id: proxypilot_service, filename: proxypilot.service}
   - {id: openrgb_profile_service, filename: openrgb-profile.service}
   - {id: salt_drift_service, filename: salt-drift.service}
@@ -45,6 +46,7 @@ enable_services:
   - {name: surfingkeys-server.service}
   - {name: pic-dirs-list.service}
   - {name: vicinae.service}
+  - {name: hyprscratch.service}
   - {name: openrgb-profile.service}
   - {name: chezmoi-watch.service}
   - {name: gpg-agent.socket}
