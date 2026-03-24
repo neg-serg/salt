@@ -14,6 +14,8 @@ jobs:
       MOCK_GOPASS_SECRETS: "api/proxypilot-local=ci-proxypilot-key,api/proxypilot-management=ci-management-key"
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Enable mock gopass
         run: echo "$PWD/scripts/mock-bin" >> "$GITHUB_PATH"
@@ -64,6 +66,77 @@ jobs:
         env:
           SALT_LOG_FILE: /tmp/salt-ci.log
         run: just test
+
+      - name: Detect performance-gate scope
+        id: perf_scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base_sha="${{ github.event.pull_request.base.sha }}"
+          else
+            base_sha="${{ github.event.before }}"
+          fi
+          if [ -z "${base_sha}" ] || [ "${base_sha}" = "0000000000000000000000000000000000000000" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "reason=no-comparison-base"
+            exit 0
+          fi
+          changed_files="$(git diff --name-only "${base_sha}" "${{ github.sha }}")"
+          if printf '%s\n' "${changed_files}" | rg -q '^(states/|scripts/|\.github/workflows/salt-ci\.yaml$)'; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "reason=refactor-safe-paths"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "reason=outside-scope"
+          fi
+
+      - name: Run performance gate
+        id: perf_gate
+        if: steps.perf_scope.outputs.run == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          baseline_log="$(ls -t logs/system_description-*.log 2>/dev/null | head -1 || true)"
+          candidate_log="/tmp/salt-ci.log"
+          if [ -z "${baseline_log}" ] || [ ! -f "${candidate_log}" ]; then
+            echo "status=inconclusive" >> "$GITHUB_OUTPUT"
+            echo "::warning::Performance gate inconclusive: missing baseline or candidate log."
+            exit 0
+          fi
+          set +e
+          python3 scripts/state-profiler.py \
+            --compare "${baseline_log}" "${candidate_log}" \
+            --gate \
+            --max-regression-pct 20 \
+            --min-sample-count 10
+          exit_code=$?
+          set -e
+          case "${exit_code}" in
+            0)
+              echo "status=pass" >> "$GITHUB_OUTPUT"
+              ;;
+            1)
+              echo "status=fail" >> "$GITHUB_OUTPUT"
+              ;;
+            2)
+              echo "status=inconclusive" >> "$GITHUB_OUTPUT"
+              echo "::warning::Performance gate inconclusive: insufficient comparable state samples."
+              ;;
+            *)
+              echo "status=inconclusive" >> "$GITHUB_OUTPUT"
+              echo "::warning::Performance gate inconclusive: profiler exited unexpectedly (${exit_code})."
+              ;;
+          esac
+
+      - name: Note skipped performance gate
+        if: steps.perf_scope.outputs.run != 'true'
+        run: |
+          echo "Performance gate skipped: changes outside refactor-safe paths."
+
+      - name: Fail on performance regressions
+        if: steps.perf_gate.outputs.status == 'fail'
+        run: exit 1
 
       - name: Run just render-matrix
         run: just render-matrix

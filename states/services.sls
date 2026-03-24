@@ -1,5 +1,5 @@
 {% from '_imports.jinja' import host, user, home %}
-{% from '_macros_service.jinja' import ensure_dir, service_stopped, service_with_healthcheck, service_with_unit, system_daemon_user, unit_override %}
+{% from '_macros_service.jinja' import config_replace_with_service_control, ensure_dir, service_stopped, service_with_healthcheck, service_with_unit, system_daemon_user, unit_override %}
 {% from '_macros_pkg.jinja' import pacman_install, simple_service %}
 {% import_yaml 'data/services.yaml' as services %}
 {% import_yaml 'data/service_catalog.yaml' as catalog %}
@@ -96,41 +96,20 @@ transmission_acl_setup:
       - file: transmission_watch_dir
       - file: transmission_download_dir
 
-{% set _tset = [
-  ('transmission_download_dir_setting', '"download-dir"', '".*"', '"' ~ transmission_download_dir ~ '"'),
-  ('transmission_watch_dir_setting', '"watch-dir"', '".*"', '"' ~ transmission_watch_dir ~ '"'),
-  ('transmission_watch_dir_enabled', '"watch-dir-enabled"', '(true|false)', 'true'),
+{% set transmission_settings_replacements = [
+  ('transmission_download_dir_setting', '^\\s*"download-dir"\\s*:\\s*".*"(?P<suffix>,?)', '    "download-dir": "' ~ transmission_download_dir ~ '"\\g<suffix>'),
+  ('transmission_watch_dir_setting', '^\\s*"watch-dir"\\s*:\\s*".*"(?P<suffix>,?)', '    "watch-dir": "' ~ transmission_watch_dir ~ '"\\g<suffix>'),
+  ('transmission_watch_dir_enabled', '^\\s*"watch-dir-enabled"\\s*:\\s*(true|false)(?P<suffix>,?)', '    "watch-dir-enabled": true\\g<suffix>'),
 ] %}
-{% for sid, key, vpat, val in _tset %}
-{{ sid }}:
-  file.replace:
-    - name: {{ transmission_cfg }}
-    - pattern: '^\s*{{ key }}\s*:\s*{{ vpat }}(?P<suffix>,?)'
-    - repl: '    {{ key }}: {{ val }}\g<suffix>'
-    - flags: MULTILINE
-    - require:
-      - cmd: install_transmission
-      - cmd: transmission_acl_setup
-{% endfor %}
 
-transmission_stop_before_settings_change:
-  service.dead:
-    - name: transmission
-    - prereq:
-      - file: transmission_download_dir_setting
-      - file: transmission_watch_dir_setting
-      - file: transmission_watch_dir_enabled
-
-transmission_restart_after_settings_change:
-  service.running:
-    - name: transmission
-    - watch:
-      - file: transmission_download_dir_setting
-      - file: transmission_watch_dir_setting
-      - file: transmission_watch_dir_enabled
-    - require:
-      - service: transmission_enabled
-      - cmd: transmission_start
+{{ config_replace_with_service_control(
+  'transmission_settings',
+  transmission_cfg,
+  'transmission',
+  transmission_settings_replacements,
+  requires=['cmd: install_transmission', 'cmd: transmission_acl_setup'],
+  service_require=['service: transmission_enabled', 'cmd: transmission_start']
+) }}
 {% endif %}
 
 # ===================================================================

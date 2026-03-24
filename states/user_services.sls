@@ -4,13 +4,23 @@
 # Systemd user services: mail, calendar, chezmoi, media, surfingkeys
 
 {% set svc = host.features.user_services %}
+{% set feature_enabled = {'mail': svc.mail, 'vdirsyncer': svc.vdirsyncer} %}
 
-# Unit IDs and service names gated by feature flags
-{% set mail_unit_ids = ['mbsync_gmail_service', 'mbsync_gmail_timer', 'imapnotify_gmail_service'] %}
-{% set vdirsyncer_unit_ids = ['vdirsyncer_service', 'vdirsyncer_timer'] %}
-{% set mail_enable = ['imapnotify-gmail.service'] %}
-{% set mail_timers = ['mbsync-gmail.timer'] %}
-{% set vdirsyncer_timers = ['vdirsyncer.timer'] %}
+{% macro feature_entry_enabled(entry) -%}
+{%- set features = entry.get('features', []) -%}
+{%- if not features -%}
+True
+{%- else -%}
+{%- set ns = namespace(enabled=True) -%}
+{%- for feature in features -%}
+{%- if not feature_enabled.get(feature, False) -%}
+{%- set ns.enabled = False -%}
+{%- endif -%}
+{%- endfor -%}
+{{ ns.enabled }}
+{%- endif -%}
+{%- endmacro %}
+
 # --- Systemd user services for media ---
 # Drop-in override for mpDris2.service: adds MPD ordering
 # Gated on mpd feature — mpd.sls is conditionally included
@@ -57,11 +67,7 @@ mail_directories:
 # --- Systemd user services (unit files in units/user/) ---
 {%- set _unit_reqs = [] -%}
 {% for unit in us.unit_files %}
-{%- set skip =
-    (unit.id in mail_unit_ids and not svc.mail) or
-    (unit.id in vdirsyncer_unit_ids and not svc.vdirsyncer)
--%}
-{% if not skip %}
+{% if feature_entry_enabled(unit) == 'True' %}
 {{ user_service_file(unit.id, unit.filename) }}
 {%- do _unit_reqs.append('file: ' ~ unit.id) -%}
 {%- do _unit_reqs.append('cmd: ' ~ unit.id ~ '_daemon_reload') -%}
@@ -70,17 +76,16 @@ mail_directories:
 
 # --- Filter enable lists based on feature flags ---
 {%- set filtered_services = [] -%}
-{%- for name in us.enable_services -%}
-{%- if not (name in mail_enable and not svc.mail) -%}
-{%- do filtered_services.append(name) -%}
+{%- for entry in us.enable_services -%}
+{%- if feature_entry_enabled(entry) == 'True' -%}
+{%- do filtered_services.append(entry.name) -%}
 {%- endif -%}
 {%- endfor -%}
 
 {%- set filtered_timers = [] -%}
-{%- for name in us.enable_now_timers -%}
-{%- if not ((name in mail_timers and not svc.mail) or
-            (name in vdirsyncer_timers and not svc.vdirsyncer)) -%}
-{%- do filtered_timers.append(name) -%}
+{%- for entry in us.enable_now_timers -%}
+{%- if feature_entry_enabled(entry) == 'True' -%}
+{%- do filtered_timers.append(entry.name) -%}
 {%- endif -%}
 {%- endfor -%}
 
@@ -88,9 +93,21 @@ mail_directories:
 {{ user_service_enable('enable_user_services', filtered_services, start_now=filtered_timers, requires=_unit_reqs) }}
 
 # --- Disable services for disabled features ---
+{%- set disabled_mail_units = [] -%}
+{%- for entry in us.enable_services + us.enable_now_timers -%}
+{%- if 'mail' in entry.get('features', []) -%}
+{%- do disabled_mail_units.append(entry.name) -%}
+{%- endif -%}
+{%- endfor -%}
 {% if not svc.mail %}
-{{ user_service_disable('disable_mail_services', ['mbsync-gmail.timer', 'imapnotify-gmail.service']) }}
+{{ user_service_disable('disable_mail_services', disabled_mail_units) }}
 {% endif %}
+{%- set disabled_vdirsyncer_units = [] -%}
+{%- for entry in us.enable_now_timers -%}
+{%- if 'vdirsyncer' in entry.get('features', []) -%}
+{%- do disabled_vdirsyncer_units.append(entry.name) -%}
+{%- endif -%}
+{%- endfor -%}
 {% if not svc.vdirsyncer %}
-{{ user_service_disable('disable_vdirsyncer_services', ['vdirsyncer.timer']) }}
+{{ user_service_disable('disable_vdirsyncer_services', disabled_vdirsyncer_units) }}
 {% endif %}

@@ -164,3 +164,56 @@ def test_monitored_services_resolvable(scope):
             missing.append(name)
 
     assert not missing, f"Monitored {scope} reference unknown services: {missing}"
+
+
+def test_user_services_schema_is_valid():
+    """user_services.yaml entries must follow the feature-tagged contract."""
+    user_services = load_yaml("user_services.yaml")
+    unit_files = user_services.get("unit_files", [])
+    enable_services = user_services.get("enable_services", [])
+    enable_now = user_services.get("enable_now_timers", [])
+
+    allowed_features = {"mail", "vdirsyncer", "mpd"}
+    seen_ids = set()
+
+    invalid = []
+    for entry in unit_files:
+        if not isinstance(entry, dict):
+            invalid.append(f"unit_files entry must be mapping, got {type(entry).__name__}")
+            continue
+        entry_id = entry.get("id")
+        filename = entry.get("filename")
+        if not isinstance(entry_id, str) or not entry_id:
+            invalid.append(f"unit_files entry missing valid id: {entry!r}")
+        elif entry_id in seen_ids:
+            invalid.append(f"duplicate unit_files id: {entry_id}")
+        else:
+            seen_ids.add(entry_id)
+        if not isinstance(filename, str) or not filename:
+            invalid.append(f"unit_files entry missing valid filename: {entry!r}")
+        features = entry.get("features", [])
+        if features and (
+            not isinstance(features, list)
+            or any(feature not in allowed_features for feature in features)
+        ):
+            invalid.append(f"unit_files entry has invalid features: {entry!r}")
+
+    for group_name, entries in (
+        ("enable_services", enable_services),
+        ("enable_now_timers", enable_now),
+    ):
+        for entry in entries:
+            if not isinstance(entry, dict):
+                invalid.append(f"{group_name} entry must be mapping, got {type(entry).__name__}")
+                continue
+            name = entry.get("name")
+            if not isinstance(name, str) or not name:
+                invalid.append(f"{group_name} entry missing valid name: {entry!r}")
+            features = entry.get("features", [])
+            if features and (
+                not isinstance(features, list)
+                or any(feature not in allowed_features for feature in features)
+            ):
+                invalid.append(f"{group_name} entry has invalid features: {entry!r}")
+
+    assert not invalid, f"Invalid user_services.yaml schema: {invalid}"

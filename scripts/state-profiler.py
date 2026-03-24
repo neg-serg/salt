@@ -59,7 +59,7 @@ def parse_log(path: Path) -> list[tuple[float, str]]:
 
 
 def build_state_metadata(root_state: str):
-    sls_files = sorted(glob.glob("states/*.sls"))
+    sls_files = sorted(glob.glob("states/**/*.sls", recursive=True))
     file_data = []
     for path in sls_files:
         with open(path) as fh:
@@ -178,8 +178,10 @@ def run_trend(json_mode: bool) -> None:
         )
 
 
-def run_compare(log1: Path, log2: Path, json_mode: bool) -> None:
-    """Compare two log files and highlight regressions (>20% slower)."""
+def build_compare_rows(
+    log1: Path, log2: Path, max_regression_pct: float = 20.0
+) -> list[dict[str, object]]:
+    """Build normalized comparison rows for two log files."""
     if not log1.is_file():
         raise SystemExit(f"Log file not found: {log1}")
     if not log2.is_file():
@@ -200,7 +202,7 @@ def run_compare(log1: Path, log2: Path, json_mode: bool) -> None:
         v1, v2 = d1[state_id], d2[state_id]
         delta = v2 - v1
         pct = (delta / v1 * 100) if v1 != 0 else float("inf") if delta > 0 else 0.0
-        regression = pct > 20
+        regression = pct > max_regression_pct
         rows.append(
             {
                 "state_id": state_id,
@@ -212,11 +214,52 @@ def run_compare(log1: Path, log2: Path, json_mode: bool) -> None:
             }
         )
     rows.sort(key=lambda r: abs(r["delta_ms"]), reverse=True)
+    return rows
+
+
+def evaluate_compare_gate(
+    rows: list[dict[str, object]], min_sample_count: int = 1
+) -> tuple[str, list[dict[str, object]]]:
+    """Return gate status and the subset of regressions."""
+    if len(rows) < min_sample_count:
+        return "INCONCLUSIVE", []
+    regressions = [row for row in rows if row["regression"]]
+    if regressions:
+        return "FAIL", regressions
+    return "PASS", []
+
+
+def run_compare(
+    log1: Path,
+    log2: Path,
+    json_mode: bool,
+    gate: bool = False,
+    max_regression_pct: float = 20.0,
+    min_sample_count: int = 1,
+) -> int:
+    """Compare two log files, optionally with explicit gate semantics."""
+    rows = build_compare_rows(log1, log2, max_regression_pct=max_regression_pct)
+    status, regressions = evaluate_compare_gate(rows, min_sample_count=min_sample_count)
 
     if json_mode:
-        json.dump(rows, fp=sys.stdout, indent=2)
+        if gate:
+            json.dump(
+                {
+                    "status": status,
+                    "max_regression_pct": max_regression_pct,
+                    "min_sample_count": min_sample_count,
+                    "sample_count": len(rows),
+                    "regression_count": len(regressions),
+                    "regressions": regressions[:10],
+                    "rows": rows,
+                },
+                fp=sys.stdout,
+                indent=2,
+            )
+        else:
+            json.dump(rows, fp=sys.stdout, indent=2)
         print()
-        return
+        return {"PASS": 0, "FAIL": 1, "INCONCLUSIVE": 2}[status] if gate else 0
 
     hdr = f"{'state_id':<60s} {'log1_ms':>10s} {'log2_ms':>10s} {'delta_ms':>10s} {'change%':>8s}  "
     print(f"Comparison: {log1} vs {log2}")
@@ -228,6 +271,24 @@ def run_compare(log1: Path, log2: Path, json_mode: bool) -> None:
             f"{r['state_id']:<60s} {r['log1_ms']:>10.2f} {r['log2_ms']:>10.2f} "
             f"{r['delta_ms']:>10.2f} {r['change_pct']:>7.1f}% {marker}"
         )
+    if gate:
+        print()
+        print(
+            f"Gate status: {status} "
+            f"(threshold: {max_regression_pct:.1f}%, sample_count: {len(rows)}, "
+            f"min_sample_count: {min_sample_count})"
+        )
+        if regressions:
+            print("Top regressions:")
+            for row in regressions[:10]:
+                print(
+                    f"  {row['state_id']}: {row['log1_ms']:.2f} ms -> {row['log2_ms']:.2f} ms "
+                    f"({row['change_pct']:.1f}%)"
+                )
+        elif status == "INCONCLUSIVE":
+            print("Comparison is inconclusive: insufficient common states for a stable verdict.")
+        return {"PASS": 0, "FAIL": 1, "INCONCLUSIVE": 2}[status]
+    return 0
 
 
 def main() -> None:
@@ -257,6 +318,23 @@ def main() -> None:
         metavar=("LOG1", "LOG2"),
         help="Compare two log files and highlight regressions",
     )
+    parser.add_argument(
+        "--gate",
+        action="store_true",
+        help="Evaluate compare results as PASS/FAIL/INCONCLUSIVE and set exit code",
+    )
+    parser.add_argument(
+        "--max-regression-pct",
+        type=float,
+        default=20.0,
+        help="Maximum allowed slowdown percentage before a state counts as regression",
+    )
+    parser.add_argument(
+        "--min-sample-count",
+        type=int,
+        default=1,
+        help="Minimum number of common states required before compare verdict is conclusive",
+    )
     args = parser.parse_args()
 
     if args.trend:
@@ -264,8 +342,16 @@ def main() -> None:
         return
 
     if args.compare:
-        run_compare(args.compare[0], args.compare[1], json_mode=args.json)
-        return
+        raise SystemExit(
+            run_compare(
+                args.compare[0],
+                args.compare[1],
+                json_mode=args.json,
+                gate=args.gate,
+                max_regression_pct=args.max_regression_pct,
+                min_sample_count=args.min_sample_count,
+            )
+        )
 
     if args.log is None:
         parser.error("the following arguments are required: log")

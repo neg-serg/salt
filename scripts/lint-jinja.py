@@ -922,7 +922,7 @@ def check_systemd_units():
 
 
 def main():
-    sls_files = sorted(glob.glob("states/*.sls"))
+    sls_files = sorted(glob.glob("states/**/*.sls", recursive=True))
     jinja_files = sorted(glob.glob("states/*.jinja"))
     yaml_configs = sorted(
         glob.glob("states/configs/*.yaml")

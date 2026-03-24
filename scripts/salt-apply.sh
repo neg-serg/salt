@@ -23,6 +23,7 @@ VENV_DIR="${PROJECT_DIR}/.venv"
 RUNTIME_CONFIG_DIR="${PROJECT_DIR}/.salt_runtime"
 DAEMON_SOCK="${SALT_DAEMON_SOCK:-/run/salt-daemon.sock}"
 DAEMON_SCRIPT="${SCRIPT_DIR}/salt-daemon.py"
+source "${SCRIPT_DIR}/salt-runtime.sh"
 
 STATE="system_description"
 TEST_MODE=false
@@ -57,42 +58,9 @@ bootstrap_salt() {
 
 # ── Runtime config: generate .salt_runtime/minion ─────────────────────────────
 setup_config() {
-    # Skip if config already exists (content is deterministic for a given PROJECT_DIR)
     [[ -f "${RUNTIME_CONFIG_DIR}/minion" ]] && return 0
-    mkdir -p "${RUNTIME_CONFIG_DIR}/pki/minion" \
-             "${RUNTIME_CONFIG_DIR}/var/cache/salt/pillar_cache" \
-             "${RUNTIME_CONFIG_DIR}/var/log/salt"
-    cat > "${RUNTIME_CONFIG_DIR}/minion" <<EOF
-pki_dir: ${RUNTIME_CONFIG_DIR}/pki/minion
-log_file: ${RUNTIME_CONFIG_DIR}/var/log/salt/minion
-cachedir: ${RUNTIME_CONFIG_DIR}/var/cache/salt
-minion_pillar_cache: True
-pillar_cache: True
-pillar_cache_backend: disk
-pillar_cache_ttl: 3600
-state_output: changes
-file_client: local
-file_roots:
-  base:
-    - ${PROJECT_DIR}/states/
-    - ${PROJECT_DIR}/
-
-# --- Performance optimizations ---
-# Grains: skip expensive DNS reverse-lookup and hardware probes
-enable_fqdns_grains: False
-enable_gpu_grains: False
-# Cache grain collection to disk; avoids full rebuild on every run
-grains_cache: True
-grains_cache_expiration: 3600
-# Salt 3007+: skip expensive module fallback file scan
-lazy_loader_strict_matching: True
-# No custom _modules/ in this repo — skip saltutil.sync_all before each run
-autoload_dynamic_modules: False
-# Don't traverse non-SLS dirs (configs/, scripts/, units/, data/, build/)
-fileserver_limit_traversal: True
-# Limit parallel state processes (parallel: True in states)
-process_count_max: 16
-EOF
+    salt_runtime_prepare_dirs "${PROJECT_DIR}" "${RUNTIME_CONFIG_DIR}"
+    salt_runtime_write_minion_config "${PROJECT_DIR}" "${RUNTIME_CONFIG_DIR}" apply
 }
 
 # ── Sudo: prefer NOPASSWD, fall back to .password file ────────────────────────

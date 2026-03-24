@@ -234,12 +234,12 @@ def generate_state_map_docs(graph, reverse, guards_map):
     eng = [
         HEADER,
         "# Salt State Dependency Map\n",
-        "Generated from `include:` statements in `states/*.sls`.\n",
+        "Generated from `include:` statements in `states/**/*.sls`.\n",
     ]
     rus = [
         HEADER,
         "# Карта зависимостей Salt\n",
-        "Сгенерировано из блоков `include:` в `states/*.sls`.\n",
+        "Сгенерировано из блоков `include:` в `states/**/*.sls`.\n",
     ]
 
     def fmt_list(items, empty):
@@ -369,7 +369,7 @@ def generate_data_md(summaries):
 
 def collect_data_usage():
     usage = {}
-    for path in glob.glob(os.path.join(STATES_DIR, "*.sls")):
+    for path in glob.glob(os.path.join(STATES_DIR, "**", "*.sls"), recursive=True):
         with open(path) as f:
             content = f.read()
         for match in IMPORT_YAML_RE.finditer(content):
@@ -377,7 +377,7 @@ def collect_data_usage():
             if not rel.startswith("data/"):
                 continue
             full = os.path.join(STATES_DIR, rel)
-            usage.setdefault(full, set()).add(os.path.basename(path))
+            usage.setdefault(full, set()).add(os.path.relpath(path, STATES_DIR))
     return {k: sorted(v) for k, v in usage.items()}
 
 
@@ -441,7 +441,7 @@ def main():
     print(f"Wrote {macros_path} ({len(macros)} macros, {macros_md.count(chr(10))} lines)")
 
     # 2. States
-    sls_files = sorted(glob.glob(os.path.join(STATES_DIR, "*.sls")))
+    sls_files = sorted(glob.glob(os.path.join(STATES_DIR, "**", "*.sls"), recursive=True))
     state_results = render_states(sls_files)
     rendered_ok = sum(1 for _, ids, _, _, _ in state_results if ids)
     states_md = generate_states_md(state_results)

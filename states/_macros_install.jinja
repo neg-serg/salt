@@ -481,6 +481,27 @@ install_{{ name | replace('-', '_') }}:
 {%- endif %}
 {%- endmacro -%}
 
+{# Download a file from Hugging Face using the shared http_file machinery.
+   repo: repository path (e.g. "org/model"), file: artifact path inside the repo.
+   This keeps retry/cache/idempotency behavior aligned with other HTTP downloads.
+   Usage: {{ huggingface_file('foo_model', 'org/model', 'weights.gguf', '/path/to/weights.gguf') }}
+#}
+{%- macro huggingface_file(name, repo, file, dest, mode='0644', user=_user, creates=None, require=None, parallel=True, hash=None, version=None, cache=True) -%}
+{{ http_file(
+    name,
+    'https://huggingface.co/' ~ repo ~ '/resolve/main/' ~ file,
+    dest,
+    mode=mode,
+    user=user,
+    creates=creates,
+    require=require,
+    parallel=parallel,
+    hash=hash,
+    version=version,
+    cache=cache
+) }}
+{%- endmacro -%}
+
 {# npm build workflow: npm install + build + optional version pin.
    Generates 2–3 chained cmd.run states:
      {{ name }}_npm_install — npm install (network op, with retry)

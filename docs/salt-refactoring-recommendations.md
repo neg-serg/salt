@@ -1,6 +1,6 @@
 # Salt Refactoring Recommendations
 
-**Date**: 2026-03-18  
+**Date**: 2026-03-24  
 **Scope**: Repository-specific Salt refactoring proposals that improve maintainability without degrading no-op `just apply` performance.
 
 ## Goal
@@ -56,6 +56,37 @@ Move a change into `avoid for now` if it is likely to:
 - replace readable state logic with generic YAML schemas or nested meta-templates
 - make debugging harder without reducing real duplication
 
+## Backlog Status
+
+| Item | Classification | Status | Notes |
+| --- | --- | --- | --- |
+| 1. Runtime-dir normalization | safe now | done on `071-salt-refactor-program` | `host.runtime_dir` now drives remaining user-session references |
+| 2. Shared Hugging Face download path | safe now | done on `071-salt-refactor-program` | `video_ai` now uses shared macro path |
+| 3. YAML-driven user-service feature tags | safe now | done on `071-salt-refactor-program` | parallel hardcoded lists removed from `user_services.sls` |
+| 4. Shared Salt runtime bootstrap shell module | safe now | done on `071-salt-refactor-program` | `salt-apply.sh` and `salt-validate.sh` share one bootstrap implementation |
+| 5. Extract `Justfile` lint recipe | safe now | done on `071-salt-refactor-program` | lint flow moved to `scripts/lint-all.sh` |
+| 6. Narrow config+restart helper | requires validation | done on `071-salt-refactor-program` | applied only to the repeated Transmission settings pattern |
+| 7. Contract tests for macros/rendering | safe now | done on `071-salt-refactor-program` | dedicated regression tests added under `tests/` |
+| 8. CI performance gate | requires validation | done on `071-salt-refactor-program` | path-scoped PASS/FAIL/INCONCLUSIVE gate wired in CI |
+| 9. Selective SLS decomposition | requires validation | done on `071-salt-refactor-program` | `video_ai` and `desktop` split into explicit thematic includes |
+| 10. Keep refactor backlog synchronized | safe now | done on `071-salt-refactor-program` | this document and spec-kit tasks stay aligned |
+
+## Validation Evidence
+
+Latest verification pass on `071-salt-refactor-program`:
+
+- `pytest tests/` → `48 passed`
+- `just lint` → passed
+- `just validate` → `Validated 49 states, 0 failed`
+- `just render-matrix` → all matrix scenarios rendered successfully
+- `python3 scripts/state-profiler.py --compare <baseline> <baseline> --gate --min-sample-count 10` → `PASS`
+
+## Adoption Order
+
+1. Land the already-implemented safe-now items first: runtime-dir normalization, shared downloads, YAML user-services, shared runtime bootstrap, lint extraction, contract tests, backlog sync.
+2. Land the validation-gated but completed items with the recorded evidence: config+restart helper, CI perf gate, and selective SLS decomposition.
+3. Keep future follow-ups narrow; do not widen include graphs or introduce meta-generated state topology.
+
 ## Safe Now
 
 ### REC-001: Replace hardcoded `/run/user/1000` references with `host.runtime_dir`
@@ -74,6 +105,8 @@ Move a change into `avoid for now` if it is likely to:
 
 - `just validate`
 - inspect rendered user-service environment values for affected states
+
+**Status**: done on feature branch `071-salt-refactor-program`
 
 ---
 
@@ -151,6 +184,29 @@ Move a change into `avoid for now` if it is likely to:
 - `just validate`
 - `just render-matrix`
 - compare rendered enable/disable lists before and after
+
+**Status**: done on feature branch `071-salt-refactor-program`
+
+---
+
+### REC-013: Route `video_ai.sls` downloads through a shared Hugging Face macro
+
+**Scope**: `states/video_ai.sls`, `states/_macros_install.jinja`, `states/llama_embed.sls`
+
+**Problem**: `video_ai.sls` duplicates several raw Hugging Face download blocks, which risks drift in retry, cache, and idempotency behavior.
+
+**Recommendation**: Add a narrow Hugging Face helper over `http_file` and use it for `video_ai` model artifacts.
+
+**Why here**: The repository already has a stable `http_file` abstraction. A tiny provider-specific wrapper preserves the macro-first rule without inventing a broader download DSL.
+
+**Performance impact**: `neutral`
+
+**Validation**:
+
+- `just validate`
+- render `video_ai` and confirm download state IDs and `creates` targets remain stable
+
+**Status**: done on feature branch `071-salt-refactor-program`
 
 ---
 

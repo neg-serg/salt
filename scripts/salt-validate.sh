@@ -10,39 +10,19 @@ set -euo pipefail
 
 project_dir="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$project_dir"
+script_dir="${project_dir}/scripts"
+# shellcheck disable=SC1091
+source "${script_dir}/salt-runtime.sh"
 
 jobs="${1:-${VALIDATE_JOBS:-$(nproc)}}"
 validate_timeout="${VALIDATE_TIMEOUT:-300}"
 
-# --- Runtime directory setup ---
 runtime="${project_dir}/.salt_runtime"
-mkdir -p "${runtime}/pki/minion" \
-         "${runtime}/var/cache/salt/pillar_cache" \
-         "${runtime}/var/log/salt"
-cat > "${runtime}/minion" <<MEOF
-pki_dir: ${runtime}/pki/minion
-log_file: /dev/null
-cachedir: ${runtime}/var/cache/salt
-file_client: local
-file_roots:
-  base:
-    - ${project_dir}/states/
-    - ${project_dir}/
-enable_fqdns_grains: False
-enable_gpu_grains: False
-grains_cache: False
-file_ignore_glob:
-  - '*.pyc'
-  - '.venv/*'
-  - '.git/*'
-  - '.salt_runtime/*'
-  - 'specs/*'
-  - '.specify/*'
-  - 'node_modules/*'
-MEOF
+salt_runtime_prepare_dirs "${project_dir}" "${runtime}"
+salt_runtime_write_minion_config "${project_dir}" "${runtime}" validate
 
 # Clear stale proc locks from previous runs
-rm -rf "${runtime}/var/cache/salt/proc/"*
+salt_runtime_clear_stale_proc_locks "${runtime}"
 
 # Use sudo when available (CI has NOPASSWD sudo, needed for runas=)
 sudo_cmd=""

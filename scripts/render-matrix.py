@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Render Salt states for each feature-matrix host scenario.
 
-Loads states/data/feature_matrix.yaml and renders every states/*.sls file with
+Loads states/data/feature_matrix.yaml and renders every top-level states/*.sls
+file with recursive include support from `states/**/*.sls` using the same Jinja
+loader roots as production rendering.
 grains['host'] set to the scenario's name.  Ensures all feature combinations
 template correctly (catches missing imports/macros before deployment).
 """

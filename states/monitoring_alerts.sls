@@ -58,7 +58,7 @@ salt_monitor_script:
       - file: salt_alert_script
 
 # ── Systemd user units ──────────────────────────────────────────────
-{{ user_service_file('salt_monitor_service', 'salt-monitor.service') }}
+{{ user_service_file('salt_monitor_service', 'salt-monitor.service', template='jinja', context={'runtime_dir': host.runtime_dir}) }}
 {{ user_service_file('salt_monitor_watchdog_service', 'salt-monitor-watchdog.service') }}
 {{ user_service_file('salt_monitor_watchdog_timer', 'salt-monitor-watchdog.timer') }}
 

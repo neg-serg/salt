@@ -1,4 +1,4 @@
-{% from '_imports.jinja' import user, home, gopass_secret %}
+{% from '_imports.jinja' import host, user, home, gopass_secret %}
 {% from '_macros_pkg.jinja' import npm_pkg %}
 {% from '_macros_service.jinja' import ensure_dir, user_linger, user_service_enable, user_service_file, user_service_restart, user_unit_override %}
 {% import_yaml 'data/versions.yaml' as ver %}
@@ -107,7 +107,7 @@ openclaw_sanitize_script:
 {% set openclaw_wayland_override %}
 [Service]
 Environment=WAYLAND_DISPLAY=wayland-1
-Environment=XDG_RUNTIME_DIR=/run/user/1000
+Environment=XDG_RUNTIME_DIR={{ host.runtime_dir }}
 {% endset %}
 {{ user_unit_override('openclaw_wayland_env', 'openclaw-gateway.service', contents=openclaw_wayland_override) }}
 
