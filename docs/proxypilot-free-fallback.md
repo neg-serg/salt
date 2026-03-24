@@ -106,7 +106,7 @@ curl http://127.0.0.1:8317/v1/chat/completions \
 
 ### Keys missing after `just`
 
-gopass requires user-level GPG agent (Yubikey) which is unavailable in Salt's root context. The AWK fallback reads keys from the already-deployed config. If keys are missing:
+gopass secret access may depend on a user-session unlock path that is unavailable in Salt's root context. The AWK fallback reads keys from the already-deployed config. If keys are missing:
 
 1. Run `scripts/bootstrap-free-providers.sh` to re-inject from gopass
 2. Subsequent `just` runs will maintain keys via AWK

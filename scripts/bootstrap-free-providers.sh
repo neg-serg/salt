@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # bootstrap-free-providers.sh — seed ProxyPilot config with free provider API keys
 #
-# gopass requires user-level GPG agent access (Yubikey), which is not available
-# in Salt's root/sudo context. This script runs as the user to:
+# gopass secret access may depend on user-session unlock state, which is not always
+# available in Salt's root/sudo context. This script runs as the user to:
 #   1. Read API keys from gopass
 #   2. Inject the openai-compatibility section into the existing proxypilot config
 #

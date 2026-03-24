@@ -3,20 +3,25 @@
 ## Architecture
 
 ```
-gopass (GPG-encrypted store, Yubikey)
+gopass (encrypted store; approved backend: gpg or age)
   |
   +---> chezmoi templates   (dotfiles with secrets)
-  +---> salt cmd.run         (systemd services, etc.)
+  +---> salt cmd.run        (systemd services, etc.)
 ```
 
-**Single source of truth**: `gopass` with GPG backend (Yubikey hardware key).
+**Single source of truth**: `gopass` with an approved encrypted backend.
 Both chezmoi and Salt read secrets from gopass at deploy time.
+
+Approved backends:
+
+- `gpg`: existing hardware-backed flow (for example YubiKey + GPG agent)
+- `age`: password-protected identity flow with documented backup and recovery handling
 
 ## gopass Store Layout
 
 ```
 ssh-key                   # SSH key passphrase (~/.ssh/id_ed25519)
-yubikey-pin               # Yubikey PIN (for GPG unlock)
+yubikey-pin               # Yubikey PIN (only needed if the GPG/Yubikey backend is used)
 
 email/
   gmail/
@@ -111,7 +116,13 @@ Salt states using `gopass_secret()` macro (graceful fallback if gopass unavailab
 
 1. **Initialize gopass store** (if not already done):
    ```
+   # Existing hardware-backed flow
    gopass init <GPG-KEY-ID>
+
+   # Password-based age flow
+   gopass age identities keygen
+   gopass init --crypto age
+
    gopass git init
    ```
 
@@ -143,9 +154,11 @@ Salt states using `gopass_secret()` macro (graceful fallback if gopass unavailab
 
 ## Security Properties
 
-- Secrets encrypted at rest with GPG (AES-256)
-- Decryption requires Yubikey physical touch
+- Secrets remain encrypted at rest through `gopass`
+- `gpg` backend can require hardware-backed unlock such as YubiKey touch
+- `age` backend can use a password-protected identity with agent-assisted session unlock
 - gopass store can be versioned in a separate private git repo
 - No plaintext secrets in the salt/ or dotfiles/ repos
 - chezmoi templates contain only gopass references, not actual values
 - Rendered files with secrets get 0600 permissions
+- Backend migrations must preserve secret paths, keep one active source of truth, and retain rollback artifacts until the stabilization window ends

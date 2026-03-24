@@ -318,15 +318,22 @@ Salt repo and rootfs backup are on xenon-one:
     cp -a /mnt/one/salt ~/src/salt
     cd ~/src/salt
 
-## 5. GPG + Yubikey
+## 5. Gopass backend preparation
 
-Plug in the Yubikey, then:
+Choose one approved backend:
+
+GPG/Yubikey flow:
 
     gpg --card-status          # verify card is detected
-    gpg --card-edit             # fetch if needed:  fetch → quit
+    gpg --card-edit            # fetch if needed: fetch → quit
 
 GPG agent starts via socket activation (systemd user units).
 No manual daemon start needed.
+
+age flow:
+
+    gopass age identities keygen
+    gopass age agent start     # optional session agent
 
 ## 6. Gopass (secrets)
 
@@ -368,7 +375,7 @@ This runs:
 
 After reboot, everything should be functional:
   - Hyprland (compositor), kitty (terminal), rofi (launcher)
-  - GPG agent (Yubikey), gopass (secrets)
+  - gopass backend unlock path, gopass (secrets)
   - Mail (mbsync), calendar (vdirsyncer)
   - MPD (music), mpv (video)
   - All user services auto-start via systemd
@@ -399,7 +406,7 @@ echo "                       sudo mkdir -p /mnt/{one,zero}"
 echo "                       sudo mount /dev/mapper/xenon-one /mnt/one"
 echo "                       sudo mount /dev/mapper/argon-zero /mnt/zero"
 echo "  5. Copy salt repo:   cp -a /mnt/one/salt ~/src/salt"
-echo "  6. Yubikey + gopass:  gpg --card-status && gopass clone <store-url>"
+echo "  6. gopass backend:    prepare GPG/Yubikey or age, then gopass clone <store-url>"
 echo "  7. Apply config:     cd ~/src/salt && scripts/salt-apply.sh"
 echo "  8. Add to fstab:     see /root/POST-BOOT.md (step 9)"
 echo ""

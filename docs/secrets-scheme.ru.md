@@ -3,20 +3,25 @@
 ## Архитектура
 
 ```
-gopass (GPG-зашифрованное хранилище, Yubikey)
+gopass (зашифрованное хранилище; допустимый backend: gpg или age)
   |
   +---> chezmoi templates   (dotfiles с секретами)
-  +---> salt cmd.run         (systemd-сервисы и т.д.)
+  +---> salt cmd.run        (systemd-сервисы и т.д.)
 ```
 
-**Единый источник правды**: `gopass` с GPG-бэкендом (аппаратный ключ Yubikey).
+**Единый источник правды**: `gopass` с допустимым зашифрованным backend.
 И chezmoi, и Salt читают секреты из gopass во время деплоя.
+
+Допустимые backend-режимы:
+
+- `gpg`: текущий hardware-backed flow (например YubiKey + GPG agent)
+- `age`: flow с password-protected identity и задокументированным backup/recovery
 
 ## Структура gopass-хранилища
 
 ```
 ssh-key                   # Пароль SSH ключа (~/.ssh/id_ed25519)
-yubikey-pin               # PIN Yubikey (для разблокировки GPG)
+yubikey-pin               # PIN Yubikey (нужен только при использовании GPG/Yubikey backend)
 
 email/
   gmail/
@@ -111,7 +116,13 @@ Salt states, использующие макрос `gopass_secret()` (с gracefu
 
 1. **Инициализировать gopass-хранилище** (если ещё не создано):
    ```
+   # Существующий hardware-backed flow
    gopass init <GPG-KEY-ID>
+
+   # Password-based age flow
+   gopass age identities keygen
+   gopass init --crypto age
+
    gopass git init
    ```
 
@@ -143,9 +154,11 @@ Salt states, использующие макрос `gopass_secret()` (с gracefu
 
 ## Свойства безопасности
 
-- Секреты зашифрованы в покое с помощью GPG (AES-256)
-- Расшифровка требует физического касания Yubikey
+- Секреты остаются зашифрованными в покое через `gopass`
+- `gpg` backend может требовать hardware-backed unlock, например касание YubiKey
+- `age` backend может использовать password-protected identity и agent-assisted session unlock
 - gopass-хранилище можно версионировать в отдельном приватном git-репозитории
 - Никаких открытых секретов в репозиториях salt/ или dotfiles/
 - chezmoi-шаблоны содержат только ссылки на gopass, а не реальные значения
 - Отрендеренные файлы с секретами получают права 0600
+- Миграции backend должны сохранять пути секретов, поддерживать один активный source of truth и хранить rollback artifacts до конца stabilization window

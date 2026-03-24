@@ -30,8 +30,16 @@ done
 
 ## 1. Initialize gopass (if store doesn't exist)
 
+Choose one approved backend and keep the same `gopass` entry paths regardless of backend:
+
 ```bash
+# GPG backend (existing hardware-backed flow)
 gopass init <GPG-KEY-ID>
+
+# age backend (password-protected identity flow)
+gopass age identities keygen
+gopass init --crypto age
+
 gopass git init
 
 # Verify
@@ -40,7 +48,7 @@ gopass ls
 
 ---
 
-## 2. SSH and Yubikey (`unlock` script)
+## 2. SSH and backend-specific unlock material (`unlock` script)
 
 Used by: `~/.local/bin/unlock` — automatic SSH key unlock at login.
 
@@ -54,9 +62,27 @@ gopass insert ssh-key
 ### 2b. Yubikey PIN
 
 ```bash
-# PIN for unlocking the Yubikey GPG key. Only used when Yubikey is connected.
+# PIN for unlocking the Yubikey GPG key. Only used with the GPG/Yubikey backend.
 gopass insert yubikey-pin
 ```
+
+### 2c. age identity unlock
+
+If using the `age` backend, protect the generated identity with a strong password and
+store the recovery instructions outside the store itself. Recommended session flow:
+
+```bash
+# One-time setup
+gopass age identities keygen
+
+# Optional session agent
+gopass config age.agent-enabled true
+gopass age agent start
+```
+
+Keep a secure backup of the `age` identity and the password needed to unlock it.
+Do not remove the previous GPG/Yubikey access path until the migration stabilization
+window has passed.
 
 ---
 
@@ -253,9 +279,11 @@ gopass insert api/openclaw-telegram-uid
 
 ---
 
-## 8. GPG Key ID
+## 8. Backend bootstrap reference
 
-When initializing gopass (step 1), `<GPG-KEY-ID>` is your GPG key fingerprint.
+### 8a. GPG Key ID
+
+When initializing the GPG backend (step 1), `<GPG-KEY-ID>` is your GPG key fingerprint.
 To find it:
 
 ```bash
@@ -272,6 +300,14 @@ gpg --card-status
 # Look for "General key info" line — that's your key ID
 ```
 
+### 8b. age identity recovery
+
+When initializing the `age` backend:
+
+- generate the identity once and protect it with a strong password;
+- back up the identity file separately from the working store;
+- record how to unlock it on a new machine before retiring any legacy GPG access.
+
 ---
 
 ## 9. Apply
@@ -285,7 +321,7 @@ After provisioning all secrets:
 # Salt state — deploys configs, systemd services
 sudo salt-call state.apply
 
-# Chezmoi — renders templates with secrets (requires Yubikey)
+# Chezmoi — renders templates with secrets (requires a working gopass unlock path)
 chezmoi diff      # preview changes
 chezmoi apply -v  # apply
 ```

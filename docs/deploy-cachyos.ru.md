@@ -77,8 +77,12 @@ sudo mount /dev/mapper/argon-zero /mnt/zero
 # Скопировать salt-репозиторий
 cp -a /mnt/one/salt ~/src/salt
 
-# Настроить GPG (Yubikey) + gopass
+# Настроить backend для gopass
+# GPG/Yubikey flow:
 gpg --card-status
+
+# age flow:
+# gopass age identities keygen
 gopass clone <store-url>
 
 # Применить конфигурацию + dotfiles
@@ -159,16 +163,21 @@ aliases:
 
 ### Проблемы Salt / chezmoi
 
-**chezmoi apply падает (gopass/Yubikey недоступен)**
+**chezmoi apply падает (gopass unlock path недоступен)**
 
 `salt-apply.sh` выведет диагностику со списком затронутых `.tmpl` файлов.
 Частые причины:
-- Yubikey не подключён или GPG-агент не запущен
+- Для GPG/Yubikey flow: токен не подключён или GPG-агент не запущен
+- Для age flow: identity не разблокирована в текущей user session
 - gopass-хранилище не склонировано (см. шаг 6 в POST-BOOT.md)
 
 Исправление:
 ```bash
+# GPG/Yubikey flow:
 gpg --card-status                    # проверить, что Yubikey обнаружен
+
+# age flow:
+# gopass age agent unlock
 gopass ls                            # проверить доступность хранилища
 chezmoi apply --force --source ~/src/salt/dotfiles  # перезапустить только chezmoi
 ```

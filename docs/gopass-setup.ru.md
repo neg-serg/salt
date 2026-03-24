@@ -30,8 +30,17 @@ done
 
 ## 1. Инициализация gopass (если хранилище не существует)
 
+Выберите один допустимый backend и сохраняйте те же `gopass`-пути секретов независимо
+от backend:
+
 ```bash
+# GPG backend (текущий hardware-backed flow)
 gopass init <GPG-KEY-ID>
+
+# age backend (password-protected identity flow)
+gopass age identities keygen
+gopass init --crypto age
+
 gopass git init
 
 # Проверка
@@ -40,7 +49,7 @@ gopass ls
 
 ---
 
-## 2. SSH и Yubikey (скрипт `unlock`)
+## 2. SSH и backend-specific unlock material (скрипт `unlock`)
 
 Используются в: `~/.local/bin/unlock` — автоматический unlock SSH ключей при логине.
 
@@ -54,9 +63,27 @@ gopass insert ssh-key
 ### 2b. PIN Yubikey
 
 ```bash
-# PIN для разблокировки Yubikey GPG ключа. Используется только если Yubikey подключен.
+# PIN для разблокировки Yubikey GPG ключа. Используется только с GPG/Yubikey backend.
 gopass insert yubikey-pin
 ```
+
+### 2c. Разблокировка age identity
+
+Если используется `age` backend, защитите сгенерированную identity сильным паролем и
+храните инструкции по recovery вне самого store. Рекомендуемый session flow:
+
+```bash
+# Однократная настройка
+gopass age identities keygen
+
+# Опциональный session agent
+gopass config age.agent-enabled true
+gopass age agent start
+```
+
+Сделайте отдельный backup для `age` identity и пароля, который её разблокирует.
+Не удаляйте прежний GPG/Yubikey access path, пока не закончится stabilization window
+после миграции.
 
 ---
 
@@ -253,9 +280,11 @@ gopass insert api/openclaw-telegram-uid
 
 ---
 
-## 8. GPG Key ID
+## 8. Справка по bootstrap backend
 
-При инициализации gopass (шаг 1) `<GPG-KEY-ID>` — это fingerprint вашего GPG-ключа.
+### 8a. GPG Key ID
+
+При инициализации GPG backend (шаг 1) `<GPG-KEY-ID>` — это fingerprint вашего GPG-ключа.
 Как его найти:
 
 ```bash
@@ -272,6 +301,14 @@ gpg --card-status
 # Ищите строку "General key info" — это ваш key ID
 ```
 
+### 8b. Recovery для age identity
+
+При инициализации `age` backend:
+
+- сгенерируйте identity один раз и защитите её сильным паролем;
+- храните backup identity отдельно от рабочего store;
+- задокументируйте, как разблокировать её на новой машине, прежде чем убирать legacy GPG access.
+
 ---
 
 ## 9. Применение
@@ -285,7 +322,7 @@ gpg --card-status
 # Salt state — деплоит конфиги, systemd-сервисы
 sudo salt-call state.apply
 
-# Chezmoi — рендерит шаблоны с секретами (потребует Yubikey)
+# Chezmoi — рендерит шаблоны с секретами (потребует рабочий gopass unlock path)
 chezmoi diff      # превью изменений
 chezmoi apply -v  # применить
 ```

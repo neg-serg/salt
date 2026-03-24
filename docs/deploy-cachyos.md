@@ -78,8 +78,12 @@ sudo mount /dev/mapper/argon-zero /mnt/zero
 # Copy salt repo
 cp -a /mnt/one/salt ~/src/salt
 
-# Set up GPG (Yubikey) + gopass
+# Set up gopass backend
+# GPG/Yubikey flow:
 gpg --card-status
+
+# age flow:
+# gopass age identities keygen
 gopass clone <store-url>
 
 # Apply config + dotfiles
@@ -160,16 +164,21 @@ via recursive merge (`slsutil.merge` with `strategy='recurse'`).
 
 ### Salt / chezmoi issues
 
-**chezmoi apply fails (gopass/Yubikey not available)**
+**chezmoi apply fails (gopass unlock path not available)**
 
 `salt-apply.sh` will show diagnostic output listing affected `.tmpl` files.
 Common causes:
-- Yubikey not plugged in or GPG agent not running
+- GPG/Yubikey flow: token not plugged in or GPG agent not running
+- age flow: identity not unlocked for the current user session
 - gopass store not cloned yet (see step 6 in POST-BOOT.md)
 
 Fix:
 ```bash
+# GPG/Yubikey flow:
 gpg --card-status                    # verify Yubikey detected
+
+# age flow:
+# gopass age agent unlock
 gopass ls                            # verify store accessible
 chezmoi apply --force --source ~/src/salt/dotfiles  # re-run chezmoi only
 ```

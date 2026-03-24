@@ -28,7 +28,7 @@ Telegram (MTProto)
 ## Prerequisites
 
 - ProxyPilot running on port 8317
-- gopass configured with GPG/Yubikey
+- gopass configured with an approved backend (`gpg` or `age`)
 - Telegram API credentials (see next section)
 
 ## Obtaining Telegram API Credentials
