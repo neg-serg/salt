@@ -17,12 +17,13 @@ source "${script_dir}/salt-runtime.sh"
 jobs="${1:-${VALIDATE_JOBS:-$(nproc)}}"
 validate_timeout="${VALIDATE_TIMEOUT:-300}"
 
-runtime="${project_dir}/.salt_runtime"
+runtime="$(mktemp -d)"
 salt_runtime_prepare_dirs "${project_dir}" "${runtime}"
 salt_runtime_write_minion_config "${project_dir}" "${runtime}" validate
 
 # Clear stale proc locks from previous runs
 salt_runtime_clear_stale_proc_locks "${runtime}"
+salt_runtime_reset_validate_cache "${runtime}"
 
 # Use sudo when available (CI has NOPASSWD sudo, needed for runas=)
 sudo_cmd=""
@@ -46,11 +47,11 @@ fi
 # Build it once, then copy to per-worker caches so each starts warm.
 cache_base=$(mktemp -d)
 joblog=$(mktemp)
-trap '$sudo_cmd rm -rf "$cache_base"; rm -f "$joblog"' EXIT
+trap '$sudo_cmd rm -rf "$cache_base" "$runtime"; rm -f "$joblog"' EXIT
 
 template_cache="${cache_base}/template"
 mkdir -p "$template_cache"
-$sudo_cmd .venv/bin/salt-call --local --config-dir=.salt_runtime \
+$sudo_cmd .venv/bin/salt-call --local --config-dir="$runtime" \
     --cachedir="$template_cache" \
     state.show_sls audio --out=quiet 2>/dev/null || true
 
@@ -65,21 +66,21 @@ validate_one() {
     if [[ ! -d "$worker_cache" ]]; then
         $sudo_cmd cp -a "${cache_base}/template" "$worker_cache"
     fi
-    if $sudo_cmd .venv/bin/salt-call --local --config-dir=.salt_runtime \
+    if $sudo_cmd .venv/bin/salt-call --local --config-dir="$runtime" \
             --cachedir="$worker_cache" \
             state.show_sls "$name" --out=quiet 2>/dev/null; then
         return 0
     else
         echo "FAILED: $name"
         # Re-run to capture error details
-        $sudo_cmd .venv/bin/salt-call --local --config-dir=.salt_runtime \
+        $sudo_cmd .venv/bin/salt-call --local --config-dir="$runtime" \
                 --cachedir="$worker_cache" \
                 state.show_sls "$name" --out=quiet 2>&1 || true
         return 1
     fi
 }
 export -f validate_one
-export sudo_cmd cache_base
+export sudo_cmd cache_base runtime
 
 # --- Parallel validation with joblog for accurate failure counting ---
 # {1} and {#} are GNU parallel placeholders, not bash syntax

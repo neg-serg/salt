@@ -6,6 +6,12 @@ salt_runtime_prepare_dirs() {
 
     mkdir -p "${runtime_dir}/pki/minion" \
         "${runtime_dir}/var/cache/salt/pillar_cache" \
+        "${runtime_dir}/var/cache/salt/files" \
+        "${runtime_dir}/var/cache/salt/roots" \
+        "${runtime_dir}/var/cache/salt/proc" \
+        "${runtime_dir}/var/cache/salt/file_lists" \
+        "${runtime_dir}/var/cache/salt/accumulator" \
+        "${runtime_dir}/var/cache/salt/extrn_files" \
         "${runtime_dir}/var/log/salt"
 }
 
@@ -79,4 +85,28 @@ salt_runtime_clear_stale_proc_locks() {
     local runtime_dir="$1"
 
     rm -rf "${runtime_dir}/var/cache/salt/proc/"*
+}
+
+
+salt_runtime_reset_validate_cache() {
+    local runtime_dir="$1"
+    local cache_root="${runtime_dir}/var/cache/salt"
+
+    # Validation cache is ephemeral. Clear file/roots caches so foreign-owned
+    # artifacts from previous sudo/runas executions cannot poison later renders.
+    rm -rf \
+        "${cache_root}/files" \
+        "${cache_root}/roots" \
+        "${cache_root}/proc" \
+        "${cache_root}/file_lists" \
+        "${cache_root}/accumulator" \
+        "${cache_root}/extrn_files"
+
+    mkdir -p \
+        "${cache_root}/files" \
+        "${cache_root}/roots" \
+        "${cache_root}/proc" \
+        "${cache_root}/file_lists" \
+        "${cache_root}/accumulator" \
+        "${cache_root}/extrn_files"
 }
