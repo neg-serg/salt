@@ -66,3 +66,32 @@ def test_activation_scope_matches_workflow_contract():
         "service_enable",
         "traffic_handling",
     }
+
+
+def test_activation_exposes_explicit_entrypoint_and_next_step():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp = Path(tmpdir)
+        approval_file = tmp / "approval.json"
+        rollback_file = tmp / "rollback.json"
+        approval_file.write_text(json.dumps({"approval_state": "granted"}))
+        rollback_file.write_text(
+            json.dumps({"rollback_inputs": [{"id": "baseline", "required_for_rollback": True}]})
+        )
+        proc = subprocess.run(
+            [
+                str(SCRIPT),
+                "activate",
+                "--approval-file",
+                str(approval_file),
+                "--rollback-file",
+                str(rollback_file),
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+    payload = json.loads(proc.stdout)
+
+    assert payload["entrypoint"] == "systemctl start zapret2.service"
+    assert payload["next_steps"]

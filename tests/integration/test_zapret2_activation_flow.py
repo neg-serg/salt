@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import tempfile
 from pathlib import Path
@@ -51,4 +52,45 @@ def test_activate_returns_scoped_summary_when_approved_but_not_live():
 
     assert payload["allowed"] is True
     assert payload["live_execution"] is False
-    assert payload["commands"] == []
+    assert payload["entrypoint"] == "systemctl start zapret2.service"
+    assert "systemctl daemon-reload" in payload["commands"]
+
+
+def test_capture_rollback_writes_json_and_assets():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp = Path(tmpdir)
+        rollback_file = tmp / "rollback.json"
+        proc = subprocess.run(
+            [
+                str(SCRIPT),
+                "capture-rollback",
+                "--rollback-file",
+                str(rollback_file),
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+        payload = json.loads(proc.stdout)
+
+        assert payload["mode"] == "capture-rollback"
+        assert rollback_file.exists()
+        assert Path(payload["asset_dir"]).exists()
+
+
+def test_smoke_reports_status_and_checks():
+    env = dict(os.environ)
+    env["ZAPRET2_TEST_SCENARIO"] = "smoke_ok"
+    proc = subprocess.run(
+        [str(SCRIPT), "smoke"],
+        check=True,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    payload = json.loads(proc.stdout)
+
+    assert payload["mode"] == "smoke"
+    assert payload["status"] in {"pass", "warn"}
+    assert payload["checks"]

@@ -51,3 +51,11 @@ def test_readiness_report_approval_required_without_explicit_approval():
     assert report["status"] == "approval_required"
     assert all(item["result"] != "fail" for item in report["prerequisite_results"])
     assert "explicit operator approval is absent" in report["activation_blockers"]
+
+
+def test_readiness_report_includes_operator_workflow_commands():
+    report = run_rollout("preflight", "approval_required")
+
+    assert "operator_workflow" in report
+    assert report["operator_workflow"]["capture_rollback"]
+    assert report["operator_workflow"]["activate"] == "systemctl start zapret2.service"

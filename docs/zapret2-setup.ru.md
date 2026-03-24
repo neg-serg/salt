@@ -43,6 +43,37 @@ scripts/zapret2-rollout.sh preview
 - собранные rollback inputs; и
 - блокировка активации без явного approval.
 
+## Операторский runbook
+
+Неразрушающий review path:
+
+```bash
+scripts/zapret2-rollout.sh capture-rollback
+scripts/zapret2-rollout.sh grant-approval --operator "$USER" --reason "approved after preflight review"
+scripts/zapret2-rollout.sh preview
+scripts/zapret2-rollout.sh smoke
+```
+
+Точка входа для live-активации после отдельного явного разрешения:
+
+```bash
+sudo systemctl start zapret2.service
+```
+
+Проверка после активации:
+
+```bash
+scripts/zapret2-rollout.sh smoke
+```
+
+Workflow отката:
+
+```bash
+scripts/zapret2-rollout.sh rollback
+sudo scripts/zapret2-rollout.sh rollback --execute-live
+scripts/zapret2-rollout.sh revoke-approval
+```
+
 ## Approval Gate
 
 Для активации нужен явный approval file и файл с rollback inputs. Без них `scripts/zapret2-rollout.sh activate` завершается с отказом.
@@ -53,3 +84,4 @@ scripts/zapret2-rollout.sh preview
 
 - Текущая ветка безопасно подготавливает ownership и validation для `zapret2`.
 - Живой rollout нужно выполнять только после вашего отдельного явного разрешения на destructive changes.
+- В helper уже реализованы approval management, rollback capture, smoke checks и rollback preview.
