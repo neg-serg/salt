@@ -877,15 +877,16 @@ def check_systemd_units():
     # Render Jinja templates (.j2 and plain files with Jinja syntax) and verify
     env = _make_render_env()
     host = host_model.build_lint_host()
+    default_home = host.get("home") or os.path.expanduser("~")
     j2_context = {
         "user": host.get("user", "neg"),
-        "home": host.get("home", "/home/neg"),
+        "home": default_home,
         "uid": host.get("uid", 1000),
         "mnt_one": host.get("mnt_one", "/mnt/one"),
         "ollama_port": 11434,
         "dns_unbound": True,
         "gpu_enable": True,
-        "project_dir": host.get("home", "/home/neg") + "/src/salt",
+        "project_dir": default_home + "/src/salt",
     }
     for path in sorted(j2_units):
         try:

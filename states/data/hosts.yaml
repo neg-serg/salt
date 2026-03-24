@@ -1,6 +1,6 @@
 defaults:
   user: neg
-  home: /home/neg
+  home: ""
   uid: 1000
   mnt_zero: /mnt/zero
   mnt_one: /mnt/one
@@ -45,6 +45,7 @@ defaults:
       xray: false
       singbox: false
       tailscale: false
+      zapret2: false
       wifi: false
     user_services:
       mail: true

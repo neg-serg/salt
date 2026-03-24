@@ -110,7 +110,7 @@ The verification gate (Principle VII) catches local regressions; the CI gate cat
 - **OS**: CachyOS (Arch-based). Salt manages both package installation (via pacman/paru macros) and configuration
 - **Containers**: Podman (not Docker). All container operations use `podman`
 - **Bootloader**: Limine. Kernel params managed via `/boot/limine.conf`
-- **User paths**: `/home/neg` for home, `/mnt/one` and `/mnt/zero` for external storage
+- **User paths**: `/home/<user>` for home, `/mnt/one` and `/mnt/zero` for external storage
 - **Build containers**: `archlinux:latest`, ephemeral (`--rm`)
 - **zsh reserved variables**: Never use `path`, `status`, `reply`, `match`, `prompt`, `cdpath`, `fpath`, `mailpath`, `manpath`, `module_path`, `fignore`, `argv`, `argc`, `signals`, `pipestatus` as user variables in scripts
 

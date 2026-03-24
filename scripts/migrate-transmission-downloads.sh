@@ -4,9 +4,10 @@
 set -euo pipefail
 
 src=/var/lib/transmission/Downloads
-dst=/home/neg/torrent/data
+user=${SUDO_USER:-${USER:-$(id -un)}}
+home_dir=$(getent passwd "$user" | cut -d: -f6)
+dst="$home_dir/torrent/data"
 cfg=/var/lib/transmission/.config/transmission-daemon/settings.json
-user=neg
 
 echo "=== Stopping Transmission ==="
 systemctl stop transmission
@@ -28,8 +29,8 @@ else
 fi
 
 echo "=== Setting ACLs ==="
-setfacl -m u:transmission:rx /home/"$user"
-setfacl -m u:transmission:rx /home/"$user"/torrent
+setfacl -m u:transmission:rx "$home_dir"
+setfacl -m u:transmission:rx "$home_dir"/torrent
 setfacl -m u:transmission:rwX "$dst"
 setfacl -d -m u:transmission:rwX "$dst"
 

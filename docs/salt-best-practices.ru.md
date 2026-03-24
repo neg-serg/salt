@@ -203,7 +203,7 @@ install_tool:
 
 ### AP-04: Захардкоженные пути вместо переменных host_config
 
-**До**: `- name: /home/neg/.config/myapp/config.toml`
+**До**: `- name: /home/alice/.config/myapp/config.toml`
 **После**: `- name: {{ home }}/.config/myapp/config.toml`
 
 ### AP-05: Создание новых `.sls` вместо расширения существующих доменов

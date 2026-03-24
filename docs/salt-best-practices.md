@@ -361,9 +361,9 @@ openclaw_config:
 ```yaml
 my_config:
   file.managed:
-    - name: /home/neg/.config/myapp/config.toml
-    - user: neg
-    - group: neg
+    - name: /home/alice/.config/myapp/config.toml
+    - user: alice
+    - group: alice
 ```
 
 **After** (correct):

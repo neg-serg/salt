@@ -15,6 +15,11 @@
   file.managed:
     - name: {{ floorp_profile }}/{{ relpath }}
     - source: {{ source }}
+{% if state_id == 'floorp_user_js' %}
+    - template: jinja
+    - context:
+        home: {{ home }}
+{% endif %}
     - user: {{ user }}
     - group: {{ user }}
     - makedirs: True

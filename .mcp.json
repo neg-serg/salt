@@ -2,14 +2,11 @@
   "mcpServers": {
     "serena": {
       "type": "stdio",
-      "command": "/home/neg/.local/bin/uvx",
+      "command": "/usr/bin/env",
       "args": [
-        "serena",
-        "start-mcp-server",
-        "--context",
-        "claude-code",
-        "--project",
-        "/home/neg/src/salt"
+        "bash",
+        "-lc",
+        "exec /usr/bin/uvx serena start-mcp-server --context claude-code --project \"$HOME/src/salt\""
       ],
       "env": {}
     },
@@ -26,7 +23,7 @@
     },
     "arch-linux": {
       "type": "stdio",
-      "command": "/home/neg/.local/bin/uvx",
+      "command": "/usr/bin/uvx",
       "args": [
         "arch-ops-server"
       ],
@@ -46,32 +43,37 @@
     },
     "spreadsheet": {
       "type": "stdio",
-      "command": "/home/neg/.local/share/cargo/bin/spreadsheet-mcp",
+      "command": "/usr/bin/env",
       "args": [
-        "--transport",
-        "stdio"
+        "bash",
+        "-lc",
+        "exec \"$HOME/.local/share/cargo/bin/spreadsheet-mcp\" --transport stdio"
       ],
       "env": {}
     },
     "ast-grep": {
       "type": "stdio",
-      "command": "/home/neg/.local/bin/ast-grep-server",
-      "args": [],
+      "command": "/usr/bin/env",
+      "args": [
+        "bash",
+        "-lc",
+        "exec \"$HOME/.local/bin/ast-grep-server\""
+      ],
       "env": {}
     },
     "arxiv": {
       "type": "stdio",
-      "command": "/home/neg/.local/bin/uvx",
+      "command": "/usr/bin/env",
       "args": [
-        "arxiv-mcp-server",
-        "--storage-path",
-        "/home/neg/.arxiv-mcp-server/papers"
+        "bash",
+        "-lc",
+        "exec /usr/bin/uvx arxiv-mcp-server --storage-path \"$HOME/.arxiv-mcp-server/papers\""
       ],
       "env": {}
     },
     "qdrant": {
       "type": "stdio",
-      "command": "/home/neg/.local/bin/uvx",
+      "command": "/usr/bin/uvx",
       "args": [
         "--python",
         "3.13",
@@ -85,26 +87,27 @@
     },
     "code-rag": {
       "type": "stdio",
-      "command": "/home/neg/.local/share/pipx/venvs/code-rag/bin/python",
+      "command": "/usr/bin/env",
       "args": [
-        "-m",
-        "code_rag.server"
+        "bash",
+        "-lc",
+        "exec \"$HOME/.local/share/pipx/venvs/code-rag/bin/python\" -m code_rag.server"
       ],
       "env": {}
     },
     "ffmpeg": {
       "type": "stdio",
-      "command": "/home/neg/.local/bin/uvx",
+      "command": "/usr/bin/env",
       "args": [
-        "ffmpeg-mcp-lite"
+        "bash",
+        "-lc",
+        "exec env FFMPEG_OUTPUT_DIR=\"$HOME/vid\" /usr/bin/uvx ffmpeg-mcp-lite"
       ],
-      "env": {
-        "FFMPEG_OUTPUT_DIR": "/home/neg/vid"
-      }
+      "env": {}
     },
     "blender": {
       "type": "stdio",
-      "command": "/home/neg/.local/bin/uvx",
+      "command": "/usr/bin/uvx",
       "args": [
         "blender-mcp"
       ],
@@ -146,32 +149,37 @@
     },
     "gitleaks": {
       "type": "stdio",
-      "command": "podman",
+      "command": "/usr/bin/env",
       "args": [
-        "run",
-        "-i",
-        "--rm",
-        "-v",
-        "/home/neg/src:/app/target:ro",
-        "gitleaks-mcp:latest"
+        "bash",
+        "-lc",
+        "exec podman run -i --rm -v \"$HOME/src:/app/target:ro\" gitleaks-mcp:latest"
       ],
       "env": {}
     },
     "mpd": {
       "type": "stdio",
-      "command": "/home/neg/.local/bin/mpd-mcp-server",
-      "args": [],
+      "command": "/usr/bin/env",
+      "args": [
+        "bash",
+        "-lc",
+        "exec \"$HOME/.local/bin/mpd-mcp-server\""
+      ],
       "env": {}
     },
     "hyprland": {
       "type": "stdio",
-      "command": "/home/neg/.local/bin/hyprland-mcp",
-      "args": [],
+      "command": "/usr/bin/env",
+      "args": [
+        "bash",
+        "-lc",
+        "exec \"$HOME/.local/bin/hyprland-mcp\""
+      ],
       "env": {}
     },
     "json-yaml-toml": {
       "type": "stdio",
-      "command": "/home/neg/.local/bin/uvx",
+      "command": "/usr/bin/uvx",
       "args": [
         "mcp-json-yaml-toml"
       ],
@@ -179,7 +187,7 @@
     },
     "pandoc": {
       "type": "stdio",
-      "command": "/home/neg/.local/bin/uvx",
+      "command": "/usr/bin/uvx",
       "args": [
         "mcp-pandoc"
       ],
@@ -187,7 +195,7 @@
     },
     "pdf": {
       "type": "stdio",
-      "command": "/home/neg/.local/bin/uvx",
+      "command": "/usr/bin/uvx",
       "args": [
         "pdf-mcp"
       ],
@@ -195,8 +203,12 @@
     },
     "nettools": {
       "type": "stdio",
-      "command": "/home/neg/.local/bin/mcp-nettools",
-      "args": [],
+      "command": "/usr/bin/env",
+      "args": [
+        "bash",
+        "-lc",
+        "exec \"$HOME/.local/bin/mcp-nettools\""
+      ],
       "env": {}
     },
     "text-toolkit": {
@@ -210,12 +222,11 @@
     },
     "language-server": {
       "type": "stdio",
-      "command": "/home/neg/.local/bin/mcp-language-server",
+      "command": "/usr/bin/env",
       "args": [
-        "--workspace",
-        "/home/neg/src/salt",
-        "--lsp",
-        "lua-language-server"
+        "bash",
+        "-lc",
+        "exec \"$HOME/.local/bin/mcp-language-server\" --workspace \"$HOME/src/salt\" --lsp lua-language-server"
       ],
       "env": {}
     },
@@ -239,7 +250,7 @@
     },
     "wireshark": {
       "type": "stdio",
-      "command": "/home/neg/.local/bin/uvx",
+      "command": "/usr/bin/uvx",
       "args": [
         "mcp-wireshark"
       ],

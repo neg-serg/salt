@@ -88,8 +88,8 @@ if prior Action Groups modify the same files.
 - **SettingsSchema.json** has 42 properties; code uses 62+
 
 ### Hardcoded Paths (portability issues)
-- `greeter/BackgroundImage.qml`: `/home/neg/.cache/greeter-wallpaper` — should use XDG_CACHE_HOME
-- `Helpers/WorkspaceIcons.js` manifest: `/home/neg/.local/share/fonts/` — should use XDG_DATA_HOME
+- `greeter/BackgroundImage.qml`: `/home/<user>/.cache/greeter-wallpaper` — should use XDG_CACHE_HOME
+- `Helpers/WorkspaceIcons.js` manifest: `/home/<user>/.local/share/fonts/` — should use XDG_DATA_HOME
 
 ### Missing Error Handling on ProcessRunner Instances
 - `Bar/Modules/KeyboardLayoutHypr.qml` line ~166: `hyprctl switchxkblayout` — no onExited handler
@@ -170,7 +170,7 @@ Add to schema: `"panelBgAlphaScale": { "type": "number", "default": 0.2, "descri
 ### AG2 — Fix Hardcoded User Paths
 
 <problem>
-Two locations use `/home/neg/` hardcoded paths, breaking portability if the username
+Two locations use `/home/<user>/` hardcoded paths, breaking portability if the username
 or XDG directories differ. Quickshell provides `Quickshell.env()` for env var access.
 </problem>
 
@@ -180,19 +180,19 @@ or XDG directories differ. Quickshell provides `Quickshell.env()` for env var ac
    followed by `+ "/greeter-wallpaper"`.
 
 2. **`Helpers/WorkspaceIcons.js`** — find hardcoded font paths in manifest loading.
-   Replace `/home/neg/.local/share/fonts/` with runtime XDG resolution.
+   Replace `/home/<user>/.local/share/fonts/` with runtime XDG resolution.
    Note: The manifest.json file itself may contain hardcoded paths — check if it's
    loaded dynamically or statically. If static, add a comment documenting the dependency.
 
-3. **Search for any remaining `/home/neg/` references**:
+3. **Search for any remaining `/home/<user>/` references**:
    ```bash
-   rg '/home/neg/' dotfiles/dot_config/quickshell/ --glob '*.qml' --glob '*.js'
+   rg '/home/[^/]+' dotfiles/dot_config/quickshell/ --glob '*.qml' --glob '*.js'
    ```
    Exclude manifest.json (data file) and documentation files from the fix scope.
 </actions>
 
 <verification>
-- `rg '/home/neg/' dotfiles/dot_config/quickshell/ --glob '*.qml' --glob '*.js' | wc -l` = 0
+- `rg '/home/[^/]+' dotfiles/dot_config/quickshell/ --glob '*.qml' --glob '*.js' | wc -l` = 0
   (excluding data files where path is a runtime value)
 - Greeter background still loads when launched
 </verification>
@@ -716,7 +716,7 @@ rg 'catch\s*\([^)]*\)\s*\{\s*\}' dotfiles/dot_config/quickshell/ --glob '*.js' -
 # Expected: 0
 
 # No hardcoded user paths in code
-rg '/home/neg/' dotfiles/dot_config/quickshell/ --glob '*.qml' --glob '*.js' | wc -l
+rg '/home/[^/]+' dotfiles/dot_config/quickshell/ --glob '*.qml' --glob '*.js' | wc -l
 # Expected: 0 (or only in data files)
 
 # Settings schema covers all used settings

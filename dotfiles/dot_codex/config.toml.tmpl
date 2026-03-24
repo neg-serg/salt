@@ -3,12 +3,12 @@
 
 model = "gpt-5.4"
 
-[projects."/home/neg/src/salt"]
+[projects."{{ .chezmoi.homeDir }}/src/salt"]
 trust_level = "trusted"
 
 [mcp_servers.serena]
 command = "/usr/bin/uvx"
-args = ["serena", "start-mcp-server", "--context", "claude-code", "--project", "/home/neg/src/salt"]
+args = ["serena", "start-mcp-server", "--context", "claude-code", "--project", "{{ .chezmoi.homeDir }}/src/salt"]
 
 [mcp_servers.ollama]
 command = "npx"
@@ -30,15 +30,15 @@ ALLOW_SHELL_COMMANDS = "true"
 NVIM_SOCKET_PATH = "/tmp/nvim.sock"
 
 [mcp_servers.spreadsheet]
-command = "/home/neg/.local/share/cargo/bin/spreadsheet-mcp"
+command = "{{ .chezmoi.homeDir }}/.local/share/cargo/bin/spreadsheet-mcp"
 args = ["--transport", "stdio"]
 
 [mcp_servers.ast-grep]
-command = "/home/neg/.local/bin/ast-grep-server"
+command = "{{ .chezmoi.homeDir }}/.local/bin/ast-grep-server"
 
 [mcp_servers.arxiv]
 command = "/usr/bin/uvx"
-args = ["arxiv-mcp-server", "--storage-path", "/home/neg/.arxiv-mcp-server/papers"]
+args = ["arxiv-mcp-server", "--storage-path", "{{ .chezmoi.homeDir }}/.arxiv-mcp-server/papers"]
 
 [mcp_servers.qdrant]
 command = "/usr/bin/uvx"
@@ -50,7 +50,7 @@ EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 QDRANT_URL = "http://127.0.0.1:6333"
 
 [mcp_servers.code-rag]
-command = "/home/neg/.local/share/pipx/venvs/code-rag/bin/python"
+command = "{{ .chezmoi.homeDir }}/.local/share/pipx/venvs/code-rag/bin/python"
 args = ["-m", "code_rag.server"]
 
 [mcp_servers.ffmpeg]
@@ -58,7 +58,7 @@ command = "/usr/bin/uvx"
 args = ["ffmpeg-mcp-lite"]
 
 [mcp_servers.ffmpeg.env]
-FFMPEG_OUTPUT_DIR = "/home/neg/vid"
+FFMPEG_OUTPUT_DIR = "{{ .chezmoi.homeDir }}/vid"
 
 [mcp_servers.blender]
 command = "/usr/bin/uvx"
@@ -78,13 +78,13 @@ args = ["run", "-i", "--rm", "semgrep-mcp:latest"]
 
 [mcp_servers.gitleaks]
 command = "podman"
-args = ["run", "-i", "--rm", "-v", "/home/neg/src:/app/target:ro", "gitleaks-mcp:latest"]
+args = ["run", "-i", "--rm", "-v", "{{ .chezmoi.homeDir }}/src:/app/target:ro", "gitleaks-mcp:latest"]
 
 [mcp_servers.mpd]
-command = "/home/neg/.local/bin/mpd-mcp-server"
+command = "{{ .chezmoi.homeDir }}/.local/bin/mpd-mcp-server"
 
 [mcp_servers.hyprland]
-command = "/home/neg/.local/bin/hyprland-mcp"
+command = "{{ .chezmoi.homeDir }}/.local/bin/hyprland-mcp"
 
 [mcp_servers.json-yaml-toml]
 command = "/usr/bin/uvx"
@@ -99,15 +99,15 @@ command = "/usr/bin/uvx"
 args = ["pdf-mcp"]
 
 [mcp_servers.nettools]
-command = "/home/neg/.local/bin/mcp-nettools"
+command = "{{ .chezmoi.homeDir }}/.local/bin/mcp-nettools"
 
 [mcp_servers.text-toolkit]
 command = "npx"
 args = ["-y", "@cicatriz/text-toolkit@1.0.0"]
 
 [mcp_servers.language-server]
-command = "/home/neg/.local/bin/mcp-language-server"
-args = ["--workspace", "/home/neg/src/salt", "--lsp", "lua-language-server"]
+command = "{{ .chezmoi.homeDir }}/.local/bin/mcp-language-server"
+args = ["--workspace", "{{ .chezmoi.homeDir }}/src/salt", "--lsp", "lua-language-server"]
 
 [mcp_servers.color-convert]
 command = "npx"

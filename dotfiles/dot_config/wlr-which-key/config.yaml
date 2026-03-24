@@ -22,7 +22,7 @@ menu:
     cmd: raise --match "class:regex=^term$" --launch "kitty --class term"
   - key: "q"
     desc: Neovim
-    cmd: raise --match "class:regex=^nwim$" --launch "kitty --class nwim -e /home/neg/.local/bin/v"
+    cmd: raise --match "class:regex=^nwim$" --launch "kitty --class nwim -e v"
   - key: "b"
     desc: Video
     cmd: raise --match "class:regex=^mpv$" --launch "~/.local/bin/pl video"

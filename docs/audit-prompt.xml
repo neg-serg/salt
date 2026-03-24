@@ -221,7 +221,7 @@
     <task id="T7" priority="medium">
       <title>Граница Salt — chezmoi</title>
       <steps>
-        <step>Пути под /home/neg/, управляемые Salt (file.managed/directory/recurse)</step>
+        <step>Пути под /home/&lt;user&gt;/, управляемые Salt (file.managed/directory/recurse)</step>
         <step>Пути, управляемые chezmoi (структура dotfiles/)</step>
         <step>Пересечения: файлы под управлением ОБОИХ</step>
         <step>Chezmoi в salt-apply.sh: доступен ли chezmoi в этот момент?

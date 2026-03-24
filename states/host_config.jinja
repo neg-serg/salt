@@ -34,6 +34,9 @@
 {# Build merged host config: host-specific values override defaults (recursive deep merge) #}
 {% set host = salt['slsutil.merge'](defaults, hosts.get(current_host, {}), strategy='recurse') %}
 {# Derived fields (depend on merged values, so computed after merge) #}
+{% if not host.get('home') %}
+{%   do host.update({'home': '/home/' ~ host.user}) %}
+{% endif %}
 {% do host.update({'runtime_dir': '/run/user/' ~ host.uid|string}) %}
 {% do host.update({'pkg_list': '/var/cache/salt/pacman_installed.txt'}) %}
 {% do host.update({'project_dir': host.home ~ '/src/salt'}) %}

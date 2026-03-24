@@ -33,7 +33,7 @@ Before ANY file operation, you MUST validate the path:
 
 ```bash
 # Example: always validate before operating
-resolved=$(realpath "/home/neg/doc/notes/../../../etc/passwd")
+resolved=$(realpath "/home/alice/doc/notes/../../../etc/passwd")
 # resolved = /etc/passwd → DENIED (not in allowed paths)
 ```
 

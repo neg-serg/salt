@@ -1,7 +1,7 @@
 user_pref("accessibility.typeaheadfind.flashBar", 0);
 user_pref("browser.bookmarks.addedImportButton", false);
 user_pref("browser.bookmarks.restore_default_bookmarks", false);
-user_pref("browser.download.dir", "/home/neg/dw");
+user_pref("browser.download.dir", "{{ home }}/dw");
 user_pref("extensions.webextensions.restrictedDomains", "");
 user_pref("general.warnOnAboutConfig", false);
 user_pref("gfx.color_management.enabled", true);

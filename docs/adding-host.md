@@ -136,7 +136,7 @@ The alias resolves before the merge, so the correct host config applies even bef
 | Field | Type | Default | Purpose |
 |-------|------|---------|---------|
 | `user` | str | 'neg' | Primary user |
-| `home` | str | '/home/neg' | Home directory |
+| `home` | str | `'/home/' + user` | Home directory |
 | `uid` | int | 1000 | User ID |
 | `mnt_zero` | str | '/mnt/zero' | First storage mount |
 | `mnt_one` | str | '/mnt/one' | Second storage mount |

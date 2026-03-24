@@ -69,6 +69,7 @@ openclaw_config:
     - mode: '0600'
     - replace: False
     - context:
+        home: {{ home }}
         proxy_key: {{ _proxy_key | tojson }}
         telegram_token: {{ _telegram_token | tojson }}
         telegram_uid: {{ _telegram_uid | tojson }}
