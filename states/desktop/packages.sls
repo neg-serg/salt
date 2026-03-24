@@ -13,8 +13,7 @@
 {{ pacman_install('chromium', 'chromium') }}
 # zen-browser: performance-focused Firefox fork with compact UI
 {{ pacman_install('zen_browser', 'zen-browser-bin') }}
-# xdg-termfilechooser: route file picker dialogs to terminal file manager
-{{ paru_install('xdg-termfilechooser', 'xdg-desktop-portal-termfilechooser-boydaihungst-git') }}
+# kitty desktop-ui provides the FileChooser portal backend
 # wlr-which-key: on-screen keybinding cheatsheet for Hyprland (leader key menu)
 {{ paru_install('wlr-which-key', 'wlr-which-key') }}
 

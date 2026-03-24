@@ -1,6 +1,6 @@
 --- @since 25.5.31
 --- Read a file path from system clipboard, reveal it, and open (select) it.
---- Useful with --chooser-file (termfilechooser) to quickly pick a known file.
+--- Useful with chooser-based file pickers to quickly pick a known file.
 return {
 	entry = function()
 		local content = ya.clipboard()
