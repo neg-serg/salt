@@ -1,7 +1,7 @@
 #!/usr/bin/env zsh
 # Toggle a hyprscratch scratchpad and fix position.
 # Hyprland 0.54 ignores windowrule `move` for windows on special workspaces,
-# so we apply movewindowpixel after toggle if the window is visible.
+# so we apply movewindowpixel after toggle once the client is discoverable.
 #
 # Usage: scratchpad-toggle <name>
 
@@ -17,30 +17,30 @@ positions=(
 
 hyprscratch toggle "$name"
 
-# Only fix position if we have an override for this scratchpad
+# Only fix position if we have an override for this scratchpad.
 local pos=${positions[$name]}
 [[ -z $pos ]] && exit 0
-
-# Brief pause for the window to be mapped
-sleep 0.08
 
 # Read the scratchpad's class from config to find the window
 local config=${XDG_CONFIG_HOME:-$HOME/.config}/hypr/hyprscratch.conf
 local class=$(awk -v n="$name" '$0 ~ "^"n" \\{" {found=1} found && /class =/ {print $3; exit}' "$config")
 [[ -z $class ]] && exit 0
 
-# Get window address and workspace (address works with any class name)
-local info=$(hyprctl clients -j | python3 -c "
+# Wait briefly for the client to appear in hyprctl output on first spawn.
+local addr=""
+local attempt
+for attempt in {1..10}; do
+    addr=$(hyprctl clients -j | python3 -c "
 import json, sys
 for c in json.load(sys.stdin):
     if c['class'] == '$class':
-        print(c['address'], c['workspace']['name'])
+        print(c['address'])
         break
 " 2>/dev/null)
-local addr=${info%% *}
-local ws=${info#* }
+    [[ -n $addr ]] && break
+    sleep 0.05
+done
 
-# If workspace is not special:*, the window is visible — fix position
-if [[ -n $addr && $ws != special:* ]]; then
-    hyprctl dispatch movewindowpixel "exact ${=pos},address:$addr"
-fi
+# Hidden scratchpads still keep their client address, so applying the move here
+# is harmless and ensures the next reveal also lands in the expected position.
+[[ -n $addr ]] && hyprctl dispatch movewindowpixel "exact ${=pos},address:$addr"

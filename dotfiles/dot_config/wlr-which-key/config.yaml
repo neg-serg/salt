@@ -42,10 +42,10 @@ menu:
         cmd: hyprscratch toggle teardown
       - key: "e"
         desc: IM
-        cmd: hyprscratch toggle im
+        cmd: scratchpad-toggle im
       - key: "f"
         desc: Music
-        cmd: hyprscratch toggle music
+        cmd: scratchpad-toggle music
       - key: "t"
         desc: Torrents
         cmd: hyprscratch toggle torrment
