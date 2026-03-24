@@ -31,5 +31,5 @@ scripts/salt-apply.sh --test
 
 - [Host setup](docs/adding-host.md) — adding a new machine
 - [Deployment](docs/deploy-cachyos.md) — fresh CachyOS install
-- [Secrets](docs/secrets-scheme.md) — gopass/Yubikey integration
+- [Secrets](docs/secrets-scheme.md) — gopass-backed secret management
 - [gopass setup](docs/gopass-setup.md) — step-by-step secret provisioning
