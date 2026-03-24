@@ -106,6 +106,7 @@ other:
   - bucklespring  # Model-M keyboard sound simulator
   - cachyos-keyring  # CachyOS package signing keys
   - cachyos-mirrorlist  # CachyOS repository mirrors
+  - cachyos-rate-mirrors  # CachyOS mirror ranking helper
   - cachyos-settings  # CachyOS default settings
   - cachyos-v3-mirrorlist  # CachyOS v3 repository mirrors
   - carla  # audio plugin host
