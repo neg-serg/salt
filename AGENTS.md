@@ -1,29 +1,44 @@
 # salt Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-03-18
+Auto-generated from active feature plans. Last updated: 2026-03-24
 
 ## Active Technologies
-
-- Jinja2/YAML (Salt states), Python 3, Bash/Zsh helper scripts, Markdown + Salt 3006.x masterless workflow, existing `_macros_*.jinja`, `just`, repository audit scripts (`scripts/dep-graph.py`, `scripts/state-profiler.py`, `scripts/render-matrix.py`) (048-salt)
+- Jinja2 + YAML Salt states, Python 3, Bash/Zsh helper scripts
+- Salt 3006.x masterless workflow with shared `_macros_*.jinja`
+- `just`, `pytest`, `ruff`, `shellcheck`, `yamllint`, `salt-lint`, GitHub Actions
+- Repository artifacts under `states/`, `scripts/`, `tests/`, `docs/`, `.github/workflows/`
 
 ## Project Structure
 
 ```text
-src/
+states/
+scripts/
 tests/
+docs/
+.github/workflows/
+specs/
 ```
 
 ## Commands
 
-cd src [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLOGIES] pytest [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLOGIES] ruff check .
+- `just lint`
+- `pytest tests/ -q`
+- `just validate`
+- `just render-matrix`
+- `python3 scripts/state-profiler.py --trend`
+- `python3 scripts/state-profiler.py --compare <baseline> <candidate> --gate --min-sample-count 10`
 
 ## Code Style
 
-Jinja2/YAML (Salt states), Python 3, Bash/Zsh helper scripts, Markdown: Follow standard conventions
+- Prefer explicit Salt/Jinja structure over meta-generated topology.
+- Keep macros narrow and operationally transparent.
+- Preserve state ID readability and uniqueness across includes.
+- Treat `states/**/*.sls` as the supported state tree for lint/render/index tooling.
 
 ## Recent Changes
 
-- 048-salt: Added Jinja2/YAML (Salt states), Python 3, Bash/Zsh helper scripts, Markdown + Salt 3006.x masterless workflow, existing `_macros_*.jinja`, `just`, repository audit scripts (`scripts/dep-graph.py`, `scripts/state-profiler.py`, `scripts/render-matrix.py`)
+- `071-salt-refactor-program`: normalized runtime-dir handling, unified Hugging Face downloads, moved user-service feature tags into YAML, extracted shared Salt runtime bootstrap and lint script, added service/perf guardrails, and decomposed `video_ai` / `desktop` into explicit include trees.
+- `048-salt`: established the baseline Salt/Jinja + helper-script workflow and profiling/index tooling.
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->
