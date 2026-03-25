@@ -171,6 +171,26 @@ def configured_path(path_arg, fallback):
     return path_arg or fallback
 
 
+def operator_state_dir():
+    state_dir = os.environ.get("ZAPRET2_STATE_DIR")
+    if state_dir:
+        return Path(state_dir)
+    xdg_state_home = os.environ.get("XDG_STATE_HOME")
+    if xdg_state_home:
+        return Path(xdg_state_home) / "zapret2"
+    if os.geteuid() == 0:
+        return Path("/var/lib/zapret2")
+    return Path.home() / ".local" / "state" / "zapret2"
+
+
+def resolved_state_path(explicit_path, default_path):
+    if explicit_path:
+        return explicit_path
+    if os.geteuid() == 0:
+        return default_path
+    return str(operator_state_dir() / Path(default_path).name)
+
+
 def run_ok(cmd):
     return subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0
 
@@ -320,7 +340,7 @@ def prepare_payload(data, config_path_arg):
 
 def preflight_report(data, approval_file_arg, rollback_file_arg):
     scenario = os.environ.get("ZAPRET2_TEST_SCENARIO", "")
-    approval = approval_state(configured_path(approval_file_arg, data["helper"]["approval_file"]))
+    approval = approval_state(resolved_state_path(approval_file_arg, data["helper"]["approval_file"]))
 
     if scenario == "blocked_prereq":
         prereqs = [
@@ -444,16 +464,16 @@ def preflight_report(data, approval_file_arg, rollback_file_arg):
         "planned_artifacts": planned_artifacts(data),
         "activation_blockers": blockers,
         "rollback_inputs": rollback_inputs(
-            configured_path(rollback_file_arg, data["helper"]["rollback_file"]),
+            resolved_state_path(rollback_file_arg, data["helper"]["rollback_file"]),
             data["config"]["path"],
         ),
         "operator_workflow": {
-            "capture_rollback": f"{data['helper']['deployed_path']} capture-rollback --rollback-file {configured_path(rollback_file_arg, data['helper']['rollback_file'])}",
-            "grant_approval": f"{data['helper']['deployed_path']} grant-approval --approval-file {configured_path(approval_file_arg, data['helper']['approval_file'])} --operator <name> --reason <reason>",
-            "preview": f"{data['helper']['deployed_path']} preview --approval-file {configured_path(approval_file_arg, data['helper']['approval_file'])} --rollback-file {configured_path(rollback_file_arg, data['helper']['rollback_file'])}",
+            "capture_rollback": f"{data['helper']['deployed_path']} capture-rollback --rollback-file {resolved_state_path(rollback_file_arg, data['helper']['rollback_file'])}",
+            "grant_approval": f"{data['helper']['deployed_path']} grant-approval --approval-file {resolved_state_path(approval_file_arg, data['helper']['approval_file'])} --operator <name> --reason <reason>",
+            "preview": f"{data['helper']['deployed_path']} preview --approval-file {resolved_state_path(approval_file_arg, data['helper']['approval_file'])} --rollback-file {resolved_state_path(rollback_file_arg, data['helper']['rollback_file'])}",
             "activate": data["activation"]["entrypoint"],
-            "smoke": f"{data['helper']['deployed_path']} smoke --approval-file {configured_path(approval_file_arg, data['helper']['approval_file'])} --rollback-file {configured_path(rollback_file_arg, data['helper']['rollback_file'])}",
-            "rollback": f"{data['helper']['deployed_path']} rollback --approval-file {configured_path(approval_file_arg, data['helper']['approval_file'])} --rollback-file {configured_path(rollback_file_arg, data['helper']['rollback_file'])}",
+            "smoke": f"{data['helper']['deployed_path']} smoke --approval-file {resolved_state_path(approval_file_arg, data['helper']['approval_file'])} --rollback-file {resolved_state_path(rollback_file_arg, data['helper']['rollback_file'])}",
+            "rollback": f"{data['helper']['deployed_path']} rollback --approval-file {resolved_state_path(approval_file_arg, data['helper']['approval_file'])} --rollback-file {resolved_state_path(rollback_file_arg, data['helper']['rollback_file'])}",
         },
     }
 
@@ -463,7 +483,7 @@ def preview_payload(data, config_path_arg, approval_file_arg, rollback_file_arg)
         "mode": "preview",
         "traffic_affecting": False,
         "approval_required": True,
-        "approval_state": approval_state(configured_path(approval_file_arg, data["helper"]["approval_file"])),
+        "approval_state": approval_state(resolved_state_path(approval_file_arg, data["helper"]["approval_file"])),
         "planned_artifacts": planned_artifacts(data),
         "activation_summary": {
             "config_path": config_path_arg or data["config"]["path"],
@@ -474,14 +494,14 @@ def preview_payload(data, config_path_arg, approval_file_arg, rollback_file_arg)
             "commands": activation_commands(data),
         },
         "rollback_inputs": rollback_inputs(
-            configured_path(rollback_file_arg, data["helper"]["rollback_file"]),
+            resolved_state_path(rollback_file_arg, data["helper"]["rollback_file"]),
             data["config"]["path"],
         ),
     }
 
 
 def grant_approval_payload(data, approval_file_arg, operator_name, approval_reason, expires_at):
-    approval_path = configured_path(approval_file_arg, data["helper"]["approval_file"])
+    approval_path = resolved_state_path(approval_file_arg, data["helper"]["approval_file"])
     payload = {
         "approval_state": "granted",
         "granted_at": utc_now(),
@@ -501,7 +521,7 @@ def grant_approval_payload(data, approval_file_arg, operator_name, approval_reas
 
 
 def revoke_approval_payload(data, approval_file_arg):
-    approval_path = configured_path(approval_file_arg, data["helper"]["approval_file"])
+    approval_path = resolved_state_path(approval_file_arg, data["helper"]["approval_file"])
     p = Path(approval_path)
     existed = p.exists()
     if existed:
@@ -515,7 +535,7 @@ def revoke_approval_payload(data, approval_file_arg):
 
 
 def capture_rollback_payload(data, rollback_file_arg):
-    rollback_path = configured_path(rollback_file_arg, data["helper"]["rollback_file"])
+    rollback_path = resolved_state_path(rollback_file_arg, data["helper"]["rollback_file"])
     rollback_file = Path(rollback_path)
     rollback_file.parent.mkdir(parents=True, exist_ok=True)
     asset_dir = rollback_file.parent / (rollback_file.stem + "-assets")
@@ -616,13 +636,13 @@ def smoke_payload(data, approval_file_arg, rollback_file_arg):
         },
         {
             "id": "approval_present",
-            "result": "pass" if approval_state(configured_path(approval_file_arg, data["helper"]["approval_file"])) == "granted" or scenario == "smoke_ok" else "warn",
-            "detail": configured_path(approval_file_arg, data["helper"]["approval_file"]),
+            "result": "pass" if approval_state(resolved_state_path(approval_file_arg, data["helper"]["approval_file"])) == "granted" or scenario == "smoke_ok" else "warn",
+            "detail": resolved_state_path(approval_file_arg, data["helper"]["approval_file"]),
         },
         {
             "id": "rollback_present",
-            "result": "pass" if Path(configured_path(rollback_file_arg, data["helper"]["rollback_file"])).exists() or scenario == "smoke_ok" else "warn",
-            "detail": configured_path(rollback_file_arg, data["helper"]["rollback_file"]),
+            "result": "pass" if Path(resolved_state_path(rollback_file_arg, data["helper"]["rollback_file"])).exists() or scenario == "smoke_ok" else "warn",
+            "detail": resolved_state_path(rollback_file_arg, data["helper"]["rollback_file"]),
         },
     ]
     url_checks = []
@@ -651,9 +671,9 @@ def smoke_payload(data, approval_file_arg, rollback_file_arg):
 
 
 def activate_payload(data, config_path_arg, approval_file_arg, rollback_file_arg, execute_live):
-    approval = approval_state(configured_path(approval_file_arg, data["helper"]["approval_file"]))
+    approval = approval_state(resolved_state_path(approval_file_arg, data["helper"]["approval_file"]))
     rollback = rollback_inputs(
-        configured_path(rollback_file_arg, data["helper"]["rollback_file"]),
+        resolved_state_path(rollback_file_arg, data["helper"]["rollback_file"]),
         data["config"]["path"],
     )
     running_inside_activation_unit = os.environ.get("ZAPRET2_ACTIVATION_VIA_UNIT") == "1"
@@ -686,7 +706,7 @@ def activate_payload(data, config_path_arg, approval_file_arg, rollback_file_arg
         "commands": commands,
         "entrypoint": data["activation"]["entrypoint"],
         "next_steps": [
-            f"{data['helper']['deployed_path']} smoke --approval-file {configured_path(approval_file_arg, data['helper']['approval_file'])} --rollback-file {configured_path(rollback_file_arg, data['helper']['rollback_file'])}"
+            f"{data['helper']['deployed_path']} smoke --approval-file {resolved_state_path(approval_file_arg, data['helper']['approval_file'])} --rollback-file {resolved_state_path(rollback_file_arg, data['helper']['rollback_file'])}"
         ],
     }
     if execute_live:
@@ -729,8 +749,8 @@ def activate_payload(data, config_path_arg, approval_file_arg, rollback_file_arg
                 return 5, payload
         activation_report = {
             "activated_at": utc_now(),
-            "approval_file": configured_path(approval_file_arg, data["helper"]["approval_file"]),
-            "rollback_file": configured_path(rollback_file_arg, data["helper"]["rollback_file"]),
+            "approval_file": resolved_state_path(approval_file_arg, data["helper"]["approval_file"]),
+            "rollback_file": resolved_state_path(rollback_file_arg, data["helper"]["rollback_file"]),
             "entrypoint": data["activation"]["entrypoint"],
             "executed_commands": executed,
         }
@@ -742,8 +762,8 @@ def activate_payload(data, config_path_arg, approval_file_arg, rollback_file_arg
 
 
 def rollback_payload(data, approval_file_arg, rollback_file_arg, execute_live):
-    rollback_path = configured_path(rollback_file_arg, data["helper"]["rollback_file"])
-    approval_path = configured_path(approval_file_arg, data["helper"]["approval_file"])
+    rollback_path = resolved_state_path(rollback_file_arg, data["helper"]["rollback_file"])
+    approval_path = resolved_state_path(approval_file_arg, data["helper"]["approval_file"])
     if not Path(rollback_path).exists():
         return 6, {
             "mode": "rollback",
