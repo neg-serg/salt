@@ -15,12 +15,6 @@
   visibility: collapse;
 }
 
-:root:not([customizing]) #navigator-toolbox:not(:hover):not(:focus-within) {
-  max-height: 1px;
-  min-height: calc(0px);
-  overflow: hidden;
-}
-
 .tab-label::before {
   counter-increment: tab-counter;
   content: counter(tab-counter) " - ";
