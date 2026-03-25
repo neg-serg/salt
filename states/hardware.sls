@@ -27,10 +27,21 @@ fancontrol_reapply_script:
 
 {{ service_with_unit('fancontrol', 'salt://units/fancontrol.service', requires=['cmd: fancontrol-setup_daemon_reload', 'file: fancontrol_setup_script']) }}
 
-# Load nct6775 kernel module for motherboard PWM fan control
+# Load nct6775 when the current kernel exposes it; some kernels omit the
+# module entirely, and that should not block the whole rollout.
 nct6775_module:
-  kmod.present:
-    - name: nct6775
+  cmd.run:
+    - name: |
+        if lsmod | awk '{print $1}' | grep -Fxq nct6775; then
+          echo "changed=no comment='nct6775 already loaded'"
+        elif modinfo nct6775 >/dev/null 2>&1; then
+          modprobe nct6775
+          echo "changed=yes comment='loaded nct6775'"
+        else
+          echo "changed=no comment='nct6775 unavailable on this kernel; skipping'"
+        fi
+    - shell: /bin/bash
+    - stateful: True
 
 {% endif %}
 
