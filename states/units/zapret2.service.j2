@@ -1,20 +1,19 @@
 [Unit]
-Description=Zapret2 rollout gate
+Description=Zapret2 anti-DPI service
 Documentation=https://github.com/bol-van/zapret2
 After=network-online.target
 Wants=network-online.target
 ConditionPathExists={{ config_path }}
 
 [Service]
-Type=oneshot
-Environment=ZAPRET2_ACTIVATION_VIA_UNIT=1
-ExecStart={{ helper_path }} activate --config {{ config_path }} --approval-file {{ approval_file }} --rollback-file {{ rollback_file }} --execute-live
+Type=forking
+Restart=no
+TimeoutSec=30sec
+IgnoreSIGPIPE=no
+GuessMainPID=no
 RemainAfterExit=no
-NoNewPrivileges=true
-PrivateTmp=yes
-ProtectSystem=strict
-ProtectHome=read-only
-ReadWritePaths=/var/lib/zapret2
+ExecStart=/opt/zapret2/init.d/sysv/zapret2 start
+ExecStop=/opt/zapret2/init.d/sysv/zapret2 stop
 
 [Install]
 WantedBy=multi-user.target

@@ -15,20 +15,26 @@ def test_system_description_feature_gates_zapret2():
 def test_zapret2_state_manages_package_config_unit_and_helper():
     source = (REPO_ROOT / "states" / "zapret2.sls").read_text()
 
-    assert "paru_install('zapret2'" in source
+    assert "zapret2_install_pkg:" in source
+    assert "pkg.installed:" in source
+    assert "- name: ipset" in source
+    assert "zapret2_refresh_lists:" in source
+    assert "zapret2-list-update.timer" in source
     assert "salt://configs/zapret2.conf.j2" in source
+    assert "salt://configs/zapret2-hosts-user.txt.j2" in source
     assert "salt://units/zapret2.service.j2" in source
     assert "salt://scripts/zapret2-rollout.sh" in source
 
 
-def test_zapret2_unit_is_disabled_by_default():
+def test_zapret2_unit_is_enabled_by_default():
     source = (REPO_ROOT / "states" / "zapret2.sls").read_text()
 
-    assert "enabled=False" in source
+    assert "enabled=True" in source
 
 
-def test_zapret2_unit_marks_activation_context_and_state_dir_write_access():
+def test_zapret2_unit_uses_upstream_service_entrypoints():
     source = (REPO_ROOT / "states" / "units" / "zapret2.service.j2").read_text()
 
-    assert "Environment=ZAPRET2_ACTIVATION_VIA_UNIT=1" in source
-    assert "ReadWritePaths=/var/lib/zapret2" in source
+    assert "Type=forking" in source
+    assert "ExecStart=/opt/zapret2/init.d/sysv/zapret2 start" in source
+    assert "ExecStop=/opt/zapret2/init.d/sysv/zapret2 stop" in source

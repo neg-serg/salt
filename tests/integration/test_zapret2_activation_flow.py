@@ -15,12 +15,21 @@ SCRIPT = REPO_ROOT / "scripts" / "zapret2-rollout.sh"
 
 
 def test_activate_fails_closed_without_approval():
-    proc = subprocess.run(
-        [str(SCRIPT), "activate"],
-        capture_output=True,
-        text=True,
-    )
-    payload = json.loads(proc.stdout)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp = Path(tmpdir)
+        proc = subprocess.run(
+            [
+                str(SCRIPT),
+                "activate",
+                "--approval-file",
+                str(tmp / "missing-approval.json"),
+                "--rollback-file",
+                str(tmp / "missing-rollback.json"),
+            ],
+            capture_output=True,
+            text=True,
+        )
+        payload = json.loads(proc.stdout)
 
     assert proc.returncode == 2
     assert payload["allowed"] is False

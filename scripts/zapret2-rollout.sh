@@ -109,9 +109,9 @@ def load_data(data_file):
     defaults = {
         "package": {"source": "aur", "name": "zapret2", "helper": "paru"},
         "config": {
-            "dir": "/etc/zapret2",
-            "path": "/etc/zapret2/zapret2.conf",
-            "profile": "safe-preview",
+            "dir": "/opt/zapret2",
+            "path": "/opt/zapret2/config",
+            "profile": "youtube-hostlist",
             "tcp_ports": "80,443",
             "udp_ports": "443",
             "default_mode": "prepare",
@@ -226,7 +226,7 @@ def approval_state(path):
         return "granted"
 
 
-def rollback_inputs(path):
+def rollback_inputs(path, config_path="/opt/zapret2/config"):
     default_inputs = [
         {
             "id": "service_state",
@@ -239,7 +239,7 @@ def rollback_inputs(path):
             "id": "config_snapshot",
             "input_type": "config_snapshot",
             "capture_method": "managed config copy reference",
-            "location": "/etc/zapret2/zapret2.conf",
+            "location": config_path,
             "required_for_rollback": True,
         },
         {
@@ -320,7 +320,7 @@ def prepare_payload(data, config_path_arg):
 
 def preflight_report(data, approval_file_arg, rollback_file_arg):
     scenario = os.environ.get("ZAPRET2_TEST_SCENARIO", "")
-    approval = approval_state(configured_path(approval_file_arg, data["helper"]["approval_file"]))
+    approval = approval_state(approval_file_arg)
 
     if scenario == "blocked_prereq":
         prereqs = [
@@ -443,7 +443,10 @@ def preflight_report(data, approval_file_arg, rollback_file_arg):
         "conflict_results": conflicts,
         "planned_artifacts": planned_artifacts(data),
         "activation_blockers": blockers,
-        "rollback_inputs": rollback_inputs(configured_path(rollback_file_arg, data["helper"]["rollback_file"])),
+        "rollback_inputs": rollback_inputs(
+            configured_path(rollback_file_arg, data["helper"]["rollback_file"]),
+            data["config"]["path"],
+        ),
         "operator_workflow": {
             "capture_rollback": f"{data['helper']['deployed_path']} capture-rollback --rollback-file {configured_path(rollback_file_arg, data['helper']['rollback_file'])}",
             "grant_approval": f"{data['helper']['deployed_path']} grant-approval --approval-file {configured_path(approval_file_arg, data['helper']['approval_file'])} --operator <name> --reason <reason>",
@@ -460,7 +463,7 @@ def preview_payload(data, config_path_arg, approval_file_arg, rollback_file_arg)
         "mode": "preview",
         "traffic_affecting": False,
         "approval_required": True,
-        "approval_state": approval_state(configured_path(approval_file_arg, data["helper"]["approval_file"])),
+        "approval_state": approval_state(approval_file_arg),
         "planned_artifacts": planned_artifacts(data),
         "activation_summary": {
             "config_path": config_path_arg or data["config"]["path"],
@@ -470,7 +473,10 @@ def preview_payload(data, config_path_arg, approval_file_arg, rollback_file_arg)
             "entrypoint": data["activation"]["entrypoint"],
             "commands": activation_commands(data),
         },
-        "rollback_inputs": rollback_inputs(configured_path(rollback_file_arg, data["helper"]["rollback_file"])),
+        "rollback_inputs": rollback_inputs(
+            configured_path(rollback_file_arg, data["helper"]["rollback_file"]),
+            data["config"]["path"],
+        ),
     }
 
 
@@ -645,8 +651,11 @@ def smoke_payload(data, approval_file_arg, rollback_file_arg):
 
 
 def activate_payload(data, config_path_arg, approval_file_arg, rollback_file_arg, execute_live):
-    approval = approval_state(configured_path(approval_file_arg, data["helper"]["approval_file"]))
-    rollback = rollback_inputs(configured_path(rollback_file_arg, data["helper"]["rollback_file"]))
+    approval = approval_state(approval_file_arg)
+    rollback = rollback_inputs(
+        configured_path(rollback_file_arg, data["helper"]["rollback_file"]),
+        data["config"]["path"],
+    )
     running_inside_activation_unit = os.environ.get("ZAPRET2_ACTIVATION_VIA_UNIT") == "1"
     test_execute_live = os.environ.get("ZAPRET2_TEST_SCENARIO", "") == "execute_live_ok"
     if approval != "granted":
@@ -743,7 +752,7 @@ def rollback_payload(data, approval_file_arg, rollback_file_arg, execute_live):
             "rollback_file": rollback_path,
             "live_execution": bool(execute_live),
         }
-    rollback = rollback_inputs(rollback_path)
+    rollback = rollback_inputs(rollback_path, data["config"]["path"])
     commands = rollback_commands(data, rollback)
     payload = {
         "mode": "rollback",

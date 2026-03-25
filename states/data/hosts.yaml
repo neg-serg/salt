@@ -92,6 +92,7 @@ hosts:
         vdirsyncer: false
       network:
         tailscale: true
+        zapret2: true
       music_analysis: true
       tidal: true
 

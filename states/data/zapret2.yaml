@@ -4,12 +4,32 @@ package:
   helper: paru
 
 config:
-  dir: /etc/zapret2
-  path: /etc/zapret2/zapret2.conf
-  profile: safe-preview
+  dir: /opt/zapret2
+  path: /opt/zapret2/config
+  profile: youtube-hostlist
   tcp_ports: "80,443"
-  udp_ports: "443"
+  udp_ports: ""
   default_mode: prepare
+  fwtype: iptables
+  getlist: get_antizapret_domains.sh
+  mode_filter: hostlist
+  disable_ipv6: false
+  ws_user: zapret2
+
+hostlist:
+  dir: /opt/zapret2/ipset
+  path: /opt/zapret2/ipset/zapret-hosts-user.txt
+  domains:
+    - youtube.com
+    - www.youtube.com
+    - m.youtube.com
+    - music.youtube.com
+    - youtu.be
+    - youtubei.googleapis.com
+    - ytimg.com
+    - i.ytimg.com
+    - googlevideo.com
+    - youtube-nocookie.com
 
 service:
   name: zapret2
@@ -33,7 +53,13 @@ managed_artifacts:
   - id: zapret2_config
     artifact_type: config
     repository_path: states/configs/zapret2.conf.j2
-    target_path: /etc/zapret2/zapret2.conf
+    target_path: /opt/zapret2/config
+    previewable: true
+    activation_needed: true
+  - id: zapret2_hostlist
+    artifact_type: config
+    repository_path: states/configs/zapret2-hosts-user.txt.j2
+    target_path: /opt/zapret2/ipset/zapret-hosts-user.txt
     previewable: true
     activation_needed: true
   - id: zapret2_unit
