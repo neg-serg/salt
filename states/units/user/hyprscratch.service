@@ -7,11 +7,11 @@ ConditionPathExists=%h/.config/hypr/hyprscratch.conf
 
 [Service]
 Type=simple
+ExecStartPre=/usr/bin/rm -f /tmp/hyprscratch/hyprscratch.sock
 ExecStart=/usr/bin/hyprscratch init config %h/.config/hypr/hyprscratch.conf
 Restart=on-failure
 RestartSec=2
 NoNewPrivileges=true
-PrivateTmp=yes
 RestrictNamespaces=yes
 RestrictRealtime=yes
 LockPersonality=yes
