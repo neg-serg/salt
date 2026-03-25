@@ -16,6 +16,9 @@ DEVPATH=="/devices/virtual/misc/cpu_dma_latency", OWNER="root", GROUP="audio", M
 # RME audio interface HID access (Fireface/Babyface)
 KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="3434", ATTRS{idProduct}=="0b10", MODE="0660", TAG+="uaccess", TAG+="udev-acl"
 KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="3554", ATTRS{idProduct}=="f54b", MODE="0660", TAG+="uaccess", TAG+="udev-acl"
+# Genelec GLM adapter access for the desktop app
+SUBSYSTEM=="usb", ATTR{idVendor}=="1781", ATTR{idProduct}=="0e39", MODE="0666", TAG+="uaccess"
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="1781", ATTRS{idProduct}=="0e39", MODE="0666", TAG+="uaccess"
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="3554", ATTRS{idProduct}=="f54b", MODE="0666"
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="35ef", ATTRS{idProduct}=="2201", MODE="0666"
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="35ef", ATTRS{idProduct}=="2200", MODE="0666"
