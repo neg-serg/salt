@@ -1,6 +1,6 @@
 # salt Development Guidelines
 
-Auto-generated from active feature plans. Last updated: 2026-03-25
+Auto-generated from active feature plans. Last updated: 2026-03-26
 
 ## Active Technologies
 - Jinja2 + YAML Salt states, Python 3, Bash/Zsh helper scripts
@@ -44,9 +44,9 @@ specs/
 - Treat `states/**/*.sls` as the supported state tree for lint/render/index tooling.
 
 ## Recent Changes
+- 075-gopass-age-cutover: Added Markdown, YAML, Bash/Zsh operator workflows, `gopass` 1.16.x + `gopass`, `age`, existing git-backed password store, chezmoi, Salt masterless workflow, spec-kit artifacts
 - 072-gopass-age-migration: Added Markdown, YAML, Bash/Zsh operator workflows, `gopass` 1.16.x + `gopass`, `age`, existing git-backed password store, chezmoi, Salt masterless workflow, spec-kit artifacts
 - 074-sysusers-tmpfiles-adoption: Added Jinja2 + YAML Salt states, Python 3, Bash/Zsh helper scripts + Salt 3006.x masterless workflow, existing `_macros_*.jinja`, systemd, Arch/CachyOS package management, repository-managed unit/config trees
-- 073-zapret2-dry-run: Added Jinja2 + YAML Salt states, Python 3, Bash/Zsh helper scripts + Salt 3006.x masterless workflow, existing `_macros_*.jinja`, systemd, Arch/CachyOS package management, `zapret2` AUR package (`0.9.4.5-1` observed during planning)
 
 
 <!-- MANUAL ADDITIONS START -->
