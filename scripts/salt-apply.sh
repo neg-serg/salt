@@ -322,19 +322,22 @@ if [[ $RC -eq 0 ]]; then
     # Bootstrap chezmoi config before apply (needed for gopass template rendering)
     install -Dm644 "${PROJECT_DIR}/dotfiles/dot_config/chezmoi/chezmoi.toml" \
         "${HOME}/.config/chezmoi/chezmoi.toml" 2>/dev/null || true
-    if ! chezmoi apply --force --source "${PROJECT_DIR}/dotfiles" 2>&1; then
+    chezmoi_output=""
+    if ! chezmoi_output=$(chezmoi apply --force --source "${PROJECT_DIR}/dotfiles" 2>&1); then
         echo ""
         printf '\033[33m━━━ chezmoi apply failed ━━━\033[0m\n'
-        printf '\033[33m  Salt states succeeded but dotfile deployment failed.\033[0m\n'
-        printf '\033[33m  Common cause: the active gopass backend is not unlocked for .tmpl files in this user session.\033[0m\n'
-        printf '\033[33m  Check either the GPG/Yubikey path or the age identity unlock path before retrying.\033[0m\n'
-        printf '\033[33m  Affected templates:\033[0m\n'
-        find "${PROJECT_DIR}/dotfiles" -name '*.tmpl' -exec grep -l 'gopass' {} \; 2>/dev/null | while IFS= read -r f; do
-            printf '\033[33m    - %s\033[0m\n' "${f#"${PROJECT_DIR}"/}"
-        done
-        printf '\033[33m  Fix: ensure gopass is configured (see docs/gopass-setup.md)\033[0m\n'
-        printf '\033[33m  Re-run: chezmoi apply --force --source %s/dotfiles\033[0m\n' "${PROJECT_DIR}"
-        exit 1
+        printf '\033[33m  Salt states succeeded; dotfiles were not fully applied.\033[0m\n'
+
+        if printf '%s\n' "$chezmoi_output" | rg -qi 'gopass|pinentry|failed to decrypt|decryption failed'; then
+            printf '\033[33m  Reason: gopass is locked or pinentry is unavailable in this session.\033[0m\n'
+            printf '\033[33m  Action: unlock gopass, then re-run: chezmoi apply --force --source %s/dotfiles\033[0m\n' "${PROJECT_DIR}"
+            printf '\033[33m  Details: see docs/gopass-setup.md if the unlock path is not configured.\033[0m\n'
+            printf '\033[33m  Continuing: Salt rollout succeeded; dotfiles were skipped for now.\033[0m\n'
+        else
+            printf '%s\n' "$chezmoi_output"
+            printf '\033[33m  Re-run: chezmoi apply --force --source %s/dotfiles\033[0m\n' "${PROJECT_DIR}"
+            exit 1
+        fi
     fi
     fi  # salt_has_changes
 else
