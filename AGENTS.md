@@ -11,6 +11,8 @@ Auto-generated from active feature plans. Last updated: 2026-03-25
 - File-based `gopass` store plus git history and local backup artifacts (072-gopass-age-migration)
 - Jinja2 + YAML Salt states, Python 3, Bash/Zsh helper scripts + Salt 3006.x masterless workflow, existing `_macros_*.jinja`, systemd, Arch/CachyOS package management, `zapret2` AUR package (`0.9.4.5-1` observed during planning) (073-zapret2-dry-run)
 - Repository-managed config templates and data files plus local file-based readiness/rollback metadata on the target machine (073-zapret2-dry-run)
+- Jinja2 + YAML Salt states, Python 3, Bash/Zsh helper scripts + Salt 3006.x masterless workflow, existing `_macros_*.jinja`, systemd, Arch/CachyOS package management, repository-managed unit/config trees (074-sysusers-tmpfiles-adoption)
+- Repository-managed Salt states, config templates, unit files, and generated `sysusers.d` / `tmpfiles.d` policy fragments on the target machine (074-sysusers-tmpfiles-adoption)
 
 ## Project Structure
 
@@ -40,10 +42,10 @@ specs/
 - Treat `states/**/*.sls` as the supported state tree for lint/render/index tooling.
 
 ## Recent Changes
+- 074-sysusers-tmpfiles-adoption: Added Jinja2 + YAML Salt states, Python 3, Bash/Zsh helper scripts + Salt 3006.x masterless workflow, existing `_macros_*.jinja`, systemd, Arch/CachyOS package management, repository-managed unit/config trees
 - 073-zapret2-dry-run: Added Jinja2 + YAML Salt states, Python 3, Bash/Zsh helper scripts + Salt 3006.x masterless workflow, existing `_macros_*.jinja`, systemd, Arch/CachyOS package management, `zapret2` AUR package (`0.9.4.5-1` observed during planning)
 - 072-gopass-age-migration: Added Markdown documentation, shell-based operator workflow, existing `gopass` CLI usage in Salt/chezmoi scripts + `gopass` 1.16.x, current git-backed password store, `chezmoi`, Salt masterless workflow, existing docs under `docs/`
 
-- `071-salt-refactor-program`: normalized runtime-dir handling, unified Hugging Face downloads, moved user-service feature tags into YAML, extracted shared Salt runtime bootstrap and lint script, added service/perf guardrails, and decomposed `video_ai` / `desktop` into explicit include trees.
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->
