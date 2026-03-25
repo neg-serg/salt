@@ -54,11 +54,34 @@ scripts/zapret2-rollout.sh preview
 scripts/zapret2-rollout.sh smoke
 ```
 
-Live activation entrypoint after separate explicit approval:
+## Activation Modes
+
+Two activation styles are supported after explicit approval:
+
+1. Separate live activation after the rollout artifacts are already present.
+2. Activation within the same rollout window that applies Zapret2-managed artifacts and then starts the unit as the final operator step.
+
+Separate live activation entrypoint:
 
 ```bash
 sudo systemctl start zapret2.service
 ```
+
+Activation during the rollout window:
+
+```bash
+scripts/salt-apply.sh zapret2
+sudo systemctl start zapret2.service
+```
+
+If the host feature flag is already enabled in `states/data/hosts.yaml`, the same activation window can use the full host rollout instead:
+
+```bash
+scripts/salt-apply.sh
+sudo systemctl start zapret2.service
+```
+
+The Salt rollout still prepares package, config, helper, and unit first. The traffic-affecting step remains the explicit service start, whether it happens immediately after the rollout or later in a separate window.
 
 Post-activation verification:
 
@@ -78,7 +101,7 @@ scripts/zapret2-rollout.sh revoke-approval
 
 Activation requires an explicit approval file and rollback inputs file. Without them, `scripts/zapret2-rollout.sh activate` fails closed.
 
-Even with approval present, the default review flow still avoids live execution unless the operator deliberately invokes the activation path with the required inputs.
+Even with approval present, the default review flow still avoids live execution unless the operator deliberately invokes the activation path with the required inputs. This applies both to separate live activation and to activation performed in the same rollout window as `scripts/salt-apply.sh`.
 
 ## Notes
 
