@@ -196,6 +196,13 @@ def write_json_best_effort(path, payload):
         return {"path": str(out), "written": False, "error": str(exc)}
 
 
+def run_shell_command(cmd):
+    scenario = os.environ.get("ZAPRET2_TEST_SCENARIO", "")
+    if scenario == "execute_live_ok":
+        return subprocess.CompletedProcess(cmd, 0, "", "")
+    return subprocess.run(cmd, shell=True, text=True, capture_output=True)
+
+
 def check_active_service(name):
     return run_ok(["systemctl", "is-active", name])
 
@@ -640,6 +647,8 @@ def smoke_payload(data, approval_file_arg, rollback_file_arg):
 def activate_payload(data, config_path_arg, approval_file_arg, rollback_file_arg, execute_live):
     approval = approval_state(configured_path(approval_file_arg, data["helper"]["approval_file"]))
     rollback = rollback_inputs(configured_path(rollback_file_arg, data["helper"]["rollback_file"]))
+    running_inside_activation_unit = os.environ.get("ZAPRET2_ACTIVATION_VIA_UNIT") == "1"
+    test_execute_live = os.environ.get("ZAPRET2_TEST_SCENARIO", "") == "execute_live_ok"
     if approval != "granted":
         return 2, {
             "mode": "activate",
@@ -672,7 +681,7 @@ def activate_payload(data, config_path_arg, approval_file_arg, rollback_file_arg
         ],
     }
     if execute_live:
-        if os.geteuid() != 0:
+        if os.geteuid() != 0 and not test_execute_live:
             return 4, {
                 "mode": "activate",
                 "allowed": False,
@@ -683,9 +692,19 @@ def activate_payload(data, config_path_arg, approval_file_arg, rollback_file_arg
             }
         executed = []
         for cmd in commands:
-            if cmd == data["activation"]["entrypoint"]:
+            if cmd == data["activation"]["entrypoint"] and running_inside_activation_unit:
+                executed.append(
+                    {
+                        "command": cmd,
+                        "returncode": 0,
+                        "stdout": "",
+                        "stderr": "",
+                        "skipped": True,
+                        "reason": "already running inside activation unit",
+                    }
+                )
                 continue
-            proc = subprocess.run(cmd, shell=True, text=True, capture_output=True)
+            proc = run_shell_command(cmd)
             executed.append(
                 {
                     "command": cmd,
@@ -706,9 +725,10 @@ def activate_payload(data, config_path_arg, approval_file_arg, rollback_file_arg
             "entrypoint": data["activation"]["entrypoint"],
             "executed_commands": executed,
         }
-        write_json(data["helper"]["activation_report"], activation_report)
+        payload["activation_report"] = write_json_best_effort(
+            data["helper"]["activation_report"], activation_report
+        )
         payload["executed_commands"] = executed
-        payload["activation_report"] = data["helper"]["activation_report"]
     return 0, payload
 
 

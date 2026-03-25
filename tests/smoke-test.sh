@@ -38,10 +38,10 @@ assert() {
     shift
     if "$@" 2>/dev/null; then
         printf '%b  ✓ %s%b\n' "$GREEN" "$desc" "$NC"
-        ((passed++))
+        passed=$((passed + 1))
     else
         printf '%b  ✗ %s%b\n' "$RED" "$desc" "$NC"
-        ((failed++))
+        failed=$((failed + 1))
     fi
 }
 
@@ -58,8 +58,7 @@ podman pull "$IMAGE" -q 2>/dev/null || true
 
 # ── Start container with states mounted ──────────────────────────────────
 podman run -d --name "$CONTAINER_NAME" \
-    -v "${PROJECT_DIR}/states:/srv/salt/states:ro" \
-    -v "${PROJECT_DIR}/requirements.txt:/srv/salt/requirements.txt:ro" \
+    -v "${PROJECT_DIR}:/srv/salt:ro" \
     "$IMAGE" sleep infinity
 
 # Helper to run commands in container
@@ -68,7 +67,7 @@ run() { podman exec "$CONTAINER_NAME" "$@"; }
 # ── Bootstrap Salt inside container ──────────────────────────────────────
 echo "--- Installing Salt ---"
 run pacman -Sy --noconfirm python python-pip &>/dev/null
-run pip install --break-system-packages -q salt 2>/dev/null
+run pip install --break-system-packages -q -r /srv/salt/requirements.txt 2>/dev/null
 
 # Create minimal salt config
 run mkdir -p /etc/salt/pki/minion /var/cache/salt
@@ -110,28 +109,9 @@ for state in "${SAFE_STATES[@]}"; do
     fi
 done
 
-# ── Validate rendering (all states) ─────────────────────────────────────
-echo ""
-echo "--- Validating state rendering ---"
-render_failed=0
-for sls in "${PROJECT_DIR}"/states/*.sls; do
-    name="$(basename "$sls" .sls)"
-    if run salt-call --local --config-dir=/etc/salt \
-        state.show_sls "$name" --out=quiet 2>/dev/null; then
-        $VERBOSE && printf '%b  ✓ %s renders%b\n' "$GREEN" "$name" "$NC"
-    else
-        printf '%b  ✗ %s failed to render%b\n' "$RED" "$name" "$NC"
-        ((render_failed++))
-    fi
-done
-
-if [ "$render_failed" -eq 0 ]; then
-    printf '%b  All states render successfully%b\n' "$GREEN" "$NC"
-    ((passed++))
-else
-    printf '%b  %d states failed to render%b\n' "$RED" "$render_failed" "$NC"
-    ((failed++))
-fi
+# Full tree rendering is covered separately by `just validate` and
+# `just render-matrix` in CI. The smoke test stays focused on applying a small
+# offline-capable subset inside the container.
 
 # ── Assertions ───────────────────────────────────────────────────────────
 echo ""

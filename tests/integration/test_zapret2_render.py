@@ -25,3 +25,10 @@ def test_zapret2_unit_is_disabled_by_default():
     source = (REPO_ROOT / "states" / "zapret2.sls").read_text()
 
     assert "enabled=False" in source
+
+
+def test_zapret2_unit_marks_activation_context_and_state_dir_write_access():
+    source = (REPO_ROOT / "states" / "units" / "zapret2.service.j2").read_text()
+
+    assert "Environment=ZAPRET2_ACTIVATION_VIA_UNIT=1" in source
+    assert "ReadWritePaths=/var/lib/zapret2" in source
