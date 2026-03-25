@@ -1,6 +1,12 @@
 repos:
   - repo: local
     hooks:
+      - id: commit-msg-style
+        name: commit-msg-style
+        entry: dotfiles/dot_config/git/hooks/commit-msg.sh
+        language: script
+        stages: [commit-msg]
+
       - id: gitleaks
         name: gitleaks
         entry: gitleaks protect --staged --no-banner
