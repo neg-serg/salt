@@ -41,7 +41,6 @@ helper:
   repo_script: scripts/zapret2-rollout.sh
   deployed_path: /usr/local/libexec/zapret2-rollout
   approval_file: /var/lib/zapret2/activation-approval.json
-  rollback_file: /var/lib/zapret2/rollback-inputs.json
 
 managed_artifacts:
   - id: zapret2_package

@@ -35,7 +35,6 @@ def run_rollout_isolated(mode: str, scenario: str) -> dict:
         data_file = tmp / "zapret2.yaml"
         data = yaml.safe_load((REPO_ROOT / "states" / "data" / "zapret2.yaml").read_text())
         data["helper"]["approval_file"] = str(tmp / "approval.json")
-        data["helper"]["rollback_file"] = str(tmp / "rollback.json")
         data_file.write_text(yaml.safe_dump(data))
         env = os.environ.copy()
         env["ZAPRET2_TEST_SCENARIO"] = scenario
@@ -79,5 +78,5 @@ def test_readiness_report_includes_operator_workflow_commands():
     report = run_rollout_isolated("preflight", "approval_required")
 
     assert "operator_workflow" in report
-    assert report["operator_workflow"]["capture_rollback"]
+    assert report["operator_workflow"]["preview"]
     assert report["operator_workflow"]["activate"] == "systemctl start zapret2.service"

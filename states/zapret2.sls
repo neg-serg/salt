@@ -8,7 +8,6 @@
 {% set hostlist_path = zapret2.hostlist.path %}
 {% set helper_path = zapret2.helper.deployed_path %}
 {% set approval_file = zapret2.helper.approval_file %}
-{% set rollback_file = zapret2.helper.rollback_file %}
 
 zapret2_install_pkg:
   cmd.run:
@@ -50,7 +49,6 @@ zapret2_config:
         disable_ipv6: {{ zapret2.config.disable_ipv6 }}
         helper_path: {{ helper_path }}
         approval_file: {{ approval_file }}
-        rollback_file: {{ rollback_file }}
         tcp_ports: {{ zapret2.config.tcp_ports }}
         udp_ports: {{ zapret2.config.udp_ports }}
     - require:
@@ -95,7 +93,6 @@ zapret2_list_update_timer:
     'config_path': cfg_path,
     'helper_path': helper_path,
     'approval_file': approval_file,
-    'rollback_file': rollback_file,
   },
   requires=['cmd: zapret2_install_pkg', 'pkg: zapret2_install_ipset', 'file: zapret2_config', 'file: zapret2_hostlist', 'file: zapret2_helper_script', 'cmd: zapret2_refresh_lists', 'service: zapret2_list_update_timer']
 ) }}

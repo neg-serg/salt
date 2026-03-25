@@ -20,7 +20,6 @@ def run_preflight(scenario: str) -> dict:
         data_file = tmp / "zapret2.yaml"
         data = yaml.safe_load((REPO_ROOT / "states" / "data" / "zapret2.yaml").read_text())
         data["helper"]["approval_file"] = str(tmp / "approval.json")
-        data["helper"]["rollback_file"] = str(tmp / "rollback.json")
         data_file.write_text(yaml.safe_dump(data))
         env = os.environ.copy()
         env["ZAPRET2_TEST_SCENARIO"] = scenario
@@ -47,5 +46,4 @@ def test_preflight_reports_approval_required_when_prereqs_pass():
     payload = run_preflight("approval_required")
 
     assert payload["status"] == "approval_required"
-    assert payload["rollback_inputs"]
     assert "explicit operator approval is absent" in payload["activation_blockers"]

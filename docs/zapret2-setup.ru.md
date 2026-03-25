@@ -7,7 +7,7 @@
 ## Граница по умолчанию
 
 - `prepare`: описывает управляемую поверхность Zapret2
-- `preflight`: собирает prerequisites, конфликты и rollback inputs
+- `preflight`: собирает prerequisites и конфликты
 - `preview`: показывает, что затронет активация
 - `activate`: закрыт явным approval gate и по умолчанию остаётся review-first
 
@@ -40,7 +40,7 @@ scripts/zapret2-rollout.sh preview
 
 - список planned artifacts;
 - отчёт по prerequisites и conflicts;
-- собранные rollback inputs; и
+- явные требования к approval; и
 - блокировка активации без явного approval.
 
 ## Операторский runbook
@@ -48,7 +48,6 @@ scripts/zapret2-rollout.sh preview
 Неразрушающий review path:
 
 ```bash
-scripts/zapret2-rollout.sh capture-rollback
 scripts/zapret2-rollout.sh grant-approval --operator "$USER" --reason "approved after preflight review"
 scripts/zapret2-rollout.sh preview
 scripts/zapret2-rollout.sh smoke
@@ -66,17 +65,9 @@ sudo systemctl start zapret2.service
 scripts/zapret2-rollout.sh smoke
 ```
 
-Workflow отката:
-
-```bash
-scripts/zapret2-rollout.sh rollback
-sudo scripts/zapret2-rollout.sh rollback --execute-live
-scripts/zapret2-rollout.sh revoke-approval
-```
-
 ## Approval Gate
 
-Для активации нужен явный approval file и файл с rollback inputs. Без них `scripts/zapret2-rollout.sh activate` завершается с отказом.
+Для активации нужен явный approval file. Без него `scripts/zapret2-rollout.sh activate` завершается с отказом.
 
 Даже при наличии approval безопасный review flow по умолчанию не выполняет live activation, пока оператор не запустит этот путь осознанно с нужными входами.
 
@@ -84,4 +75,4 @@ scripts/zapret2-rollout.sh revoke-approval
 
 - Текущая ветка безопасно подготавливает ownership и validation для `zapret2`.
 - Живой rollout нужно выполнять только после вашего отдельного явного разрешения на destructive changes.
-- В helper уже реализованы approval management, rollback capture, smoke checks и rollback preview.
+- В helper уже реализованы approval management, smoke checks и preview output.

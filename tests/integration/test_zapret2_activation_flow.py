@@ -20,7 +20,6 @@ def test_activate_fails_closed_without_approval():
         data_file = tmp / "zapret2.yaml"
         data = yaml.safe_load((REPO_ROOT / "states" / "data" / "zapret2.yaml").read_text())
         data["helper"]["approval_file"] = str(tmp / "approval.json")
-        data["helper"]["rollback_file"] = str(tmp / "rollback.json")
         data_file.write_text(yaml.safe_dump(data))
         env = dict(os.environ)
         env["ZAPRET2_DATA_FILE"] = str(data_file)
@@ -44,19 +43,13 @@ def test_activate_returns_scoped_summary_when_approved_but_not_live():
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp = Path(tmpdir)
         approval_file = tmp / "approval.json"
-        rollback_file = tmp / "rollback.json"
         approval_file.write_text(json.dumps({"approval_state": "granted"}))
-        rollback_file.write_text(
-            json.dumps({"rollback_inputs": [{"id": "baseline", "required_for_rollback": True}]})
-        )
         proc = subprocess.run(
             [
                 str(SCRIPT),
                 "activate",
                 "--approval-file",
                 str(approval_file),
-                "--rollback-file",
-                str(rollback_file),
             ],
             check=True,
             capture_output=True,
@@ -75,13 +68,9 @@ def test_activate_execute_live_runs_entrypoint_outside_activation_unit():
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp = Path(tmpdir)
         approval_file = tmp / "approval.json"
-        rollback_file = tmp / "rollback.json"
         data_file = tmp / "zapret2.yaml"
         activation_report = tmp / "activation-report.json"
         approval_file.write_text(json.dumps({"approval_state": "granted"}))
-        rollback_file.write_text(
-            json.dumps({"rollback_inputs": [{"id": "baseline", "required_for_rollback": True}]})
-        )
         data_file.write_text(
             yaml.safe_dump(
                 {
@@ -99,8 +88,6 @@ def test_activate_execute_live_runs_entrypoint_outside_activation_unit():
                 "activate",
                 "--approval-file",
                 str(approval_file),
-                "--rollback-file",
-                str(rollback_file),
                 "--execute-live",
             ],
             check=True,
@@ -119,41 +106,11 @@ def test_activate_execute_live_runs_entrypoint_outside_activation_unit():
     assert "systemctl start zapret2.service" in commands
 
 
-def test_capture_rollback_writes_json_and_assets():
-    with tempfile.TemporaryDirectory() as tmpdir:
-        tmp = Path(tmpdir)
-        rollback_file = tmp / "rollback.json"
-        proc = subprocess.run(
-            [
-                str(SCRIPT),
-                "capture-rollback",
-                "--rollback-file",
-                str(rollback_file),
-            ],
-            check=True,
-            capture_output=True,
-            text=True,
-        )
-
-        payload = json.loads(proc.stdout)
-
-        assert payload["mode"] == "capture-rollback"
-        assert rollback_file.exists()
-        assert Path(payload["asset_dir"]).exists()
-
-
 def test_default_operator_flow_uses_user_state_dir_without_root():
     with tempfile.TemporaryDirectory() as tmpdir:
         env = dict(os.environ)
         env["XDG_STATE_HOME"] = tmpdir
 
-        capture = subprocess.run(
-            [str(SCRIPT), "capture-rollback"],
-            check=True,
-            capture_output=True,
-            text=True,
-            env=env,
-        )
         approval = subprocess.run(
             [
                 str(SCRIPT),
@@ -176,14 +133,11 @@ def test_default_operator_flow_uses_user_state_dir_without_root():
             env=env,
         )
 
-        capture_payload = json.loads(capture.stdout)
         approval_payload = json.loads(approval.stdout)
         activate_payload = json.loads(activate.stdout)
 
         state_dir = Path(tmpdir) / "zapret2"
-        assert (state_dir / "rollback-inputs.json").exists()
         assert (state_dir / "activation-approval.json").exists()
-        assert capture_payload["mode"] == "capture-rollback"
         assert approval_payload["approval_state"] == "granted"
         assert activate_payload["allowed"] is True
         assert activate_payload["approval_state"] == "granted"

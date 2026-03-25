@@ -7,7 +7,7 @@ This repository manages `zapret2` in a safe-rollout mode first. The default work
 ## Default Boundary
 
 - `prepare`: describe the managed Zapret2 surface
-- `preflight`: collect prerequisites, conflicts, and rollback inputs
+- `preflight`: collect prerequisites and conflicts
 - `preview`: show what activation would touch
 - `activate`: gated behind explicit approval and still review-first by default
 
@@ -40,7 +40,7 @@ Expected result:
 
 - planned artifacts are listed;
 - prerequisites and conflicts are reported;
-- rollback inputs are captured in report form; and
+- approval requirements are captured in report form; and
 - activation remains blocked without explicit approval.
 
 ## Operator Runbook
@@ -48,7 +48,6 @@ Expected result:
 Non-destructive review path:
 
 ```bash
-scripts/zapret2-rollout.sh capture-rollback
 scripts/zapret2-rollout.sh grant-approval --operator "$USER" --reason "approved after preflight review"
 scripts/zapret2-rollout.sh preview
 scripts/zapret2-rollout.sh smoke
@@ -89,17 +88,9 @@ Post-activation verification:
 scripts/zapret2-rollout.sh smoke
 ```
 
-Rollback workflow:
-
-```bash
-scripts/zapret2-rollout.sh rollback
-sudo scripts/zapret2-rollout.sh rollback --execute-live
-scripts/zapret2-rollout.sh revoke-approval
-```
-
 ## Approval Gate
 
-Activation requires an explicit approval file and rollback inputs file. Without them, `scripts/zapret2-rollout.sh activate` fails closed.
+Activation requires an explicit approval file. Without it, `scripts/zapret2-rollout.sh activate` fails closed.
 
 Even with approval present, the default review flow still avoids live execution unless the operator deliberately invokes the activation path with the required inputs. This applies both to separate live activation and to activation performed in the same rollout window as `scripts/salt-apply.sh`.
 
@@ -107,4 +98,4 @@ Even with approval present, the default review flow still avoids live execution 
 
 - The current branch prepares `zapret2` ownership and validation safely.
 - Live rollout should be performed only after you explicitly confirm that destructive changes are allowed.
-- Approval management, rollback capture, smoke checks, and rollback preview are implemented in the helper.
+- Approval management, smoke checks, and preview output are implemented in the helper.

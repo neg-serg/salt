@@ -8,7 +8,6 @@ DATA_FILE="${ZAPRET2_DATA_FILE:-${PROJECT_DIR}/states/data/zapret2.yaml}"
 mode=""
 config_path=""
 approval_file=""
-rollback_file=""
 output_file=""
 operator_name=""
 approval_reason=""
@@ -17,23 +16,22 @@ execute_live=0
 
 usage() {
     cat <<'EOF'
-Usage: zapret2-rollout.sh <prepare|preflight|preview|grant-approval|revoke-approval|capture-rollback|smoke|activate|rollback> [options]
+Usage: zapret2-rollout.sh <prepare|preflight|preview|grant-approval|revoke-approval|smoke|activate> [options]
 
 Options:
   --config PATH          Config path to report or activate
   --approval-file PATH   Explicit approval signal file
-  --rollback-file PATH   Rollback inputs file
   --output PATH          Write JSON output to file instead of stdout
   --operator NAME        Operator identity for approval writes
   --reason TEXT          Reason for approval writes
   --expires-at ISO8601   Optional approval expiry timestamp
-  --execute-live         Execute privileged activation or rollback commands
+  --execute-live         Execute privileged activation commands
 EOF
 }
 
 while [ $# -gt 0 ]; do
     case "$1" in
-        prepare|preflight|preview|grant-approval|revoke-approval|capture-rollback|smoke|activate|rollback)
+        prepare|preflight|preview|grant-approval|revoke-approval|smoke|activate)
             mode="$1"
             ;;
         --config)
@@ -43,10 +41,6 @@ while [ $# -gt 0 ]; do
         --approval-file)
             shift
             approval_file="${1:-}"
-            ;;
-        --rollback-file)
-            shift
-            rollback_file="${1:-}"
             ;;
         --output)
             shift
@@ -85,7 +79,7 @@ if [ -z "${mode}" ]; then
     exit 1
 fi
 
-python3 - "${mode}" "${DATA_FILE}" "${config_path}" "${approval_file}" "${rollback_file}" "${output_file}" "${execute_live}" "${operator_name}" "${approval_reason}" "${expires_at}" <<'PY'
+python3 - "${mode}" "${DATA_FILE}" "${config_path}" "${approval_file}" "${output_file}" "${execute_live}" "${operator_name}" "${approval_reason}" "${expires_at}" <<'PY'
 import json
 import os
 import platform
@@ -127,7 +121,6 @@ def load_data(data_file):
             "deployed_path": "/usr/local/libexec/zapret2-rollout",
             "state_dir": "/var/lib/zapret2",
             "approval_file": "/var/lib/zapret2/activation-approval.json",
-            "rollback_file": "/var/lib/zapret2/rollback-inputs.json",
             "activation_report": "/var/lib/zapret2/activation-report.json",
             "smoke_report": "/var/lib/zapret2/smoke-report.json",
         },
@@ -136,11 +129,6 @@ def load_data(data_file):
             "entrypoint": "systemctl start zapret2.service",
             "package_query": ["pacman", "-Q", "zapret2"],
             "install_command": ["paru", "-S", "--noconfirm", "zapret2"],
-        },
-        "rollback": {
-            "entrypoint": "/usr/local/libexec/zapret2-rollout rollback",
-            "revoke_approval_on_rollback": True,
-            "stop_unit_on_rollback": True,
         },
         "managed_artifacts": [],
         "prerequisites": [],
@@ -246,53 +234,6 @@ def approval_state(path):
         return "granted"
 
 
-def rollback_inputs(path, config_path="/opt/zapret2/config"):
-    default_inputs = [
-        {
-            "id": "service_state",
-            "input_type": "service_state",
-            "capture_method": "systemctl status snapshot",
-            "location": path or "stdout",
-            "required_for_rollback": True,
-        },
-        {
-            "id": "config_snapshot",
-            "input_type": "config_snapshot",
-            "capture_method": "managed config copy reference",
-            "location": config_path,
-            "required_for_rollback": True,
-        },
-        {
-            "id": "package_state",
-            "input_type": "package_state",
-            "capture_method": "pacman package listing",
-            "location": "pacman -Q",
-            "required_for_rollback": True,
-        },
-        {
-            "id": "firewall_snapshot",
-            "input_type": "firewall_snapshot",
-            "capture_method": "nft or iptables inspection",
-            "location": "nft list ruleset / iptables-save",
-            "required_for_rollback": True,
-        },
-    ]
-    if not path:
-        return default_inputs
-    p = Path(path)
-    if not p.exists():
-        return default_inputs
-    try:
-        payload = json.loads(p.read_text())
-    except Exception:
-        return default_inputs
-    if isinstance(payload, dict):
-        return payload.get("rollback_inputs", default_inputs)
-    if isinstance(payload, list):
-        return payload
-    return default_inputs
-
-
 def planned_artifacts(data):
     return data.get("managed_artifacts", [])
 
@@ -305,19 +246,6 @@ def activation_commands(data):
         commands.append(" ".join(install_cmd))
     commands.append("systemctl daemon-reload")
     commands.append(data["activation"]["entrypoint"])
-    return commands
-
-
-def rollback_commands(data, rollback):
-    commands = []
-    if data.get("rollback", {}).get("stop_unit_on_rollback", True):
-        commands.append(f"systemctl disable --now {data['service']['unit']} || true")
-    config_backup = next((item for item in rollback if item.get("id") == "config_snapshot"), None)
-    if config_backup and config_backup.get("backup_path"):
-        commands.append(f"cp {config_backup['backup_path']} {data['config']['path']}")
-    commands.append("systemctl daemon-reload")
-    if data.get("rollback", {}).get("revoke_approval_on_rollback", True):
-        commands.append(f"rm -f {data['helper']['approval_file']}")
     return commands
 
 
@@ -338,7 +266,7 @@ def prepare_payload(data, config_path_arg):
     }
 
 
-def preflight_report(data, approval_file_arg, rollback_file_arg):
+def preflight_report(data, approval_file_arg):
     scenario = os.environ.get("ZAPRET2_TEST_SCENARIO", "")
     approval = approval_state(resolved_state_path(approval_file_arg, data["helper"]["approval_file"]))
 
@@ -463,22 +391,17 @@ def preflight_report(data, approval_file_arg, rollback_file_arg):
         "conflict_results": conflicts,
         "planned_artifacts": planned_artifacts(data),
         "activation_blockers": blockers,
-        "rollback_inputs": rollback_inputs(
-            resolved_state_path(rollback_file_arg, data["helper"]["rollback_file"]),
-            data["config"]["path"],
-        ),
         "operator_workflow": {
-            "capture_rollback": f"{data['helper']['deployed_path']} capture-rollback --rollback-file {resolved_state_path(rollback_file_arg, data['helper']['rollback_file'])}",
             "grant_approval": f"{data['helper']['deployed_path']} grant-approval --approval-file {resolved_state_path(approval_file_arg, data['helper']['approval_file'])} --operator <name> --reason <reason>",
-            "preview": f"{data['helper']['deployed_path']} preview --approval-file {resolved_state_path(approval_file_arg, data['helper']['approval_file'])} --rollback-file {resolved_state_path(rollback_file_arg, data['helper']['rollback_file'])}",
+            "preview": f"{data['helper']['deployed_path']} preview --approval-file {resolved_state_path(approval_file_arg, data['helper']['approval_file'])}",
             "activate": data["activation"]["entrypoint"],
-            "smoke": f"{data['helper']['deployed_path']} smoke --approval-file {resolved_state_path(approval_file_arg, data['helper']['approval_file'])} --rollback-file {resolved_state_path(rollback_file_arg, data['helper']['rollback_file'])}",
-            "rollback": f"{data['helper']['deployed_path']} rollback --approval-file {resolved_state_path(approval_file_arg, data['helper']['approval_file'])} --rollback-file {resolved_state_path(rollback_file_arg, data['helper']['rollback_file'])}",
+            "smoke": f"{data['helper']['deployed_path']} smoke --approval-file {resolved_state_path(approval_file_arg, data['helper']['approval_file'])}",
+            "revoke_approval": f"{data['helper']['deployed_path']} revoke-approval --approval-file {resolved_state_path(approval_file_arg, data['helper']['approval_file'])}",
         },
     }
 
 
-def preview_payload(data, config_path_arg, approval_file_arg, rollback_file_arg):
+def preview_payload(data, config_path_arg, approval_file_arg):
     return {
         "mode": "preview",
         "traffic_affecting": False,
@@ -493,10 +416,6 @@ def preview_payload(data, config_path_arg, approval_file_arg, rollback_file_arg)
             "entrypoint": data["activation"]["entrypoint"],
             "commands": activation_commands(data),
         },
-        "rollback_inputs": rollback_inputs(
-            resolved_state_path(rollback_file_arg, data["helper"]["rollback_file"]),
-            data["config"]["path"],
-        ),
     }
 
 
@@ -534,94 +453,7 @@ def revoke_approval_payload(data, approval_file_arg):
     }
 
 
-def capture_rollback_payload(data, rollback_file_arg):
-    rollback_path = resolved_state_path(rollback_file_arg, data["helper"]["rollback_file"])
-    rollback_file = Path(rollback_path)
-    rollback_file.parent.mkdir(parents=True, exist_ok=True)
-    asset_dir = rollback_file.parent / (rollback_file.stem + "-assets")
-    asset_dir.mkdir(parents=True, exist_ok=True)
-
-    service_state = {
-        "unit": data["service"]["unit"],
-        "active": check_active_service(data["service"]["unit"]) if shutil.which("systemctl") else False,
-        "enabled": check_enabled_service(data["service"]["unit"]) if shutil.which("systemctl") else False,
-    }
-    service_state_path = asset_dir / "service-state.json"
-    service_state_path.write_text(json.dumps(service_state, indent=2, sort_keys=True) + "\n")
-
-    config_backup_path = ""
-    config_path = Path(data["config"]["path"])
-    if config_path.exists():
-        config_backup = asset_dir / "zapret2.conf.backup"
-        shutil.copy2(config_path, config_backup)
-        config_backup_path = str(config_backup)
-
-    pkg_state = {"name": data["package"]["name"], "installed": False, "version": ""}
-    pkg_query = data["activation"].get("package_query", [])
-    if pkg_query:
-        code, stdout, _ = run_capture(pkg_query)
-        if code == 0:
-            pkg_state["installed"] = True
-            pkg_state["version"] = stdout.strip()
-    package_state_path = asset_dir / "package-state.json"
-    package_state_path.write_text(json.dumps(pkg_state, indent=2, sort_keys=True) + "\n")
-
-    firewall_snapshot_path = ""
-    for candidate, filename in ((["nft", "list", "ruleset"], "nft-ruleset.txt"), (["iptables-save"], "iptables-save.txt")):
-        if shutil.which(candidate[0]):
-            code, stdout, _ = run_capture(candidate)
-            if code == 0:
-                fw_path = asset_dir / filename
-                fw_path.write_text(stdout)
-                firewall_snapshot_path = str(fw_path)
-                break
-
-    rollback = [
-        {
-            "id": "service_state",
-            "input_type": "service_state",
-            "capture_method": "systemctl status snapshot",
-            "location": str(service_state_path),
-            "required_for_rollback": True,
-        },
-        {
-            "id": "config_snapshot",
-            "input_type": "config_snapshot",
-            "capture_method": "managed config backup",
-            "location": data["config"]["path"],
-            "backup_path": config_backup_path,
-            "required_for_rollback": True,
-        },
-        {
-            "id": "package_state",
-            "input_type": "package_state",
-            "capture_method": "package query",
-            "location": str(package_state_path),
-            "required_for_rollback": True,
-        },
-        {
-            "id": "firewall_snapshot",
-            "input_type": "firewall_snapshot",
-            "capture_method": "nft or iptables inspection",
-            "location": firewall_snapshot_path,
-            "required_for_rollback": True,
-        },
-    ]
-    payload = {
-        "captured_at": utc_now(),
-        "target_host": platform.node() or "unknown-host",
-        "rollback_inputs": rollback,
-    }
-    write_json(rollback_path, payload)
-    return {
-        "mode": "capture-rollback",
-        "rollback_file": rollback_path,
-        "rollback_inputs": rollback,
-        "asset_dir": str(asset_dir),
-    }
-
-
-def smoke_payload(data, approval_file_arg, rollback_file_arg):
+def smoke_payload(data, approval_file_arg):
     scenario = os.environ.get("ZAPRET2_TEST_SCENARIO", "")
     checks = [
         {
@@ -638,11 +470,6 @@ def smoke_payload(data, approval_file_arg, rollback_file_arg):
             "id": "approval_present",
             "result": "pass" if approval_state(resolved_state_path(approval_file_arg, data["helper"]["approval_file"])) == "granted" or scenario == "smoke_ok" else "warn",
             "detail": resolved_state_path(approval_file_arg, data["helper"]["approval_file"]),
-        },
-        {
-            "id": "rollback_present",
-            "result": "pass" if Path(resolved_state_path(rollback_file_arg, data["helper"]["rollback_file"])).exists() or scenario == "smoke_ok" else "warn",
-            "detail": resolved_state_path(rollback_file_arg, data["helper"]["rollback_file"]),
         },
     ]
     url_checks = []
@@ -670,12 +497,8 @@ def smoke_payload(data, approval_file_arg, rollback_file_arg):
     return payload
 
 
-def activate_payload(data, config_path_arg, approval_file_arg, rollback_file_arg, execute_live):
+def activate_payload(data, config_path_arg, approval_file_arg, execute_live):
     approval = approval_state(resolved_state_path(approval_file_arg, data["helper"]["approval_file"]))
-    rollback = rollback_inputs(
-        resolved_state_path(rollback_file_arg, data["helper"]["rollback_file"]),
-        data["config"]["path"],
-    )
     running_inside_activation_unit = os.environ.get("ZAPRET2_ACTIVATION_VIA_UNIT") == "1"
     test_execute_live = os.environ.get("ZAPRET2_TEST_SCENARIO", "") == "execute_live_ok"
     if approval != "granted":
@@ -686,14 +509,6 @@ def activate_payload(data, config_path_arg, approval_file_arg, rollback_file_arg
             "approval_state": approval,
             "live_execution": False,
         }
-    if not rollback:
-        return 3, {
-            "mode": "activate",
-            "allowed": False,
-            "reason": "rollback inputs are required before activation",
-            "approval_state": approval,
-            "live_execution": False,
-        }
     commands = activation_commands(data)
     payload = {
         "mode": "activate",
@@ -701,12 +516,11 @@ def activate_payload(data, config_path_arg, approval_file_arg, rollback_file_arg
         "approval_state": approval,
         "config_path": config_path_arg or data["config"]["path"],
         "scope": data["approval_gate"]["scope"],
-        "rollback_inputs": rollback,
         "live_execution": bool(execute_live),
         "commands": commands,
         "entrypoint": data["activation"]["entrypoint"],
         "next_steps": [
-            f"{data['helper']['deployed_path']} smoke --approval-file {resolved_state_path(approval_file_arg, data['helper']['approval_file'])} --rollback-file {resolved_state_path(rollback_file_arg, data['helper']['rollback_file'])}"
+            f"{data['helper']['deployed_path']} smoke --approval-file {resolved_state_path(approval_file_arg, data['helper']['approval_file'])}"
         ],
     }
     if execute_live:
@@ -750,7 +564,6 @@ def activate_payload(data, config_path_arg, approval_file_arg, rollback_file_arg
         activation_report = {
             "activated_at": utc_now(),
             "approval_file": resolved_state_path(approval_file_arg, data["helper"]["approval_file"]),
-            "rollback_file": resolved_state_path(rollback_file_arg, data["helper"]["rollback_file"]),
             "entrypoint": data["activation"]["entrypoint"],
             "executed_commands": executed,
         }
@@ -759,60 +572,7 @@ def activate_payload(data, config_path_arg, approval_file_arg, rollback_file_arg
         )
         payload["executed_commands"] = executed
     return 0, payload
-
-
-def rollback_payload(data, approval_file_arg, rollback_file_arg, execute_live):
-    rollback_path = resolved_state_path(rollback_file_arg, data["helper"]["rollback_file"])
-    approval_path = resolved_state_path(approval_file_arg, data["helper"]["approval_file"])
-    if not Path(rollback_path).exists():
-        return 6, {
-            "mode": "rollback",
-            "allowed": False,
-            "reason": "rollback inputs file is missing",
-            "rollback_file": rollback_path,
-            "live_execution": bool(execute_live),
-        }
-    rollback = rollback_inputs(rollback_path, data["config"]["path"])
-    commands = rollback_commands(data, rollback)
-    payload = {
-        "mode": "rollback",
-        "allowed": True,
-        "rollback_file": rollback_path,
-        "approval_file": approval_path,
-        "live_execution": bool(execute_live),
-        "commands": commands,
-    }
-    if execute_live:
-        if os.geteuid() != 0:
-            return 4, {
-                "mode": "rollback",
-                "allowed": False,
-                "reason": "root privileges are required for live rollback",
-                "rollback_file": rollback_path,
-                "live_execution": True,
-                "commands": commands,
-            }
-        executed = []
-        for cmd in commands:
-            proc = subprocess.run(cmd, shell=True, text=True, capture_output=True)
-            executed.append(
-                {
-                    "command": cmd,
-                    "returncode": proc.returncode,
-                    "stdout": proc.stdout.strip(),
-                    "stderr": proc.stderr.strip(),
-                }
-            )
-            if proc.returncode != 0:
-                payload["allowed"] = False
-                payload["reason"] = f"command failed: {cmd}"
-                payload["executed_commands"] = executed
-                return 7, payload
-        payload["executed_commands"] = executed
-    return 0, payload
-
-
-mode, data_file, config_path_arg, approval_file_arg, rollback_file_arg, output_file_arg, execute_live_arg, operator_name_arg, approval_reason_arg, expires_at_arg = sys.argv[1:]
+mode, data_file, config_path_arg, approval_file_arg, output_file_arg, execute_live_arg, operator_name_arg, approval_reason_arg, expires_at_arg = sys.argv[1:]
 data = load_data(data_file)
 
 if mode == "prepare":
@@ -820,37 +580,21 @@ if mode == "prepare":
     payload = prepare_payload(data, config_path_arg)
 elif mode == "preview":
     code = 0
-    payload = preview_payload(data, config_path_arg, approval_file_arg, rollback_file_arg)
+    payload = preview_payload(data, config_path_arg, approval_file_arg)
 elif mode == "preflight":
     code = 0
-    payload = preflight_report(data, approval_file_arg, rollback_file_arg)
+    payload = preflight_report(data, approval_file_arg)
 elif mode == "grant-approval":
     code = 0
     payload = grant_approval_payload(data, approval_file_arg, operator_name_arg, approval_reason_arg, expires_at_arg)
 elif mode == "revoke-approval":
     code = 0
     payload = revoke_approval_payload(data, approval_file_arg)
-elif mode == "capture-rollback":
-    code = 0
-    payload = capture_rollback_payload(data, rollback_file_arg)
 elif mode == "smoke":
     code = 0
-    payload = smoke_payload(data, approval_file_arg, rollback_file_arg)
+    payload = smoke_payload(data, approval_file_arg)
 elif mode == "activate":
-    code, payload = activate_payload(
-        data,
-        config_path_arg,
-        approval_file_arg,
-        rollback_file_arg,
-        int(execute_live_arg),
-    )
-elif mode == "rollback":
-    code, payload = rollback_payload(
-        data,
-        approval_file_arg,
-        rollback_file_arg,
-        int(execute_live_arg),
-    )
+    code, payload = activate_payload(data, config_path_arg, approval_file_arg, int(execute_live_arg))
 else:
     raise SystemExit(f"unsupported mode: {mode}")
 
