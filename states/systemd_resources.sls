@@ -4,6 +4,13 @@
 {% set identities = managed.get('managed_service_identities', {}) %}
 {% set paths = managed.get('managed_service_paths', {}) %}
 
+managed_service_accounts_dir:
+  file.directory:
+    - name: /etc/sysusers.d
+    - user: root
+    - group: root
+    - mode: '0755'
+
 managed_service_accounts_conf:
   file.managed:
     - name: /etc/sysusers.d/salt-managed-service-accounts.conf
@@ -12,6 +19,8 @@ managed_service_accounts_conf:
     - mode: '0644'
     - context:
         identities: {{ identities }}
+    - require:
+      - file: managed_service_accounts_dir
 
 managed_service_accounts_apply:
   cmd.run:
@@ -35,6 +44,13 @@ managed_service_accounts_ensure:
     - require:
       - file: managed_service_accounts_conf
 
+managed_service_paths_dir:
+  file.directory:
+    - name: /etc/tmpfiles.d
+    - user: root
+    - group: root
+    - mode: '0755'
+
 managed_service_paths_conf:
   file.managed:
     - name: /etc/tmpfiles.d/salt-managed-service-paths.conf
@@ -43,6 +59,8 @@ managed_service_paths_conf:
     - mode: '0644'
     - context:
         paths: {{ paths }}
+    - require:
+      - file: managed_service_paths_dir
 
 managed_service_paths_apply:
   cmd.run:
