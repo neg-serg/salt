@@ -32,7 +32,12 @@ IFS=$' \t\n'
 
 # POSIX sh: avoid alias; provide function instead
 yt() {
-    yt-dlp --downloader aria2c -f "(bestvideo+bestaudio/best)" "$@"
+    yt-dlp \
+        --downloader aria2c \
+        --no-playlist \
+        --cookies-from-browser "firefox:$HOME/.floorp/c85pjaxk.default-default" \
+        -f "(bestvideo+bestaudio/best)" \
+        "$@"
 }
 
 read_command() {
