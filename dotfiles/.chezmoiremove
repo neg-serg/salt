@@ -1,5 +1,3 @@
-.local/bin/yazi-filechooser
-.config/yazi/plugins/save-file.yazi
 .config/swayimg/config
 .config/swayimg/general.conf
 .config/swayimg/viewer.conf
