@@ -320,7 +320,7 @@ def prepare_payload(data, config_path_arg):
 
 def preflight_report(data, approval_file_arg, rollback_file_arg):
     scenario = os.environ.get("ZAPRET2_TEST_SCENARIO", "")
-    approval = approval_state(approval_file_arg)
+    approval = approval_state(configured_path(approval_file_arg, data["helper"]["approval_file"]))
 
     if scenario == "blocked_prereq":
         prereqs = [
@@ -463,7 +463,7 @@ def preview_payload(data, config_path_arg, approval_file_arg, rollback_file_arg)
         "mode": "preview",
         "traffic_affecting": False,
         "approval_required": True,
-        "approval_state": approval_state(approval_file_arg),
+        "approval_state": approval_state(configured_path(approval_file_arg, data["helper"]["approval_file"])),
         "planned_artifacts": planned_artifacts(data),
         "activation_summary": {
             "config_path": config_path_arg or data["config"]["path"],
@@ -651,7 +651,7 @@ def smoke_payload(data, approval_file_arg, rollback_file_arg):
 
 
 def activate_payload(data, config_path_arg, approval_file_arg, rollback_file_arg, execute_live):
-    approval = approval_state(approval_file_arg)
+    approval = approval_state(configured_path(approval_file_arg, data["helper"]["approval_file"]))
     rollback = rollback_inputs(
         configured_path(rollback_file_arg, data["helper"]["rollback_file"]),
         data["config"]["path"],

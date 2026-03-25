@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import tempfile
 from pathlib import Path
@@ -14,12 +15,35 @@ SCRIPT = REPO_ROOT / "scripts" / "zapret2-rollout.sh"
 CONTRACT = REPO_ROOT / "specs" / "073-zapret2-dry-run" / "contracts" / "operator-workflow.yaml"
 
 
-def test_activation_requires_explicit_approval():
-    proc = subprocess.run(
-        [str(SCRIPT), "activate"],
+def run_script(
+    args: list[str],
+    env: dict[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [str(SCRIPT), *args],
         capture_output=True,
         text=True,
+        env=env,
     )
+
+
+def test_activation_requires_explicit_approval():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp = Path(tmpdir)
+        data_file = tmp / "zapret2.yaml"
+        data_file.write_text(
+            "\n".join(
+                [
+                    "helper:",
+                    f"  approval_file: {tmp / 'approval.json'}",
+                    f"  rollback_file: {tmp / 'rollback.json'}",
+                    "",
+                ]
+            )
+        )
+        env = dict(os.environ)
+        env["ZAPRET2_DATA_FILE"] = str(data_file)
+        proc = run_script(["activate"], env=env)
     payload = json.loads(proc.stdout)
 
     assert proc.returncode != 0

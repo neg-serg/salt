@@ -17,17 +17,21 @@ SCRIPT = REPO_ROOT / "scripts" / "zapret2-rollout.sh"
 def test_activate_fails_closed_without_approval():
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp = Path(tmpdir)
+        data_file = tmp / "zapret2.yaml"
+        data = yaml.safe_load((REPO_ROOT / "states" / "data" / "zapret2.yaml").read_text())
+        data["helper"]["approval_file"] = str(tmp / "approval.json")
+        data["helper"]["rollback_file"] = str(tmp / "rollback.json")
+        data_file.write_text(yaml.safe_dump(data))
+        env = dict(os.environ)
+        env["ZAPRET2_DATA_FILE"] = str(data_file)
         proc = subprocess.run(
             [
                 str(SCRIPT),
                 "activate",
-                "--approval-file",
-                str(tmp / "missing-approval.json"),
-                "--rollback-file",
-                str(tmp / "missing-rollback.json"),
             ],
             capture_output=True,
             text=True,
+            env=env,
         )
         payload = json.loads(proc.stdout)
 
