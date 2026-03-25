@@ -335,6 +335,9 @@ age flow:
     gopass age identities keygen
     gopass age agent start     # optional session agent
 
+If this machine will be used for a live backend cutover, keep one maintainer/operator
+responsible for all go/no-go decisions.
+
 ## 6. Gopass (secrets)
 
     gopass clone git@github.com:<user>/password-store.git
@@ -343,6 +346,17 @@ age flow:
 If cloning via SSH fails (no key yet), use HTTPS:
 
     gopass clone https://github.com/<user>/password-store.git
+
+Before a production migration from GPG/Yubikey to age, prepare a rollback package:
+
+    - active store copy
+    - store git history
+    - legacy unlock materials
+    - written rollback steps
+
+Keep existing git history unchanged during the main migration, validate a representative
+subset of attached files or other non-password entries, and retain the legacy path for
+7 consecutive stabilization days before retirement.
 
 Secrets needed by chezmoi templates:
 

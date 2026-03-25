@@ -13,6 +13,8 @@ Auto-generated from active feature plans. Last updated: 2026-03-25
 - Repository-managed config templates and data files plus local file-based readiness/rollback metadata on the target machine (073-zapret2-dry-run)
 - Jinja2 + YAML Salt states, Python 3, Bash/Zsh helper scripts + Salt 3006.x masterless workflow, existing `_macros_*.jinja`, systemd, Arch/CachyOS package management, repository-managed unit/config trees (074-sysusers-tmpfiles-adoption)
 - Repository-managed Salt states, config templates, unit files, and generated `sysusers.d` / `tmpfiles.d` policy fragments on the target machine (074-sysusers-tmpfiles-adoption)
+- Markdown, YAML, Bash/Zsh operator workflows, `gopass` 1.16.x + `gopass`, `age`, existing git-backed password store, chezmoi, Salt masterless workflow, spec-kit artifacts (072-gopass-age-migration)
+- File-based `gopass` store plus git history and offline rollback artifacts (072-gopass-age-migration)
 
 ## Project Structure
 
@@ -42,9 +44,9 @@ specs/
 - Treat `states/**/*.sls` as the supported state tree for lint/render/index tooling.
 
 ## Recent Changes
+- 072-gopass-age-migration: Added Markdown, YAML, Bash/Zsh operator workflows, `gopass` 1.16.x + `gopass`, `age`, existing git-backed password store, chezmoi, Salt masterless workflow, spec-kit artifacts
 - 074-sysusers-tmpfiles-adoption: Added Jinja2 + YAML Salt states, Python 3, Bash/Zsh helper scripts + Salt 3006.x masterless workflow, existing `_macros_*.jinja`, systemd, Arch/CachyOS package management, repository-managed unit/config trees
 - 073-zapret2-dry-run: Added Jinja2 + YAML Salt states, Python 3, Bash/Zsh helper scripts + Salt 3006.x masterless workflow, existing `_macros_*.jinja`, systemd, Arch/CachyOS package management, `zapret2` AUR package (`0.9.4.5-1` observed during planning)
-- 072-gopass-age-migration: Added Markdown documentation, shell-based operator workflow, existing `gopass` CLI usage in Salt/chezmoi scripts + `gopass` 1.16.x, current git-backed password store, `chezmoi`, Salt masterless workflow, existing docs under `docs/`
 
 
 <!-- MANUAL ADDITIONS START -->

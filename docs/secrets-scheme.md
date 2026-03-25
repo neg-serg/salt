@@ -152,6 +152,15 @@ Salt states using `gopass_secret()` macro (graceful fallback if gopass unavailab
    chezmoi apply
    ```
 
+## Migration Guardrails
+
+- Keep `gopass` as the only public interface; backend migration must not rename secret paths or require consumer rewrites.
+- Prepare a complete rollback package before production cutover: active store copy, store git history, legacy unlock materials, and written rollback steps.
+- Use a validation matrix that covers direct secret reads, chezmoi templates, Salt consumers, git-backed store behavior, and a representative subset of attached files or other non-password entries.
+- Retain existing git history during the main migration, document the residual risk explicitly, and defer any history rewrite or cleanup to a separate follow-up task.
+- Use a single maintainer/operator as the production cutover and rollback owner.
+- Keep the legacy GPG/Yubikey path available for a fixed 7-day stabilization window after cutover. Retire it only after no fallback use and no unresolved required-workflow failures during that window.
+
 ## Security Properties
 
 - Secrets remain encrypted at rest through `gopass`
@@ -161,4 +170,4 @@ Salt states using `gopass_secret()` macro (graceful fallback if gopass unavailab
 - No plaintext secrets in the salt/ or dotfiles/ repos
 - chezmoi templates contain only gopass references, not actual values
 - Rendered files with secrets get 0600 permissions
-- Backend migrations must preserve secret paths, keep one active source of truth, and retain rollback artifacts until the stabilization window ends
+- Backend migrations must preserve secret paths, keep one active source of truth, and retain rollback artifacts until the fixed 7-day stabilization window ends

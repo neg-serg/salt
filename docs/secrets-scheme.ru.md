@@ -152,6 +152,15 @@ Salt states, использующие макрос `gopass_secret()` (с gracefu
    chezmoi apply
    ```
 
+## Ограничения миграции
+
+- Сохраняйте `gopass` единственным публичным интерфейсом; миграция backend не должна менять пути секретов или требовать переписывания consumers.
+- Подготовьте полный rollback package до production cutover: копия active store, git history store, legacy unlock materials и written rollback steps.
+- Используйте validation matrix, покрывающую direct secret reads, chezmoi templates, Salt consumers, поведение git-backed store и representative subset attached files или других non-password entries.
+- Сохраняйте существующую git history во время основной миграции, явно документируйте residual risk и выносите history rewrite/cleanup в отдельную follow-up задачу.
+- Назначайте одного maintainer/operator владельцем production cutover и rollback.
+- Держите legacy GPG/Yubikey path доступным в течение фиксированного 7-дневного stabilization window после cutover. Убирайте его только если в это окно не было fallback и не осталось нерешённых сбоев.
+
 ## Свойства безопасности
 
 - Секреты остаются зашифрованными в покое через `gopass`
@@ -161,4 +170,4 @@ Salt states, использующие макрос `gopass_secret()` (с gracefu
 - Никаких открытых секретов в репозиториях salt/ или dotfiles/
 - chezmoi-шаблоны содержат только ссылки на gopass, а не реальные значения
 - Отрендеренные файлы с секретами получают права 0600
-- Миграции backend должны сохранять пути секретов, поддерживать один активный source of truth и хранить rollback artifacts до конца stabilization window
+- Миграции backend должны сохранять пути секретов, поддерживать один активный source of truth и хранить rollback artifacts до конца фиксированного 7-дневного stabilization window

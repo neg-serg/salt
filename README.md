@@ -31,5 +31,5 @@ scripts/salt-apply.sh --test
 
 - [Host setup](docs/adding-host.md) — adding a new machine
 - [Deployment](docs/deploy-cachyos.md) — fresh CachyOS install
-- [Secrets](docs/secrets-scheme.md) — gopass-backed secret management
-- [gopass setup](docs/gopass-setup.md) — step-by-step secret provisioning
+- [Secrets](docs/secrets-scheme.md) — `gopass`-backed secret management with approved `gpg` and `age` backends
+- [gopass setup](docs/gopass-setup.md) — step-by-step secret provisioning, unlock, backup, and migration guidance

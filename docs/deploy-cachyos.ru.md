@@ -93,6 +93,12 @@ echo '/dev/mapper/xenon-one  /mnt/one  xfs  noatime  0  0' | sudo tee -a /etc/fs
 echo '/dev/mapper/argon-zero /mnt/zero xfs  noatime  0  0' | sudo tee -a /etc/fstab
 ```
 
+Если эта машина используется как staging/cutover host для миграции backend `gopass`,
+подготовьте rollback package до production cutover: копия active store, git history
+store, legacy unlock materials и written rollback steps. Не переписывайте git history
+в основном migration flow, проверьте representative subset attached/non-password entries
+и держите legacy path доступным в течение фиксированного 7-дневного stabilization window.
+
 ## Содержимое xenon-one
 
 После подготовки всё необходимое для развёртывания находится на XFS:
@@ -181,6 +187,10 @@ gpg --card-status                    # проверить, что Yubikey обн
 gopass ls                            # проверить доступность хранилища
 chezmoi apply --force --source ~/src/salt/dotfiles  # перезапустить только chezmoi
 ```
+
+При cutover на `age` не убирайте старый GPG/Yubikey path сразу. Оставьте его
+доступным, пока не закончится 7-дневное окно стабилизации без fallback и без
+нерешённых сбоев в обязательных workflow.
 
 Важно: Salt states выполняются независимо от chezmoi. Если chezmoi упадёт, вся системная
 конфигурация всё равно будет применена — только dotfiles с секретами не развернутся.

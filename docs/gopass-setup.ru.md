@@ -82,8 +82,9 @@ gopass age agent start
 ```
 
 Сделайте отдельный backup для `age` identity и пароля, который её разблокирует.
-Не удаляйте прежний GPG/Yubikey access path, пока не закончится stabilization window
-после миграции.
+Не удаляйте прежний GPG/Yubikey access path, пока не пройдёт 7-дневное окно
+стабилизации без fallback на старый путь и без нерешённых сбоев в обязательных
+workflow.
 
 ---
 
@@ -309,6 +310,17 @@ gpg --card-status
 - храните backup identity отдельно от рабочего store;
 - задокументируйте, как разблокировать её на новой машине, прежде чем убирать legacy GPG access.
 
+### 8c. Ограничения cutover при миграции
+
+Если вы мигрируете существующий store с GPG/Yubikey на `age`:
+
+- оставляйте `gopass` единственным публичным интерфейсом для Salt, chezmoi и скриптов;
+- соберите rollback package до cutover: копия active store, git history store, legacy unlock materials и письменные rollback steps;
+- проверьте representative CLI reads, chezmoi templates, Salt consumers и representative subset attached files или других non-password entries;
+- не переписывайте git history в основном migration flow; вместо этого зафиксируйте residual risk и вынесите cleanup в отдельную задачу;
+- назначьте одного maintainer/operator владельцем cutover и rollback;
+- убирайте legacy path только после 7 последовательных дней без fallback и без нерешённых сбоев.
+
 ---
 
 ## 9. Применение
@@ -326,6 +338,9 @@ sudo salt-call state.apply
 chezmoi diff      # превью изменений
 chezmoi apply -v  # применить
 ```
+
+Если `chezmoi apply` падает после успешного Salt run, сначала проверьте unlock path
+активного backend в текущей user session, затем смотрите диагностику в `scripts/salt-apply.sh`.
 
 ---
 

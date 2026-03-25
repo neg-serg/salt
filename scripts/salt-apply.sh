@@ -326,7 +326,8 @@ if [[ $RC -eq 0 ]]; then
         echo ""
         printf '\033[33m━━━ chezmoi apply failed ━━━\033[0m\n'
         printf '\033[33m  Salt states succeeded but dotfile deployment failed.\033[0m\n'
-        printf '\033[33m  Common cause: gopass unlock path is not available for .tmpl files.\033[0m\n'
+        printf '\033[33m  Common cause: the active gopass backend is not unlocked for .tmpl files in this user session.\033[0m\n'
+        printf '\033[33m  Check either the GPG/Yubikey path or the age identity unlock path before retrying.\033[0m\n'
         printf '\033[33m  Affected templates:\033[0m\n'
         find "${PROJECT_DIR}/dotfiles" -name '*.tmpl' -exec grep -l 'gopass' {} \; 2>/dev/null | while IFS= read -r f; do
             printf '\033[33m    - %s\033[0m\n' "${f#"${PROJECT_DIR}"/}"
