@@ -1,5 +1,5 @@
 {% from '_imports.jinja' import host, user, home %}
-{% from '_macros_service.jinja' import config_replace_with_service_control, ensure_dir, service_stopped, service_with_healthcheck, service_with_unit, system_daemon_user, unit_override %}
+{% from '_macros_service.jinja' import config_replace_with_service_control, ensure_dir, service_stopped, service_with_healthcheck, service_with_unit, unit_override %}
 {% from '_macros_pkg.jinja' import pacman_install, simple_service %}
 {% import_yaml 'data/services.yaml' as services %}
 {% import_yaml 'data/service_catalog.yaml' as catalog %}
@@ -143,10 +143,8 @@ bitcoind_legacy_cleanup:
       - /usr/local/bin/bitcoin-cli
     - onlyif: test -f /usr/local/bin/bitcoind
 
-{{ system_daemon_user('bitcoind', '/var/lib/bitcoind') }}
-
 # Don't enable at boot — manual start: systemctl start bitcoind
-{{ service_with_unit('bitcoind', 'salt://units/bitcoind.service', enabled=False) }}
+{{ service_with_unit('bitcoind', 'salt://units/bitcoind.service', enabled=False, requires=['cmd: managed_service_accounts_ensure', 'cmd: managed_service_paths_ensure']) }}
 
 bitcoind_logrotate:
   file.managed:

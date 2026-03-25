@@ -33,6 +33,11 @@ This document is a comprehensive reference for Salt configuration management bes
 - `_macros_pkg.jinja` — pacman, paru, PKGBUILD, npm installs
 - `_macros_service.jinja` — systemd services, udev rules, directory creation
 
+When a long-lived system service needs a dedicated account or managed runtime/data
+paths, prefer the declarative inventory in `states/data/managed_resources.yaml`
+plus the shared `states/systemd_resources.sls` rendering path over bespoke
+`user.present`, ad-hoc `file.directory`, or one-off `tmpfiles.d` snippets.
+
 See CLAUDE.md "Macros" section for the full reference table.
 
 ### SO-03: State ID naming convention ✅

@@ -37,21 +37,6 @@ mpd_directories:
 # wiremix needs custom clang args for bindgen
 {{ cargo_pkg('wiremix', env='BINDGEN_EXTRA_CLANG_ARGS="-I/usr/lib/clang/$(ls /usr/lib/clang/ | sort -V | tail -1)/include"') }}
 
-# --- MPD FIFO for visualizers (cava, etc.) ---
-# tmpfiles.d ensures the FIFO is recreated on every boot automatically
-mpd_fifo_conf:
-  file.managed:
-    - name: /etc/tmpfiles.d/mpd-fifo.conf
-    - contents: "p /tmp/mpd.fifo 0660 {{ user }} {{ user }} -"
-    - mode: '0644'
-
-mpd_fifo:
-  cmd.run:
-    - name: systemd-tmpfiles --create /etc/tmpfiles.d/mpd-fifo.conf
-    - unless: test -p /tmp/mpd.fifo
-    - require:
-      - file: mpd_fifo_conf
-
 # --- Deploy mpd.conf ---
 mpd_config:
   file.managed:
@@ -63,7 +48,7 @@ mpd_config:
     - makedirs: True
 
 # --- Enable native MPD systemd user service ---
-{{ user_service_enable('mpd_enabled', start_now=['mpd.service'], check='active', onlyif='rg -qx mpd ' ~ pkg_list, requires=['file: mpd_config', 'file: mpd_directories', 'cmd: music_mount', 'cmd: mpd_fifo']) }}
+{{ user_service_enable('mpd_enabled', start_now=['mpd.service'], check='active', onlyif='rg -qx mpd ' ~ pkg_list, requires=['file: mpd_config', 'file: mpd_directories', 'cmd: music_mount', 'cmd: managed_service_paths_ensure']) }}
 
 # --- Deploy mpdas config via gopass (graceful fallback to empty values) ---
 {%- set lastfm_user = gopass_secret('lastfm/username') | trim %}

@@ -2,6 +2,8 @@
 
 import os
 
+import yaml
+
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -49,3 +51,57 @@ def test_video_ai_uses_shared_huggingface_macro():
     assert "- video_ai.models" in root_source
     assert "huggingface_file(" in models_source
     assert "curl -fsSL -C -" not in models_source
+
+
+def test_system_description_includes_shared_systemd_resources_state():
+    path = os.path.join(REPO_ROOT, "states", "system_description.sls")
+    with open(path) as fh:
+        source = fh.read()
+
+    assert "- systemd_resources" in source
+
+
+def test_managed_resources_inventory_covers_phase1_services():
+    path = os.path.join(REPO_ROOT, "states", "data", "managed_resources.yaml")
+    with open(path) as fh:
+        data = yaml.safe_load(fh)
+
+    identities = data["managed_service_identities"]
+    paths = data["managed_service_paths"]
+
+    assert {"loki", "adguardhome", "bitcoind"} <= set(identities)
+    assert {"loki_root", "adguardhome_root", "bitcoind_root", "mpd_fifo"} <= set(paths)
+    assert paths["mpd_fifo"]["user"] == "__CURRENT_USER__"
+
+
+def test_service_states_use_shared_managed_resource_ensures():
+    state_paths = [
+        os.path.join(REPO_ROOT, "states", "monitoring_loki.sls"),
+        os.path.join(REPO_ROOT, "states", "dns.sls"),
+        os.path.join(REPO_ROOT, "states", "services.sls"),
+        os.path.join(REPO_ROOT, "states", "mpd.sls"),
+    ]
+
+    combined = []
+    for path in state_paths:
+        with open(path) as fh:
+            combined.append(fh.read())
+    source = "\n".join(combined)
+
+    assert "cmd: managed_service_accounts_ensure" in source
+    assert "cmd: managed_service_paths_ensure" in source
+    assert "system_daemon_user(" not in source
+    assert "/etc/tmpfiles.d/mpd-fifo.conf" not in source
+
+
+def test_systemd_resource_templates_reference_shared_macros():
+    accounts_path = os.path.join(REPO_ROOT, "states", "configs", "managed-service-accounts.conf.j2")
+    with open(accounts_path) as fh:
+        accounts_source = fh.read()
+
+    paths_path = os.path.join(REPO_ROOT, "states", "configs", "managed-service-paths.conf.j2")
+    with open(paths_path) as fh:
+        paths_source = fh.read()
+
+    assert "managed_sysusers_line" in accounts_source
+    assert "managed_tmpfiles_line" in paths_source

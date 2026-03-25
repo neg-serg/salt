@@ -1,6 +1,6 @@
 {% from '_imports.jinja' import host %}
 {% import_yaml 'data/service_catalog.yaml' as catalog %}
-{% from '_macros_service.jinja' import ensure_running, service_with_healthcheck, service_with_unit, system_daemon_user, unit_override %}
+{% from '_macros_service.jinja' import ensure_running, service_with_healthcheck, service_with_unit, unit_override %}
 {% from '_macros_pkg.jinja' import simple_service, pacman_install %}
 {% set dns = host.features.dns %}
 
@@ -46,7 +46,6 @@ unbound_control_certs:
 # --- AdGuardHome: DNS filtering + ad blocking ---
 {% if dns.adguardhome %}
 {{ pacman_install('adguardhome', 'adguardhome') }}
-{{ system_daemon_user('adguardhome', '/var/lib/adguardhome') }}
 
 # One-time cleanup: remove old manually-installed binary
 adguardhome_legacy_cleanup:
@@ -64,9 +63,10 @@ adguardhome_config:
     - replace: False
     - source: salt://configs/adguardhome-initial.yaml
     - require:
-      - file: adguardhome_data_dir
+      - cmd: managed_service_accounts_ensure
+      - cmd: managed_service_paths_ensure
 
-{{ service_with_unit('adguardhome', 'salt://units/adguardhome.service.j2', template='jinja', context={'dns_unbound': dns.unbound}, requires=['cmd: install_adguardhome', 'file: adguardhome_config'], running=True, watch=['file: adguardhome_config']) }}
+{{ service_with_unit('adguardhome', 'salt://units/adguardhome.service.j2', template='jinja', context={'dns_unbound': dns.unbound}, requires=['cmd: install_adguardhome', 'file: adguardhome_config', 'cmd: managed_service_accounts_ensure', 'cmd: managed_service_paths_ensure'], running=True, watch=['file: adguardhome_config']) }}
 
 {{ service_with_healthcheck('adguardhome_start', 'adguardhome', catalog=catalog, requires=['service: adguardhome_enabled']) }}
 

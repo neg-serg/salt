@@ -1,0 +1,5 @@
+# Managed by Salt. Do not edit manually.
+{% from '_macros_service.jinja' import managed_tmpfiles_line %}
+{% for _name, _entry in paths|dictsort %}
+{{ managed_tmpfiles_line(_entry) }}
+{% endfor %}

@@ -36,3 +36,7 @@ _catalog/
 tt
 *.tmp
 *.swp
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

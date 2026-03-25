@@ -62,6 +62,9 @@ include:
   - fonts
   - greetd
 
+  # Shared systemd-managed service identities and paths
+  - systemd_resources
+
   # Network: DNS
   - dns
   - network

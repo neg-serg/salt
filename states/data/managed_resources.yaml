@@ -1,0 +1,128 @@
+# Declarative systemd-managed service resources for long-lived services.
+#
+# managed_service_identities:
+#   <id>:
+#     user: required system account name
+#     group: primary group name (currently expected to match user)
+#     home: stable service-owned root path
+#     shell: login shell policy (default /usr/sbin/nologin)
+#     gecos: optional description string
+#     phase: migration phase label
+#
+# managed_service_paths:
+#   <id>:
+#     service: owning or dependent service identifier
+#     path: filesystem path to materialize
+#     type: tmpfiles type code (d, f, p, L, ...)
+#     mode: filesystem mode
+#     user: owner user (supports __CURRENT_USER__)
+#     group: owner group (supports __CURRENT_USER__)
+#     age: tmpfiles age field (default "-")
+#     argument: tmpfiles argument field (default "-")
+#     phase: migration phase label
+#
+# Tokens:
+#   __CURRENT_USER__ → current workstation user resolved from host config
+
+managed_service_identities:
+  adguardhome:
+    user: adguardhome
+    group: adguardhome
+    home: /var/lib/adguardhome
+    shell: /usr/sbin/nologin
+    gecos: Salt managed AdGuard Home service account
+    phase: phase1
+
+  bitcoind:
+    user: bitcoind
+    group: bitcoind
+    home: /var/lib/bitcoind
+    shell: /usr/sbin/nologin
+    gecos: Salt managed Bitcoin Core service account
+    phase: phase1
+
+  loki:
+    user: loki
+    group: loki
+    home: /var/lib/loki
+    shell: /usr/sbin/nologin
+    gecos: Salt managed Loki service account
+    phase: phase1
+
+managed_service_paths:
+  adguardhome_root:
+    service: adguardhome
+    path: /var/lib/adguardhome
+    type: d
+    mode: "0755"
+    user: adguardhome
+    group: adguardhome
+    age: "-"
+    argument: "-"
+    phase: phase1
+
+  bitcoind_root:
+    service: bitcoind
+    path: /var/lib/bitcoind
+    type: d
+    mode: "0755"
+    user: bitcoind
+    group: bitcoind
+    age: "-"
+    argument: "-"
+    phase: phase1
+
+  loki_root:
+    service: loki
+    path: /var/lib/loki
+    type: d
+    mode: "0755"
+    user: loki
+    group: loki
+    age: "-"
+    argument: "-"
+    phase: phase1
+
+  loki_chunks:
+    service: loki
+    path: /var/lib/loki/chunks
+    type: d
+    mode: "0755"
+    user: loki
+    group: loki
+    age: "-"
+    argument: "-"
+    phase: phase1
+
+  loki_rules:
+    service: loki
+    path: /var/lib/loki/rules
+    type: d
+    mode: "0755"
+    user: loki
+    group: loki
+    age: "-"
+    argument: "-"
+    phase: phase1
+
+  loki_rules_temp:
+    service: loki
+    path: /var/lib/loki/rules-temp
+    type: d
+    mode: "0755"
+    user: loki
+    group: loki
+    age: "-"
+    argument: "-"
+    phase: phase1
+
+  mpd_fifo:
+    service: mpd
+    path: /tmp/mpd.fifo
+    type: p
+    mode: "0660"
+    user: __CURRENT_USER__
+    group: __CURRENT_USER__
+    age: "-"
+    argument: "-"
+    phase: phase1

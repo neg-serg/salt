@@ -1,6 +1,66 @@
-{# Service-related macros: ensure_dir, udev_rule, ensure_running, service_stopped, service_with_healthcheck, unit_override, config_replace_with_service_control, service_with_unit, service_with_unit_and_healthcheck, user_service_file, user_unit_override, user_service_enable, user_linger, system_daemon_user #}
+{# Service-related macros: ensure_dir, udev_rule, ensure_running, service_stopped, service_with_healthcheck, unit_override, config_replace_with_service_control, service_with_unit, service_with_unit_and_healthcheck, user_service_file, user_unit_override, user_service_enable, user_linger, managed_sysusers_line, managed_tmpfiles_line, managed_identity_guard, managed_path_guard #}
 
 {% from '_macros_common.jinja' import user as _user, home as _home, healthcheck_timeout as _healthcheck_timeout, host %}
+
+{# Resolve symbolic inventory values for managed systemd resources.
+   Currently supports __CURRENT_USER__ for user-owned tmpfiles entries.
+#}
+{%- macro managed_resource_value(value) -%}
+{%- if value == '__CURRENT_USER__' -%}
+{{ _user }}
+{%- else -%}
+{{ value }}
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro managed_mode_value(mode) -%}
+{%- set _mode = managed_resource_value(mode)|string -%}
+{{ _mode[1:] if _mode.startswith('0') else _mode }}
+{%- endmacro -%}
+
+{# Render a single sysusers.d entry from states/data/managed_resources.yaml.
+   Keep long-lived service account names and homes stable; new services should be
+   added to the inventory rather than using bespoke user.present states.
+#}
+{%- macro managed_sysusers_line(entry) -%}
+u {{ managed_resource_value(entry.user) }} - "{{ entry.get('gecos', 'Salt managed service account') }}" {{ managed_resource_value(entry.home) }} {{ entry.get('shell', '/usr/sbin/nologin') }}
+{%- endmacro -%}
+
+{# Guard used by states/systemd_resources.sls to repair missing service accounts
+   without rerunning systemd-sysusers on every apply.
+#}
+{%- macro managed_identity_guard(entry) -%}
+getent passwd {{ managed_resource_value(entry.user) }} >/dev/null && getent group {{ managed_resource_value(entry.group) }} >/dev/null
+{%- endmacro -%}
+
+{# Render a single tmpfiles.d entry from states/data/managed_resources.yaml.
+   Prefer this shared inventory for long-lived service resources over one-off
+   tmpfiles snippets embedded inside individual states.
+#}
+{%- macro managed_tmpfiles_line(entry) -%}
+{{ entry.type }} {{ managed_resource_value(entry.path) }} {{ entry.mode }} {{ managed_resource_value(entry.user) }} {{ managed_resource_value(entry.group) }} {{ entry.get('age', '-') }} {{ managed_resource_value(entry.get('argument', '-')) }}
+{%- endmacro -%}
+
+{# Guard used by states/systemd_resources.sls to recreate missing or drifted
+   managed paths while keeping cmd.run states explicitly idempotent.
+#}
+{%- macro managed_path_guard(entry) -%}
+{%- set _path = managed_resource_value(entry.path) -%}
+{%- set _user_name = managed_resource_value(entry.user) -%}
+{%- set _group_name = managed_resource_value(entry.group) -%}
+{%- set _mode = managed_mode_value(entry.mode) -%}
+{%- if entry.type == 'd' -%}
+test -d {{ _path }} && test "$(stat -c '%U:%G:%a' {{ _path }})" = "{{ _user_name }}:{{ _group_name }}:{{ _mode }}"
+{%- elif entry.type == 'p' -%}
+test -p {{ _path }} && test "$(stat -c '%U:%G:%a' {{ _path }})" = "{{ _user_name }}:{{ _group_name }}:{{ _mode }}"
+{%- elif entry.type == 'f' -%}
+test -f {{ _path }} && test "$(stat -c '%U:%G:%a' {{ _path }})" = "{{ _user_name }}:{{ _group_name }}:{{ _mode }}"
+{%- elif entry.type == 'L' -%}
+test -L {{ _path }} && test "$(readlink {{ _path }})" = "{{ managed_resource_value(entry.get('argument', '-')) }}"
+{%- else -%}
+test -e {{ _path }}
+{%- endif -%}
+{%- endmacro -%}
 
 {# Create directory with user ownership and makedirs.
    Covers the common pattern of user-owned directories (user/group/makedirs: True).
@@ -199,37 +259,6 @@
     - unless: {{ check_cmd }}
 {%- if requires %}
     - require:
-{%- for req in requires %}
-      - {{ req }}
-{%- endfor %}
-{%- endif %}
-{%- endmacro -%}
-
-{# Create system daemon user + data directory.
-   Consolidates: user.present (system user, nologin shell) + file.directory (homedir/datadir with ownership).
-   shell defaults to /usr/sbin/nologin. createhome defaults to False (createhome by file.directory instead).
-   Usage: {{ system_daemon_user('loki', '/var/lib/loki') }}
-          {{ system_daemon_user('adguardhome', '/var/lib/adguardhome') }}
-          {{ system_daemon_user('bitcoind', '/var/lib/bitcoind', requires=['cmd: install_bitcoind']) }}
-#}
-{%- macro system_daemon_user(name, home_dir, shell='/usr/sbin/nologin', requires=None) -%}
-{{ name }}_user:
-  user.present:
-    - name: {{ name }}
-    - system: True
-    - shell: {{ shell }}
-    - home: {{ home_dir }}
-    - createhome: False
-
-{{ name }}_data_dir:
-  file.directory:
-    - name: {{ home_dir }}
-    - user: {{ name }}
-    - group: {{ name }}
-    - makedirs: True
-    - require:
-      - user: {{ name }}_user
-{%- if requires %}
 {%- for req in requires %}
       - {{ req }}
 {%- endfor %}

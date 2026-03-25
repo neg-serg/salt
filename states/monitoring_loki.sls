@@ -1,31 +1,18 @@
 # Loki + Promtail + Grafana monitoring stack (split from monitoring.sls)
 {% from '_imports.jinja' import host %}
 {% import_yaml 'data/service_catalog.yaml' as catalog %}
-{% from '_macros_service.jinja' import ensure_dir, ensure_running, service_with_healthcheck, service_with_unit_and_healthcheck, system_daemon_user, unit_override %}
+{% from '_macros_service.jinja' import ensure_dir, ensure_running, service_with_healthcheck, service_with_unit_and_healthcheck, unit_override %}
 {% from '_macros_pkg.jinja' import simple_service, pacman_install %}
 {% set mon = host.features.monitoring %}
 
 # --- Loki: log aggregation ---
 {{ pacman_install('loki', 'loki') }}
-{{ system_daemon_user('loki', '/var/lib/loki') }}
 
 # One-time cleanup: remove old manually-installed binary
 loki_legacy_cleanup:
   file.absent:
     - name: /usr/local/bin/loki-linux-amd64
     - onlyif: test -f /usr/local/bin/loki-linux-amd64
-
-loki_subdirs:
-  file.directory:
-    - names:
-      - /var/lib/loki/chunks
-      - /var/lib/loki/rules
-      - /var/lib/loki/rules-temp
-    - user: loki
-    - group: loki
-    - makedirs: True
-    - require:
-      - file: loki_data_dir
 
 loki_config:
   file.managed:
@@ -37,7 +24,7 @@ loki_config:
     - context:
         loki_port: {{ catalog.loki.port }}
 
-{{ service_with_unit_and_healthcheck('loki', 'salt://units/loki.service', running=True, watch=['file: loki_config'], requires=['cmd: install_loki', 'file: loki_config', 'file: loki_subdirs'], catalog=catalog) }}
+{{ service_with_unit_and_healthcheck('loki', 'salt://units/loki.service', running=True, watch=['file: loki_config'], requires=['cmd: install_loki', 'file: loki_config', 'cmd: managed_service_accounts_ensure', 'cmd: managed_service_paths_ensure'], catalog=catalog) }}
 
 # Defer Loki startup until after graphical.target to reduce boot I/O contention.
 # Promtail reads journal retroactively — no early boot logs are lost.

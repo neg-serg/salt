@@ -176,7 +176,7 @@ def test_full_assembly_pipeline():
     host = host_model.build_host("telfir", data)
     # Defaults should be present
     assert host["user"] == data["defaults"]["user"]
-    assert host["home"] == data["defaults"]["home"]
+    assert host["home"] == f"/home/{data['defaults']['user']}"
     # Telfir-specific overrides should be applied
     assert "display" in host
     assert "floorp_profile" in host
