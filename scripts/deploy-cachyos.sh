@@ -332,8 +332,10 @@ No manual daemon start needed.
 
 age flow:
 
+    export GPG_TTY="$(tty)"
     gopass age identities keygen
     gopass age agent start     # optional session agent
+    gopass age agent unlock    # verify in-session decryption before chezmoi
 
 If this machine will be used for a live backend cutover, keep one maintainer/operator
 responsible for all go/no-go decisions.
@@ -341,7 +343,7 @@ responsible for all go/no-go decisions.
 ## 6. Gopass (secrets)
 
     gopass clone git@github.com:<user>/password-store.git
-    gopass ls                  # verify decryption works
+    gopass show -o email/gmail/address   # verify decryption works
 
 If cloning via SSH fails (no key yet), use HTTPS:
 

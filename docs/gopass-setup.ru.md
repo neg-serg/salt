@@ -38,6 +38,7 @@ done
 gopass init <GPG-KEY-ID>
 
 # age backend (password-protected identity flow)
+export GPG_TTY="$(tty)"
 gopass age identities keygen
 gopass init --crypto age
 
@@ -74,12 +75,19 @@ gopass insert yubikey-pin
 
 ```bash
 # Однократная настройка
+export GPG_TTY="$(tty)"
 gopass age identities keygen
 
 # Опциональный session agent
 gopass config age.agent-enabled true
 gopass age agent start
+gopass age agent unlock
 ```
+
+Первичную генерацию identity и последующие unlock-команды запускайте из интерактивной
+user session с рабочим TTY или pinentry path. Сам по себе `gopass ls` не доказывает,
+что расшифровка реально работает; проверяйте unlock path через
+`gopass show -o <known-key>`.
 
 Сделайте отдельный backup для `age` identity и пароля, который её разблокирует.
 Не удаляйте прежний GPG/Yubikey access path, пока не пройдёт 7-дневное окно

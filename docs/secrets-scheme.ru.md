@@ -166,6 +166,7 @@ Salt states, использующие макрос `gopass_secret()` (с gracefu
 - Секреты остаются зашифрованными в покое через `gopass`
 - `gpg` backend может требовать hardware-backed unlock, например касание YubiKey
 - `age` backend может использовать password-protected identity и agent-assisted session unlock
+- для проверки рабочего decrypt path нужен `gopass show -o <known-key>`, а не только `gopass ls`
 - gopass-хранилище можно версионировать в отдельном приватном git-репозитории
 - Никаких открытых секретов в репозиториях salt/ или dotfiles/
 - chezmoi-шаблоны содержат только ссылки на gopass, а не реальные значения

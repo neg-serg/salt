@@ -331,6 +331,7 @@ if [[ $RC -eq 0 ]]; then
         if printf '%s\n' "$chezmoi_output" | rg -qi 'gopass|pinentry|failed to decrypt|decryption failed'; then
             printf '\033[33m  Reason: gopass is locked or pinentry is unavailable in this session.\033[0m\n'
             printf '\033[33m  Action: unlock gopass, then re-run: chezmoi apply --force --source %s/dotfiles\033[0m\n' "${PROJECT_DIR}"
+            printf '\033[33m  Verify: gopass show -o <known-key> (gopass ls alone does not prove decryption works).\033[0m\n'
             printf '\033[33m  Details: see docs/gopass-setup.md if the unlock path is not configured.\033[0m\n'
             printf '\033[33m  Continuing: Salt rollout succeeded; dotfiles were skipped for now.\033[0m\n'
         else

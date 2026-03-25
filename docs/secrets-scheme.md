@@ -166,6 +166,7 @@ Salt states using `gopass_secret()` macro (graceful fallback if gopass unavailab
 - Secrets remain encrypted at rest through `gopass`
 - `gpg` backend can require hardware-backed unlock such as YubiKey touch
 - `age` backend can use a password-protected identity with agent-assisted session unlock
+- decrypt-capable verification should use `gopass show -o <known-key>` rather than `gopass ls` alone
 - gopass store can be versioned in a separate private git repo
 - No plaintext secrets in the salt/ or dotfiles/ repos
 - chezmoi templates contain only gopass references, not actual values

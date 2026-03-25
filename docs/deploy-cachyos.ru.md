@@ -82,7 +82,10 @@ cp -a /mnt/one/salt ~/src/salt
 gpg --card-status
 
 # age flow:
+export GPG_TTY="$(tty)"
 # gopass age identities keygen
+gopass age agent unlock
+gopass show -o email/gmail/address
 gopass clone <store-url>
 
 # Применить конфигурацию + dotfiles
@@ -183,8 +186,9 @@ aliases:
 gpg --card-status                    # проверить, что Yubikey обнаружен
 
 # age flow:
-# gopass age agent unlock
-gopass ls                            # проверить доступность хранилища
+export GPG_TTY="$(tty)"
+gopass age agent unlock              # если включён age agent
+gopass show -o email/gmail/address   # проверить, что расшифровка работает
 chezmoi apply --force --source ~/src/salt/dotfiles  # перезапустить только chezmoi
 ```
 

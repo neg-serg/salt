@@ -37,6 +37,7 @@ Choose one approved backend and keep the same `gopass` entry paths regardless of
 gopass init <GPG-KEY-ID>
 
 # age backend (password-protected identity flow)
+export GPG_TTY="$(tty)"
 gopass age identities keygen
 gopass init --crypto age
 
@@ -73,12 +74,18 @@ store the recovery instructions outside the store itself. Recommended session fl
 
 ```bash
 # One-time setup
+export GPG_TTY="$(tty)"
 gopass age identities keygen
 
 # Optional session agent
 gopass config age.agent-enabled true
 gopass age agent start
+gopass age agent unlock
 ```
+
+Run the initial identity generation and later unlock commands from an interactive user
+session with a working TTY or pinentry path. `gopass ls` alone is not enough to prove
+that decryption works; verify the unlock path with `gopass show -o <known-key>`.
 
 Keep a secure backup of the `age` identity and the password needed to unlock it.
 Do not remove the previous GPG/Yubikey access path until a 7-day stabilization
