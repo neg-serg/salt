@@ -17,11 +17,22 @@
 # wlr-which-key: on-screen keybinding cheatsheet for Hyprland (leader key menu)
 {{ paru_install('wlr-which-key', 'wlr-which-key') }}
 
-# --- swayimg: use local build from ~/src/swayimg instead of pacman binary ---
-swayimg_local_build:
-  file.symlink:
+# --- swayimg: build and install directly from the local checkout ---
+swayimg_local_link_absent:
+  file.absent:
     - name: {{ home }}/.local/bin/swayimg
-    - target: {{ home }}/src/swayimg/build/swayimg
-    - force: True
-    - user: {{ user }}
-    - group: {{ user }}
+
+swayimg_local_checkout_build:
+  cmd.run:
+    - name: |
+        set -euo pipefail
+        src="{{ home }}/src/1st-level/swayimg"
+        test -d "$src"
+        su - {{ user }} -c 'cd "{{ home }}/src/1st-level/swayimg" && meson setup build-salt --wipe && meson compile -C build-salt'
+        meson install -C "$src/build-salt"
+    - shell: /bin/bash
+    - unless: |
+        test "$(command -v swayimg 2>/dev/null)" = "/usr/local/bin/swayimg" && \
+        test "$(swayimg --version 2>/dev/null | awk '{print $3}')" = "$(git -C {{ home }}/src/1st-level/swayimg describe --tags --long --always | sed 's/^v//')"
+    - require:
+      - file: swayimg_local_link_absent
