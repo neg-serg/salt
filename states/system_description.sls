@@ -44,6 +44,7 @@ system_hostname:
 include:
   # ── Core (always included) ──────────────────────────────────────────
   # User accounts, shell, disk mounts — foundations for everything else
+  - os_release
   - users
   - zsh
   - mounts

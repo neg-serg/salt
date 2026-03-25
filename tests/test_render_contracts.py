@@ -61,6 +61,35 @@ def test_system_description_includes_shared_systemd_resources_state():
     assert "- systemd_resources" in source
 
 
+def test_system_description_includes_os_release_state():
+    path = os.path.join(REPO_ROOT, "states", "system_description.sls")
+    with open(path) as fh:
+        source = fh.read()
+
+    assert "- os_release" in source
+
+
+def test_hyprlock_uses_fancy_name_fallback_for_os_release():
+    paths = [
+        os.path.join(REPO_ROOT, "dotfiles", "dot_config", "hypr", "hyprlock", "greetd.conf"),
+        os.path.join(
+            REPO_ROOT,
+            "dotfiles",
+            "dot_config",
+            "hypr",
+            "hyprlock",
+            "greetd-wallbash.conf",
+        ),
+    ]
+
+    for path in paths:
+        with open(path) as fh:
+            source = fh.read()
+
+        assert ". /etc/os-release" in source
+        assert "FANCY_NAME:-${PRETTY_NAME:-$NAME}" in source
+
+
 def test_managed_resources_inventory_covers_phase1_services():
     path = os.path.join(REPO_ROOT, "states", "data", "managed_resources.yaml")
     with open(path) as fh:
