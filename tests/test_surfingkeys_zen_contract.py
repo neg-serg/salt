@@ -31,8 +31,9 @@ def test_surfingkeys_config_keeps_zen_helper_actions():
 
 def test_helper_server_exposes_required_endpoints_for_zen_flow():
     text = read("dotfiles/dot_local/bin/executable_surfingkeys-server")
-    double_quoted = 'ALLOWED_PATHS = {"/focus", "/blank.html"}'
-    single_quoted = "ALLOWED_PATHS = {'/focus', '/blank.html'}"
-    assert double_quoted in text or single_quoted in text
+    assert "class Handler(http.server.SimpleHTTPRequestHandler):" in text
+    assert "directory=DIR" in text
+    assert "if path == '/focus':" in text
+    assert "return super().do_GET()" in text
     assert 'self.send_header("Cache-Control", "no-store")' in text
     assert "subprocess.run(" in text
