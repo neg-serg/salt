@@ -37,6 +37,9 @@ menu:
   - key: "s"
     desc: Scratchpads
     submenu:
+      - key: "a"
+        desc: AmneziaVPN
+        cmd: scratchpad-toggle amnezia
       - key: "d"
         desc: Teardown
         cmd: hyprscratch toggle teardown

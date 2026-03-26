@@ -11,6 +11,7 @@ local name=$1
 # Desired positions (x y) per scratchpad — scaled pixels for 1920x1080
 typeset -A positions
 positions=(
+    amnezia "960 32"
     im      "1334 10"
     music   "288 540"
 )
