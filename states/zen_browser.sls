@@ -8,18 +8,24 @@
 {% set floorp_profile = home ~ '/.floorp/' ~ host.floorp_profile %}
 {% set zen_migration_dir = zen_profile ~ '/.migrations' %}
 {% set zen_floorp_import_stamp = zen_migration_dir ~ '/floorp-profile-import-v1' %}
-{% for state_id, relpath, source in [
-  ('zen_user_js', 'user.js', 'salt://dotfiles/dot_config/zen-browser/user.js'),
-  ('zen_userchrome', 'chrome/userChrome.css', 'salt://dotfiles/dot_config/zen-browser/userChrome.css'),
-] %}
-{{ state_id }}:
+zen_user_js:
   file.managed:
-    - name: {{ zen_profile }}/{{ relpath }}
-    - source: {{ source }}
+    - name: {{ zen_profile }}/user.js
+    - source: salt://dotfiles/dot_config/zen-browser/user.js
+    - template: jinja
+    - context:
+        home: {{ home }}
     - user: {{ user }}
     - group: {{ user }}
     - makedirs: True
-{% endfor %}
+
+zen_userchrome:
+  file.managed:
+    - name: {{ zen_profile }}/chrome/userChrome.css
+    - source: salt://dotfiles/dot_config/zen-browser/userChrome.css
+    - user: {{ user }}
+    - group: {{ user }}
+    - makedirs: True
 
 zen_supergradient_theme:
   file.recurse:

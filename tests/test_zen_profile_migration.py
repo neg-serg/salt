@@ -29,3 +29,27 @@ def test_floorp_to_zen_migration_script_copies_user_data_only():
     assert "storage" in text
     assert "extensions.json" not in text
     assert "chrome/userChrome.css" not in text
+
+
+def test_zen_user_js_has_betterfox_prefs_from_floorp():
+    """Zen user.js must carry the same Betterfox performance/network prefs as Floorp."""
+    text = read("dotfiles/dot_config/zen-browser/user.js")
+    # Fastfox: initial paint delay
+    assert 'user_pref("nglayout.initialpaint.delay", 0);' in text
+    # Network: bigger buffers
+    assert 'user_pref("network.buffer.cache.size", 262144);' in text
+    # Network: more connections
+    assert 'user_pref("network.http.max-connections", 1800);' in text
+    # Privacy: disable speculative connections
+    assert 'user_pref("network.predictor.enabled", false);' in text
+    # Cache: disk cache disabled
+    assert 'user_pref("browser.cache.disk.enable", false);' in text
+    # Download dir uses Jinja template
+    assert "{{ home }}/dw" in text
+
+
+def test_zen_state_templates_user_js_with_jinja():
+    """zen_browser.sls must template user.js with Jinja for {{ home }} variable."""
+    text = read("states/zen_browser.sls")
+    assert "- template: jinja" in text
+    assert "home: {{ home }}" in text
