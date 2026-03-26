@@ -1,0 +1,52 @@
+contract: browser-cutover-surfaces
+feature: 077-zen-browser-cutover
+description: In-scope repository-managed browser launch surfaces that must make Zen Browser primary while keeping Floorp on explicit secondary launch paths.
+
+surfaces:
+  - id: hypr_super_w
+    file: dotfiles/dot_config/hypr/bindings/apps.conf
+    trigger: "Super+W"
+    pre_cutover:
+      match: 'class:regex=^(floorp|one\.ablaze\.floorp|floorpdeveloperedition)$'
+      launch: floorp
+    post_cutover:
+      match: 'class:regex=^zen$'
+      launch: zen-browser
+    secondary_path:
+      trigger: "Super+Shift+W"
+      match: 'class:regex=^(floorp|one\.ablaze\.floorp|floorpdeveloperedition)$'
+      launch: floorp
+
+  - id: wayfire_browser_binding
+    file: dotfiles/dot_config/wayfire.ini
+    trigger: "binding_browser=<super> KEY_W"
+    pre_cutover:
+      match: 'class:regex=^(floorp|one\.ablaze\.floorp|floorpdeveloperedition)$'
+      launch: floorp
+    post_cutover:
+      match: 'class:regex=^zen$'
+      launch: zen-browser
+    secondary_path:
+      trigger: "binding_browser_floorp=<super> <shift> KEY_W"
+      match: 'class:regex=^(floorp|one\.ablaze\.floorp|floorpdeveloperedition)$'
+      launch: floorp
+
+  - id: wlr_which_key_browser
+    file: dotfiles/dot_config/wlr-which-key/config.yaml
+    trigger: "menu key w"
+    pre_cutover:
+      match: 'class:regex=^(floorp|one\.ablaze\.floorp)$'
+      launch: floorp
+    post_cutover:
+      match: 'class:regex=^zen$'
+      launch: zen-browser
+    secondary_path:
+      trigger: "menu key W"
+      match: 'class:regex=^(floorp|one\.ablaze\.floorp|floorpdeveloperedition)$'
+      launch: floorp
+
+validation_rules:
+  - Each listed surface must be updated as one atomic browser target change.
+  - Each listed surface must make Zen Browser the default/common launch target after cutover acceptance.
+  - Each listed surface must keep Floorp reachable only through an explicit secondary trigger.
+  - Match rules must align with the installed Zen desktop metadata window class.
