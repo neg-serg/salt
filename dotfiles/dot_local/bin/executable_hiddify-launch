@@ -2,4 +2,4 @@
 set -eu
 
 "$HOME/.local/bin/hiddify-fix-loopback" || true
-exec "$HOME/.local/bin/Hiddify.AppImage" "$@"
+exec hiddify "$@"

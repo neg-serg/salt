@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Hiddify
+GenericName=Hiddify
+Comment=Launch Hiddify through the local loopback compatibility wrapper
+Exec=/home/neg/.local/bin/hiddify-launch %U
+Icon=hiddify
+Terminal=false
+StartupNotify=true
+Categories=Network;
+Keywords=Hiddify;Proxy;VPN;V2ray;Nekoray;Xray;Psiphon;OpenVPN;
+MimeType=x-scheme-handler/hiddify;x-scheme-handler/v2ray;x-scheme-handler/v2rayn;x-scheme-handler/v2rayng;x-scheme-handler/clash;x-scheme-handler/clashmeta;x-scheme-handler/sing-box;

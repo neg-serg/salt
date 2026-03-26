@@ -21,10 +21,27 @@ def test_hiddify_state_removes_legacy_appimage_and_prefers_hiddify_next():
     assert "xdg-mime default hiddify.desktop x-scheme-handler/hiddify" in source
 
 
-def test_hiddify_state_cleans_legacy_wrappers_and_profile_data():
+def test_hiddify_state_keeps_compatibility_wrappers_and_profile_data():
     source = (REPO_ROOT / "states" / "hiddify.sls").read_text()
 
-    assert "hiddify-launch" in source
-    assert "hiddify-root" in source
-    assert "hiddify-fix-loopback" in source
-    assert ".local/share/app.hiddify.com" in source
+    assert "{{ home }}/.local/bin/hiddify-launch" not in source
+    assert "{{ home }}/.local/bin/hiddify-fix-loopback" not in source
+    assert "{{ home }}/.local/share/app.hiddify.com" not in source
+
+
+def test_hiddify_wrapper_launches_system_binary_after_loopback_fix():
+    source = (
+        REPO_ROOT / "dotfiles" / "dot_local" / "bin" / "executable_hiddify-launch"
+    ).read_text()
+
+    assert '"$HOME/.local/bin/hiddify-fix-loopback" || true' in source
+    assert 'exec hiddify "$@"' in source
+
+
+def test_hiddify_local_desktop_uses_wrapper_exec():
+    source = (
+        REPO_ROOT / "dotfiles" / "dot_local" / "share" / "applications" / "hiddify.desktop"
+    ).read_text()
+
+    assert "Exec=/home/neg/.local/bin/hiddify-launch %U" in source
+    assert "MimeType=x-scheme-handler/hiddify" in source

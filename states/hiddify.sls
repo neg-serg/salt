@@ -1,19 +1,17 @@
 {% from '_imports.jinja' import user, home %}
 
 # Keep only hiddify-next managed outside this repo and remove the legacy
-# official AppImage layer that used to shadow its desktop handlers.
+# official AppImage layer that used to shadow its desktop handlers. Keep the
+# local wrapper scripts because they patch unsupported loopback tproxy entries
+# out of imported configs before launching Hiddify Next.
 
 hiddify_legacy_cleanup:
   file.absent:
     - names:
       - {{ home }}/.local/bin/Hiddify.AppImage
-      - {{ home }}/.local/bin/hiddify-launch
-      - {{ home }}/.local/bin/hiddify-root
-      - {{ home }}/.local/bin/hiddify-fix-loopback
       - {{ home }}/.local/share/applications/hiddify-official.desktop
       - {{ home }}/.local/share/applications/hiddify-official-root.desktop
       - {{ home }}/.cache/hiddify
-      - {{ home }}/.local/share/app.hiddify.com
 
 hiddify_next_default_handlers:
   cmd.run:
