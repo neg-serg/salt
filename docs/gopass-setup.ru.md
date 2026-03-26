@@ -318,6 +318,8 @@ gpg --card-status
 - храните backup identity отдельно от рабочего store;
 - задокументируйте, как разблокировать её на новой машине, прежде чем убирать legacy GPG access.
 
+Короткий runbook для переноса и recovery: `docs/gopass-age-recovery.ru.md`.
+
 ### 8c. Ограничения cutover при миграции
 
 Если вы мигрируете существующий store с GPG/Yubikey на `age`:

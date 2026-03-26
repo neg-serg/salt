@@ -316,6 +316,8 @@ When initializing the `age` backend:
 - back up the identity file separately from the working store;
 - record how to unlock it on a new machine before retiring any legacy GPG access.
 
+For the short transfer/recovery runbook, see `docs/gopass-age-recovery.md`.
+
 ### 8c. Migration cutover guardrails
 
 If you are migrating an existing store from GPG/Yubikey to `age`:

@@ -31,3 +31,4 @@ scripts/salt-apply.sh --test
 - [Развёртывание](docs/deploy-cachyos.ru.md) — установка CachyOS с нуля
 - [Секреты](docs/secrets-scheme.ru.md) — интеграция gopass/Yubikey
 - [Настройка gopass](docs/gopass-setup.ru.md) — пошаговое заведение секретов
+- [Recovery gopass age](docs/gopass-age-recovery.ru.md) — перенос `age`-backed store на другой компьютер

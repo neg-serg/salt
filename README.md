@@ -33,3 +33,4 @@ scripts/salt-apply.sh --test
 - [Deployment](docs/deploy-cachyos.md) — fresh CachyOS install
 - [Secrets](docs/secrets-scheme.md) — `gopass`-backed secret management with approved `gpg` and `age` backends
 - [gopass setup](docs/gopass-setup.md) — step-by-step secret provisioning, unlock, backup, and migration guidance
+- [gopass age recovery](docs/gopass-age-recovery.md) — moving an `age`-backed store to another machine
