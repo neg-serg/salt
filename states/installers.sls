@@ -6,7 +6,8 @@
 {% import_yaml 'data/versions.yaml' as ver %}
 
 # ===========================================================================
-# Data-driven installs (definitions in data/installers.yaml)
+# Data-driven fallback installs (definitions in data/installers.yaml)
+# Use only when no official/AUR package is suitable.
 # ===========================================================================
 
 # --- Direct binary downloads to ~/.local/bin/ ---
@@ -81,16 +82,14 @@ tdl_legacy_cleanup:
 # --- Hyprland tools (multi-binary) ---
 {{ curl_extract_tar('hyprevents', 'https://github.com/vilari-mickopf/hyprevents/archive/refs/heads/master.tar.gz', 'hyprevents-master', binaries=['hyprevents', 'event_handler', 'event_loader'], chmod=True) }}
 
-# --- aider (AI coding assistant; needs Python ≤3.12, pydub/audioop broken on 3.13+) ---
-aider_install:
-  cmd.run:
-    - name: uv tool install aider-chat --python 3.12
-    - runas: {{ user }}
-    - creates: {{ home }}/.local/bin/aider
-    - parallel: True
-    - retry:
-        attempts: {{ retry_attempts }}
-        interval: {{ retry_interval }}
+# --- aider (AI coding assistant) ---
+{{ paru_install('aider', 'aider-chat') }}
+
+# One-time cleanup: remove old uv-installed binary after package migration
+aider_legacy_cleanup:
+  file.absent:
+    - name: {{ home }}/.local/bin/aider
+    - onlyif: test -f {{ home }}/.local/bin/aider
 
 # --- pip: dr14_tmeter (custom git install, needs GIT_CONFIG_GLOBAL override) ---
 {{ pip_pkg('dr14_tmeter', pkg='git+https://github.com/simon-r/dr14_t.meter.git', env='GIT_CONFIG_GLOBAL=/dev/null') }}
@@ -108,4 +107,3 @@ qmk_udev_rules_reload:
 
 # --- blesh (Bash Line Editor) ---
 {{ curl_extract_tar('blesh', 'https://github.com/akinomyoga/ble.sh/releases/download/nightly/ble-nightly.tar.xz', archive_ext='tar.xz', dest='~/.local/share', strip_components=1, creates=home ~ '/.local/share/ble.sh', user=user, home=home) }}
-

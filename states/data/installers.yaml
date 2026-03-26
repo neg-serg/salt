@@ -1,4 +1,6 @@
 # Tool definitions for installers.sls — data separated from logic.
+# These entries are fallback/manual installs and should exist only when no
+# official repository or AUR package is a good fit.
 # Adding/updating a tool is a YAML-only edit; no Jinja changes needed.
 # Grouped by macro type (maps 1:1 to _macros.jinja macro signatures).
 # URLs with ${VER} are interpolated at render time from data/versions.yaml.

@@ -1,10 +1,14 @@
 {# Download/install macros: curl_bin, pip_pkg, cargo_pkg, curl_extract_tar,
    curl_extract_zip, firefox_extension, download_font_zip, git_clone_deploy,
-   http_file #}
+   http_file.
+
+   Policy: prefer official repositories first, then AUR, and use these macros
+   only when a package-managed install is unavailable or intentionally unsuitable.
+#}
 
 {% from '_macros_common.jinja' import user as _user, home as _home, retry_attempts as _retry_attempts, retry_interval as _retry_interval, ver_dir as _ver_dir, sys_ver_dir as _sys_ver_dir, download_cache as _download_cache, ver_stamp as _ver_stamp %}
 
-{# Download binary directly to ~/.local/bin/ and chmod +x.
+{# Fallback: download binary directly to ~/.local/bin/ and chmod +x.
    version: when set, enables update-on-version-bump via version file.
    Usage: {{ curl_bin('aliae', 'https://github.com/.../aliae-linux-amd64') }}
           {{ curl_bin('tdl', '.../${VER}/...', version=ver.tdl) }}
@@ -46,7 +50,7 @@ install_{{ name | replace('-', '_') }}:
         interval: {{ _retry_interval }}
 {%- endmacro -%}
 
-{# pipx install (PEP 668 compatible).
+{# Fallback: pipx install (PEP 668 compatible).
    Handles broken symlinks (Python upgrades) by reinstalling if binary is missing despite being in pipx.
    env: shell env prefix string (e.g. 'GIT_CONFIG_GLOBAL=/dev/null'); supports shell expansion.
    Usage: {{ pip_pkg('httpstat') }}
@@ -68,7 +72,7 @@ install_{{ name | replace('-', '_') }}:
         interval: {{ _retry_interval }}
 {%- endmacro -%}
 
-{# cargo install (crates.io or git).
+{# Fallback: cargo install (crates.io or git).
    env: shell env prefix string (e.g. 'FOO=bar BAZ=1'); supports shell expansion.
    onlyif: list of guard commands — all must succeed for install to run.
    version: optional version marker to avoid re-running cargo when unchanged.
@@ -103,7 +107,7 @@ install_{{ name | replace('-', '_') }}:
         interval: {{ _retry_interval }}
 {%- endmacro -%}
 
-{# Download and extract tar.gz/tar.xz archive, move binary(ies) to ~/.local/bin/.
+{# Fallback: download and extract tar.gz/tar.xz archive, move binary(ies) to ~/.local/bin/.
    Supports: TAG fetching, nested directories, multiple binaries, optional chmod.
    archive_ext: tar.gz (default) | tar.xz. fetch_tag: True (default False) to fetch latest ${TAG} from GitHub API.
    strip_v: True (default False) to set VER=${TAG#v} for URLs using ${VER} (version without v prefix).
@@ -190,7 +194,7 @@ install_{{ name | replace('-', '_') }}:
 
 {%- endmacro -%}
 
-{# Download and extract ZIP archive, move binary(ies) to ~/.local/bin/.
+{# Fallback: download and extract ZIP archive, move binary(ies) to ~/.local/bin/.
    Supports: nested directories, multiple binaries, optional chmod.
    binary_path: path pattern relative to extraction dir (e.g., "yazi-x86_64-unknown-linux-musl/yazi").
    binaries: optional list of binaries to move. If None, uses last part of binary_path.
