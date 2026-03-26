@@ -95,12 +95,16 @@ gopass age identities keygen
 gopass config age.agent-enabled true
 gopass age agent start
 gopass age agent unlock
+~/.local/bin/gpg-warmup
 ```
 
 Первичную генерацию identity и последующие unlock-команды запускайте из интерактивной
 user session с рабочим TTY или pinentry path. Сам по себе `gopass ls` не доказывает,
 что расшифровка реально работает; проверяйте unlock path через
 `gopass show -o <known-key>`.
+На этой рабочей станции `~/.local/bin/gpg-warmup` также запускается из автозапуска
+Hyprland и будет один раз за логин разблокировать `age` agent, если
+`age.agent-enabled = true`.
 
 Сделайте отдельный backup для `age` identity и пароля, который её разблокирует.
 Не удаляйте прежний GPG/Yubikey access path, пока не пройдёт 7-дневное окно

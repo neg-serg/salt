@@ -1,6 +1,8 @@
 #!/usr/bin/env zsh
-# gpg-warmup — trigger one GPG-backed decrypt to warm gpg-agent state
-# Works for both software GPG keys and smart-card-backed keys.
+# gpg-warmup — trigger one gopass decrypt to warm the active backend session.
+# For age-backed stores with the optional age agent enabled, unlock the agent
+# once per session so later gopass calls do not keep prompting for the identity
+# password. For GPG-backed stores, a single decrypt still warms gpg-agent.
 
 setopt ERR_EXIT NO_UNSET PIPE_FAIL
 
@@ -14,7 +16,20 @@ if [[ -z "$warmup_key" ]]; then
     exit 1
 fi
 
-echo "gpg-warmup: decrypting '$warmup_key' to warm gpg-agent..."
+age_agent_enabled=$(gopass config 2>/dev/null | awk -F' = ' '$1=="age.agent-enabled"{print $2}')
+age_identity_file="${XDG_CONFIG_HOME:-$HOME/.config}/gopass/age/identities"
+
+if [[ "$age_agent_enabled" == "true" && -f "$age_identity_file" ]]; then
+    if ! gopass age agent status >/dev/null 2>&1; then
+        echo "gpg-warmup: starting gopass age agent..."
+        gopass age agent start >/dev/null 2>&1 &
+        sleep 0.3
+    fi
+    echo "gpg-warmup: unlocking gopass age agent..."
+    gopass age agent unlock
+fi
+
+echo "gpg-warmup: decrypting '$warmup_key' to warm gopass backend..."
 if gopass show -o "$warmup_key" > /dev/null 2>&1; then
     echo "gpg-warmup: backend ready"
 else
