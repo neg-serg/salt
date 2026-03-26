@@ -1,6 +1,6 @@
 <!--
   Sync Impact Report
-  Version change: 1.1.0 → 1.2.0
+  Version change: 1.2.0 → 1.3.0
   Modified principles:
     - III. Secrets Isolation → III. Secrets Isolation
   Added sections: None
@@ -12,7 +12,7 @@
     - README.md ✅ (top-level secrets wording generalized)
     - .specify/templates/commands/*.md ✅ (directory absent; no command template updates required)
   Follow-up TODOs:
-    - Update operator secret-management docs during feature implementation if the project actually migrates active workflows from GPG/Yubikey to age
+    - Update operator secret-management docs during feature implementation if the project migrates active workflows to the hardware-backed age plugin path
 -->
 
 # Salt Project Constitution
@@ -47,6 +47,8 @@ with an approved encrypted backend. Approved backends are:
 
 - `gpg` with hardware-backed access such as YubiKey
 - `age` with password-protected identities and documented backup/recovery handling
+- `age` with hardware-backed plugin identities such as YubiKey and documented
+  unlock, backup, and recovery handling
 
 - Chezmoi templates: `{{ gopass "key/path" }}` in `.tmpl` files
 - Salt states: `gopass show -o key/path` in `cmd.run`
@@ -132,4 +134,4 @@ This constitution supersedes ad-hoc practices. All state changes, script additio
 
 Versioning follows semantic versioning: MAJOR for principle removals/redefinitions, MINOR for new principles or material expansions, PATCH for clarifications and wording fixes.
 
-**Version**: 1.2.0 | **Ratified**: 2026-03-08 | **Last Amended**: 2026-03-24
+**Version**: 1.3.0 | **Ratified**: 2026-03-08 | **Last Amended**: 2026-03-26
