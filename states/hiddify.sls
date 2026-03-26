@@ -5,6 +5,10 @@
 # local wrapper scripts because they patch unsupported loopback tproxy entries
 # out of imported configs before launching Hiddify Next.
 
+{% set hiddify_gui = '/usr/lib/hiddify/hiddify' %}
+{% set hiddify_cli = '/usr/lib/hiddify/HiddifyCli' %}
+{% set hiddify_caps = 'cap_net_admin,cap_net_bind_service,cap_net_raw=ep' %}
+
 hiddify_legacy_cleanup:
   file.absent:
     - names:
@@ -36,3 +40,17 @@ hiddify_next_default_handlers:
         test "$(xdg-mime query default x-scheme-handler/clashmeta)" = "hiddify.desktop"
     - require:
       - file: hiddify_legacy_cleanup
+
+hiddify_gui_capabilities:
+  cmd.run:
+    - name: setcap {{ hiddify_caps }} {{ hiddify_gui }}
+    - runas: root
+    - onlyif: test -x {{ hiddify_gui }}
+    - unless: getcap {{ hiddify_gui }} | grep -Fq '{{ hiddify_gui }} {{ hiddify_caps }}'
+
+hiddify_core_cli_capabilities:
+  cmd.run:
+    - name: setcap {{ hiddify_caps }} {{ hiddify_cli }}
+    - runas: root
+    - onlyif: test -x {{ hiddify_cli }}
+    - unless: getcap {{ hiddify_cli }} | grep -Fq '{{ hiddify_cli }} {{ hiddify_caps }}'

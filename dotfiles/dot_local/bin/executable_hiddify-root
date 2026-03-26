@@ -2,6 +2,12 @@
 set -eu
 
 "$HOME/.local/bin/hiddify-fix-loopback" || true
+(
+  for _ in {1..40}; do
+    "$HOME/.local/bin/hiddify-fix-loopback" || true
+    sleep 0.25
+  done
+) >/dev/null 2>&1 &
 
 app="$HOME/.local/bin/Hiddify.AppImage"
 exec kitty --title "Hiddify Root" sh -lc "exec sudo --preserve-env=DISPLAY,WAYLAND_DISPLAY,XDG_RUNTIME_DIR,DBUS_SESSION_BUS_ADDRESS,XAUTHORITY -H \"$app\""

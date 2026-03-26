@@ -2,4 +2,10 @@
 set -eu
 
 "$HOME/.local/bin/hiddify-fix-loopback" || true
+(
+  for _ in {1..40}; do
+    "$HOME/.local/bin/hiddify-fix-loopback" || true
+    sleep 0.25
+  done
+) >/dev/null 2>&1 &
 exec hiddify "$@"
