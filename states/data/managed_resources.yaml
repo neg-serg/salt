@@ -49,6 +49,14 @@ managed_service_identities:
     gecos: Salt managed Loki service account
     phase: phase1
 
+  greetd:
+    user: greetd
+    group: greetd
+    home: /var/lib/greetd
+    shell: /usr/sbin/nologin
+    gecos: Salt managed greetd service account
+    phase: phase1
+
 managed_service_paths:
   adguardhome_root:
     service: adguardhome
@@ -112,6 +120,17 @@ managed_service_paths:
     mode: "0755"
     user: loki
     group: loki
+    age: "-"
+    argument: "-"
+    phase: phase1
+
+  greetd_root:
+    service: greetd
+    path: /var/lib/greetd
+    type: d
+    mode: "0755"
+    user: greetd
+    group: greetd
     age: "-"
     argument: "-"
     phase: phase1

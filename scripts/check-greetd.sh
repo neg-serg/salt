@@ -2,6 +2,8 @@
 set -u
 # Preflight check for greetd + quickshell greeter setup
 
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/bin
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -83,13 +85,17 @@ fi
 # --- PAM configs ---
 section "PAM Configuration"
 
-for f in greetd greetd-greeter; do
-    if [ -f "/etc/pam.d/$f" ]; then
-        ok "/etc/pam.d/$f exists"
-    else
-        fail "/etc/pam.d/$f missing"
-    fi
-done
+if [ -f "/etc/pam.d/greetd" ]; then
+    ok "/etc/pam.d/greetd exists"
+else
+    fail "/etc/pam.d/greetd missing"
+fi
+
+if [ -f "/etc/pam.d/greetd-greeter" ]; then
+    ok "/etc/pam.d/greetd-greeter exists"
+else
+    warn "/etc/pam.d/greetd-greeter missing (not shipped by current Arch greetd package)"
+fi
 
 # --- System user ---
 section "System User"

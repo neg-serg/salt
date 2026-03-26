@@ -98,8 +98,14 @@ def test_managed_resources_inventory_covers_phase1_services():
     identities = data["managed_service_identities"]
     paths = data["managed_service_paths"]
 
-    assert {"loki", "adguardhome", "bitcoind"} <= set(identities)
-    assert {"loki_root", "adguardhome_root", "bitcoind_root", "mpd_fifo"} <= set(paths)
+    assert {"loki", "adguardhome", "bitcoind", "greetd"} <= set(identities)
+    assert {
+        "loki_root",
+        "adguardhome_root",
+        "bitcoind_root",
+        "greetd_root",
+        "mpd_fifo",
+    } <= set(paths)
     assert paths["mpd_fifo"]["user"] == "__CURRENT_USER__"
 
 
@@ -121,6 +127,24 @@ def test_service_states_use_shared_managed_resource_ensures():
     assert "cmd: managed_service_paths_ensure" in source
     assert "system_daemon_user(" not in source
     assert "/etc/tmpfiles.d/mpd-fifo.conf" not in source
+
+
+def test_greetd_state_depends_on_shared_managed_resources():
+    path = os.path.join(REPO_ROOT, "states", "greetd.sls")
+    with open(path) as fh:
+        source = fh.read()
+
+    assert "- systemd_resources" in source
+    assert "cmd: managed_service_accounts_ensure" in source
+    assert "cmd: managed_service_paths_ensure" in source
+
+
+def test_quickshell_services_qmldir_registers_widget_registry():
+    path = os.path.join(REPO_ROOT, "dotfiles", "dot_config", "quickshell", "Services", "qmldir")
+    with open(path) as fh:
+        source = fh.read()
+
+    assert "singleton WidgetRegistry 1.0 WidgetRegistry.qml" in source
 
 
 def test_systemd_resource_templates_reference_shared_macros():

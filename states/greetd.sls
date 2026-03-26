@@ -3,6 +3,9 @@
 {% from '_macros_service.jinja' import ensure_dir %}
 # greetd display manager: cage kiosk compositor + quickshell greeter
 
+include:
+  - systemd_resources
+
 {{ pacman_install('greetd', 'greetd') }}
 {{ pacman_install('cage', 'cage') }}
 {{ pacman_install('wlr_randr', 'wlr-randr') }}
@@ -82,6 +85,8 @@ greetd_enabled:
     - name: greetd
     - require:
       - file: greetd_main_config
+      - cmd: managed_service_accounts_ensure
+      - cmd: managed_service_paths_ensure
 
 # Emergency TTY: Ctrl+Alt+F2 always drops to a text login,
 # even if the graphical greeter is frozen or broken.
