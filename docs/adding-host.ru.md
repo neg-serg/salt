@@ -153,6 +153,7 @@ defaults  ←──  hosts['your_host']  ←──  derived fields
 | `locale` | str | 'en_US.UTF-8' | Локаль системы |
 | `floorp_profile` | str | '' | Имя директории профиля Floorp |
 | `zen_profile` | str | '' | Имя директории профиля Zen Browser |
+| `migrate_floorp_profile_to_zen` | bool | False | Выполнить одноразовый импорт пользовательских данных из Floorp в Zen |
 | `hostname` | str | grains host | Желаемый hostname |
 | `extra_kargs` | list | [] | Доп. параметры загрузки ядра |
 | `extra_modules` | list | [] | Доп. модули ядра для загрузки |
@@ -161,6 +162,7 @@ defaults  ←──  hosts['your_host']  ←──  derived fields
 
 - Задавайте `zen_profile` для хостов, где `Zen Browser` является основным управляемым браузером.
 - Оставляйте `features.floorp: true` и `floorp_profile` только если `Floorp` должен оставаться управляемым вторичным браузером.
+- Включайте `migrate_floorp_profile_to_zen: true` только на тех хостах, где нужен одноразовый импорт пользовательских данных из текущего профиля Floorp в Zen.
 - Общие browser launcher'ы должны предпочитать `Zen Browser`, а путь запуска `Floorp` должен быть отдельным и вторичным.
 
 ## Чеклист

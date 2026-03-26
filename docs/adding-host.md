@@ -153,6 +153,7 @@ The alias resolves before the merge, so the correct host config applies even bef
 | `locale` | str | 'en_US.UTF-8' | System locale |
 | `floorp_profile` | str | '' | Floorp profile dir name |
 | `zen_profile` | str | '' | Zen Browser profile dir name |
+| `migrate_floorp_profile_to_zen` | bool | False | Run one-shot Floorp -> Zen profile data import |
 | `hostname` | str | grains host | Desired hostname |
 | `extra_kargs` | list | [] | Extra kernel boot args |
 | `extra_modules` | list | [] | Extra kernel modules to load |
@@ -161,6 +162,7 @@ The alias resolves before the merge, so the correct host config applies even bef
 
 - Set `zen_profile` for hosts where Zen Browser is the primary managed browser path.
 - Keep `features.floorp: true` plus `floorp_profile` only when Floorp should remain a managed secondary browser.
+- Set `migrate_floorp_profile_to_zen: true` only for hosts that should import user data from the current Floorp profile into Zen once.
 - Common browser launchers should prefer Zen Browser; any Floorp launch path should be explicit and secondary.
 
 ## Checklist
