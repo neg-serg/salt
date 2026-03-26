@@ -35,6 +35,9 @@ Choose one approved backend and keep the same `gopass` entry paths regardless of
 ```bash
 # GPG backend (existing hardware-backed flow)
 gopass init <GPG-KEY-ID>
+gpg-connect-agent /bye
+~/.local/bin/gpg-warmup
+gopass show -o email/gmail/address
 
 # age backend (password-protected identity flow)
 export GPG_TTY="$(tty)"
@@ -65,6 +68,15 @@ gopass insert ssh-key
 ```bash
 # PIN for unlocking the Yubikey GPG key. Only used with the GPG/Yubikey backend.
 gopass insert yubikey-pin
+```
+
+If the current fallback path is `gpg + gpg-agent`, validate it from an interactive
+session with one real decrypt, not just `gpg --list-keys`:
+
+```bash
+gpg-connect-agent /bye
+~/.local/bin/gpg-warmup
+gopass show -o email/gmail/address
 ```
 
 ### 2c. age identity unlock

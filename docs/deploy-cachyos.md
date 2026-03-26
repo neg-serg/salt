@@ -81,6 +81,9 @@ cp -a /mnt/one/salt ~/src/salt
 # Set up gopass backend
 # GPG/Yubikey flow:
 gpg --card-status
+gpg-connect-agent /bye
+~/.local/bin/gpg-warmup
+gopass show -o email/gmail/address
 
 # age flow:
 export GPG_TTY="$(tty)"
@@ -185,6 +188,8 @@ Fix:
 ```bash
 # GPG/Yubikey flow:
 gpg --card-status                    # verify Yubikey detected
+gpg-connect-agent /bye               # ensure gpg-agent socket is live
+~/.local/bin/gpg-warmup              # verify one decrypt succeeds
 
 # age flow:
 export GPG_TTY="$(tty)"

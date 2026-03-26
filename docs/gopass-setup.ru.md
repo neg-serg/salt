@@ -36,6 +36,9 @@ done
 ```bash
 # GPG backend (текущий hardware-backed flow)
 gopass init <GPG-KEY-ID>
+gpg-connect-agent /bye
+~/.local/bin/gpg-warmup
+gopass show -o email/gmail/address
 
 # age backend (password-protected identity flow)
 export GPG_TTY="$(tty)"
@@ -66,6 +69,16 @@ gopass insert ssh-key
 ```bash
 # PIN для разблокировки Yubikey GPG ключа. Используется только с GPG/Yubikey backend.
 gopass insert yubikey-pin
+```
+
+Если текущий fallback path переведён на `gpg + gpg-agent`, проверяйте его из
+интерактивной user session через реальную расшифровку, а не только через
+`gpg --list-keys`:
+
+```bash
+gpg-connect-agent /bye
+~/.local/bin/gpg-warmup
+gopass show -o email/gmail/address
 ```
 
 ### 2c. Разблокировка age identity
