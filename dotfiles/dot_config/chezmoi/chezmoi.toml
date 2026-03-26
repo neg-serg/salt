@@ -1,2 +1,5 @@
 [gopass]
 command = "gopass"
+
+[diff]
+scriptContents = false
