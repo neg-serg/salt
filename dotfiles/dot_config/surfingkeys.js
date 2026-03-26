@@ -11,170 +11,170 @@ settings.smoothScroll = true;
 settings.modeAfterYank = "Normal";
 
 // ========== Theme ==========
-settings.theme = `
-:root {
-  --font-mono: "Iosevka", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  --font-size: 0.875rem;
-  --bg:           #020202;
-  --bg-alt:       #0a0a0a;
-  --bg-highlight: #13384f;
-  --fg:           #f0f1ff;
-  --fg-muted:     rgba(240, 241, 255, 0.6);
-  --accent:       #89cdd2;
-  --border:       #0a3749;
-  --hint-bg:      #002D59;
-  --hint-fg:      #94E1F9;
-  --hint-border:  #006FCC;
-}
-
-/* ── Base ────────────────────────────────────────── */
-.sk_theme {
-  font-family: var(--font-mono);
-  font-size: var(--font-size);
-  background: var(--bg);
-  color: var(--fg);
-}
-.sk_theme tbody { color: var(--fg); }
-.sk_theme input  { color: var(--fg); }
-
-/* ── Omnibar text elements ───────────────────────── */
-.sk_theme .url              { color: var(--accent); }
-.sk_theme .annotation       { color: var(--fg-muted); }
-.sk_theme .omnibar_highlight { color: var(--accent); font-weight: 600; }
-.sk_theme .omnibar_timestamp { color: var(--fg-muted); }
-.sk_theme .omnibar_visitcount { color: var(--fg-muted); }
-.sk_theme .omnibar_folder   { color: var(--accent); }
-.sk_theme .prompt           { color: var(--fg-muted); }
-.sk_theme .separator        { color: var(--border); }
-
-/* ── Omnibar container + result rows ─────────────── */
-#sk_omnibar {
-  border: 1px solid var(--border);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.9);
-  border-radius: 0;
-}
-.sk_theme #sk_omnibarSearchResult ul li:nth-child(odd) {
-  background: var(--bg-alt);
-}
-.sk_theme #sk_omnibarSearchResult ul li.focused {
-  background: var(--bg-highlight);
-}
-
-/* ── Banner ──────────────────────────────────────── */
-#sk_banner {
-  font-family: var(--font-mono);
-  font-size: var(--font-size);
-  font-weight: 600;
-  background: var(--bg) !important;
-  color: var(--fg) !important;
-  border: 1px solid var(--border);
-  border-radius: 0;
-  box-shadow: none;
-  padding: 4px 12px;
-}
-
-/* ── Keystroke overlay ───────────────────────────── */
-#sk_keystroke {
-  background: var(--bg) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  padding: 6px !important;
-  color: var(--fg) !important;
-}
-#sk_keystroke kbd {
-  font-family: var(--font-mono);
-  font-size: var(--font-size);
-  font-weight: 600;
-  color: var(--hint-fg) !important;
-  background: var(--hint-bg) !important;
-  border: 1px solid var(--hint-border) !important;
-  border-radius: 0;
-  padding: 2px 4px;
-  margin: 2px;
-  box-shadow: none;
-}
-#sk_keystroke .annotation { color: var(--fg) !important; }
-#sk_keystroke .candidates  { color: var(--accent) !important; }
-
-/* ── Status line ─────────────────────────────────── */
-#sk_status {
-  font-family: var(--font-mono);
-  font-size: var(--font-size);
-  font-weight: 600;
-  background: var(--bg) !important;
-  color: var(--fg) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 0;
-}
-#sk_status > span {
-  padding: 4px 8px;
-  color: var(--fg) !important;
-  border-right: 1px solid var(--border);
-}
-
-/* ── Find bar + in-page highlights ───────────────── */
-.sk_find_highlight {
-  background: var(--bg-highlight) !important;
-  color: var(--fg) !important;
-  border-bottom: 2px solid var(--accent) !important;
-}
-#sk_find {
-  background: var(--bg) !important;
-  border: 1px solid var(--border) !important;
-  color: var(--fg) !important;
-}
-#sk_find input {
-  font-family: var(--font-mono) !important;
-  font-weight: 600 !important;
-  color: var(--fg) !important;
-  background: transparent !important;
-  border: none !important;
-}
-
-/* ── Bubble / Popup / Usage ──────────────────────── */
-#sk_bubble, #sk_popup {
-  background: var(--bg) !important;
-  color: var(--fg) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 0;
-  box-shadow: none;
-}
-#sk_usage {
-  background: var(--bg) !important;
-  color: var(--fg) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 0;
-}
-#sk_usage .feature_name {
-  color: var(--accent) !important;
-  border-bottom: 2px solid var(--border) !important;
-}
-#sk_usage .feature_name > span { border-bottom: none !important; }
-
-/* ── Tab list (w key) ────────────────────────────── */
-#sk_tabs {
-  background: var(--bg) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 0;
-}
-.sk_tab {
-  background: var(--bg-alt) !important;
-  border: 1px solid var(--border) !important;
-  color: var(--fg) !important;
-  border-radius: 0;
-}
-.sk_tab_title { color: var(--fg) !important; }
-.sk_tab.active  { background: var(--bg-highlight) !important; }
-.sk_tab_hint {
-  background: var(--hint-bg) !important;
-  background-image: none !important;
-  color: var(--hint-fg) !important;
-  border: 1px solid var(--hint-border) !important;
-  border-radius: 3px !important;
-  box-shadow: none !important;
-}
-`;
+settings.theme = [
+  ':root {',
+  '  --font-mono: "Iosevka", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;',
+  '  --font-size: 0.875rem;',
+  '  --bg:           #020202;',
+  '  --bg-alt:       #0a0a0a;',
+  '  --bg-highlight: #13384f;',
+  '  --fg:           #f0f1ff;',
+  '  --fg-muted:     rgba(240, 241, 255, 0.6);',
+  '  --accent:       #89cdd2;',
+  '  --border:       #0a3749;',
+  '  --hint-bg:      #002D59;',
+  '  --hint-fg:      #94E1F9;',
+  '  --hint-border:  #006FCC;',
+  '}',
+  '',
+  '/* Base */',
+  '.sk_theme {',
+  '  font-family: var(--font-mono);',
+  '  font-size: var(--font-size);',
+  '  background: var(--bg);',
+  '  color: var(--fg);',
+  '}',
+  '.sk_theme tbody { color: var(--fg); }',
+  '.sk_theme input  { color: var(--fg); }',
+  '',
+  '/* Omnibar text elements */',
+  '.sk_theme .url              { color: var(--accent); }',
+  '.sk_theme .annotation       { color: var(--fg-muted); }',
+  '.sk_theme .omnibar_highlight { color: var(--accent); font-weight: 600; }',
+  '.sk_theme .omnibar_timestamp { color: var(--fg-muted); }',
+  '.sk_theme .omnibar_visitcount { color: var(--fg-muted); }',
+  '.sk_theme .omnibar_folder   { color: var(--accent); }',
+  '.sk_theme .prompt           { color: var(--fg-muted); }',
+  '.sk_theme .separator        { color: var(--border); }',
+  '',
+  '/* Omnibar container + result rows */',
+  '#sk_omnibar {',
+  '  border: 1px solid var(--border);',
+  '  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.9);',
+  '  border-radius: 0;',
+  '}',
+  '.sk_theme #sk_omnibarSearchResult ul li:nth-child(odd) {',
+  '  background: var(--bg-alt);',
+  '}',
+  '.sk_theme #sk_omnibarSearchResult ul li.focused {',
+  '  background: var(--bg-highlight);',
+  '}',
+  '',
+  '/* Banner */',
+  '#sk_banner {',
+  '  font-family: var(--font-mono);',
+  '  font-size: var(--font-size);',
+  '  font-weight: 600;',
+  '  background: var(--bg) !important;',
+  '  color: var(--fg) !important;',
+  '  border: 1px solid var(--border);',
+  '  border-radius: 0;',
+  '  box-shadow: none;',
+  '  padding: 4px 12px;',
+  '}',
+  '',
+  '/* Keystroke overlay */',
+  '#sk_keystroke {',
+  '  background: var(--bg) !important;',
+  '  border: 1px solid var(--border) !important;',
+  '  border-radius: 0 !important;',
+  '  box-shadow: none !important;',
+  '  padding: 6px !important;',
+  '  color: var(--fg) !important;',
+  '}',
+  '#sk_keystroke kbd {',
+  '  font-family: var(--font-mono);',
+  '  font-size: var(--font-size);',
+  '  font-weight: 600;',
+  '  color: var(--hint-fg) !important;',
+  '  background: var(--hint-bg) !important;',
+  '  border: 1px solid var(--hint-border) !important;',
+  '  border-radius: 0;',
+  '  padding: 2px 4px;',
+  '  margin: 2px;',
+  '  box-shadow: none;',
+  '}',
+  '#sk_keystroke .annotation { color: var(--fg) !important; }',
+  '#sk_keystroke .candidates  { color: var(--accent) !important; }',
+  '',
+  '/* Status line */',
+  '#sk_status {',
+  '  font-family: var(--font-mono);',
+  '  font-size: var(--font-size);',
+  '  font-weight: 600;',
+  '  background: var(--bg) !important;',
+  '  color: var(--fg) !important;',
+  '  border: 1px solid var(--border) !important;',
+  '  border-radius: 0;',
+  '}',
+  '#sk_status > span {',
+  '  padding: 4px 8px;',
+  '  color: var(--fg) !important;',
+  '  border-right: 1px solid var(--border);',
+  '}',
+  '',
+  '/* Find bar + in-page highlights */',
+  '.sk_find_highlight {',
+  '  background: var(--bg-highlight) !important;',
+  '  color: var(--fg) !important;',
+  '  border-bottom: 2px solid var(--accent) !important;',
+  '}',
+  '#sk_find {',
+  '  background: var(--bg) !important;',
+  '  border: 1px solid var(--border) !important;',
+  '  color: var(--fg) !important;',
+  '}',
+  '#sk_find input {',
+  '  font-family: var(--font-mono) !important;',
+  '  font-weight: 600 !important;',
+  '  color: var(--fg) !important;',
+  '  background: transparent !important;',
+  '  border: none !important;',
+  '}',
+  '',
+  '/* Bubble / Popup / Usage */',
+  '#sk_bubble, #sk_popup {',
+  '  background: var(--bg) !important;',
+  '  color: var(--fg) !important;',
+  '  border: 1px solid var(--border) !important;',
+  '  border-radius: 0;',
+  '  box-shadow: none;',
+  '}',
+  '#sk_usage {',
+  '  background: var(--bg) !important;',
+  '  color: var(--fg) !important;',
+  '  border: 1px solid var(--border) !important;',
+  '  border-radius: 0;',
+  '}',
+  '#sk_usage .feature_name {',
+  '  color: var(--accent) !important;',
+  '  border-bottom: 2px solid var(--border) !important;',
+  '}',
+  '#sk_usage .feature_name > span { border-bottom: none !important; }',
+  '',
+  '/* Tab list (w key) */',
+  '#sk_tabs {',
+  '  background: var(--bg) !important;',
+  '  border: 1px solid var(--border) !important;',
+  '  border-radius: 0;',
+  '}',
+  '.sk_tab {',
+  '  background: var(--bg-alt) !important;',
+  '  border: 1px solid var(--border) !important;',
+  '  color: var(--fg) !important;',
+  '  border-radius: 0;',
+  '}',
+  '.sk_tab_title { color: var(--fg) !important; }',
+  '.sk_tab.active  { background: var(--bg-highlight) !important; }',
+  '.sk_tab_hint {',
+  '  background: var(--hint-bg) !important;',
+  '  background-image: none !important;',
+  '  color: var(--hint-fg) !important;',
+  '  border: 1px solid var(--hint-border) !important;',
+  '  border-radius: 3px !important;',
+  '  box-shadow: none !important;',
+  '}',
+].join('\n');
 
 // ========== Hints Styling (Shadow DOM) ==========
 // Surfingkeys 1.17.11: user CSS is prepended BEFORE default CSS in shadow DOM
@@ -184,45 +184,49 @@ settings.theme = `
 //      /^div\b/ wraps the entire block in div{...} if it doesn't match, breaking it.
 //   2. Use !important on background/color/border to beat the default rules, and
 //      div:not(#_) for extra specificity insurance.
-api.Hints.style(`div:not(#_) {
-    font-family: "Iosevka", ui-monospace, monospace;
-    font-size: 13px;
-    font-weight: 700;
-    padding: 1px 4px;
-    background: #002D59 !important;
-    background-image: none !important;
-    color: #94E1F9 !important;
-    border: 1px solid #006FCC !important;
-    border-radius: 3px;
-    box-shadow: none;
-}
-div.hint-scrollable:not(#_) {
-    background: rgba(0, 45, 89, 0.85) !important;
-    background-image: none !important;
-}
-[mode=input] mask:not(#_) {
-    background: rgba(0, 111, 204, 0.25) !important;
-}
-[mode=input] mask.activeInput:not(#_) {
-    background: rgba(0, 111, 204, 0.5) !important;
-}`);
+api.Hints.style([
+  'div:not(#_) {',
+  '    font-family: "Iosevka", ui-monospace, monospace;',
+  '    font-size: 13px;',
+  '    font-weight: 700;',
+  '    padding: 1px 4px;',
+  '    background: #002D59 !important;',
+  '    background-image: none !important;',
+  '    color: #94E1F9 !important;',
+  '    border: 1px solid #006FCC !important;',
+  '    border-radius: 3px;',
+  '    box-shadow: none;',
+  '}',
+  'div.hint-scrollable:not(#_) {',
+  '    background: rgba(0, 45, 89, 0.85) !important;',
+  '    background-image: none !important;',
+  '}',
+  '[mode=input] mask:not(#_) {',
+  '    background: rgba(0, 111, 204, 0.25) !important;',
+  '}',
+  '[mode=input] mask.activeInput:not(#_) {',
+  '    background: rgba(0, 111, 204, 0.5) !important;',
+  '}',
+].join('\n'));
 
 // Style for text/visual mode hints
-api.Hints.style(`div:not(#_) {
-    font-family: "Iosevka", ui-monospace, monospace;
-    font-size: 13px;
-    font-weight: 700;
-    padding: 1px 4px;
-    background: #002D59 !important;
-    background-image: none !important;
-    color: #94E1F9 !important;
-    border: 1px solid #006FCC !important;
-    border-radius: 0;
-    box-shadow: none;
-}
-div.begin:not(#_) {
-    color: #94E1F9 !important;
-}`, "text");
+api.Hints.style([
+  'div:not(#_) {',
+  '    font-family: "Iosevka", ui-monospace, monospace;',
+  '    font-size: 13px;',
+  '    font-weight: 700;',
+  '    padding: 1px 4px;',
+  '    background: #002D59 !important;',
+  '    background-image: none !important;',
+  '    color: #94E1F9 !important;',
+  '    border: 1px solid #006FCC !important;',
+  '    border-radius: 0;',
+  '    box-shadow: none;',
+  '}',
+  'div.begin:not(#_) {',
+  '    color: #94E1F9 !important;',
+  '}',
+].join('\n'), "text");
 
 // ========== Visual Mode ==========
 api.map('V', 'v');  // V → enter visual/caret mode (v is remapped to scroll)
@@ -235,10 +239,10 @@ api.Visual.style('marks',  'background-color: rgba(0, 111, 204, 0.3); border-bot
 // Zen Browser: focus address bar via local helper, bypassing content-script limits.
 api.mapkey('o', 'Focus Address Bar', function () {
   fetch('http://localhost:18888/focus')
-    .then(r => {
+    .then(function (r) {
       if (!r.ok) api.Front.showBanner("Focus Error: " + r.statusText);
     })
-    .catch(e => {
+    .catch(function (e) {
       api.Front.showBanner("Focus Failed: Is surfingkeys-server running?");
       console.error(e);
     });
@@ -266,27 +270,27 @@ api.unmap('gc');
 api.unmap('gd');
 api.unmap('ge');
 api.unmap('gk');
-api.mapkey('gb', 'Open Bookmarks', () => {
+api.mapkey('gb', 'Open Bookmarks', function () {
   api.RUNTIME('openLink', { tab: { tabbed: true, active: true }, url: 'about:preferences#general' });
 });
-api.mapkey('gc', 'Open about:config', () => {
+api.mapkey('gc', 'Open about:config', function () {
   api.RUNTIME('openLink', { tab: { tabbed: true, active: true }, url: 'about:config' });
 });
-api.mapkey('gd', 'Open Downloads', () => {
+api.mapkey('gd', 'Open Downloads', function () {
   api.RUNTIME('openLink', { tab: { tabbed: true, active: true }, url: 'about:downloads' });
 });
-api.mapkey('ge', 'Open Add-ons', () => {
+api.mapkey('ge', 'Open Add-ons', function () {
   api.RUNTIME('openLink', { tab: { tabbed: true, active: true }, url: 'about:addons' });
 });
-api.mapkey('gk', 'Open Performance', () => {
+api.mapkey('gk', 'Open Performance', function () {
   api.RUNTIME('openLink', { tab: { tabbed: true, active: true }, url: 'about:performance' });
 });
 
 // Large Scroll (Half Page)
-api.mapkey('b', 'Scroll half page down', () => {
+api.mapkey('b', 'Scroll half page down', function () {
   api.Normal.scroll("pageDown");
 });
-api.mapkey('v', 'Scroll half page up', () => {
+api.mapkey('v', 'Scroll half page up', function () {
   api.Normal.scroll("pageUp");
 });
 
@@ -324,21 +328,21 @@ api.map('F', 'gf'); // Open link in new tab
 
 // Video speed
 api.mapkey(']', 'Increase video speed', function () {
-  const video = document.querySelector('video');
+  var video = document.querySelector('video');
   if (video) {
     video.playbackRate += 0.25;
     api.Front.showBanner("Speed: " + video.playbackRate.toFixed(2) + "x");
   }
 });
 api.mapkey('[', 'Decrease video speed', function () {
-  const video = document.querySelector('video');
+  var video = document.querySelector('video');
   if (video) {
     video.playbackRate = Math.max(0.25, video.playbackRate - 0.25);
     api.Front.showBanner("Speed: " + video.playbackRate.toFixed(2) + "x");
   }
 });
 api.mapkey('\\', 'Reset video speed to 1x', function () {
-  const video = document.querySelector('video');
+  var video = document.querySelector('video');
   if (video) {
     video.playbackRate = 1;
     api.Front.showBanner("Speed: 1.00x");
@@ -349,7 +353,7 @@ api.mapkey('\\', 'Reset video speed to 1x', function () {
 // Since we disabled Omnibar, we just open these directly in new tabs or current tab
 // but without passing through the Omnibar UI.
 
-const quickmarks = {
+var quickmarks = {
   'A': { name: 'ArtStation', url: 'https://magazine.artstation.com/' },
   'E': { name: 'ProjectEuler', url: 'https://projecteuler.net/' },
   'L': { name: 'LibGen', url: 'https://libgen.li' },
@@ -365,13 +369,14 @@ const quickmarks = {
   'z': { name: 'Z-Lib', url: 'https://z-lib.is' }
 };
 
-Object.entries(quickmarks).forEach(([key, site]) => {
+Object.keys(quickmarks).forEach(function (key) {
+  var site = quickmarks[key];
   // Open in current tab (go + key)
-  api.mapkey('go' + key, 'Open ' + site.name, () => {
+  api.mapkey('go' + key, 'Open ' + site.name, function () {
     window.location.href = site.url;
   });
   // Open in new tab (gn + key)
-  api.mapkey('gn' + key, 'Open ' + site.name + ' in new tab', () => {
+  api.mapkey('gn' + key, 'Open ' + site.name + ' in new tab', function () {
     api.tabOpenLink(site.url);
   });
 });
@@ -471,10 +476,10 @@ settings.blocklistPattern = /mail\.google\.com|docs\.google\.com|discord\.com|ap
 // ========== Site-Specific Helpers ==========
 // Adapted from https://github.com/b0o/surfingkeys-conf
 
-const _hostname = window.location.hostname;
+var _hostname = window.location.hostname;
 
 function _isInViewport(el) {
-  const r = el.getBoundingClientRect();
+  var r = el.getBoundingClientRect();
   return r.top >= 0 && r.left >= 0
     && r.bottom <= (window.innerHeight || document.documentElement.clientHeight)
     && r.right <= (window.innerWidth || document.documentElement.clientWidth);
@@ -482,58 +487,58 @@ function _isInViewport(el) {
 
 // ========== Global Utilities ==========
 
-api.mapkey('yM', 'Copy page as Markdown link', () => {
-  api.Clipboard.write(`[${document.title}](${window.location.href})`);
+api.mapkey('yM', 'Copy page as Markdown link', function () {
+  api.Clipboard.write('[' + document.title + '](' + window.location.href + ')');
   api.Front.showBanner('Copied Markdown link');
 });
 
-api.mapkey('yI', 'Copy image URL', () => {
-  api.Hints.create('img', (el) => {
+api.mapkey('yI', 'Copy image URL', function () {
+  api.Hints.create('img', function (el) {
     api.Clipboard.write(el.src);
     api.Front.showBanner('Copied: ' + el.src.substring(0, 60));
   });
 });
 
-api.mapkey('g.', 'Go to parent domain', () => {
-  const parts = window.location.host.split('.');
-  const parent = (parts.length > 2 ? parts.slice(1) : parts).join('.');
+api.mapkey('g.', 'Go to parent domain', function () {
+  var parts = window.location.host.split('.');
+  var parent = (parts.length > 2 ? parts.slice(1) : parts).join('.');
   window.location.href = window.location.protocol + '//' + parent;
 });
 
-api.mapkey('=a', 'View on Wayback Machine', () => {
+api.mapkey('=a', 'View on Wayback Machine', function () {
   api.RUNTIME('openLink', {
     tab: { tabbed: true, active: true },
     url: 'https://web.archive.org/web/*/' + window.location.href,
   });
 });
 
-api.mapkey('=d', 'View DNS info for domain', () => {
+api.mapkey('=d', 'View DNS info for domain', function () {
   api.RUNTIME('openLink', {
     tab: { tabbed: true, active: true },
     url: 'http://centralops.net/co/DomainDossier.aspx?dom_dns=true&addr=' + _hostname,
   });
 });
 
-api.mapkey('=s', 'View social discussions for page', () => {
+api.mapkey('=s', 'View social discussions for page', function () {
   api.RUNTIME('openLink', {
     tab: { tabbed: true, active: true },
     url: 'https://discu.eu/?q=' + encodeURIComponent(window.location.href),
   });
 });
 
-api.mapkey('ye', 'Copy last URL path segment', () => {
-  const seg = window.location.pathname.split('/').filter(s => s).pop() || '';
+api.mapkey('ye', 'Copy last URL path segment', function () {
+  var seg = window.location.pathname.split('/').filter(function (s) { return s; }).pop() || '';
   api.Clipboard.write(decodeURIComponent(seg));
   api.Front.showBanner('Copied: ' + decodeURIComponent(seg));
 });
 
-api.mapkey('yu', 'Copy URL without query/hash', () => {
-  const clean = window.location.origin + window.location.pathname;
+api.mapkey('yu', 'Copy URL without query/hash', function () {
+  var clean = window.location.origin + window.location.pathname;
   api.Clipboard.write(clean);
   api.Front.showBanner('Copied: ' + clean.substring(0, 60));
 });
 
-api.mapkey('yT', 'Duplicate tab (background)', () => {
+api.mapkey('yT', 'Duplicate tab (background)', function () {
   api.RUNTIME('openLink', {
     tab: { tabbed: true, active: false },
     url: window.location.href,
@@ -546,64 +551,68 @@ api.map('gxR', 'gxT');  // Close tab to right
 // ========== GitHub ==========
 
 if (/github\.com$/.test(_hostname)) {
-  const _ghRepo = () => {
-    const p = window.location.pathname.split('/').filter(s => s);
+  var _ghRepo = function () {
+    var p = window.location.pathname.split('/').filter(function (s) { return s; });
     return p.length >= 2 ? { user: p[0], repo: p[1], base: '/' + p[0] + '/' + p[1] } : null;
   };
-  const _ghPage = (path) => { const r = _ghRepo(); if (r) window.location.href = r.base + path; };
+  var _ghPage = function (path) {
+    var r = _ghRepo();
+    if (r) window.location.href = r.base + path;
+  };
 
   // Repo navigation
-  api.mapkey(';A', 'GitHub: Actions',       () => _ghPage('/actions'));
-  api.mapkey(';C', 'GitHub: Commits',       () => _ghPage('/commits'));
-  api.mapkey(';I', 'GitHub: Issues',        () => _ghPage('/issues'));
-  api.mapkey(';N', 'GitHub: Notifications', () => { window.location.href = '/notifications'; });
-  api.mapkey(';P', 'GitHub: Pull Requests', () => _ghPage('/pulls'));
-  api.mapkey(';R', 'GitHub: Repo root',     () => _ghPage('/'));
-  api.mapkey(';S', 'GitHub: Settings',      () => _ghPage('/settings'));
-  api.mapkey(';W', 'GitHub: Wiki',          () => _ghPage('/wiki'));
+  api.mapkey(';A', 'GitHub: Actions', function () { _ghPage('/actions'); });
+  api.mapkey(';C', 'GitHub: Commits', function () { _ghPage('/commits'); });
+  api.mapkey(';I', 'GitHub: Issues', function () { _ghPage('/issues'); });
+  api.mapkey(';N', 'GitHub: Notifications', function () { window.location.href = '/notifications'; });
+  api.mapkey(';P', 'GitHub: Pull Requests', function () { _ghPage('/pulls'); });
+  api.mapkey(';R', 'GitHub: Repo root', function () { _ghPage('/'); });
+  api.mapkey(';S', 'GitHub: Settings', function () { _ghPage('/settings'); });
+  api.mapkey(';W', 'GitHub: Wiki', function () { _ghPage('/wiki'); });
 
   // Link hints — filtered by type
-  api.mapkey(';a', 'GitHub: View repo', () => {
-    const links = [...document.querySelectorAll('a[href]')].filter(a =>
-      a.hostname === 'github.com' && /^\/[^/]+\/[^/]+\/?$/.test(a.pathname));
+  api.mapkey(';a', 'GitHub: View repo', function () {
+    var links = Array.from(document.querySelectorAll('a[href]')).filter(function (a) {
+      return a.hostname === 'github.com' && /^\/[^/]+\/[^/]+\/?$/.test(a.pathname);
+    });
     if (links.length) api.Hints.create(links);
   });
-  api.mapkey(';f', 'GitHub: View file',   () => api.Hints.create('a[href*="/blob/"], a[href*="/tree/"]'));
-  api.mapkey(';i', 'GitHub: View issue',  () => api.Hints.create('a[href*="/issues/"]'));
-  api.mapkey(';p', 'GitHub: View PR',     () => api.Hints.create('a[href*="/pull/"]'));
-  api.mapkey(';c', 'GitHub: View commit', () => api.Hints.create('a[href*="/commit/"]'));
-  api.mapkey(';e', 'GitHub: External link', () => api.Hints.create('a[rel=nofollow]'));
+  api.mapkey(';f', 'GitHub: View file', function () { api.Hints.create('a[href*="/blob/"], a[href*="/tree/"]'); });
+  api.mapkey(';i', 'GitHub: View issue', function () { api.Hints.create('a[href*="/issues/"]'); });
+  api.mapkey(';p', 'GitHub: View PR', function () { api.Hints.create('a[href*="/pull/"]'); });
+  api.mapkey(';c', 'GitHub: View commit', function () { api.Hints.create('a[href*="/commit/"]'); });
+  api.mapkey(';e', 'GitHub: External link', function () { api.Hints.create('a[rel=nofollow]'); });
 
   // Actions
-  api.mapkey(';s', 'GitHub: Toggle star', () => {
-    const containers = [...document.querySelectorAll('div.starring-container')]
-      .filter(e => window.getComputedStyle(e).display !== 'none');
+  api.mapkey(';s', 'GitHub: Toggle star', function () {
+    var containers = Array.from(document.querySelectorAll('div.starring-container'))
+      .filter(function (e) { return window.getComputedStyle(e).display !== 'none'; });
     if (!containers.length) return;
-    const c = containers[0];
-    const starred = c.classList.contains('on');
-    const btn = c.querySelector(starred
+    var c = containers[0];
+    var starred = c.classList.contains('on');
+    var btn = c.querySelector(starred
       ? '.starred button, button.starred'
       : '.unstarred button, button.unstarred');
     if (btn) btn.click();
     api.Front.showBanner(starred ? '☆ Unstarred' : '★ Starred');
   });
 
-  api.mapkey(';y', 'GitHub: Copy project path', () => {
-    const r = _ghRepo();
+  api.mapkey(';y', 'GitHub: Copy project path', function () {
+    var r = _ghRepo();
     if (r) {
       api.Clipboard.write(r.user + '/' + r.repo);
       api.Front.showBanner('Copied: ' + r.user + '/' + r.repo);
     }
   });
 
-  api.mapkey(';l', 'GitHub: Toggle language stats', () => {
-    const el = document.querySelector('.repository-lang-stats-graph');
+  api.mapkey(';l', 'GitHub: Toggle language stats', function () {
+    var el = document.querySelector('.repository-lang-stats-graph');
     if (el) el.click();
   });
 
   // Smart go-parent (overrides default gu on GitHub)
-  api.mapkey('gu', 'GitHub: Go up one path', () => {
-    const parts = window.location.pathname.split('/').filter(s => s);
+  api.mapkey('gu', 'GitHub: Go up one path', function () {
+    var parts = window.location.pathname.split('/').filter(function (s) { return s; });
     if (parts.length <= 1) return;
     if (parts.length === 4 && (parts[2] === 'blob' || parts[2] === 'tree')) {
       window.location.href = '/' + parts[0] + '/' + parts[1];
@@ -618,8 +627,8 @@ if (/github\.com$/.test(_hostname)) {
 // ========== raw.githubusercontent.com ==========
 
 if (_hostname === 'raw.githubusercontent.com') {
-  api.mapkey(';R', 'Raw: Open repo page', () => {
-    const p = window.location.pathname.split('/').filter(s => s);
+  api.mapkey(';R', 'Raw: Open repo page', function () {
+    var p = window.location.pathname.split('/').filter(function (s) { return s; });
     if (p.length >= 2) {
       api.RUNTIME('openLink', {
         tab: { tabbed: true, active: true },
@@ -627,11 +636,11 @@ if (_hostname === 'raw.githubusercontent.com') {
       });
     }
   });
-  api.mapkey(';F', 'Raw: Open source file on GitHub', () => {
-    const p = window.location.pathname.split('/');
-    const parts = p.filter(s => s);
+  api.mapkey(';F', 'Raw: Open source file on GitHub', function () {
+    var p = window.location.pathname.split('/');
+    var parts = p.filter(function (s) { return s; });
     if (parts.length >= 3) {
-      const url = 'https://github.com/' + [parts[0], parts[1], 'tree', ...parts.slice(2)].join('/');
+      var url = 'https://github.com/' + [parts[0], parts[1], 'tree'].concat(parts.slice(2)).join('/');
       api.RUNTIME('openLink', { tab: { tabbed: true, active: true }, url });
     }
   });
@@ -640,9 +649,9 @@ if (_hostname === 'raw.githubusercontent.com') {
 // ========== GitHub Pages (*.github.io) ==========
 
 if (/\.github\.io$/.test(_hostname)) {
-  api.mapkey(';R', 'GH Pages: Open repo on GitHub', () => {
-    const user = _hostname.split('.')[0];
-    const repo = window.location.pathname.split('/')[1] || '';
+  api.mapkey(';R', 'GH Pages: Open repo on GitHub', function () {
+    var user = _hostname.split('.')[0];
+    var repo = window.location.pathname.split('/')[1] || '';
     api.RUNTIME('openLink', {
       tab: { tabbed: true, active: true },
       url: 'https://github.com/' + user + '/' + repo,
@@ -653,32 +662,35 @@ if (/\.github\.io$/.test(_hostname)) {
 // ========== YouTube ==========
 
 if (/youtube\.com$/.test(_hostname)) {
-  api.mapkey(';A', 'YouTube: Open video (new tab)', () => {
-    api.Hints.create('*[id="video-title"]', (el) => {
-      const a = el.closest('a') || el;
+  api.mapkey(';A', 'YouTube: Open video (new tab)', function () {
+    api.Hints.create('*[id="video-title"]', function (el) {
+      var a = el.closest('a') || el;
       api.RUNTIME('openLink', { tab: { tabbed: true, active: true }, url: a.href });
     });
   });
 
-  api.mapkey(';C', 'YouTube: Open channel', () => {
+  api.mapkey(';C', 'YouTube: Open channel', function () {
     api.Hints.create('*[id="byline"]');
   });
 
-  api.mapkey(';H', 'YouTube: Subscriptions feed', () => {
+  api.mapkey(';H', 'YouTube: Subscriptions feed', function () {
     window.location.href = 'https://www.youtube.com/feed/subscriptions';
   });
 
-  const _ytTimestampLink = () => {
-    const el = document.querySelector('#ytd-player .ytp-time-current');
+  var _ytTimestampLink = function () {
+    var el = document.querySelector('#ytd-player .ytp-time-current');
     if (!el) return null;
-    const [ss, mm, hh = 0] = el.innerText.split(':').reverse().map(Number);
-    const secs = (hh * 3600) + (mm * 60) + ss;
-    const v = new URLSearchParams(window.location.search).get('v');
+    var timeParts = el.innerText.split(':').reverse().map(Number);
+    var ss = timeParts[0] || 0;
+    var mm = timeParts[1] || 0;
+    var hh = timeParts[2] || 0;
+    var secs = (hh * 3600) + (mm * 60) + ss;
+    var v = new URLSearchParams(window.location.search).get('v');
     return v ? 'https://youtu.be/' + v + '?t=' + secs : null;
   };
 
-  api.mapkey(';t', 'YouTube: Copy timestamp link', () => {
-    const link = _ytTimestampLink();
+  api.mapkey(';t', 'YouTube: Copy timestamp link', function () {
+    var link = _ytTimestampLink();
     if (link) {
       api.Clipboard.write(link);
       api.Front.showBanner('Copied: ' + link);
@@ -687,10 +699,10 @@ if (/youtube\.com$/.test(_hostname)) {
     }
   });
 
-  api.mapkey(';m', 'YouTube: Copy timestamp markdown link', () => {
-    const link = _ytTimestampLink();
+  api.mapkey(';m', 'YouTube: Copy timestamp markdown link', function () {
+    var link = _ytTimestampLink();
     if (link) {
-      const md = '[' + document.title + '](' + link + ')';
+      var md = '[' + document.title + '](' + link + ')';
       api.Clipboard.write(md);
       api.Front.showBanner('Copied markdown link');
     } else {
@@ -702,67 +714,67 @@ if (/youtube\.com$/.test(_hostname)) {
 // ========== Reddit (old.reddit.com) ==========
 
 if (/reddit\.com$/.test(_hostname)) {
-  api.mapkey(';x', 'Reddit: Collapse comment (hints)', () => {
+  api.mapkey(';x', 'Reddit: Collapse comment (hints)', function () {
     api.Hints.create('.expand');
   });
 
-  api.mapkey(';X', 'Reddit: Collapse next visible comment', () => {
-    const comments = [...document.querySelectorAll('.noncollapsed.comment')]
+  api.mapkey(';X', 'Reddit: Collapse next visible comment', function () {
+    var comments = Array.from(document.querySelectorAll('.noncollapsed.comment'))
       .filter(_isInViewport);
     if (comments.length) comments[0].querySelector('.expand').click();
   });
 
-  api.mapkey(';s', 'Reddit: Upvote', () => api.Hints.create('.arrow.up'));
-  api.mapkey(';S', 'Reddit: Downvote', () => api.Hints.create('.arrow.down'));
-  api.mapkey(';e', 'Reddit: Expand', () => api.Hints.create('.expando-button'));
+  api.mapkey(';s', 'Reddit: Upvote', function () { api.Hints.create('.arrow.up'); });
+  api.mapkey(';S', 'Reddit: Downvote', function () { api.Hints.create('.arrow.down'); });
+  api.mapkey(';e', 'Reddit: Expand', function () { api.Hints.create('.expando-button'); });
 
-  api.mapkey(';a', 'Reddit: Open post', () => api.Hints.create('.title'));
-  api.mapkey(';A', 'Reddit: Open post (new tab)', () => {
-    api.Hints.create('.title', (el) => {
-      const a = el.closest('a') || el;
+  api.mapkey(';a', 'Reddit: Open post', function () { api.Hints.create('.title'); });
+  api.mapkey(';A', 'Reddit: Open post (new tab)', function () {
+    api.Hints.create('.title', function (el) {
+      var a = el.closest('a') || el;
       api.RUNTIME('openLink', { tab: { tabbed: true, active: false }, url: a.href });
     });
   });
-  api.mapkey(';c', 'Reddit: Open comments', () => api.Hints.create('.comments'));
+  api.mapkey(';c', 'Reddit: Open comments', function () { api.Hints.create('.comments'); });
 }
 
 // ========== Hacker News ==========
 
 if (/news\.ycombinator\.com$/.test(_hostname)) {
-  api.mapkey(';x', 'HN: Collapse comment (hints)', () => api.Hints.create('.togg'));
+  api.mapkey(';x', 'HN: Collapse comment (hints)', function () { api.Hints.create('.togg'); });
 
-  api.mapkey(';X', 'HN: Collapse next visible comment', () => {
-    const toggles = [...document.querySelectorAll('a.togg')]
-      .filter(e => e.innerText === '[–]' && _isInViewport(e));
+  api.mapkey(';X', 'HN: Collapse next visible comment', function () {
+    var toggles = Array.from(document.querySelectorAll('a.togg'))
+      .filter(function (e) { return e.innerText === '[–]' && _isInViewport(e); });
     if (toggles.length) toggles[0].click();
   });
 
-  api.mapkey(';s', 'HN: Upvote', () => api.Hints.create(".votearrow[title='upvote']"));
+  api.mapkey(';s', 'HN: Upvote', function () { api.Hints.create(".votearrow[title='upvote']"); });
 
-  api.mapkey(';a', 'HN: Open post link', () => api.Hints.create('.titleline>a'));
-  api.mapkey(';A', 'HN: Open link + comments', () => {
-    api.Hints.create('.athing', (el) => {
-      const linkUrl = el.querySelector('.titleline>a').href;
-      const commEl = el.nextElementSibling.querySelector("a[href^='item']:not(.titlelink)");
+  api.mapkey(';a', 'HN: Open post link', function () { api.Hints.create('.titleline>a'); });
+  api.mapkey(';A', 'HN: Open link + comments', function () {
+    api.Hints.create('.athing', function (el) {
+      var linkUrl = el.querySelector('.titleline>a').href;
+      var commEl = el.nextElementSibling.querySelector("a[href^='item']:not(.titlelink)");
       if (commEl) api.RUNTIME('openLink', { tab: { tabbed: true, active: false }, url: commEl.href });
       api.RUNTIME('openLink', { tab: { tabbed: true, active: true }, url: linkUrl });
     });
   });
-  api.mapkey(';c', 'HN: Open comments', () => api.Hints.create(".subline>a[href^='item']"));
+  api.mapkey(';c', 'HN: Open comments', function () { api.Hints.create(".subline>a[href^='item']"); });
 
-  api.mapkey('gp', 'HN: Go to parent', () => {
-    const par = document.querySelector(".navs>a[href^='item']");
+  api.mapkey('gp', 'HN: Go to parent', function () {
+    var par = document.querySelector(".navs>a[href^='item']");
     if (par) window.location.href = par.href;
   });
 
-  api.mapkey(']]', 'HN: Next page', () => {
-    const u = new URL(window.location.href);
-    const page = parseInt(u.searchParams.get('p') || '1', 10);
+  api.mapkey(']]', 'HN: Next page', function () {
+    var u = new URL(window.location.href);
+    var page = parseInt(u.searchParams.get('p') || '1', 10);
     if (!isNaN(page)) { u.searchParams.set('p', page + 1); window.location.href = u.href; }
   });
-  api.mapkey('[[', 'HN: Previous page', () => {
-    const u = new URL(window.location.href);
-    const page = parseInt(u.searchParams.get('p') || '1', 10);
+  api.mapkey('[[', 'HN: Previous page', function () {
+    var u = new URL(window.location.href);
+    var page = parseInt(u.searchParams.get('p') || '1', 10);
     if (!isNaN(page) && page > 1) { u.searchParams.set('p', page - 1); window.location.href = u.href; }
   });
 }
@@ -770,23 +782,23 @@ if (/news\.ycombinator\.com$/.test(_hostname)) {
 // ========== Google Search ==========
 
 if (/google\.com$/.test(_hostname)) {
-  const _gResultSel = ['a h3', 'h3 a', '.isv-r > a:first-child', '.WlydOe'].join(',');
+  var _gResultSel = ['a h3', 'h3 a', '.isv-r > a:first-child', '.WlydOe'].join(',');
 
-  api.mapkey(';a', 'Google: Open search result', () => api.Hints.create(_gResultSel));
-  api.mapkey(';A', 'Google: Open result (new tab)', () => {
-    api.Hints.create(_gResultSel, (el) => {
-      const a = el.closest('a') || el;
+  api.mapkey(';a', 'Google: Open search result', function () { api.Hints.create(_gResultSel); });
+  api.mapkey(';A', 'Google: Open result (new tab)', function () {
+    api.Hints.create(_gResultSel, function (el) {
+      var a = el.closest('a') || el;
       api.RUNTIME('openLink', { tab: { tabbed: true, active: false }, url: a.href });
     });
   });
 
-  api.mapkey(';d', 'Google: Same search in DuckDuckGo', () => {
-    const u = new URL(window.location.href);
-    const q = u.searchParams.get('q');
+  api.mapkey(';d', 'Google: Same search in DuckDuckGo', function () {
+    var u = new URL(window.location.href);
+    var q = u.searchParams.get('q');
     if (!q) return;
-    const ddg = new URL('https://duckduckgo.com');
+    var ddg = new URL('https://duckduckgo.com');
     ddg.searchParams.set('q', q);
-    const tbm = u.searchParams.get('tbm');
+    var tbm = u.searchParams.get('tbm');
     if (tbm === 'isch') { ddg.searchParams.set('ia', 'images'); ddg.searchParams.set('iax', 'images'); }
     else if (tbm === 'vid') { ddg.searchParams.set('ia', 'videos'); ddg.searchParams.set('iax', 'videos'); }
     else if (tbm === 'nws') { ddg.searchParams.set('ia', 'news'); ddg.searchParams.set('iar', 'news'); }
@@ -798,34 +810,34 @@ if (/google\.com$/.test(_hostname)) {
 // ========== DuckDuckGo ==========
 
 if (/duckduckgo\.com$/.test(_hostname)) {
-  const _ddgSel = [
+  var _ddgSel = [
     "a[rel=noopener][target=_self]:not([data-testid=result-extras-url-link])",
     ".js-images-show-more",
     ".module--images__thumbnails__link",
   ].join(',');
 
-  api.mapkey(';a', 'DDG: Open search result', () => api.Hints.create(_ddgSel));
-  api.mapkey(';A', 'DDG: Open result (new tab)', () => {
-    api.Hints.create(_ddgSel, (el) => {
-      const a = el.closest('a') || el;
+  api.mapkey(';a', 'DDG: Open search result', function () { api.Hints.create(_ddgSel); });
+  api.mapkey(';A', 'DDG: Open result (new tab)', function () {
+    api.Hints.create(_ddgSel, function (el) {
+      var a = el.closest('a') || el;
       api.RUNTIME('openLink', { tab: { tabbed: true, active: false }, url: a.href });
     });
   });
 
-  api.mapkey(']]', 'DDG: Show more results', () => {
-    const btn = document.querySelector('.result--more__btn');
+  api.mapkey(']]', 'DDG: Show more results', function () {
+    var btn = document.querySelector('.result--more__btn');
     if (btn) btn.click();
   });
 
-  api.mapkey(';g', 'DDG: Same search in Google', () => {
-    const u = new URL(window.location.href);
-    const q = u.searchParams.get('q');
+  api.mapkey(';g', 'DDG: Same search in Google', function () {
+    var u = new URL(window.location.href);
+    var q = u.searchParams.get('q');
     if (!q) return;
-    const goog = new URL('https://google.com/search');
+    var goog = new URL('https://google.com/search');
     goog.searchParams.set('q', q);
-    const iax = u.searchParams.get('iax');
-    const iar = u.searchParams.get('iar');
-    const iaxm = u.searchParams.get('iaxm');
+    var iax = u.searchParams.get('iax');
+    var iar = u.searchParams.get('iar');
+    var iaxm = u.searchParams.get('iaxm');
     if (iax === 'images') goog.searchParams.set('tbm', 'isch');
     else if (iax === 'videos') goog.searchParams.set('tbm', 'vid');
     else if (iar === 'news') goog.searchParams.set('tbm', 'nws');
@@ -834,17 +846,17 @@ if (/duckduckgo\.com$/.test(_hostname)) {
   });
 
   // Site-scoped search toggles
-  api.mapkey(';sgh', 'DDG: Toggle site:github.com', () => {
-    const u = new URL(window.location.href);
-    const q = u.searchParams.get('q') || '';
-    const site = 'site:github.com';
+  api.mapkey(';sgh', 'DDG: Toggle site:github.com', function () {
+    var u = new URL(window.location.href);
+    var q = u.searchParams.get('q') || '';
+    var site = 'site:github.com';
     u.searchParams.set('q', q.includes(site) ? q.replace(site, '').trim() : q + ' ' + site);
     window.location.href = u.href;
   });
-  api.mapkey(';sre', 'DDG: Toggle site:reddit.com', () => {
-    const u = new URL(window.location.href);
-    const q = u.searchParams.get('q') || '';
-    const site = 'site:reddit.com';
+  api.mapkey(';sre', 'DDG: Toggle site:reddit.com', function () {
+    var u = new URL(window.location.href);
+    var q = u.searchParams.get('q') || '';
+    var site = 'site:reddit.com';
     u.searchParams.set('q', q.includes(site) ? q.replace(site, '').trim() : q + ' ' + site);
     window.location.href = u.href;
   });
@@ -853,36 +865,36 @@ if (/duckduckgo\.com$/.test(_hostname)) {
 // ========== Wikipedia / ArchWiki ==========
 
 if (/wikipedia\.org$|wiktionary\.org$|wikimedia\.org$|wiki\.archlinux\.org$/.test(_hostname)) {
-  api.mapkey(';s', 'Wiki: Toggle simple/standard version', () => {
-    const u = new URL(window.location.href);
-    const parts = u.hostname.split('.');
+  api.mapkey(';s', 'Wiki: Toggle simple/standard version', function () {
+    var u = new URL(window.location.href);
+    var parts = u.hostname.split('.');
     if (parts[0] === 'simple') parts.shift();
     else parts.unshift('simple');
     u.hostname = parts.join('.');
     window.location.href = u.href;
   });
 
-  api.mapkey(';a', 'Wiki: Article link (hints)', () => {
+  api.mapkey(';a', 'Wiki: Article link (hints)', function () {
     api.Hints.create('#bodyContent :not(sup):not(.mw-editsection) > a:not([rel=nofollow])');
   });
-  api.mapkey(';e', 'Wiki: External link (hints)', () => api.Hints.create('a[rel=nofollow]'));
+  api.mapkey(';e', 'Wiki: External link (hints)', function () { api.Hints.create('a[rel=nofollow]'); });
 
-  api.mapkey(';y', 'Wiki: Copy summary as Markdown', () => {
-    const el = document.querySelector('#mw-content-text p:not([class]):not([id])');
+  api.mapkey(';y', 'Wiki: Copy summary as Markdown', function () {
+    var el = document.querySelector('#mw-content-text p:not([class]):not([id])');
     if (!el) { api.Front.showBanner('No summary found'); return; }
-    const clone = el.cloneNode(true);
-    clone.querySelectorAll('sup').forEach(e => e.remove());
-    clone.querySelectorAll('b').forEach(e => { e.innerText = '**' + e.innerText + '**'; });
-    clone.querySelectorAll('i').forEach(e => { e.innerText = '_' + e.innerText + '_'; });
-    const md = '> ' + clone.innerText.trim() + '\n\n\u2014 [' + document.title + '](' + window.location.href + ')';
+    var clone = el.cloneNode(true);
+    clone.querySelectorAll('sup').forEach(function (e) { e.remove(); });
+    clone.querySelectorAll('b').forEach(function (e) { e.innerText = '**' + e.innerText + '**'; });
+    clone.querySelectorAll('i').forEach(function (e) { e.innerText = '_' + e.innerText + '_'; });
+    var md = '> ' + clone.innerText.trim() + '\n\n- [' + document.title + '](' + window.location.href + ')';
     api.Clipboard.write(md);
     api.Front.showBanner('Summary copied as Markdown');
   });
 
-  api.mapkey(';R', 'Wiki: View WikiRank', () => {
-    const h = _hostname.split('.');
-    const lang = h.length > 2 && h[0] !== 'www' ? h[0] : 'en';
-    const p = window.location.pathname.split('/');
+  api.mapkey(';R', 'Wiki: View WikiRank', function () {
+    var h = _hostname.split('.');
+    var lang = h.length > 2 && h[0] !== 'www' ? h[0] : 'en';
+    var p = window.location.pathname.split('/');
     if (p.length < 3 || p[1] !== 'wiki') return;
     api.RUNTIME('openLink', {
       tab: { tabbed: true, active: true },
@@ -894,7 +906,7 @@ if (/wikipedia\.org$|wiktionary\.org$|wikimedia\.org$|wiki\.archlinux\.org$/.tes
 // ========== StackOverflow / StackExchange ==========
 
 if (/stackoverflow\.com$|stackexchange\.com$|serverfault\.com$|superuser\.com$|askubuntu\.com$/.test(_hostname)) {
-  api.mapkey(';a', 'SO: View question', () => {
+  api.mapkey(';a', 'SO: View question', function () {
     api.Hints.create('a.question-hyperlink, a.s-link');
   });
 }
@@ -902,8 +914,7 @@ if (/stackoverflow\.com$|stackexchange\.com$|serverfault\.com$|superuser\.com$|a
 // ========== AUR ==========
 
 if (/aur\.archlinux\.org$/.test(_hostname)) {
-  api.mapkey(';a', 'AUR: View package', () => {
+  api.mapkey(';a', 'AUR: View package', function () {
     api.Hints.create("a[href^='/packages/'][href$='/']");
   });
 }
-
