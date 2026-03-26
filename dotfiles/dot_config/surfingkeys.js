@@ -641,7 +641,10 @@ if (_hostname === 'raw.githubusercontent.com') {
     var parts = p.filter(function (s) { return s; });
     if (parts.length >= 3) {
       var url = 'https://github.com/' + [parts[0], parts[1], 'tree'].concat(parts.slice(2)).join('/');
-      api.RUNTIME('openLink', { tab: { tabbed: true, active: true }, url });
+      api.RUNTIME('openLink', {
+        tab: { tabbed: true, active: true },
+        url: url,
+      });
     }
   });
 }

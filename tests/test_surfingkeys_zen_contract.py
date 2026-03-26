@@ -25,6 +25,8 @@ def test_surfingkeys_config_keeps_zen_helper_actions():
     assert "Zen Browser: focus address bar via local helper" in text
     assert "http://localhost:18888/focus" in text
     assert "http://localhost:18888/blank.html" in text
+    assert "url: url" in text
+    assert "{ tab: { tabbed: true, active: true }, url });" not in text
 
 
 def test_helper_server_exposes_required_endpoints_for_zen_flow():
