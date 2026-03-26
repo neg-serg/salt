@@ -160,6 +160,7 @@ other:
   - freerdp  # RDP client implementation
   - fwupd  # firmware update daemon
   - fzf  # command-line fuzzy finder
+  - genact  # fake terminal activity generator
   - geoip  # IP-to-country resolver
   - geoip-database  # GeoIP legacy country database
   - gist  # GitHub gist CLI
