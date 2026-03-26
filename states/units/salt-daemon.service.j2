@@ -11,6 +11,8 @@ ExecStart={{ project_dir }}/.venv/bin/python3 {{ project_dir }}/scripts/salt-dae
 WorkingDirectory={{ project_dir }}
 Restart=on-failure
 RestartSec=5
+Environment=XDG_RUNTIME_DIR={{ runtime_dir }}
+Environment=DBUS_SESSION_BUS_ADDRESS=unix:path={{ runtime_dir }}/bus
 # State application requires root
 User=root
 # Clean up socket on stop

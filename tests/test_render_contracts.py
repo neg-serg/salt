@@ -29,6 +29,19 @@ def test_salt_monitor_unit_is_templated_for_runtime_dir():
     assert "Environment=XDG_RUNTIME_DIR={{ runtime_dir }}" in unit_source
 
 
+def test_salt_daemon_unit_is_templated_for_user_runtime_dir():
+    state_path = os.path.join(REPO_ROOT, "states", "desktop", "user.sls")
+    with open(state_path) as fh:
+        state_source = fh.read()
+    unit_path = os.path.join(REPO_ROOT, "states", "units", "salt-daemon.service.j2")
+    with open(unit_path) as fh:
+        unit_source = fh.read()
+
+    assert "runtime_dir': host.runtime_dir" in state_source
+    assert "Environment=XDG_RUNTIME_DIR={{ runtime_dir }}" in unit_source
+    assert "Environment=DBUS_SESSION_BUS_ADDRESS=unix:path={{ runtime_dir }}/bus" in unit_source
+
+
 def test_user_services_source_has_no_parallel_feature_lists():
     path = os.path.join(REPO_ROOT, "states", "user_services.sls")
     with open(path) as fh:

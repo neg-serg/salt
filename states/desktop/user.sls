@@ -14,4 +14,4 @@ salt_daemon_venv_ready:
   file.exists:
     - name: {{ host.project_dir }}/.venv/bin/python3
 
-{{ service_with_unit('salt-daemon', 'salt://units/salt-daemon.service.j2', template='jinja', context={'project_dir': host.project_dir}, running=True, requires=['file: salt_daemon_venv_ready']) }}
+{{ service_with_unit('salt-daemon', 'salt://units/salt-daemon.service.j2', template='jinja', context={'project_dir': host.project_dir, 'runtime_dir': host.runtime_dir}, running=True, requires=['file: salt_daemon_venv_ready']) }}
