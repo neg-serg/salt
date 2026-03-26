@@ -1,5 +1,6 @@
 pragma Singleton
 import QtQuick
+import Quickshell
 import qs.Settings
 
 // Widget visibility and ordering registry driven by Settings.panelLayout.
