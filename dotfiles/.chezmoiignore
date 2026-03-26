@@ -12,3 +12,4 @@
 # Zen Browser: source files for Salt deployment to ~/.config/zen/<profile>/
 .config/zen-browser/user.js
 .config/zen-browser/userChrome.css
+.config/zen-browser/zen-themes/
