@@ -12,25 +12,19 @@ def test_system_description_includes_hiddify_state_by_default():
     assert "- hiddify" in source
 
 
-def test_hiddify_state_manages_appimage_and_loopback_fix():
+def test_hiddify_state_removes_legacy_appimage_and_prefers_hiddify_next():
     source = (REPO_ROOT / "states" / "hiddify.sls").read_text()
 
-    assert "Hiddify-Linux-x64.AppImage" in source
+    assert "Hiddify.AppImage" in source
+    assert "hiddify-official.desktop" in source
+    assert "hiddify.desktop" in source
+    assert "xdg-mime default hiddify.desktop x-scheme-handler/hiddify" in source
+
+
+def test_hiddify_state_cleans_legacy_wrappers_and_profile_data():
+    source = (REPO_ROOT / "states" / "hiddify.sls").read_text()
+
+    assert "hiddify-launch" in source
+    assert "hiddify-root" in source
     assert "hiddify-fix-loopback" in source
-    assert "/opt/hiddify-next" in source
-    assert "xdg-mime default hiddify-official.desktop x-scheme-handler/hiddify" in source
-
-
-def test_hiddify_launchers_call_fixup_script():
-    launch = (
-        REPO_ROOT / "dotfiles" / "dot_local" / "bin" / "executable_hiddify-launch"
-    ).read_text()
-    root = (REPO_ROOT / "dotfiles" / "dot_local" / "bin" / "executable_hiddify-root").read_text()
-    fix = (
-        REPO_ROOT / "dotfiles" / "dot_local" / "bin" / "executable_hiddify-fix-loopback"
-    ).read_text()
-
-    assert 'hiddify-fix-loopback" || true' in launch
-    assert 'hiddify-fix-loopback" || true' in root
-    assert 'select(.listen != "::1")' in fix
-    assert "\\[::1\\]:12334" in fix
+    assert ".local/share/app.hiddify.com" in source
