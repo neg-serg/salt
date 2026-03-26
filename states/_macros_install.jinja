@@ -325,7 +325,15 @@ install_{{ name | replace('-', '_') }}:
 {%- set _xpi = profile ~ '/extensions/' ~ ext.id ~ '.xpi' -%}
 {{ prefix }}_{{ ext.slug | replace('-', '_') }}:
   cmd.run:
-    - name: curl -fsSL -o '{{ _xpi }}.tmp' 'https://addons.mozilla.org/firefox/downloads/latest/{{ ext.slug }}/latest.xpi' && mv -f '{{ _xpi }}.tmp' '{{ _xpi }}'
+    - name: |
+        rm -f '{{ _xpi }}.tmp'
+        curl --http1.1 --fail --silent --show-error --location \
+          --ipv4 \
+          --connect-timeout 20 --max-time 180 \
+          --retry {{ _retry_attempts * 3 }} --retry-delay {{ _retry_interval // 2 if _retry_interval > 1 else 1 }} --retry-max-time 600 --retry-all-errors \
+          -o '{{ _xpi }}.tmp' \
+          'https://addons.mozilla.org/firefox/downloads/latest/{{ ext.slug }}/latest.xpi' &&
+        mv -f '{{ _xpi }}.tmp' '{{ _xpi }}'
     - creates: {{ _xpi }}
     - runas: {{ user }}
     - parallel: True

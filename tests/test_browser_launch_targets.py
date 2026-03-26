@@ -48,6 +48,7 @@ def test_hypr_shared_browser_matchers_include_zen_for_routing_and_navigation():
     classes = read("dotfiles/dot_config/hypr/classes.conf")
     vars_conf = read("dotfiles/dot_config/hypr/vars.conf")
     bindings = read("dotfiles/dot_config/hypr/bindings.conf")
+    workspaces = read("dotfiles/dot_config/hypr/workspaces.conf")
 
     assert (
         "$web = match:class "
@@ -58,4 +59,7 @@ def test_hypr_shared_browser_matchers_include_zen_for_routing_and_navigation():
     assert (
         "$browser_match = match:class ^(zen|floorp|one\\.ablaze\\.floorp|floorpdeveloperedition)$"
     ) in vars_conf
+    assert "windowrule = match:class ^(zen)$, workspace 2 silent" in workspaces
+    assert "windowrule = match:initial_class ^(zen)$, workspace 2 silent" in workspaces
+    assert "windowrule = $web, workspace 2 silent" in workspaces
     assert "$browser = zen-browser" in bindings
