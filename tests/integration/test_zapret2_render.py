@@ -16,8 +16,8 @@ def test_zapret2_state_manages_package_config_unit_and_helper():
     source = (REPO_ROOT / "states" / "zapret2.sls").read_text()
 
     assert "zapret2_install_pkg:" in source
-    assert "pkg.installed:" in source
-    assert "- name: ipset" in source
+    assert "zapret2_install_ipset:" in source
+    assert "pacman -S --noconfirm --needed ipset" in source
     assert "zapret2_refresh_lists:" in source
     assert "zapret2-list-update.timer" in source
     assert "salt://configs/zapret2.conf.j2" in source

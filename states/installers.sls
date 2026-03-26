@@ -83,7 +83,7 @@ tdl_legacy_cleanup:
 {{ curl_extract_tar('hyprevents', 'https://github.com/vilari-mickopf/hyprevents/archive/refs/heads/master.tar.gz', 'hyprevents-master', binaries=['hyprevents', 'event_handler', 'event_loader'], chmod=True) }}
 
 # --- aider (AI coding assistant) ---
-{{ paru_install('aider', 'aider-chat') }}
+{# {{ paru_install('aider', 'aider-chat') }} #}
 
 # One-time cleanup: remove old uv-installed binary after package migration
 aider_legacy_cleanup:

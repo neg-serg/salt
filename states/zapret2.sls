@@ -15,8 +15,9 @@ zapret2_install_pkg:
     - unless: pacman -Q {{ zapret2.package.name }}
 
 zapret2_install_ipset:
-  pkg.installed:
-    - name: ipset
+  cmd.run:
+    - name: pacman -S --noconfirm --needed ipset
+    - unless: pacman -Q ipset
 
 {{ ensure_dir('zapret2_config_dir', cfg_dir, mode='0755', user='root') }}
 {{ ensure_dir('zapret2_hostlist_dir', hostlist_dir, mode='0755', user='root') }}
@@ -73,7 +74,7 @@ zapret2_refresh_lists:
       - file: zapret2_hostlist
     - require:
       - cmd: zapret2_install_pkg
-      - pkg: zapret2_install_ipset
+      - cmd: zapret2_install_ipset
 
 zapret2_list_update_timer:
   service.running:
@@ -81,7 +82,7 @@ zapret2_list_update_timer:
     - enable: True
     - require:
       - cmd: zapret2_install_pkg
-      - pkg: zapret2_install_ipset
+      - cmd: zapret2_install_ipset
       - cmd: zapret2_refresh_lists
 
 {{ service_with_unit(
@@ -94,5 +95,5 @@ zapret2_list_update_timer:
     'helper_path': helper_path,
     'approval_file': approval_file,
   },
-  requires=['cmd: zapret2_install_pkg', 'pkg: zapret2_install_ipset', 'file: zapret2_config', 'file: zapret2_hostlist', 'file: zapret2_helper_script', 'cmd: zapret2_refresh_lists', 'service: zapret2_list_update_timer']
+  requires=['cmd: zapret2_install_pkg', 'cmd: zapret2_install_ipset', 'file: zapret2_config', 'file: zapret2_hostlist', 'file: zapret2_helper_script', 'cmd: zapret2_refresh_lists', 'service: zapret2_list_update_timer']
 ) }}

@@ -20,6 +20,7 @@ hyprland_packages:
   - hypridle                            # idle daemon for Hyprland
   - hyprlock                            # screen locker for Hyprland
   - hyprpicker                          # color picker for Hyprland
+  - hyprpwcenter                        # volume/brightness and media center
   - hyprpolkitagent                     # polkit authentication agent
   - wlr-randr                           # wlroots display configuration tool
   - xdg-desktop-portal-hyprland         # XDG desktop portal backend for Hyprland
