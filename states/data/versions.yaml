@@ -17,6 +17,7 @@ essentia: "2.1_beta2"
 
 # --- VPN ---
 amnezia_vpn: "2.1.2"
+hiddify: "2.5.7"
 
 # --- AI agents ---
 openclaw: "2026.3.2"

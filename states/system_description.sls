@@ -98,6 +98,9 @@ include:
 {% if host.features.floorp and host.floorp_profile %}
   - floorp
 {% endif %}
+{% if host.features.network.get('hiddify', True) %}
+  - hiddify
+{% endif %}
 {% if host.zen_profile %}
   - zen_browser
 {% endif %}

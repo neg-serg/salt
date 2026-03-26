@@ -1,0 +1,7 @@
+#!/usr/bin/env zsh
+set -eu
+
+"$HOME/.local/bin/hiddify-fix-loopback" || true
+
+app="$HOME/.local/bin/Hiddify.AppImage"
+exec kitty --title "Hiddify Root" sh -lc "exec sudo --preserve-env=DISPLAY,WAYLAND_DISPLAY,XDG_RUNTIME_DIR,DBUS_SESSION_BUS_ADDRESS,XAUTHORITY -H \"$app\""
