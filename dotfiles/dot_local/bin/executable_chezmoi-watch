@@ -3,7 +3,8 @@
 # Watch chezmoi source directory and auto-apply on changes.
 # Debounces rapid saves (2s window) to avoid redundant applies.
 
-set -euo pipefail
+set -eu
+setopt PIPE_FAIL
 
 src_dir="${HOME}/src/salt/dotfiles"
 cooldown=2

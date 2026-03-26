@@ -344,6 +344,18 @@ If you are migrating an existing store from GPG/Yubikey to `age`:
 - use one maintainer/operator as the cutover and rollback owner;
 - retire the legacy path only after 7 consecutive days with no fallback use and no unresolved failures.
 
+For a reverse rehearsal from an active `age` store back to `gpgcli`, use:
+
+```bash
+scripts/gopass-gpg-cutover-rehearsal.sh --gpg-id <GPG-FINGERPRINT>
+```
+
+The script keeps the live store untouched, builds an isolated GPG-backed
+rehearsal store under `/tmp`, copies a representative validation subset by
+default, compares checksums with `gopass sum`, and runs `chezmoi diff` against
+the rehearsal backend. Run it again with `--all-secrets` before any production
+swap.
+
 ---
 
 ## 9. Apply

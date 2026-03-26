@@ -348,6 +348,18 @@ gpg --card-status
 - назначьте одного maintainer/operator владельцем cutover и rollback;
 - убирайте legacy path только после 7 последовательных дней без fallback и без нерешённых сбоев.
 
+Для безопасной репетиции обратного перехода с активного `age` store на `gpgcli`
+используйте:
+
+```bash
+scripts/gopass-gpg-cutover-rehearsal.sh --gpg-id <GPG-FINGERPRINT>
+```
+
+Скрипт не трогает live store, создаёт изолированный GPG-backed rehearsal store
+в `/tmp`, по умолчанию переносит representative validation subset, сверяет
+контрольные суммы через `gopass sum` и запускает `chezmoi diff` уже против
+rehearsal backend. Перед production swap прогоните его с `--all-secrets`.
+
 ---
 
 ## 9. Применение
