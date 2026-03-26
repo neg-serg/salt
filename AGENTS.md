@@ -17,6 +17,8 @@ Auto-generated from active feature plans. Last updated: 2026-03-26
 - File-based `gopass` store plus git history and offline rollback artifacts (072-gopass-age-migration)
 - Jinja2 + YAML Salt states, Python 3 helper script, Markdown operator docs + Salt 3006.x masterless workflow, existing `_macros_*.jinja`, `zen-browser-bin`, Surfingkeys browser extension, systemd user services, Hyprland/Wayfire launcher config, spec-kit artifacts (077-zen-browser-cutover)
 - Repository-managed state/data files plus browser profile files under the existing Zen profile directory and user-service-managed local helper process (077-zen-browser-cutover)
+- Markdown, shell command evidence, `gopass` 1.16.1, `age`-backed store observations + `gopass`, `age`, GitHub upstream discussions/releases, local `gopass` configuration and CLI behavior, spec-kit artifacts (078-gopass-age-research)
+- File-based `gopass` store plus local encrypted `~/.config/gopass/age/identities` and captured command outputs (078-gopass-age-research)
 
 ## Project Structure
 
@@ -46,6 +48,7 @@ specs/
 - Treat `states/**/*.sls` as the supported state tree for lint/render/index tooling.
 
 ## Recent Changes
+- 078-gopass-age-research: Added Markdown, shell command evidence, `gopass` 1.16.1, `age`-backed store observations + `gopass`, `age`, GitHub upstream discussions/releases, local `gopass` configuration and CLI behavior, spec-kit artifacts
 - 077-zen-browser-cutover: Added Jinja2 + YAML Salt states, Python 3 helper script, Markdown operator docs + Salt 3006.x masterless workflow, existing `_macros_*.jinja`, `zen-browser-bin`, Surfingkeys browser extension, systemd user services, Hyprland/Wayfire launcher config, spec-kit artifacts
 - 075-gopass-age-cutover: Added Markdown, YAML, Bash/Zsh operator workflows, `gopass` 1.16.x + `gopass`, `age`, existing git-backed password store, chezmoi, Salt masterless workflow, spec-kit artifacts
 - 072-gopass-age-migration: Added Markdown, YAML, Bash/Zsh operator workflows, `gopass` 1.16.x + `gopass`, `age`, existing git-backed password store, chezmoi, Salt masterless workflow, spec-kit artifacts
