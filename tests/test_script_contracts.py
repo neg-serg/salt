@@ -25,6 +25,15 @@ def test_salt_apply_and_validate_source_runtime_module():
     assert validate_call in validate_source
 
 
+def test_salt_apply_always_runs_chezmoi_after_success():
+    apply_source = (REPO_ROOT / "scripts" / "salt-apply.sh").read_text()
+
+    assert 'echo "--- Applying dotfiles (chezmoi) ---"' in apply_source
+    assert 'chezmoi apply --force --source "${PROJECT_DIR}/dotfiles"' in apply_source
+    assert "No Salt changes; skipping chezmoi" not in apply_source
+    assert "salt_has_changes" not in apply_source
+
+
 def test_justfile_lint_delegates_to_script():
     justfile_source = (REPO_ROOT / "Justfile").read_text()
     lint_script_source = (REPO_ROOT / "scripts" / "lint-all.sh").read_text()

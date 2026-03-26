@@ -303,20 +303,7 @@ echo "Full log: ${LOG_FILE}"
 
 if [[ $RC -eq 0 ]]; then
     echo "--- ${STATE}: all states passed ---"
-
-    # Skip chezmoi on no-op applies (Salt changed nothing → dotfiles unchanged too)
-    salt_has_changes=false
-    if rg -q 'Succeeded:.*changed=[1-9]' "$LOG_FILE" 2>/dev/null; then
-        salt_has_changes=true
-    fi
-
-    if $salt_has_changes; then
-        echo "--- Applying dotfiles (chezmoi) ---"
-    else
-        echo "--- No Salt changes; skipping chezmoi ---"
-    fi
-
-    if $salt_has_changes; then
+    echo "--- Applying dotfiles (chezmoi) ---"
     # Keep the existing GPG flow usable by refreshing pinentry TTY when that backend is in use.
     gpg-connect-agent updatestartuptty /bye &>/dev/null || true
     # Bootstrap chezmoi config before apply (needed for gopass template rendering)
@@ -340,7 +327,6 @@ if [[ $RC -eq 0 ]]; then
             exit 1
         fi
     fi
-    fi  # salt_has_changes
 else
     echo "--- ${STATE}: some states failed (see log above) ---"
     exit $RC
