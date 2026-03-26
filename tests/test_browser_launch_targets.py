@@ -42,3 +42,20 @@ def test_wlr_which_key_browser_menu_prefers_zen_and_keeps_floorp_secondary():
         "--launch floorp"
     )
     assert secondary in text
+
+
+def test_hypr_shared_browser_matchers_include_zen_for_routing_and_navigation():
+    classes = read("dotfiles/dot_config/hypr/classes.conf")
+    vars_conf = read("dotfiles/dot_config/hypr/vars.conf")
+    bindings = read("dotfiles/dot_config/hypr/bindings.conf")
+
+    assert (
+        "$web = match:class "
+        "^(zen|floorp|one\\.ablaze\\.floorp|floorpdeveloperedition|librewolf|"
+        "io\\.gitlab\\.librewolf-community|chromium|org\\.chromium\\.Chromium|"
+        "thorium-browser|com\\.thorium\\.Thorium|palemoon|net\\.palemoon\\.PaleMoon)$"
+    ) in classes
+    assert (
+        "$browser_match = match:class ^(zen|floorp|one\\.ablaze\\.floorp|floorpdeveloperedition)$"
+    ) in vars_conf
+    assert "$browser = zen-browser" in bindings
