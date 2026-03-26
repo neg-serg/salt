@@ -17,6 +17,7 @@ defaults:
   locale: en_US.UTF-8
   floorp_profile: ""
   zen_profile: ""
+  migrate_floorp_profile_to_zen: false
   hostname: "{{ grains['host'] }}"
   extra_kargs: []
   extra_modules: []
@@ -76,6 +77,7 @@ hosts:
     greetd_scale: 2
     floorp_profile: c85pjaxk.default-default
     zen_profile: "qnkh60k3.Default (release)"
+    migrate_floorp_profile_to_zen: true
     hostname: telfir
     extra_modules:
       - ec_sys  # raw EC register access for hwmon sensors
