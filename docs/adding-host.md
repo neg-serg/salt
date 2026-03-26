@@ -127,7 +127,7 @@ The alias resolves before the merge, so the correct host config applies even bef
 | `features.steam` | bool | True | Steam + gaming stack |
 | `features.mpd` | bool | True | Music Player Daemon |
 | `features.ollama` | bool | True | Local LLM |
-| `features.floorp` | bool | True | Floorp browser |
+| `features.floorp` | bool | True | Keep Floorp managed as a secondary browser path |
 | `features.llama_embed` | bool | True | llama.cpp embedding server |
 | `features.kanata` | bool | True | Keyboard remapping |
 
@@ -152,9 +152,16 @@ The alias resolves before the merge, so the correct host config applies even bef
 | `timezone` | str | 'Europe/Moscow' | System timezone |
 | `locale` | str | 'en_US.UTF-8' | System locale |
 | `floorp_profile` | str | '' | Floorp profile dir name |
+| `zen_profile` | str | '' | Zen Browser profile dir name |
 | `hostname` | str | grains host | Desired hostname |
 | `extra_kargs` | list | [] | Extra kernel boot args |
 | `extra_modules` | list | [] | Extra kernel modules to load |
+
+## Browser Profile Guidance
+
+- Set `zen_profile` for hosts where Zen Browser is the primary managed browser path.
+- Keep `features.floorp: true` plus `floorp_profile` only when Floorp should remain a managed secondary browser.
+- Common browser launchers should prefer Zen Browser; any Floorp launch path should be explicit and secondary.
 
 ## Checklist
 

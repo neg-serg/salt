@@ -180,6 +180,7 @@ def test_full_assembly_pipeline():
     # Telfir-specific overrides should be applied
     assert "display" in host
     assert "floorp_profile" in host
+    assert "zen_profile" in host
     # Derived fields should be computed
     assert host["runtime_dir"] == f"/run/user/{host['uid']}"
     assert host["project_dir"] == host["home"] + "/src/salt"
@@ -214,6 +215,23 @@ def test_feature_flag_override_preserves_siblings():
     for key in defaults_features:
         if key != "steam":
             assert key in host["features"], f"Feature '{key}' missing after override"
+
+
+def test_host_defaults_include_dual_browser_fields():
+    data = host_model.load_hosts_yaml()
+    defaults = data["defaults"]
+    assert "floorp_profile" in defaults
+    assert "zen_profile" in defaults
+    assert defaults["floorp_profile"] == ""
+    assert defaults["zen_profile"] == ""
+
+
+def test_telfir_has_primary_and_secondary_browser_bindings():
+    data = host_model.load_hosts_yaml()
+    host = host_model.build_host("telfir", data)
+    assert host["zen_profile"] == "qnkh60k3.Default (release)"
+    assert host["floorp_profile"] == "c85pjaxk.default-default"
+    assert host["features"]["floorp"] is True
 
 
 # --- US4: deep merge edge cases ---

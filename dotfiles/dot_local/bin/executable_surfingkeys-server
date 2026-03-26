@@ -9,6 +9,7 @@ import glob
 
 PORT = 18888
 DIR = os.path.expanduser("~/.config")
+ALLOWED_PATHS = {"/focus", "/blank.html"}
 
 
 def hyprland_env():
@@ -29,7 +30,15 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
     def do_GET(self):
         print(f"Request: {self.path}", flush=True)
-        if self.path.startswith('/focus'):
+        path = self.path.split("?", 1)[0]
+
+        if path not in ALLOWED_PATHS:
+            self.send_response(404)
+            self.end_headers()
+            self.wfile.write(b"Not Found")
+            return
+
+        if path == '/focus':
             try:
                 env = hyprland_env()
                 if env is None:
@@ -37,9 +46,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 subprocess.run(
                     ["hyprctl", "dispatch", "sendshortcut", "CTRL,l,activewindow"],
                     env=env,
+                    check=True,
                 )
                 self.send_response(200)
-                self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
                 self.wfile.write(b'OK')
             except Exception as e:
@@ -52,7 +61,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             return super().do_GET()
 
     def end_headers(self):
-        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Cache-Control", "no-store")
         super().end_headers()
 
 # Allow reuse address to prevent "Address already in use" on restarts

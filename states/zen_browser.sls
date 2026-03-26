@@ -1,7 +1,7 @@
 {% from '_imports.jinja' import host, user, home %}
 {% from '_macros_service.jinja' import ensure_dir %}
 {% from '_macros_install.jinja' import firefox_extension %}
-# Zen Browser: user.js + userChrome.css (bottom navbar) + extensions
+# Zen Browser: user.js + userChrome.css + extensions for the primary managed browser path
 {% if host.zen_profile %}
 {% import_yaml 'data/zen_browser.yaml' as zen %}
 {% set zen_profile = home ~ '/.config/zen/' ~ host.zen_profile %}
@@ -26,7 +26,7 @@
 {% endfor %}
 
 # Remove extensions.json so Zen rebuilds it on next launch,
-# picking up extensions.autoDisableScopes=0 from user.js
+# picking up extensions.autoDisableScopes=0 from user.js and any extension payload updates.
 zen_reset_extensions_json:
   file.absent:
     - name: {{ zen_profile }}/extensions.json

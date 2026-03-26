@@ -232,7 +232,7 @@ api.Visual.style('marks',  'background-color: rgba(0, 111, 204, 0.3); border-bot
 // ========== Navigation ==========
 
 // Unmap Omnibar-related default bindings to prevent accidental triggering
-// Map 'o' to Local Focus Server (bypassing Content Script restrictions)
+// Zen Browser: focus address bar via local helper, bypassing content-script limits.
 api.mapkey('o', 'Focus Address Bar', function () {
   fetch('http://localhost:18888/focus')
     .then(r => {
@@ -244,8 +244,8 @@ api.mapkey('o', 'Focus Address Bar', function () {
     });
 });
 api.mapkey('t', 'Open new tab (surfingkeys-accessible, auto-focus address bar)', function () {
-  // Open blank.html served locally — Surfingkeys injects here (HTTP URL),
-  // so 'd' works on the new tab. The page itself calls /focus to focus the address bar.
+  // Zen Browser workflow: open blank.html served locally so Surfingkeys injects on an HTTP URL,
+  // then let the page call /focus to move the address bar without relying on browser internals.
   api.RUNTIME('openLink', {tab: {tabbed: true, active: true}, url: 'http://localhost:18888/blank.html'});
 });
 
@@ -906,5 +906,4 @@ if (/aur\.archlinux\.org$/.test(_hostname)) {
     api.Hints.create("a[href^='/packages/'][href$='/']");
   });
 }
-
 

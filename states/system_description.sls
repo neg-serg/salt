@@ -95,7 +95,7 @@ include:
 {% if host.features.get('espanso', false) %}
   - espanso
 {% endif %}
-{% if host.features.floorp %}
+{% if host.features.floorp and host.floorp_profile %}
   - floorp
 {% endif %}
 {% if host.zen_profile %}

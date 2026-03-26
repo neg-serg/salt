@@ -154,7 +154,7 @@ other:
   - fd  # fast find replacement
   - figlet  # ASCII art text generator
   - fio  # storage benchmark and I/O tester
-  - floorp-bin  # Firefox-based customizable browser
+  - floorp-bin  # Secondary managed Firefox-based browser (explicit launcher path only)
   - fortune-mod  # random quote generator
   - fping  # parallel ping utility
   - freerdp  # RDP client implementation

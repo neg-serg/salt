@@ -8,6 +8,9 @@
 # Shared with Floorp where applicable. Excluded:
 #   - ATBC (adaptive tab bar colour) — Floorp-only, Zen has its own theming
 #   - sombre-artcas2 — Floorp-specific dark theme
+# Helper-dependent Zen workflow:
+#   - Surfingkeys must stay present because helper-assisted `/focus` and `blank.html`
+#     actions are part of the Zen cutover acceptance boundary.
 
 extensions:
   - id: "{a8332c60-5b6d-41ee-bfc8-e9bb331d34ad}"

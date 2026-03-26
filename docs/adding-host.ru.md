@@ -127,7 +127,7 @@ defaults  ←──  hosts['your_host']  ←──  derived fields
 | `features.steam` | bool | True | Steam + игровой стек |
 | `features.mpd` | bool | True | Music Player Daemon |
 | `features.ollama` | bool | True | Локальная LLM |
-| `features.floorp` | bool | True | Браузер Floorp |
+| `features.floorp` | bool | True | Оставить Floorp как управляемый вторичный браузер |
 | `features.llama_embed` | bool | True | Сервер эмбеддингов llama.cpp |
 | `features.kanata` | bool | True | Переназначение клавиш |
 
@@ -152,9 +152,16 @@ defaults  ←──  hosts['your_host']  ←──  derived fields
 | `timezone` | str | 'Europe/Moscow' | Часовой пояс системы |
 | `locale` | str | 'en_US.UTF-8' | Локаль системы |
 | `floorp_profile` | str | '' | Имя директории профиля Floorp |
+| `zen_profile` | str | '' | Имя директории профиля Zen Browser |
 | `hostname` | str | grains host | Желаемый hostname |
 | `extra_kargs` | list | [] | Доп. параметры загрузки ядра |
 | `extra_modules` | list | [] | Доп. модули ядра для загрузки |
+
+## Рекомендации по профилям браузеров
+
+- Задавайте `zen_profile` для хостов, где `Zen Browser` является основным управляемым браузером.
+- Оставляйте `features.floorp: true` и `floorp_profile` только если `Floorp` должен оставаться управляемым вторичным браузером.
+- Общие browser launcher'ы должны предпочитать `Zen Browser`, а путь запуска `Floorp` должен быть отдельным и вторичным.
 
 ## Чеклист
 

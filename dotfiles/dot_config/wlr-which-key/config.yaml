@@ -16,7 +16,10 @@ menu:
   # --- Apps ---
   - key: "w"
     desc: Browser
-    cmd: raise --match "class:regex=^(floorp|one\\.ablaze\\.floorp)$" --launch floorp
+    cmd: raise --match "class:regex=^zen$" --launch zen-browser
+  - key: "W"
+    desc: Floorp Browser
+    cmd: raise --match "class:regex=^(floorp|one\\.ablaze\\.floorp|floorpdeveloperedition)$" --launch floorp
   - key: "x"
     desc: Terminal
     cmd: raise --match "class:regex=^term$" --launch "kitty --class term"
