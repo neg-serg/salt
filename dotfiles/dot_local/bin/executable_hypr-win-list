@@ -186,10 +186,10 @@ def build_entries() -> tuple[list[str], dict[str, dict[str, str]]]:
 
 
 def rofi_command(count: int) -> list[str]:
-    columns = max(1, min(3, count))
-    if count > 3:
-        columns = 3
-    lines = max(1, min(6, math.ceil(count / columns)))
+    # Let rofi pack as many columns as the current width allows instead of
+    # capping the picker to 3 columns.
+    columns = max(1, count)
+    lines = max(1, min(6, count))
     base = [
         "rofi",
         "-dmenu",
@@ -207,7 +207,14 @@ def rofi_command(count: int) -> list[str]:
         "-theme",
         "menu-columns",
         "-theme-str",
-        f"listview {{ columns: {columns}; lines: {lines}; }}",
+        (
+            "listview { "
+            f"columns: {columns}; "
+            f"lines: {lines}; "
+            "dynamic: true; "
+            "fixed-columns: false; "
+            "}"
+        ),
     ]
     if DEBUG:
         print(
