@@ -1,0 +1,21 @@
+[Unit]
+Description=gopass age agent
+After=default.target
+ConditionPathExists=%h/.config/gopass/age/identities
+
+[Service]
+Type=simple
+RuntimeDirectory=gopass
+ExecStartPre=/usr/bin/rm -f %t/gopass/gopass-age-agent.sock
+ExecStart=/usr/bin/gopass age agent start
+ExecStop=/usr/bin/gopass age agent stop
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=true
+PrivateTmp=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+LockPersonality=yes
+
+[Install]
+WantedBy=default.target
