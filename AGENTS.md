@@ -15,6 +15,8 @@ Auto-generated from active feature plans. Last updated: 2026-03-26
 - Repository-managed Salt states, config templates, unit files, and generated `sysusers.d` / `tmpfiles.d` policy fragments on the target machine (074-sysusers-tmpfiles-adoption)
 - Markdown, YAML, Bash/Zsh operator workflows, `gopass` 1.16.x + `gopass`, `age`, existing git-backed password store, chezmoi, Salt masterless workflow, spec-kit artifacts (072-gopass-age-migration)
 - File-based `gopass` store plus git history and offline rollback artifacts (072-gopass-age-migration)
+- Jinja2 + YAML Salt states, Python 3 helper script, Markdown operator docs + Salt 3006.x masterless workflow, existing `_macros_*.jinja`, `zen-browser-bin`, Surfingkeys browser extension, systemd user services, Hyprland/Wayfire launcher config, spec-kit artifacts (077-zen-browser-cutover)
+- Repository-managed state/data files plus browser profile files under the existing Zen profile directory and user-service-managed local helper process (077-zen-browser-cutover)
 
 ## Project Structure
 
@@ -44,9 +46,9 @@ specs/
 - Treat `states/**/*.sls` as the supported state tree for lint/render/index tooling.
 
 ## Recent Changes
+- 077-zen-browser-cutover: Added Jinja2 + YAML Salt states, Python 3 helper script, Markdown operator docs + Salt 3006.x masterless workflow, existing `_macros_*.jinja`, `zen-browser-bin`, Surfingkeys browser extension, systemd user services, Hyprland/Wayfire launcher config, spec-kit artifacts
 - 075-gopass-age-cutover: Added Markdown, YAML, Bash/Zsh operator workflows, `gopass` 1.16.x + `gopass`, `age`, existing git-backed password store, chezmoi, Salt masterless workflow, spec-kit artifacts
 - 072-gopass-age-migration: Added Markdown, YAML, Bash/Zsh operator workflows, `gopass` 1.16.x + `gopass`, `age`, existing git-backed password store, chezmoi, Salt masterless workflow, spec-kit artifacts
-- 074-sysusers-tmpfiles-adoption: Added Jinja2 + YAML Salt states, Python 3, Bash/Zsh helper scripts + Salt 3006.x masterless workflow, existing `_macros_*.jinja`, systemd, Arch/CachyOS package management, repository-managed unit/config trees
 
 
 <!-- MANUAL ADDITIONS START -->
