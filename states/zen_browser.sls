@@ -18,6 +18,14 @@
     - makedirs: True
 {% endfor %}
 
+zen_supergradient_theme:
+  file.recurse:
+    - name: {{ zen_profile }}/chrome/zen-themes/af7ee14f-e9d4-4806-8438-c59b02b77715
+    - source: salt://dotfiles/dot_config/zen-browser/zen-themes/af7ee14f-e9d4-4806-8438-c59b02b77715
+    - user: {{ user }}
+    - group: {{ user }}
+    - makedirs: True
+
 {{ ensure_dir('zen_extensions_dir', zen_profile ~ '/extensions') }}
 
 # --- Zen Browser extensions (download .xpi into profile) ---
