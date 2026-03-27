@@ -323,27 +323,26 @@ install_{{ name | replace('-', '_') }}:
 #}
 {%- macro firefox_extension(ext, profile, require=None, user=_user, prefix='floorp_ext') -%}
 {%- set _xpi = profile ~ '/extensions/' ~ ext.id ~ '.xpi' -%}
+{%- set _stamp = profile ~ '/extensions/.stamp-' ~ ext.id -%}
 {{ prefix }}_{{ ext.slug | replace('-', '_') }}:
   cmd.run:
     - name: |
         rm -f '{{ _xpi }}.tmp'
         curl --http1.1 --fail --silent --show-error --location \
           --ipv4 \
-          --connect-timeout 20 --max-time 180 \
-          --retry {{ _retry_attempts * 3 }} --retry-delay {{ _retry_interval // 2 if _retry_interval > 1 else 1 }} --retry-max-time 600 --retry-all-errors \
+          --connect-timeout 10 --max-time 30 \
+          --retry 2 --retry-delay 2 --retry-max-time 30 \
           -o '{{ _xpi }}.tmp' \
           'https://addons.mozilla.org/firefox/downloads/latest/{{ ext.slug }}/latest.xpi' &&
-        mv -f '{{ _xpi }}.tmp' '{{ _xpi }}'
-    - creates: {{ _xpi }}
+        mv -f '{{ _xpi }}.tmp' '{{ _xpi }}' &&
+        touch '{{ _stamp }}'
+    - unless: test -f '{{ _xpi }}' || test -f '{{ _stamp }}'
     - runas: {{ user }}
     - parallel: True
 {%- if require %}
     - require:
       - file: {{ require }}
 {%- endif %}
-    - retry:
-        attempts: {{ _retry_attempts }}
-        interval: {{ _retry_interval }}
 {%- endmacro -%}
 
 {# Download and install a font from a ZIP archive to ~/.local/share/fonts/<subdir>.
