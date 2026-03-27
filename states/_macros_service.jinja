@@ -247,8 +247,10 @@ test -e {{ _path }}
 {{ name }}:
   cmd.run:
     - name: |
-        systemctl daemon-reload
-        systemctl restart {{ service }}
+        if ! systemctl is-active --quiet {{ service }}; then
+          systemctl daemon-reload
+          systemctl restart {{ service }}
+        fi
         for i in $(seq 1 {{ timeout }}); do
           {{ check_cmd }} && exit 0
           sleep 1
