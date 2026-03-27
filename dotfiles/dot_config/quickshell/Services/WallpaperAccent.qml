@@ -7,7 +7,7 @@ import qs.Settings
 Item {
     id: root
 
-    readonly property bool enabled: Settings.settings.wallpaperAccent !== false
+    enabled: Settings.settings.wallpaperAccent !== false
     property color wallpaperAccent: "#000000"
     property bool hasAccent: false
 

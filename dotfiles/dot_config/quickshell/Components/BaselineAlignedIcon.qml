@@ -183,7 +183,7 @@ Item {
     }
 
     // Baseline for external anchoring (distance from top)
-    property real baselineOffset: (mode === 'material')
+    baselineOffset: (mode === 'material')
         ? (materialItem.baselineOffset + _effBaselineOffset)
         : (mode === 'svg')
             ? ((_svgRenderHeight / 2) + _effBaselineOffset)

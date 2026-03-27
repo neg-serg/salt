@@ -16,7 +16,6 @@ Rectangle {
     property real baseRadius: 0
     property color strokeColor: "transparent"
     property real strokeWidth: 0
-    property bool enabled: true
     // Allows callers to fine-tune stacking relative to siblings.
     property real zIndex: 10
 
