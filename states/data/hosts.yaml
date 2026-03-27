@@ -56,7 +56,7 @@ defaults:
     mpd: true
     ollama: true
     llama_embed: true
-    floorp: true
+    floorp: false
     espanso: false
     kanata: true
     flatpak: true
