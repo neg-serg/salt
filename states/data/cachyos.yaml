@@ -84,7 +84,7 @@ package_checks:
     - dunst                           # notification daemon
     - hyprland                        # Wayland tiling compositor
     - kitty                           # GPU-accelerated terminal
-    - quickshell                      # Qt6 desktop shell framework
+    - quickshell-git                  # Qt6 desktop shell framework (AUR, built from source)
     - rofi                            # application launcher
     - swappy                          # screenshot annotation tool
     - swayosd                         # on-screen display for Wayland

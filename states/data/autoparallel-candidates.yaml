@@ -1223,7 +1223,7 @@ not-applicable-tools:
     reason: "Display plugin; rendering delegated to GPU"
   - name: qt6ct  # Qt6 config — C++
     reason: "Configuration GUI; trivial"
-  - name: quickshell  # desktop shell — C++/QML
+  - name: quickshell-git  # desktop shell — C++/QML
     reason: "QtQuick rendering; GPU-accelerated"
   - name: raysession  # session manager — Python
     reason: "Python runtime"

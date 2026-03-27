@@ -283,7 +283,6 @@ other:
   - qt5ct  # Qt5 configuration utility
   - qt5-wayland  # Qt5 Wayland platform plugin
   - qt6ct  # Qt6 configuration utility
-  - quickshell  # QtQuick desktop shell toolkit
   - rawtherapee  # RAW photo processor
   - rclone  # rsync for cloud storage
   - recoll  # full-text search tool (Xapian)
@@ -406,6 +405,7 @@ aur:
   - pipemixer  # TUI PipeWire volume control
   - pup-bin  # CLI HTML parser (like jq for HTML)
   - python-rapidgzip  # parallel gzip decompressor (Python)
+  - quickshell-git  # QtQuick desktop shell toolkit (AUR, built from source)
   - raise  # run-or-raise for Hyprland (neg-serg fork)
   - raysession  # NSM session manager for audio apps
   - richcolors  # render color palettes from hex files
