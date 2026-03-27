@@ -30,9 +30,8 @@ swayimg_local_checkout_build:
         test -d "$src"
         su - {{ user }} -c 'cd "{{ home }}/src/1st-level/swayimg" && meson setup build-salt --wipe && meson compile -C build-salt'
         meson install -C "$src/build-salt"
+        su - {{ user }} -c 'git -C "{{ home }}/src/1st-level/swayimg" describe --tags --long --always' > /usr/local/share/.swayimg-build-version
     - shell: /bin/bash
-    - unless: |
-        test "$(command -v swayimg 2>/dev/null)" = "/usr/local/bin/swayimg" && \
-        test "$(swayimg --version 2>/dev/null | awk '{print $3}')" = "$(git -C {{ home }}/src/1st-level/swayimg describe --tags --long --always | sed 's/^v//')"
+    - unless: test -f /usr/local/share/.swayimg-build-version && test "$(cat /usr/local/share/.swayimg-build-version)" = "$(su - {{ user }} -c 'git -C {{ home }}/src/1st-level/swayimg describe --tags --long --always')"
     - require:
       - file: swayimg_local_link_absent
