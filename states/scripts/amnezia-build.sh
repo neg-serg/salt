@@ -47,21 +47,25 @@ if [ ! -f "$BUILD/awg-bin" ]; then
     PIDS+=($!); NAMES+=("amneziawg-tools")
 fi
 
-# Amnezia-VPN Client (GUI) — longest build (~1h)
-if [ ! -f "$BUILD/AmneziaVPN-bin" ]; then
+# Amnezia-VPN Client + Service — built together via cmake
+if [ ! -f "$BUILD/AmneziaVPN-bin" ] || [ ! -f "$BUILD/AmneziaVPN-service-bin" ]; then
     (
-        echo "[BUILD] amnezia-vpn"
+        echo "[BUILD] amnezia-vpn (client + service)"
         podman run --rm -v "$BUILD:/build:Z" "$IMG" bash -c "
         pacman -Syu --noconfirm \
             git cmake make gcc qt6-base qt6-svg \
             qt6-declarative qt6-tools libmnl util-linux \
             qt6-5compat qt6-shadertools qt6-multimedia \
             qt6-remoteobjects libsecret && \
-        git clone --recursive https://github.com/amnezia-vpn/amnezia-client.git /build/amnezia-client-src && \
-        mkdir -p /build/amnezia-client-src/build && cd /build/amnezia-client-src/build && \
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DVERSION=${AMNEZIA_VERSION:?AMNEZIA_VERSION env var required} && \
-        make -j\$(nproc) && \
-        cp client/AmneziaVPN /build/AmneziaVPN-bin
+        git clone --depth 1 --branch ${AMNEZIA_VERSION:?AMNEZIA_VERSION env var required} \
+            https://github.com/amnezia-vpn/amnezia-client.git /build/amnezia-client-src && \
+        cd /build/amnezia-client-src && \
+        git submodule update --init --depth 1 && \
+        mkdir -p build && cd build && \
+        /usr/lib/qt6/bin/qt-cmake -S /build/amnezia-client-src -DCMAKE_BUILD_TYPE=Release && \
+        cmake --build . -j\$(nproc) --config Release && \
+        cp client/AmneziaVPN /build/AmneziaVPN-bin && \
+        cp service/server/AmneziaVPN-service /build/AmneziaVPN-service-bin
         " && echo "[  OK ] amnezia-vpn" || { echo "[ FAIL] amnezia-vpn" >&2; exit 1; }
     ) &
     PIDS+=($!); NAMES+=("amnezia-vpn")

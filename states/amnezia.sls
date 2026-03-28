@@ -19,7 +19,8 @@ amnezia_build:
     - unless: >-
         test -f {{ cache }}/amneziawg-go-bin &&
         test -f {{ cache }}/awg-bin &&
-        test -f {{ cache }}/AmneziaVPN-bin
+        test -f {{ cache }}/AmneziaVPN-bin &&
+        test -f {{ cache }}/AmneziaVPN-service-bin
     - retry:
         attempts: {{ retry_attempts }}
         interval: {{ retry_interval }}
@@ -56,11 +57,22 @@ amnezia_vpn_bin:
     - require:
       - cmd: amnezia_build
 
+amnezia_service_bin:
+  file.managed:
+    - name: /usr/local/bin/AmneziaVPN-service
+    - source: {{ cache }}/AmneziaVPN-service-bin
+    - mode: '0755'
+    - user: root
+    - group: root
+    - require:
+      - cmd: amnezia_build
+
 # Verification (only runs when the binary actually changed)
 {% for state_id, cmd, bin_state in [
   ('amneziawg_go', '/usr/local/bin/amneziawg-go --version', 'amneziawg_go_bin'),
   ('awg', '/usr/local/bin/awg --version', 'amneziawg_tools_bin'),
   ('amnezia_vpn', 'ldd /usr/local/bin/AmneziaVPN', 'amnezia_vpn_bin'),
+  ('amnezia_service', 'ldd /usr/local/bin/AmneziaVPN-service', 'amnezia_service_bin'),
 ] %}
 {{ state_id }}_verify:
   cmd.run:
@@ -68,6 +80,33 @@ amnezia_vpn_bin:
     - onchanges:
       - file: {{ bin_state }}
 {% endfor %}
+
+# Systemd service for AmneziaVPN (runs as root for VPN tunnel management)
+amnezia_systemd_unit:
+  file.managed:
+    - name: /usr/lib/systemd/system/AmneziaVPN-source.service
+    - contents: |
+        [Unit]
+        Description=AmneziaVPN Service (source build)
+        After=network.target
+        StartLimitIntervalSec=0
+
+        [Service]
+        Type=simple
+        Restart=always
+        RestartSec=1
+        ExecStart=/usr/local/bin/AmneziaVPN-service
+
+        [Install]
+        WantedBy=multi-user.target
+    - require:
+      - file: amnezia_service_bin
+
+amnezia_service_enabled:
+  service.enabled:
+    - name: AmneziaVPN-source
+    - require:
+      - file: amnezia_systemd_unit
 
 {{ ensure_dir('amnezia_apps_dir', home ~ '/.local/share/applications') }}
 
