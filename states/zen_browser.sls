@@ -1,6 +1,6 @@
 {% from '_imports.jinja' import host, user, home %}
 {% from '_macros_service.jinja' import ensure_dir %}
-{% from '_macros_install.jinja' import firefox_extension %}
+{% from '_macros_desktop.jinja' import browser_extensions %}
 # Zen Browser: user.js + userChrome.css + extensions for the primary managed browser path
 {% if host.zen_profile %}
 {% import_yaml 'data/zen_browser.yaml' as zen %}
@@ -35,7 +35,6 @@ zen_supergradient_theme:
     - group: {{ user }}
     - makedirs: True
 
-{{ ensure_dir('zen_extensions_dir', zen_profile ~ '/extensions') }}
 {{ ensure_dir('zen_migration_dir', zen_migration_dir) }}
 
 {% if host.get('migrate_floorp_profile_to_zen', false) and host.features.floorp and host.floorp_profile %}
@@ -54,19 +53,5 @@ zen_floorp_profile_import:
       - file: floorp_user_js
 {% endif %}
 
-# --- Zen Browser extensions (download .xpi into profile) ---
-{% for ext in zen.extensions %}
-{{ firefox_extension(ext, zen_profile, require='zen_extensions_dir', user=user, prefix='zen_ext') }}
-{% endfor %}
-
-# Remove extensions.json so Zen rebuilds it on next launch,
-# picking up extensions.autoDisableScopes=0 from user.js and any extension payload updates.
-zen_reset_extensions_json:
-  file.absent:
-    - name: {{ zen_profile }}/extensions.json
-    - onchanges:
-      - file: zen_user_js
-{% for ext in zen.extensions %}
-      - cmd: zen_ext_{{ ext.slug | replace('-', '_') }}
-{% endfor %}
+{{ browser_extensions('zen', zen_profile, zen.extensions, 'zen_user_js') }}
 {% endif %}

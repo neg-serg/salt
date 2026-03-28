@@ -1,6 +1,42 @@
-{# Desktop session macros: hyprpm_update, hyprpm_add, hyprpm_enable, dconf_settings #}
+{# Desktop session macros: browser_extensions, hyprpm_update, hyprpm_add, hyprpm_enable, dconf_settings #}
 
 {% from '_macros_common.jinja' import user as _user, home as _home, host, retry_attempts as _retry_attempts, retry_interval as _retry_interval %}
+{% from '_macros_service.jinja' import ensure_dir as _ensure_dir %}
+{% from '_macros_install.jinja' import firefox_extension as _firefox_extension %}
+
+{# Install browser extensions, remove unwanted ones, and reset extensions.json.
+   prefix:       unique prefix for state IDs (e.g. 'floorp', 'zen')
+   profile:      absolute path to browser profile directory
+   extensions:   list of {id, slug, ...} dicts (passed to firefox_extension)
+   user_js_id:   state ID of the user.js file.managed (for onchanges trigger)
+   unwanted:     optional list of extension IDs to remove (e.g. ['{ext-guid}'])
+   Usage: {{ browser_extensions('floorp', floorp_profile, floorp.extensions, 'floorp_user_js', unwanted=floorp.unwanted) }}
+#}
+{%- macro browser_extensions(prefix, profile, extensions, user_js_id, unwanted=None, user=_user) -%}
+{{ _ensure_dir(prefix ~ '_extensions_dir', profile ~ '/extensions') }}
+
+{%- for ext in extensions %}
+{{ _firefox_extension(ext, profile, require=prefix ~ '_extensions_dir', user=user, prefix=prefix ~ '_ext') }}
+{%- endfor %}
+
+{%- if unwanted %}
+{% for ext_id in unwanted %}
+{%- set safe_id = ext_id | replace('{', '') | replace('}', '') | replace('-', '_') | replace('@', '_') | replace('.', '_') %}
+{{ prefix }}_remove_{{ safe_id }}:
+  file.absent:
+    - name: {{ profile }}/extensions/{{ ext_id }}.xpi
+{% endfor %}
+{%- endif %}
+
+{{ prefix }}_reset_extensions_json:
+  file.absent:
+    - name: {{ profile }}/extensions.json
+    - onchanges:
+      - file: {{ user_js_id }}
+{%- for ext in extensions %}
+      - cmd: {{ prefix }}_ext_{{ ext.slug | replace('-', '_') }}
+{%- endfor %}
+{%- endmacro -%}
 
 {# --- Internal: shared hyprpm environment block ---
    All hyprpm operations need HYPRLAND_INSTANCE_SIGNATURE from the running
