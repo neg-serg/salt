@@ -52,3 +52,16 @@ mkdir -p {{ vd }} && rm -f '{{ vd }}/{{ name }}' {{ vd }}/{{ name }}@* && {% if 
 {{- salt['cmd.run_stdout'](fallback_cmd, runas=_u).strip() -}}
 {%- endif -%}
 {%- endmacro -%}
+
+{#- Convenience wrappers for frequently-used secrets.
+    Centralise the fallback commands so each .sls file doesn't have to
+    copy-paste the same awk/cat one-liners.
+-#}
+{%- macro proxypilot_key() -%}
+{{ gopass_secret('api/proxypilot-local', "awk '/^api-keys:/{getline; sub(/^[[:space:]]*-[[:space:]]*\"?/, \"\"); sub(/\"?[[:space:]]*$/, \"\"); print; exit}' " ~ home ~ "/.config/proxypilot/config.yaml 2>/dev/null || true") }}
+{%- endmacro -%}
+
+{%- macro tg_secret(gopass_key, cred_file, cred_base=None) -%}
+{%- set _base = cred_base if cred_base else (home ~ '/.openclaw/credentials') -%}
+{{ gopass_secret(gopass_key, "cat " ~ _base ~ "/" ~ cred_file ~ " 2>/dev/null || true") }}
+{%- endmacro -%}

@@ -1,12 +1,11 @@
-{% from '_imports.jinja' import host, user, home, gopass_secret %}
+{% from '_imports.jinja' import host, user, home, tg_secret %}
 {% from '_macros_service.jinja' import ensure_dir, user_service_enable, user_service_file %}
 {% import_yaml 'data/monitored_services.yaml' as monitored %}
 {% if host.features.monitoring.alerts %}
 
-# ── Secret resolution (gopass primary, credentials-file fallback) ─────
-{% set _creds = home ~ '/.openclaw/credentials' %}
-{% set _telegram_token = gopass_secret('api/openclaw-telegram', "cat " ~ _creds ~ "/telegram-token 2>/dev/null || true") %}
-{% set _telegram_uid = gopass_secret('api/openclaw-telegram-uid', "cat " ~ _creds ~ "/telegram-uid 2>/dev/null || true") %}
+# ── Secret resolution ─────────────────────────────────────────────────
+{% set _telegram_token = tg_secret('api/openclaw-telegram', 'telegram-token') %}
+{% set _telegram_uid = tg_secret('api/openclaw-telegram-uid', 'telegram-uid') %}
 
 # ── Directories ──────────────────────────────────────────────────────
 {{ ensure_dir('salt_monitor_cache_dir', home ~ '/.cache/salt-monitor', mode='0755') }}

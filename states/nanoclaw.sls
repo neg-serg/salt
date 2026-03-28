@@ -1,13 +1,12 @@
-{% from '_imports.jinja' import user, home, gopass_secret, retry_attempts, retry_interval %}
-{% from '_macros_service.jinja' import ensure_dir, user_linger, user_service_enable, user_service_file, user_service_restart %}
+{% from '_imports.jinja' import user, home, retry_attempts, retry_interval, proxypilot_key, tg_secret %}
+{% from '_macros_service.jinja' import ensure_dir, user_service_enable, user_service_file, user_service_restart %}
 {% from '_macros_install.jinja' import npm_build_workflow %}
 {% import_yaml 'data/versions.yaml' as ver %}
 
-# ── Secret resolution (gopass primary, credential-file fallback) ─────
-{% set _proxypilot_cfg = home ~ '/.config/proxypilot/config.yaml' %}
-{% set _proxy_key = gopass_secret('api/proxypilot-local', "awk '/^api-keys:/{getline; sub(/^[[:space:]]*-[[:space:]]*\"?/, \"\"); sub(/\"?[[:space:]]*$/, \"\"); print; exit}' " ~ _proxypilot_cfg ~ " 2>/dev/null || true") %}
-{% set _telegram_token = gopass_secret('api/openclaw-telegram', "cat " ~ home ~ "/.openclaw/credentials/telegram-token 2>/dev/null || true") %}
-{% set _telegram_uid = gopass_secret('api/openclaw-telegram-uid', "cat " ~ home ~ "/.openclaw/credentials/telegram-uid 2>/dev/null || true") %}
+# ── Secret resolution ─────────────────────────────────────────────────
+{% set _proxy_key = proxypilot_key() %}
+{% set _telegram_token = tg_secret('api/openclaw-telegram', 'telegram-token') %}
+{% set _telegram_uid = tg_secret('api/openclaw-telegram-uid', 'telegram-uid') %}
 
 {% set _nanoclaw_dir = home ~ '/.local/share/nanoclaw' %}
 {% set _nanoclaw_config = home ~ '/.config/nanoclaw' %}
@@ -89,9 +88,6 @@ nanoclaw_mount_allowlist:
         }
     - require:
       - file: nanoclaw_config_dir
-
-# ── Lingering (user services survive logout) ──────────────────────────
-{{ user_linger('nanoclaw_lingering') }}
 
 # ── Systemd user service ──────────────────────────────────────────────
 {{ user_service_file('nanoclaw_service', 'nanoclaw.service') }}

@@ -1,15 +1,13 @@
-{% from '_imports.jinja' import user, home, gopass_secret %}
+{% from '_imports.jinja' import user, home, tg_secret %}
 {% from '_macros_pkg.jinja' import npm_pkg %}
 {% from '_macros_install.jinja' import curl_bin %}
 {% from '_macros_service.jinja' import ensure_dir, user_service_enable, user_service_file %}
 {% import_yaml 'data/versions.yaml' as ver %}
 
-# ── Secret resolution (gopass primary, credentials-file fallback) ─────
-{% set _creds_otb = home ~ '/.config/opencode-telegram-bot/credentials' %}
-{% set _creds_tc = home ~ '/.telecode/credentials' %}
-{% set _telegram_token_otb = gopass_secret('api/opencode-telegram-bot', "cat " ~ _creds_otb ~ "/telegram-token 2>/dev/null || true") %}
-{% set _telegram_token_tc = gopass_secret('api/telecode-telegram', "cat " ~ _creds_tc ~ "/telegram-token 2>/dev/null || true") %}
-{% set _telegram_uid = gopass_secret('api/openclaw-telegram-uid', "cat " ~ home ~ "/.openclaw/credentials/telegram-uid 2>/dev/null || true") %}
+# ── Secret resolution ─────────────────────────────────────────────────
+{% set _telegram_token_otb = tg_secret('api/opencode-telegram-bot', 'telegram-token', cred_base=home ~ '/.config/opencode-telegram-bot/credentials') %}
+{% set _telegram_token_tc = tg_secret('api/telecode-telegram', 'telegram-token', cred_base=home ~ '/.telecode/credentials') %}
+{% set _telegram_uid = tg_secret('api/openclaw-telegram-uid', 'telegram-uid') %}
 
 # Guards: deploy configs and enable services only when tokens are available.
 # Without tokens the binaries are still installed but services stay disabled.

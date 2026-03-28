@@ -1,19 +1,15 @@
-{% from '_imports.jinja' import user, home, gopass_secret %}
+{% from '_imports.jinja' import user, home, proxypilot_key, tg_secret %}
 {% from '_macros_pkg.jinja' import paru_install %}
-{% from '_macros_service.jinja' import ensure_dir, user_linger, user_service_enable, user_service_file %}
+{% from '_macros_service.jinja' import ensure_dir, user_service_enable, user_service_file %}
 {% import_yaml 'data/versions.yaml' as ver %}
-# ── Secret resolution (gopass primary, credentials-file fallback) ─────
-{% set _proxypilot_cfg = home ~ '/.config/proxypilot/config.yaml' %}
-{% set _proxy_key = gopass_secret('api/proxypilot-local', "awk '/^api-keys:/{getline; sub(/^[[:space:]]*-[[:space:]]*\"?/, \"\"); sub(/\"?[[:space:]]*$/, \"\"); print; exit}' " ~ _proxypilot_cfg ~ " 2>/dev/null || true") %}
-{% set _creds = home ~ '/.telethon-bridge/credentials' %}
-{% set _api_id = gopass_secret('api/telegram-telethon-id', "cat " ~ _creds ~ "/api-id 2>/dev/null || true") %}
-{% set _api_hash = gopass_secret('api/telegram-telethon-hash', "cat " ~ _creds ~ "/api-hash 2>/dev/null || true") %}
-
-# Reuse OpenClaw Telegram UIDs for allowlist
-{% set _telegram_uid = gopass_secret('api/openclaw-telegram-uid', "cat " ~ home ~ "/.openclaw/credentials/telegram-uid 2>/dev/null || true") %}
-{% set _tb_creds = home ~ '/.openclaw/credentials' %}
-{% set _telegram_uid_levra = gopass_secret('api/telegram-uid-levra', "cat " ~ _tb_creds ~ "/telegram-uid-levra 2>/dev/null || true") %}
-{% set _telegram_uid_guest2 = gopass_secret('api/telegram-uid-guest2', "cat " ~ _tb_creds ~ "/telegram-uid-guest2 2>/dev/null || true") %}
+# ── Secret resolution ─────────────────────────────────────────────────
+{% set _proxy_key = proxypilot_key() %}
+{% set _tb_creds = home ~ '/.telethon-bridge/credentials' %}
+{% set _api_id = tg_secret('api/telegram-telethon-id', 'api-id', cred_base=_tb_creds) %}
+{% set _api_hash = tg_secret('api/telegram-telethon-hash', 'api-hash', cred_base=_tb_creds) %}
+{% set _telegram_uid = tg_secret('api/openclaw-telegram-uid', 'telegram-uid') %}
+{% set _telegram_uid_levra = tg_secret('api/telegram-uid-levra', 'telegram-uid-levra') %}
+{% set _telegram_uid_guest2 = tg_secret('api/telegram-uid-guest2', 'telegram-uid-guest2') %}
 
 # ── Install python-telethon from AUR ─────────────────────────────────
 {{ paru_install('python_telethon', 'python-telethon', version=ver.telethon) }}
@@ -62,9 +58,6 @@ telethon_bridge_init_script:
     - mode: '0755'
     - require:
       - file: telethon_bridge_config
-
-# ── Lingering (user services survive logout) ─────────────────────────
-{{ user_linger('telethon_bridge_lingering') }}
 
 # ── Systemd user service ─────────────────────────────────────────────
 {{ user_service_file('telethon_bridge_service', 'telethon-bridge.service') }}

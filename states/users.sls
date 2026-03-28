@@ -1,6 +1,7 @@
-# User accounts, groups, and sudo configuration
+# User accounts, groups, sudo, and user lingering
 {% from '_imports.jinja' import host, user, home, sudo_timeout_minutes %}
 {% from '_macros_pkg.jinja' import paru_install %}
+{% from '_macros_service.jinja' import user_linger %}
 {% set uid = host.uid %}
 
 user_root:
@@ -103,3 +104,6 @@ sudo_ssh_agent_env_keep:
   file.absent:
     - name: /etc/sudoers.d/ssh-agent-auth
 {% endif %}
+
+# ── Lingering (user services survive logout) ──────────────────────────
+{{ user_linger('user_lingering') }}

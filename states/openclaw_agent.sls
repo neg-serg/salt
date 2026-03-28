@@ -1,16 +1,14 @@
-{% from '_imports.jinja' import host, user, home, gopass_secret %}
+{% from '_imports.jinja' import host, user, home, gopass_secret, proxypilot_key, tg_secret %}
 {% from '_macros_pkg.jinja' import npm_pkg %}
-{% from '_macros_service.jinja' import ensure_dir, user_linger, user_service_enable, user_service_file, user_service_restart, user_unit_override %}
+{% from '_macros_service.jinja' import ensure_dir, user_service_enable, user_service_file, user_service_restart, user_unit_override %}
 {% import_yaml 'data/versions.yaml' as ver %}
 {% import_yaml 'data/openclaw_models.yaml' as allowed_models %}
-# ── Secret resolution (gopass primary, credentials-file fallback) ─────
-{% set _proxypilot_cfg = home ~ '/.config/proxypilot/config.yaml' %}
-{% set _proxy_key = gopass_secret('api/proxypilot-local', "awk '/^api-keys:/{getline; sub(/^[[:space:]]*-[[:space:]]*\"?/, \"\"); sub(/\"?[[:space:]]*$/, \"\"); print; exit}' " ~ _proxypilot_cfg ~ " 2>/dev/null || true") %}
-{% set _creds = home ~ '/.openclaw/credentials' %}
-{% set _telegram_token = gopass_secret('api/openclaw-telegram', "cat " ~ _creds ~ "/telegram-token 2>/dev/null || true") %}
-{% set _telegram_uid = gopass_secret('api/openclaw-telegram-uid', "cat " ~ _creds ~ "/telegram-uid 2>/dev/null || true") %}
-{% set _telegram_uid_levra = gopass_secret('api/telegram-uid-levra', "cat " ~ _creds ~ "/telegram-uid-levra 2>/dev/null || true") %}
-{% set _telegram_uid_guest2 = gopass_secret('api/telegram-uid-guest2', "cat " ~ _creds ~ "/telegram-uid-guest2 2>/dev/null || true") %}
+# ── Secret resolution ─────────────────────────────────────────────────
+{% set _proxy_key = proxypilot_key() %}
+{% set _telegram_token = tg_secret('api/openclaw-telegram', 'telegram-token') %}
+{% set _telegram_uid = tg_secret('api/openclaw-telegram-uid', 'telegram-uid') %}
+{% set _telegram_uid_levra = tg_secret('api/telegram-uid-levra', 'telegram-uid-levra') %}
+{% set _telegram_uid_guest2 = tg_secret('api/telegram-uid-guest2', 'telegram-uid-guest2') %}
 {% set _groq_key = gopass_secret('api/groq', "true") %}
 
 # ── Install OpenClaw via npm (version-pinned) ────────────────────────
@@ -97,9 +95,6 @@ openclaw_sanitize_script:
         allowed_models: {{ allowed_models | tojson }}
     - require:
       - file: openclaw_config_dir
-
-# ── Lingering (user services survive logout) ─────────────────────────
-{{ user_linger('openclaw_lingering') }}
 
 # ── Systemd user service ─────────────────────────────────────────────
 {{ user_service_file('openclaw_service', 'openclaw-gateway.service') }}
