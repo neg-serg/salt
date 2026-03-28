@@ -13,7 +13,7 @@
 {{ pacman_install('chromium', 'chromium') }}
 # zen-browser: performance-focused Firefox fork with compact UI
 {{ pacman_install('zen_browser', 'zen-browser-bin') }}
-{{ paru_install('xdg_termfilechooser', 'xdg-desktop-portal-termfilechooser-boydaihungst-git') }}
+# xdg-desktop-portal-termfilechooser: conditionally managed in desktop.portal
 # wlr-which-key: on-screen keybinding cheatsheet for Hyprland (leader key menu)
 {{ paru_install('wlr-which-key', 'wlr-which-key') }}
 

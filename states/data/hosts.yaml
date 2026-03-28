@@ -67,6 +67,7 @@ defaults:
     telethon_bridge: true
     opencode_telegram: true
     video_ai: true
+    kitty_desktop_ui: true
     music_analysis: false
     tidal: false
 
