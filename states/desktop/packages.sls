@@ -11,6 +11,8 @@
 {{ pacman_install('localsend', 'localsend') }}
 # chromium: secondary browser for sites that break on Firefox/Gecko
 {{ pacman_install('chromium', 'chromium') }}
+# google-chrome: Google Chrome stable (AUR), for testing and Google-specific integrations
+{{ paru_install('google_chrome', 'google-chrome') }}
 # zen-browser: performance-focused Firefox fork with compact UI
 {{ pacman_install('zen_browser', 'zen-browser-bin') }}
 # xdg-desktop-portal-termfilechooser: conditionally managed in desktop.portal
