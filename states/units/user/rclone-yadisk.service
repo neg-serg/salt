@@ -1,0 +1,14 @@
+[Unit]
+Description=rclone mount Yandex Disk
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStartPre=/usr/bin/mkdir -p %h/mnt/yadisk
+ExecStart=/usr/bin/rclone mount yadisk: %h/mnt/yadisk --vfs-cache-mode full --vfs-cache-max-age 72h
+ExecStop=/usr/bin/fusermount -u %h/mnt/yadisk
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target

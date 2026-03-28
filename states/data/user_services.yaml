@@ -39,9 +39,13 @@ unit_files:
   - {id: gpu_unstick_service, filename: gpu-unstick.service}
   - {id: gpu_unstick_timer, filename: gpu-unstick.timer}
   - {id: chezmoi_watch_service, filename: chezmoi-watch.service}
+  - {id: rclone_gdrive_service, filename: rclone-gdrive.service}
+  - {id: rclone_yadisk_service, filename: rclone-yadisk.service}
 
 # Services/sockets to enable (systemctl --user enable)
 enable_services:
+  - {name: rclone-gdrive.service}
+  - {name: rclone-yadisk.service}
   - {name: proxypilot.service}
   - {name: imapnotify-gmail.service, features: [mail]}
   - {name: surfingkeys-server.service}
