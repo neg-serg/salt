@@ -3,6 +3,16 @@
 # Salt state for CachyOS workstation — top-level orchestrator
 # Packages managed via packages.sls (data/packages.yaml) + domain-specific states
 
+# ── Distro identity (was os_release.sls) ──────────────────────────────
+system_os_release:
+  file.managed:
+    - name: /etc/os-release
+    - source: salt://configs/os-release.j2
+    - template: jinja
+    - user: root
+    - group: root
+    - mode: '0644'
+
 pacman_db_warmup:
   cmd.run:
     - name: |
@@ -44,7 +54,6 @@ system_hostname:
 include:
   # ── Core (always included) ──────────────────────────────────────────
   # User accounts, shell, disk mounts — foundations for everything else
-  - os_release
   - users
   - zsh
   - mounts

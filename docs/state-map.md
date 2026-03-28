@@ -27,13 +27,7 @@ Generated from `include:` statements in `states/*.sls`.
 ## `cachyos`
 **Includes:** _None_
 
-**Included by:** `cachyos_all`
-
-
-## `cachyos_all`
-**Includes:** `cachyos`, `system_description`
-
-**Included by:** _Root_
+**Included by:** _Root_ (via `salt-call state.apply cachyos,system_description`)
 
 
 ## `code_rag`
@@ -249,7 +243,7 @@ Generated from `include:` statements in `states/*.sls`.
 ## `system_description`
 **Includes:** _None_
 
-**Included by:** `cachyos_all`
+**Included by:** _Root_ (main orchestrator)
 
 
 ## `telethon_bridge`

@@ -27,13 +27,7 @@
 ## `cachyos`
 **Включает:** _Нет_
 
-**Используется в:** `cachyos_all`
-
-
-## `cachyos_all`
-**Включает:** `cachyos`, `system_description`
-
-**Используется в:** _Корень_
+**Используется в:** _Корень_ (через `salt-call state.apply cachyos,system_description`)
 
 
 ## `code_rag`
@@ -249,7 +243,7 @@
 ## `system_description`
 **Включает:** _Нет_
 
-**Используется в:** `cachyos_all`
+**Используется в:** _Корень_ (главный оркестратор)
 
 
 ## `telethon_bridge`
