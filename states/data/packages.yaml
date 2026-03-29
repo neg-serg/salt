@@ -421,6 +421,7 @@ aur:
   - python-rapidgzip  # parallel gzip decompressor (Python)
   - quickshell-git  # QtQuick desktop shell toolkit (AUR, built from source)
   - raise  # run-or-raise for Hyprland (neg-serg fork)
+  - reddix-bin  # terminal Reddit client with kitty image protocol support
   - raysession  # NSM session manager for audio apps
   - resterm-bin  # terminal REST client for .http/.rest files
   - richcolors  # render color palettes from hex files
