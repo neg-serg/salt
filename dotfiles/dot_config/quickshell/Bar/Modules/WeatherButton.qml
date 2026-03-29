@@ -19,38 +19,37 @@ OverlayToggleCapsule {
     overlayNamespace: "sideleft-weather"
 
     readonly property var _weatherData: Services.Weather.weatherData
-    readonly property var _current: _weatherData && _weatherData.current_weather ? _weatherData.current_weather : null
-    readonly property string weatherIcon: _current && typeof _current.weathercode === 'number'
-        ? WeatherIcons.materialSymbolForCode(_current.weathercode)
+    readonly property var _current: _weatherData && _weatherData.current ? _weatherData.current : null
+    readonly property string weatherIcon: _current && typeof _current.weather_code === 'number'
+        ? WeatherIcons.materialSymbolForCode(_current.weather_code)
         : "partly_cloudy_day"
     readonly property string temperatureText: {
         try {
-            if (_current && typeof _current.temperature === 'number') {
-                var c = Math.round(_current.temperature);
+            if (_current && typeof _current.temperature_2m === 'number') {
+                var c = Math.round(_current.temperature_2m);
                 var useF = Settings.settings.useFahrenheit || false;
                 return useF ? Math.round(c * 9/5 + 32) + "°F" : c + "°C";
             }
         } catch (e) { /* guard */ }
         return (Settings.settings.useFahrenheit || false) ? "--°F" : "--°C";
     }
-    readonly property bool hasWind: _current && typeof _current.windspeed === 'number'
+    readonly property bool hasWind: _current && typeof _current.wind_speed_10m === 'number'
     readonly property string windSpeed: {
         try {
-            if (hasWind) return WeatherIcons.formatWindSpeed(_current.windspeed);
+            if (hasWind) return WeatherIcons.formatWindSpeed(_current.wind_speed_10m);
         } catch (e) { /* guard */ }
         return "";
     }
     readonly property real windRotation: {
         try {
-            if (hasWind) return WeatherIcons.windRotation(_current.winddirection);
+            if (hasWind) return WeatherIcons.windRotation(_current.wind_direction_10m);
         } catch (e) { /* guard */ }
         return 0;
     }
-    readonly property var _currentExtra: _weatherData && _weatherData.current ? _weatherData.current : null
-    readonly property bool hasHumidity: _currentExtra && typeof _currentExtra.relative_humidity_2m === 'number'
+    readonly property bool hasHumidity: _current && typeof _current.relative_humidity_2m === 'number'
     readonly property string humidityText: {
         try {
-            if (hasHumidity) return Math.round(_currentExtra.relative_humidity_2m) + "%";
+            if (hasHumidity) return Math.round(_current.relative_humidity_2m) + "%";
         } catch (e) { /* guard */ }
         return "";
     }
@@ -157,15 +156,15 @@ OverlayToggleCapsule {
         try {
             const city = Settings.settings.weatherCity || "";
             const data = Services.Weather.weatherData;
-            if (data && data.current_weather && typeof data.current_weather.temperature === 'number') {
-                const c = Math.round(data.current_weather.temperature);
+            const cur = data && data.current ? data.current : null;
+            if (cur && typeof cur.temperature_2m === 'number') {
+                const c = Math.round(cur.temperature_2m);
                 const useF = Settings.settings.useFahrenheit || false;
                 const t = useF ? Math.round(c * 9/5 + 32) + "°F" : c + "°C";
-                const wind = WeatherIcons.formatWindFull(data.current_weather.windspeed, data.current_weather.winddirection);
+                const wind = WeatherIcons.formatWindFull(cur.wind_speed_10m, cur.wind_direction_10m);
                 var sub = wind ? [wind] : [];
-                const extra = data && data.current ? data.current : null;
-                if (extra && typeof extra.relative_humidity_2m === 'number')
-                    sub.push("Humidity: " + Math.round(extra.relative_humidity_2m) + "%");
+                if (typeof cur.relative_humidity_2m === 'number')
+                    sub.push("Humidity: " + Math.round(cur.relative_humidity_2m) + "%");
                 sub.push(WeatherIcons.moonIcon(new Date()) + " " + WeatherIcons.moonName(new Date()));
                 return TooltipText.compose(city || "Weather", t, sub);
             }

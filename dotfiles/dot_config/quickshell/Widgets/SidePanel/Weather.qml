@@ -72,7 +72,7 @@ Rectangle {
                     MaterialIcon {
                         id: weatherIcon
                         visible: !isLoading
-                        icon: weatherData && weatherData.current_weather ? WeatherIcons.materialSymbolForCode(weatherData.current_weather.weathercode) : "cloud"
+                        icon: weatherData && weatherData.current ? WeatherIcons.materialSymbolForCode(weatherData.current.weather_code) : "cloud"
                         size: Math.round(Theme.uiIconSizeLarge * Theme.scale(Screen))
                         color: Theme.accentPrimary
                         Layout.alignment: Qt.AlignVCenter
@@ -98,7 +98,7 @@ Rectangle {
                             }
                         }
                         Text {
-                            text: weatherData && weatherData.current_weather ? ((Settings.settings.useFahrenheit !== undefined ? Settings.settings.useFahrenheit : false) ? `${Math.round(weatherData.current_weather.temperature * 9/5 + 32)}°F` : `${Math.round(weatherData.current_weather.temperature)}°C`) : ((Settings.settings.useFahrenheit !== undefined ? Settings.settings.useFahrenheit : false) ? "--°F" : "--°C")
+                            text: weatherData && weatherData.current ? ((Settings.settings.useFahrenheit !== undefined ? Settings.settings.useFahrenheit : false) ? `${Math.round(weatherData.current.temperature_2m * 9/5 + 32)}°F` : `${Math.round(weatherData.current.temperature_2m)}°C`) : ((Settings.settings.useFahrenheit !== undefined ? Settings.settings.useFahrenheit : false) ? "--°F" : "--°C")
                             font.family: Theme.fontFamily
                             font.pixelSize: Math.round(Theme.fontSizeHeader * Theme.weatherHeaderScale * Theme.scale(Screen))
                             font.bold: true
@@ -107,16 +107,16 @@ Rectangle {
                         }
                         RowLayout {
                             spacing: Math.round(Theme.sidePanelSpacingSmall * 0.5 * Theme.scale(Screen))
-                            visible: weatherData && weatherData.current_weather && typeof weatherData.current_weather.windspeed === 'number'
+                            visible: weatherData && weatherData.current && typeof weatherData.current.wind_speed_10m === 'number'
                             MaterialIcon {
                                 icon: "navigation"
-                                rotationAngle: weatherData && weatherData.current_weather ? WeatherIcons.windRotation(weatherData.current_weather.winddirection) : 0
+                                rotationAngle: weatherData && weatherData.current ? WeatherIcons.windRotation(weatherData.current.wind_direction_10m) : 0
                                 size: Math.round(Theme.fontSizeSmall * Theme.scale(Screen))
                                 color: Theme.textOn(card.color)
                                 Layout.alignment: Qt.AlignVCenter
                             }
                             Text {
-                                text: weatherData && weatherData.current_weather ? WeatherIcons.formatWindFull(weatherData.current_weather.windspeed, weatherData.current_weather.winddirection) : ""
+                                text: weatherData && weatherData.current ? WeatherIcons.formatWindFull(weatherData.current.wind_speed_10m, weatherData.current.wind_direction_10m) : ""
                                 font.family: Theme.fontFamily
                                 font.pixelSize: Math.round(Theme.fontSizeSmall * Theme.scale(Screen))
                                 color: Theme.textOn(card.color)
