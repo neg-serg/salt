@@ -123,6 +123,21 @@ Rectangle {
                                 Layout.alignment: Qt.AlignVCenter
                             }
                         }
+                        RowLayout {
+                            spacing: Math.round(Theme.sidePanelSpacingSmall * 0.5 * Theme.scale(Screen))
+                            Text {
+                                text: WeatherIcons.moonIcon(new Date())
+                                font.pixelSize: Math.round(Theme.fontSizeSmall * Theme.scale(Screen))
+                                Layout.alignment: Qt.AlignVCenter
+                            }
+                            Text {
+                                text: WeatherIcons.moonName(new Date())
+                                font.family: Theme.fontFamily
+                                font.pixelSize: Math.round(Theme.fontSizeSmall * Theme.scale(Screen))
+                                color: Theme.textOn(card.color)
+                                Layout.alignment: Qt.AlignVCenter
+                            }
+                        }
                     }
                 }
  

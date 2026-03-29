@@ -115,6 +115,13 @@ OverlayToggleCapsule {
             color: Theme.textSecondary
             anchors.verticalCenter: parent.verticalCenter
         }
+
+        Text {
+            id: moonLabel
+            text: WeatherIcons.moonIcon(new Date())
+            font.pixelSize: Math.round(Theme.fontSizeSmall * capsuleScale)
+            anchors.verticalCenter: parent.verticalCenter
+        }
     }
 
     HoverHandler {
@@ -159,6 +166,7 @@ OverlayToggleCapsule {
                 const extra = data && data.current ? data.current : null;
                 if (extra && typeof extra.relative_humidity_2m === 'number')
                     sub.push("Humidity: " + Math.round(extra.relative_humidity_2m) + "%");
+                sub.push(WeatherIcons.moonIcon(new Date()) + " " + WeatherIcons.moonName(new Date()));
                 return TooltipText.compose(city || "Weather", t, sub);
             }
             return TooltipText.compose("Weather", city, []);
