@@ -397,6 +397,7 @@ aur:
   - dool  # versatile resource statistics tool (dstat replacement)
   - dualsensectl  # PS5 DualSense controller tool
   - eilmeldung-bin  # TUI RSS feed reader with vim keybindings
+  - flclashx-bin  # multi-platform proxy client based on ClashMeta (FlClash fork)
   - fsel-bin  # TUI fuzzy launcher, dmenu replacement, clipboard browser
   - epr-git  # CLI EPUB reader
   - freeze-bin  # generate images of code/terminal output
