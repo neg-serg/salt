@@ -46,10 +46,10 @@ mkdir -p {{ vd }} && rm -f '{{ vd }}/{{ name }}' {{ vd }}/{{ name }}@* && {% if 
 {%- if _r.get('retcode', 1) == 0 -%}
 {{- _r['stdout'].strip() -}}
 {%- else -%}
-{{- salt['cmd.run_stdout'](fallback_cmd, runas=_u).strip() -}}
+{{- salt['cmd.run_stdout'](fallback_cmd, runas=_u, python_shell=True).strip() -}}
 {%- endif -%}
 {%- else -%}
-{{- salt['cmd.run_stdout'](fallback_cmd, runas=_u).strip() -}}
+{{- salt['cmd.run_stdout'](fallback_cmd, runas=_u, python_shell=True).strip() -}}
 {%- endif -%}
 {%- endmacro -%}
 

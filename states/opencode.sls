@@ -8,7 +8,7 @@
    spawning N gopass+AWK subprocesses, read the rendered config once and
    extract all needed values from the parsed YAML.
    Interactive mode (gopass available) still resolves each key individually. #}
-{% set _pp_raw = salt['cmd.run_stdout']('cat ' ~ _proxypilot_cfg ~ ' 2>/dev/null || true', runas=user).strip() %}
+{% set _pp_raw = salt['cmd.run_stdout']('cat ' ~ _proxypilot_cfg ~ ' 2>/dev/null || true', runas=user, python_shell=True).strip() %}
 {% set _pp = (_pp_raw | load_yaml) if _pp_raw else {} %}
 {# ProxyPilot bcrypt-hashes secret-key on startup, so always prefer the
    hashed value from the existing config over the raw gopass secret. #}
