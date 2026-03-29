@@ -268,16 +268,13 @@ trap maintenance_lock_remove EXIT
 snapshot_pre
 
 if ensure_daemon; then
-    run_via_daemon
-    RC=$?
+    run_via_daemon && RC=$? || RC=$?
     if [[ $RC -eq 75 ]]; then
         echo "(daemon busy — falling back to direct salt-call)"
-        run_direct
-        RC=$?
+        run_direct && RC=$? || RC=$?
     fi
 else
-    run_direct
-    RC=$?
+    run_direct && RC=$? || RC=$?
 fi
 
 snapshot_pre_collect
