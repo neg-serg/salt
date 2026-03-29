@@ -61,6 +61,8 @@ pip_pkg:
 cargo_pkg:
   pzip:
     bin: pz
+  proteinview:
+    git: "https://github.com/001TMF/ProteinView"
   rsmetrx:
     git: "https://github.com/neg-serg/rsmetrx"
 
