@@ -120,7 +120,7 @@ ConnectivityCapsule {
         var rest = Rich.esc(intPart.slice(i));
         var dotAndDec = (decPart !== "") ? Rich.dotSpan() + Rich.esc(decPart) : "";
         var unitSuffix = (unit === "K")
-            ? Rich.esc(" ")
+            ? "&thinsp;"
             : Rich.colorSpan(_unitAccentCss, unit);
         return dimmed + rest + dotAndDec + unitSuffix;
     }
