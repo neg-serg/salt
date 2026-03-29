@@ -87,6 +87,7 @@ transmission_acl_setup:
     - shell: /bin/bash
     - unless: |
         getfacl -p {{ home }} | grep -q '^user:transmission:r-x$' &&
+        getfacl -p {{ home }}/torrent | grep -q '^user:transmission:r-x$' &&
         getfacl -p {{ transmission_watch_dir }} | grep -q '^user:transmission:rwx$' &&
         getfacl -d {{ transmission_watch_dir }} | grep -q '^user:transmission:rwx$' &&
         getfacl -p {{ transmission_download_dir }} | grep -q '^user:transmission:rwx$' &&
