@@ -43,7 +43,7 @@
    compositor. The onlyif guard skips gracefully when Hyprland is not running.
 #}
 {%- set _hypr_sig_cmd = 'ls /run/user/' ~ host.uid ~ '/hypr/ 2>/dev/null | head -1' -%}
-{%- set _hypr_onlyif = 'ls /run/user/' ~ host.uid ~ '/hypr/ 2>/dev/null | rg -q .' -%}
+{%- set _hypr_onlyif = 'ls /run/user/' ~ host.uid ~ '/hypr/ 2>/dev/null | grep -q .' -%}
 
 {# Update hyprpm headers (rebuilds plugin headers for current Hyprland version).
    check_plugins: optional list of plugin names to verify (all must exist in hyprpm list
@@ -62,7 +62,7 @@
     - unless: >-
         export HYPRLAND_INSTANCE_SIGNATURE=$( {{ _hypr_sig_cmd }} ) &&
 {%- for plugin in check_plugins %}
-        hyprpm list 2>&1 | rg -q '{{ plugin }}'{{ ' &&' if not loop.last else '' }}
+        hyprpm list 2>&1 | grep -q '{{ plugin }}'{{ ' &&' if not loop.last else '' }}
 {%- endfor %}
 {%- endif %}
     - env:
@@ -95,7 +95,7 @@
     - onlyif: {{ _hypr_onlyif }}
     - unless: >-
         export HYPRLAND_INSTANCE_SIGNATURE=$( {{ _hypr_sig_cmd }} ) &&
-        hyprpm list 2>&1 | rg -q '{{ check_plugin }}'
+        hyprpm list 2>&1 | grep -q '{{ check_plugin }}'
     - env:
       - HOME: {{ _home }}
       - XDG_RUNTIME_DIR: /run/user/{{ host.uid }}
@@ -125,7 +125,7 @@
     - onlyif: {{ _hypr_onlyif }}
     - unless: >-
         export HYPRLAND_INSTANCE_SIGNATURE=$( {{ _hypr_sig_cmd }} ) &&
-        hyprpm list 2>&1 | rg '{{ plugin }}' -A1 | rg -q 'enabled:.*true'
+        hyprpm list 2>&1 | grep -A1 '{{ plugin }}' | grep -q 'enabled:.*true'
     - env:
       - HOME: {{ _home }}
       - XDG_RUNTIME_DIR: /run/user/{{ host.uid }}

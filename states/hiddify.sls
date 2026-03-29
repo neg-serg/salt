@@ -30,14 +30,9 @@ hiddify_next_default_handlers:
     - runas: {{ user }}
     - shell: /bin/bash
     - onlyif: test -f /usr/share/applications/hiddify.desktop -o -f {{ home }}/.local/share/applications/hiddify.desktop
-    - unless: |
-        test "$(xdg-mime query default x-scheme-handler/hiddify)" = "hiddify.desktop" &&
-        test "$(xdg-mime query default x-scheme-handler/sing-box)" = "hiddify.desktop" &&
-        test "$(xdg-mime query default x-scheme-handler/v2ray)" = "hiddify.desktop" &&
-        test "$(xdg-mime query default x-scheme-handler/v2rayn)" = "hiddify.desktop" &&
-        test "$(xdg-mime query default x-scheme-handler/v2rayng)" = "hiddify.desktop" &&
-        test "$(xdg-mime query default x-scheme-handler/clash)" = "hiddify.desktop" &&
-        test "$(xdg-mime query default x-scheme-handler/clashmeta)" = "hiddify.desktop"
+    - unless: >-
+        grep -q 'x-scheme-handler/hiddify=hiddify.desktop' {{ home }}/.config/mimeapps.list &&
+        grep -q 'x-scheme-handler/clashmeta=hiddify.desktop' {{ home }}/.config/mimeapps.list
     - require:
       - file: hiddify_legacy_cleanup
 

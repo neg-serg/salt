@@ -336,7 +336,7 @@ install_{{ name | replace('-', '_') }}:
           'https://addons.mozilla.org/firefox/downloads/latest/{{ ext.slug }}/latest.xpi' &&
         mv -f '{{ _xpi }}.tmp' '{{ _xpi }}' &&
         touch '{{ _stamp }}'
-    - unless: test -f '{{ _xpi }}' || test -f '{{ _stamp }}'
+    - creates: {{ _xpi }}
     - runas: {{ user }}
     - parallel: True
 {%- if require %}

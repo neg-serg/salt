@@ -14,8 +14,7 @@
 #}
 replace_mandb_with_mandoc:
   cmd.run:
-    - name: pacman -Rdd --noconfirm man-db && pacman -S --noconfirm --needed mandoc
-    - onlyif: pacman -Qi man-db
+    - name: pacman -Rdd --noconfirm man-db; pacman -S --noconfirm --needed mandoc
     - unless: pacman -Qi mandoc
     - require:
       - cmd: pacman_db_warmup
