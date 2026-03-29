@@ -86,11 +86,11 @@ transmission_acl_setup:
         setfacl -d -m u:transmission:rwX {{ transmission_download_dir }}
     - shell: /bin/bash
     - unless: |
-        getfacl -p {{ home }} | rg -q '^user:transmission:r-x$' &&
-        getfacl -p {{ transmission_watch_dir }} | rg -q '^user:transmission:rwx$' &&
-        getfacl -d {{ transmission_watch_dir }} | rg -q '^user:transmission:rwx$' &&
-        getfacl -p {{ transmission_download_dir }} | rg -q '^user:transmission:rwx$' &&
-        getfacl -d {{ transmission_download_dir }} | rg -q '^user:transmission:rwx$'
+        getfacl -p {{ home }} | grep -q '^user:transmission:r-x$' &&
+        getfacl -p {{ transmission_watch_dir }} | grep -q '^user:transmission:rwx$' &&
+        getfacl -d {{ transmission_watch_dir }} | grep -q '^user:transmission:rwx$' &&
+        getfacl -p {{ transmission_download_dir }} | grep -q '^user:transmission:rwx$' &&
+        getfacl -d {{ transmission_download_dir }} | grep -q '^user:transmission:rwx$'
     - require:
       - cmd: install_transmission
       - file: transmission_watch_dir

@@ -40,7 +40,7 @@ system_locale:
 system_keymap:
   cmd.run:
     - name: localectl set-x11-keymap ru,us
-    - unless: rg -q 'ru' /etc/X11/xorg.conf.d/00-keyboard.conf 2>/dev/null
+    - unless: grep -q 'ru' /etc/X11/xorg.conf.d/00-keyboard.conf 2>/dev/null
 
 system_hostname:
   file.managed:

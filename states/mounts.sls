@@ -26,7 +26,7 @@ mount_{{ name }}:
 btrfs_compress_{{ path.replace('/', '') }}:
   cmd.run:
     - name: btrfs property set "{{ path }}" compression zstd:-1
-    - unless: btrfs property get "{{ path }}" compression 2>/dev/null | rg -q 'zstd:-1'
+    - unless: btrfs property get "{{ path }}" compression 2>/dev/null | grep -qF 'zstd:-1'
 {% endfor %}
 
 # btrfs nocow: disable copy-on-write for high-churn ephemeral data.
@@ -40,6 +40,6 @@ btrfs_compress_{{ path.replace('/', '') }}:
 nocow_{{ id }}:
   cmd.run:
     - name: chattr +C "{{ path }}"
-    - unless: lsattr -d "{{ path }}" 2>/dev/null | awk '{print $1}' | rg -q C
+    - unless: lsattr -d "{{ path }}" 2>/dev/null | awk '{print $1}' | grep -qF C
     - onlyif: test -d "{{ path }}"
 {% endfor %}

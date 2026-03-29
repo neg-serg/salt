@@ -11,7 +11,7 @@
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: pacman -S --noconfirm --needed {{ pkgs }}
-    - unless: rg -qx '{{ check or pkgs.split()[0] }}' {{ host.pkg_list }}
+    - unless: grep -qxF '{{ check or pkgs.split()[0] }}' {{ host.pkg_list }}
     - retry:
         attempts: {{ _retry_attempts }}
         interval: {{ _retry_interval }}
@@ -68,7 +68,7 @@ install_{{ name | replace('-', '_') }}:
     - creates: {{ _ver_dir }}/{{ name }}@{{ version }}
 {%- else %}
     - name: sudo -u {{ _user }} paru -S --noconfirm --needed {{ pkg }}
-    - unless: rg -qx '{{ check or pkg }}' {{ host.pkg_list }}
+    - unless: grep -qxF '{{ check or pkg }}' {{ host.pkg_list }}
 {%- endif %}
     - retry:
         attempts: {{ _retry_attempts }}
@@ -91,12 +91,12 @@ install_{{ name | replace('-', '_') }}:
    extra_sources: list of {source, dest} dicts for additional file.recurse states (e.g., local source trees).
    Usage: {{ pkgbuild_install('raise', 'salt://build/pkgbuilds/raise', user=_user) }}
           {{ pkgbuild_install('iosevka-neg-fonts', 'salt://build/pkgbuilds/iosevka-neg-fonts', user=_user, timeout=7200) }}
-          {{ pkgbuild_install('duf', 'salt://build/pkgbuilds/duf', user=_user, replace_check='pacman -Qi duf 2>/dev/null | rg -q neg-serg') }}
+          {{ pkgbuild_install('duf', 'salt://build/pkgbuilds/duf', user=_user, replace_check='pacman -Qi duf 2>/dev/null | grep -q neg-serg') }}
           {{ pkgbuild_install('wl', 'salt://build/pkgbuilds/wl', user=_user, conflicts=['swww-vulkan']) }}
 #}
 {%- macro pkgbuild_install(name, source, user=_user, build_base='/tmp/pkgbuild', timeout=600, check=None, replace_check=None, conflicts=None, extra_sources=None) -%}
 {%- set safe = name | replace('-', '_') -%}
-{%- set _pkg_guard = 'rg -qx "' ~ (check or name) ~ '" ' ~ host.pkg_list ~ (' && ' ~ replace_check if replace_check else '') -%}
+{%- set _pkg_guard = 'grep -qxF "' ~ (check or name) ~ '" ' ~ host.pkg_list ~ (' && ' ~ replace_check if replace_check else '') -%}
 {{ safe }}_pkgbuild:
   file.recurse:
     - name: {{ build_base }}/{{ name }}
@@ -182,7 +182,7 @@ install_{{ name | replace('-', '_') }}:
 install_flatpak_{{ safe }}:
   cmd.run:
     - name: sudo -u {{ user }} flatpak install -y --user flathub {{ app_id }}
-    - unless: sudo -u {{ user }} flatpak list --user --app --columns=application | rg -q '^{{ app_id }}$'
+    - unless: sudo -u {{ user }} flatpak list --user --app --columns=application | grep -qxF '{{ app_id }}'
     - parallel: True
     - retry:
         attempts: {{ _retry_attempts }}

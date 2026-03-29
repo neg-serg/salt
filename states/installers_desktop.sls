@@ -54,7 +54,7 @@ rofi_file_browser_extended:
         sudo -u {{ user }} makepkg -sf --noconfirm
         pacman -U --noconfirm --needed *.pkg.tar.zst
     - shell: /bin/bash
-    - unless: rg -qx 'rofi-file-browser-extended-git' {{ pkg_list }}
+    - unless: grep -qxF 'rofi-file-browser-extended-git' {{ pkg_list }}
     - retry:
         attempts: {{ retry_attempts }}
         interval: {{ retry_interval }}

@@ -373,7 +373,7 @@ test -e {{ _path }}
    daemon_reload: prepend daemon-reload (default False). check: 'enabled' (default) or 'active' for unless guard.
    onlyif: extra guard (e.g. package installed check). requires: list of state requisites.
    Usage: {{ user_service_enable('kanata_enabled', ['kanata.service'], daemon_reload=True, requires=['cmd: install_kanata', 'file: kanata_service']) }}
-          {{ user_service_enable('mpd_enabled', start_now=['mpd.service'], check='active', onlyif='rg -qx mpd ' ~ pkg_list) }}
+          {{ user_service_enable('mpd_enabled', start_now=['mpd.service'], check='active', onlyif='grep -qxF mpd ' ~ pkg_list) }}
           {{ user_service_enable('enable_user_services', svc_list, start_now=timer_list, daemon_reload=True, requires=req_list) }}
 #}
 {%- macro user_service_enable(name, services=None, start_now=None, daemon_reload=False, check='enabled', onlyif=None, requires=None, user=_user) -%}
@@ -504,7 +504,7 @@ test -e {{ _path }}
 {{ name }}:
   cmd.run:
     - name: loginctl enable-linger {{ user }}
-    - unless: loginctl show-user {{ user }} 2>/dev/null | rg -q '^Linger=yes'
+    - unless: loginctl show-user {{ user }} 2>/dev/null | grep -q '^Linger=yes'
 {%- if require %}
     - require:
 {%- for req in require %}

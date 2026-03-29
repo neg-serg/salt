@@ -14,7 +14,7 @@ pull_{{ model | replace('.', '_') | replace(':', '_') | replace('-', '_') }}:
     - name: ollama pull {{ model }}
     - unless: >-
         curl -sf http://{{ ollama_base }}/api/tags |
-        rg -q '"{{ model }}[":]'
+        grep -q '"{{ model }}[":]'
     - timeout: {{ ollama_pull_timeout }}
     - parallel: True
     - retry:

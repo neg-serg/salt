@@ -394,7 +394,7 @@ install_{{ name }}:
     - unless: |
         S="{{ fonts_dir }}/{{ subdir }}/.salt-installed"
         [ -f "$S" ] && exit 0
-        find {{ fonts_dir }}/{{ subdir }} -maxdepth 1 \( -name '*.otf' -o -name '*.ttf' \) -print -quit 2>/dev/null | rg -q .
+        find {{ fonts_dir }}/{{ subdir }} -maxdepth 1 \( -name '*.otf' -o -name '*.ttf' \) -print -quit 2>/dev/null | grep -q .
 {%- endif %}
     - parallel: True
     - retry:
@@ -560,7 +560,7 @@ install_{{ name | replace('-', '_') }}:
         npm install --no-fund --no-audit 2>&1
         npm run build 2>&1
     - runas: {{ user }}
-    - unless: cd {{ dir }} && git describe --tags --exact-match 2>/dev/null | rg -qx 'v{{ version }}'
+    - unless: cd {{ dir }} && git describe --tags --exact-match 2>/dev/null | grep -qxF 'v{{ version }}'
     - retry:
         attempts: {{ _retry_attempts }}
         interval: {{ _retry_interval }}

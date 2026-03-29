@@ -20,6 +20,6 @@ espanso_healthcheck:
     - env:
       - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
       - DBUS_SESSION_BUS_ADDRESS: unix:path={{ host.runtime_dir }}/bus
-    - unless: espanso status 2>/dev/null | rg -q running
+    - unless: espanso status 2>/dev/null | grep -q running
     - require:
       - cmd: espanso_enabled

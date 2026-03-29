@@ -48,7 +48,7 @@ mpd_config:
     - makedirs: True
 
 # --- Enable native MPD systemd user service ---
-{{ user_service_enable('mpd_enabled', start_now=['mpd.service'], check='active', onlyif='rg -qx mpd ' ~ pkg_list, requires=['file: mpd_config', 'file: mpd_directories', 'cmd: music_mount', 'cmd: managed_service_paths_ensure']) }}
+{{ user_service_enable('mpd_enabled', start_now=['mpd.service'], check='active', onlyif='grep -qxF mpd ' ~ pkg_list, requires=['file: mpd_config', 'file: mpd_directories', 'cmd: music_mount', 'cmd: managed_service_paths_ensure']) }}
 
 # --- Deploy mpdas config via gopass (graceful fallback to empty values) ---
 {%- set lastfm_user = gopass_secret('lastfm/username') | trim %}

@@ -35,7 +35,7 @@ limine_flat_boot_entries:
   cmd.script:
     - source: salt://scripts/limine-restructure.sh
     - shell: /bin/bash
-    - unless: rg -q '^/CachyOS LTS' /boot/limine.conf
+    - unless: grep -q '^/CachyOS LTS' /boot/limine.conf
 
 # Deploy limine-set-default convenience script.
 limine_set_default_deployed:
@@ -62,12 +62,12 @@ kernel_params_limine:
         WANTED=({% for karg in kargs %}'{{ karg }}' {% endfor %})
 
         # Build space-separated string of params not already present
-        current=$(rg 'kernel_cmdline:' "$LIMINE" | head -1)
+        current=$(grep 'kernel_cmdline:' "$LIMINE" | head -1)
         missing=""
         for k in "${WANTED[@]}"; do
           # Match param key (before =) to avoid partial matches
           key="${k%%=*}"
-          if ! rg -q "$key" <<< "$current"; then
+          if ! grep -q "$key" <<< "$current"; then
             missing="$missing $k"
           fi
         done
@@ -83,10 +83,10 @@ kernel_params_limine:
     - unless: |
         LIMINE="/boot/limine.conf"
         WANTED=({% for karg in kargs %}'{{ karg }}' {% endfor %})
-        current=$(rg 'kernel_cmdline:' "$LIMINE" | head -1)
+        current=$(grep 'kernel_cmdline:' "$LIMINE" | head -1)
         for k in "${WANTED[@]}"; do
           key="${k%%=*}"
-          rg -q "$key" <<< "$current" || exit 1
+          grep -q "$key" <<< "$current" || exit 1
         done
     - require:
       - cmd: limine_flat_boot_entries
@@ -108,10 +108,10 @@ limine_snapper_sync_config:
     - unless: |
         CONF="/etc/limine-snapper-sync.conf"
         [ -f "$CONF" ] || exit 0
-        rg -q '^TARGET_OS_NAME="CachyOS"' "$CONF" &&
-        rg -q '^ROOT_SNAPSHOTS_PATH="/@snapshots"' "$CONF" &&
-        ! rg -q '^COMMANDS_BEFORE_SAVE=' "$CONF" &&
-        ! rg -q '^COMMANDS_AFTER_SAVE=' "$CONF"
+        grep -q '^TARGET_OS_NAME="CachyOS"' "$CONF" &&
+        grep -q '^ROOT_SNAPSHOTS_PATH="/@snapshots"' "$CONF" &&
+        ! grep -q '^COMMANDS_BEFORE_SAVE=' "$CONF" &&
+        ! grep -q '^COMMANDS_AFTER_SAVE=' "$CONF"
 
 # Ensure limine.conf uses multi-profile format (required for snapshot boot entries).
 # Fails the state run to prevent silent misconfiguration.
@@ -123,6 +123,6 @@ limine_multiprofile_check:
         exit 1
     - onlyif: |
         [ -f /boot/limine.conf ] &&
-        ! rg -q '^    //' /boot/limine.conf
+        ! grep -q '^    //' /boot/limine.conf
     - require:
       - cmd: limine_flat_boot_entries

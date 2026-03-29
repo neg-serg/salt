@@ -35,7 +35,7 @@ kernel_modules_blacklist:
 load_{{ mod | replace('-', '_') }}:
   cmd.run:
     - name: modprobe {{ mod }} 2>/dev/null || true
-    - unless: lsmod | rg -q '^{{ mod }}\b'
+    - unless: lsmod | grep -q '^{{ mod }}\b'
     - require:
       - file: kernel_modules_load
 {% endfor %}
