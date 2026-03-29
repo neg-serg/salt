@@ -267,6 +267,11 @@ snapshot_pre
 if ensure_daemon; then
     run_via_daemon
     RC=$?
+    if [[ $RC -eq 75 ]]; then
+        echo "(daemon busy — falling back to direct salt-call)"
+        run_direct
+        RC=$?
+    fi
 else
     run_direct
     RC=$?

@@ -33,10 +33,12 @@ import io
 import json
 import logging
 import os
+import queue
 import signal
 import socket
 import struct
 import sys
+import threading
 
 # ── Salt venv path setup ─────────────────────────────────────────────────────
 # Ensure the venv site-packages is on the path when run with system python3.
@@ -234,12 +236,42 @@ def run_state(
 
 
 # ── Socket server ─────────────────────────────────────────────────────────────
+_EX_TEMPFAIL = 75  # sysexits.h: temporary failure, try again
+
+
+def _send_busy(conn: socket.socket) -> None:
+    """Tell a client the daemon is busy and close the connection."""
+    try:
+        busy_msg = "salt-daemon: busy (state already running)"
+        msg_line = json.dumps({"type": "stdout", "line": busy_msg})
+        exit_line = json.dumps({"type": "exit", "code": _EX_TEMPFAIL})
+        conn.sendall(f"{msg_line}\n{exit_line}\n".encode())
+    except OSError:
+        pass
+    finally:
+        conn.close()
+
+
 class DaemonServer:
+    """
+    Pre-loaded Salt state daemon with a threaded accept loop.
+
+    Architecture:
+      - Accept thread: always listening, instantly rejects with "busy" when a
+        state is running.  Pure Python socket I/O — no Salt objects touched.
+      - Main thread: pulls one connection from the queue, runs the state.
+        Salt's parallel:True states fork() here safely because the accept
+        thread holds no Salt-related locks.
+    """
+
     def __init__(self, socket_path: str, opts: dict, minion, timeout: int = _DEFAULT_TIMEOUT):
         self.socket_path = socket_path
         self.opts = opts
         self.minion = minion
         self.timeout = timeout
+        self._busy = threading.Event()
+        self._conn_queue: queue.Queue[socket.socket] = queue.Queue(maxsize=1)
+        self._shutdown_event = threading.Event()
         # Build allowed UID set: root + all members of the wheel group
         import grp
         import pwd
@@ -256,16 +288,14 @@ class DaemonServer:
             pass
         log.info("Allowed UIDs for socket connections: %s", self.allowed_uids)
 
-    def handle_client(self, conn: socket.socket) -> None:
-        # ── Verify peer credentials (SO_PEERCRED) ────────────────────────
-        # Only allow root (uid 0) and the primary user (uid from _ALLOWED_UID).
+    def _check_peer(self, conn: socket.socket) -> bool:
+        """Verify peer credentials via SO_PEERCRED. Returns True if allowed."""
         try:
             cred = conn.getsockopt(socket.SOL_SOCKET, socket.SO_PEERCRED, struct.calcsize("iII"))
             peer_pid, peer_uid, peer_gid = struct.unpack("iII", cred)
         except (OSError, struct.error) as exc:
             log.warning("Cannot get peer credentials: %s", exc)
-            conn.close()
-            return
+            return False
 
         if peer_uid not in self.allowed_uids:
             log.warning(
@@ -274,13 +304,37 @@ class DaemonServer:
                 peer_pid,
                 self.allowed_uids,
             )
-            conn.close()
-            return
+            return False
+        return True
 
+    def _accept_loop(self, server: socket.socket) -> None:
+        """Accept thread: route connections to the queue or reject as busy."""
+        while not self._shutdown_event.is_set():
+            try:
+                conn, _ = server.accept()
+            except OSError:
+                break
+
+            if not self._check_peer(conn):
+                conn.close()
+                continue
+
+            if self._busy.is_set():
+                log.info("Rejecting connection — state already running")
+                _send_busy(conn)
+                continue
+
+            try:
+                self._conn_queue.put_nowait(conn)
+            except queue.Full:
+                log.info("Rejecting connection — queue full")
+                _send_busy(conn)
+
+    def handle_client(self, conn: socket.socket) -> None:
         try:
             # Read one newline-terminated JSON line
             data = b""
-            conn.settimeout(10.0)
+            conn.settimeout(2.0)
             try:
                 while b"\n" not in data:
                     chunk = conn.recv(4096)
@@ -288,7 +342,7 @@ class DaemonServer:
                         return
                     data += chunk
             except socket.timeout:
-                log.warning("Client timed out during request read")
+                log.warning("Client timed out during request read (dead connection)")
                 return
             finally:
                 conn.settimeout(None)
@@ -383,6 +437,7 @@ class DaemonServer:
 
         def _shutdown(signum, frame):
             log.info("Received signal %d, shutting down...", signum)
+            self._shutdown_event.set()
             server.close()
             if os.path.exists(socket_path):
                 try:
@@ -395,17 +450,25 @@ class DaemonServer:
         signal.signal(signal.SIGINT, _shutdown)
         signal.signal(signal.SIGALRM, _on_sigalrm)
 
+        # Start accept thread — pure socket I/O, no Salt objects.
+        # Salt's fork() in parallel:True states happens in the main thread,
+        # so there are no mutex/lock conflicts in the forked child.
+        accept_thread = threading.Thread(target=self._accept_loop, args=(server,), daemon=True)
+        accept_thread.start()
+
         print(f"salt-daemon ready on {socket_path}", flush=True)
         log.info("Listening on %s", socket_path)
 
-        while True:
+        while not self._shutdown_event.is_set():
             try:
-                conn, _ = server.accept()
-            except OSError:
-                break
-            # Handle synchronously — no threads, so parallel: True in Salt
-            # states can safely fork() without inheriting locked mutexes.
-            self.handle_client(conn)
+                conn = self._conn_queue.get(timeout=1.0)
+            except queue.Empty:
+                continue
+            self._busy.set()
+            try:
+                self.handle_client(conn)
+            finally:
+                self._busy.clear()
 
 
 # ── Entry point ───────────────────────────────────────────────────────────────
