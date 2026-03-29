@@ -8,6 +8,23 @@
 
 {% from '_macros_common.jinja' import user as _user, home as _home, retry_attempts as _retry_attempts, retry_interval as _retry_interval, ver_dir as _ver_dir, sys_ver_dir as _sys_ver_dir, download_cache as _download_cache, ver_stamp as _ver_stamp %}
 
+{# Fallback: go install (module path).
+   Usage: {{ go_pkg('ght', pkg='github.com/kwame-Owusu/ght') }}
+          {{ go_pkg('lazycut', pkg='github.com/ozemin/lazycut') }}
+#}
+{%- macro go_pkg(name, pkg=None, bin=None, user=_user, home=_home) -%}
+{%- set _bin_path = home ~ '/.local/bin/' ~ (bin or name) -%}
+install_{{ name | replace('-', '_') }}:
+  cmd.run:
+    - name: GOBIN={{ home }}/.local/bin go install {{ pkg or name }}@latest
+    - runas: {{ user }}
+    - creates: {{ _bin_path }}
+    - parallel: True
+    - retry:
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
+{%- endmacro -%}
+
 {# Fallback: download binary directly to ~/.local/bin/ and chmod +x.
    version: when set, enables update-on-version-bump via version file.
    Usage: {{ curl_bin('aliae', 'https://github.com/.../aliae-linux-amd64') }}

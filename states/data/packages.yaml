@@ -428,4 +428,5 @@ aur:
   - vicinae  # native desktop launcher (fast, extensible)
   - vimiv-qt  # image viewer with vim keybindings
   - vmtouch  # filesystem cache diagnostics and control
+  - watchtower-bin  # terminal-based global intelligence dashboard
   - xdg-ninja  # check for XDG Base Directory compliance

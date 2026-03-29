@@ -64,6 +64,12 @@ cargo_pkg:
   rsmetrx:
     git: "https://github.com/neg-serg/rsmetrx"
 
+go_pkg:
+  ght:
+    pkg: "github.com/kwame-Owusu/ght"
+  lazycut:
+    pkg: "github.com/ozemin/lazycut"
+
 curl_extract_zip: {}
 
 curl_extract_tar:

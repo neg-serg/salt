@@ -1,5 +1,5 @@
 {% from '_imports.jinja' import user, home, retry_attempts, retry_interval %}
-{% from '_macros_install.jinja' import cargo_pkg, curl_bin, curl_extract_tar, curl_extract_zip, git_clone_deploy, http_file, pip_pkg %}
+{% from '_macros_install.jinja' import cargo_pkg, curl_bin, curl_extract_tar, curl_extract_zip, git_clone_deploy, go_pkg, http_file, pip_pkg %}
 {% from '_macros_github.jinja' import github_tar %}
 {% from '_macros_pkg.jinja' import paru_install %}
 {% import_yaml 'data/installers.yaml' as tools %}
@@ -42,6 +42,11 @@
 # --- cargo installs ---
 {% for name, opts in tools.cargo_pkg.items() %}
 {{ cargo_pkg(name, pkg=opts.get('pkg'), bin=opts.get('bin'), git=opts.get('git')) }}
+{% endfor %}
+
+# --- go installs ---
+{% for name, opts in tools.get('go_pkg', {}).items() %}
+{{ go_pkg(name, pkg=opts.get('pkg'), bin=opts.get('bin')) }}
 {% endfor %}
 
 # --- ZIP archive extractions ---
