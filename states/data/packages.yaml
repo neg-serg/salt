@@ -297,6 +297,7 @@ other:
   - rclone  # rsync for cloud storage
   - recoll  # full-text search tool (Xapian)
   - reptyr  # reattach process to new terminal
+  - resvg  # SVG rendering library and CLI
   - ripgrep  # fast recursive grep (rg)
   - rlwrap  # readline wrapper for CLI programs
   - ruff  # ultra-fast Python linter (Rust)
@@ -320,6 +321,7 @@ other:
   - swappy  # Wayland screenshot editor
   - systemd-language-server  # LSP for systemd units
   - systemd-resolvconf  # resolvconf via systemd-resolved
+  - tabiew  # lightweight TUI to view and query CSV files
   - taplo-cli  # TOML toolkit (formatter, linter)
   - tcpdump  # CLI packet analyzer
   - tealdeer  # fast tldr client (Rust)
