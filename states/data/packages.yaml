@@ -423,6 +423,7 @@ aur:
   - salt  # remote execution and config management
   - scc  # fast code line counter with COCOMO
   - sing-box-bin  # universal proxy platform (tun/proxy)
+  - strace-tui-bin  # TUI for visualizing and exploring strace output
   - taoup  # Art of Unix Programming wisdom quotes
   - tessen  # rofi menu for pass/gopass autotype
   - ttfautohint  # automated font hinting for web
