@@ -128,5 +128,23 @@ termcell_wrapper:
 # --- fzf-navigator (sourced shell script for filesystem navigation) ---
 {{ http_file('fzf_navigator', 'https://raw.githubusercontent.com/benward2301/fzf-navigator/main/fzf-navigator.sh', home ~ '/.config/fzf-navigator.sh', user=user) }}
 
+# --- nface (terminal ASCII webcam via ncurses/v4l2) ---
+nface:
+  cmd.run:
+    - name: |
+        set -eo pipefail
+        _td=$(mktemp -d)
+        trap 'rm -rf "$_td"' EXIT
+        GIT_CONFIG_GLOBAL=/dev/null git clone --depth=1 https://github.com/tomScheers/nFace.git "$_td/nface"
+        make -C "$_td/nface"
+        install -m 0755 "$_td/nface/bin/nface" ~/.local/bin/nface
+    - runas: {{ user }}
+    - shell: /bin/bash
+    - creates: {{ home }}/.local/bin/nface
+    - parallel: True
+    - retry:
+        attempts: {{ retry_attempts }}
+        interval: {{ retry_interval }}
+
 # --- blesh (Bash Line Editor) ---
 {{ curl_extract_tar('blesh', 'https://github.com/akinomyoga/ble.sh/releases/download/nightly/ble-nightly.tar.xz', archive_ext='tar.xz', dest='~/.local/share', strip_components=1, creates=home ~ '/.local/share/ble.sh', user=user, home=home) }}

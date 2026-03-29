@@ -60,6 +60,8 @@ github_tar: {}
 pip_pkg:
   httpstat: {}
   scdl: {}
+  texicode:
+    bin: txc
 
 cargo_pkg:
   pzip:
@@ -70,12 +72,20 @@ cargo_pkg:
     git: "https://github.com/neg-serg/rsmetrx"
   panther:
     git: "https://github.com/PantherApex/Panther"
+  spek-cli:
+    git: "https://github.com/SwagRGB/spek-cli"
 
 go_pkg:
   ght:
     pkg: "github.com/kwame-Owusu/ght"
   lazycut:
     pkg: "github.com/ozemin/lazycut"
+  # Terminal sorting visualizer with sonification
+  sound-of-sort:
+    pkg: "github.com/sahaj-b/sound-of-sort"
+  # Terminal regex visualizer
+  trex:
+    pkg: "github.com/samyakbardiya/trex"
 
 curl_extract_zip: {}
 
