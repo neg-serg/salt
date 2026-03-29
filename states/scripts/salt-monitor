@@ -77,6 +77,7 @@ typeset -A RESTART_COUNTS        # service → restart attempts in current windo
 typeset -A RESTART_WINDOW_START  # service → epoch when restart window started
 CPU_HIGH_COUNT=0                  # sustained high CPU counter
 LAST_DRIFT_DATE=""                # date of last drift check
+LAST_SONAME_DATE=""               # date of last soname/rebuild check
 BOOT_TIME=$EPOCHSECONDS
 POLL_COUNT=0
 RESOURCE_LAST=0
@@ -578,6 +579,24 @@ check_drift() {
     fi
 }
 
+# ── Soname/rebuild check (daily) ────────────────────────────────────
+check_soname() {
+    local today
+    today=$(date +%F)
+    [[ "$today" == "$LAST_SONAME_DATE" ]] && return
+    LAST_SONAME_DATE="$today"
+
+    command -v checkrebuild &>/dev/null || return
+
+    local broken
+    broken=$(checkrebuild 2>/dev/null | awk '{print $2}' | sort -u | paste -sd' ')
+    [[ -z "$broken" ]] && return
+
+    dispatch_alert --scope system --service soname --type broken \
+        --severity warning \
+        --message "AUR packages need rebuild (broken soname): ${broken} — run 'just apply' to auto-fix"
+}
+
 # ── Main loop ────────────────────────────────────────────────────────
 log "salt-monitor starting (PID $$, grace period ${BOOT_GRACE_SECONDS}s)"
 
@@ -601,6 +620,9 @@ while true; do
 
     # Daily drift check
     check_drift
+
+    # Daily soname/rebuild check
+    check_soname
 
     # Flush any pending alerts from this poll cycle
     "$ALERT_CMD" --flush
