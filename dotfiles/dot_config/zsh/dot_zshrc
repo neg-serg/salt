@@ -48,6 +48,10 @@ if [[ -r "${ZDOTDIR}/99-fix-aliases.zsh" ]]; then
   zsh-defer source "${ZDOTDIR}/99-fix-aliases.zsh"
 fi
 
+# Smart man-page lookup (K key in vi-mode, also works in emacs mode)
+zi ice depth'1' lucid
+zsh-defer zi light TunaCuma/zsh-vi-man
+
 # Native syntax highlighting
 source "$HOME/.local/lib/zsh/zsh-native-syntax.plugin.zsh"
 
