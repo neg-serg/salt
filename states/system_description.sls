@@ -155,6 +155,9 @@ include:
 {% if host.features.steam %}
   - steam
 {% endif %}
+{% if host.features.get('xen_vr', false) %}
+  - xen
+{% endif %}
 {% if host.features.monitoring.loki %}
   - monitoring_loki
 {% endif %}

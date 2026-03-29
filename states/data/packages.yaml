@@ -77,6 +77,11 @@ fonts:
   - noto-fonts-cjk  # Google Noto CJK fonts
 
 gaming:
+  - i3-wm  # tiling window manager (VR X11 session)
+  - i3status  # status bar for i3 (minimal config)
+  - xorg-server  # X11 display server (VR session backend)
+  - xorg-xinit  # startx launcher for X11
+  - xf86-video-amdgpu  # Xorg DDX driver for AMD GPUs
 
 system:
   - btop  # resource monitor (C++ bpytop port)
