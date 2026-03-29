@@ -65,9 +65,9 @@ kernel_params_limine:
         current=$(grep 'kernel_cmdline:' "$LIMINE" | head -1)
         missing=""
         for k in "${WANTED[@]}"; do
-          # Match param key (before =) to avoid partial matches
+          # Match param key (before =); use word boundary to avoid partial matches
           key="${k%%=*}"
-          if ! grep -q "$key" <<< "$current"; then
+          if ! grep -qE "(^| )${key}(=| |$)" <<< "$current"; then
             missing="$missing $k"
           fi
         done
@@ -86,7 +86,7 @@ kernel_params_limine:
         current=$(grep 'kernel_cmdline:' "$LIMINE" | head -1)
         for k in "${WANTED[@]}"; do
           key="${k%%=*}"
-          grep -q "$key" <<< "$current" || exit 1
+          grep -qE "(^| )${key}(=| |$)" <<< "$current" || exit 1
         done
     - require:
       - cmd: limine_flat_boot_entries
