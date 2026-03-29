@@ -180,21 +180,24 @@ s.connect('${DAEMON_SOCK}')
 s.sendall(req.encode())
 buf = b''
 rc = 1
-while True:
-    chunk = s.recv(4096)
-    if not chunk:
-        break
-    buf += chunk
-    while b'\n' in buf:
-        line, buf = buf.split(b'\n', 1)
-        if not line:
-            continue
-        try:
-            msg = json.loads(line.decode())
-        except json.JSONDecodeError:
-            continue
-        if msg.get('type') == 'exit':
-            rc = msg.get('code', 0)
+try:
+    while True:
+        chunk = s.recv(4096)
+        if not chunk:
+            break
+        buf += chunk
+        while b'\n' in buf:
+            line, buf = buf.split(b'\n', 1)
+            if not line:
+                continue
+            try:
+                msg = json.loads(line.decode())
+            except json.JSONDecodeError:
+                continue
+            if msg.get('type') == 'exit':
+                rc = msg.get('code', 0)
+except ConnectionResetError:
+    rc = 75
 s.close()
 print(rc)
 PYEOF

@@ -240,12 +240,23 @@ _EX_TEMPFAIL = 75  # sysexits.h: temporary failure, try again
 
 
 def _send_busy(conn: socket.socket) -> None:
-    """Tell a client the daemon is busy and close the connection."""
+    """Tell a client the daemon is busy and close the connection gracefully."""
     try:
         busy_msg = "salt-daemon: busy (state already running)"
         msg_line = json.dumps({"type": "stdout", "line": busy_msg})
         exit_line = json.dumps({"type": "exit", "code": _EX_TEMPFAIL})
         conn.sendall(f"{msg_line}\n{exit_line}\n".encode())
+        # Graceful shutdown: signal EOF so the client reads the response
+        # before we close.  Without this, close() can send RST before
+        # the client's recv() sees the data.
+        conn.shutdown(socket.SHUT_WR)
+        # Drain any remaining client data (the request we won't process)
+        conn.settimeout(1.0)
+        try:
+            while conn.recv(4096):
+                pass
+        except (OSError, socket.timeout):
+            pass
     except OSError:
         pass
     finally:
