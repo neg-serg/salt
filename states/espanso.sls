@@ -12,10 +12,10 @@
      start_now=['espanso.service'],
      requires=['cmd: install_espanso']) }}
 
-# --- Health check ---
+# --- Health check: restart espanso if it's not running ---
 espanso_healthcheck:
   cmd.run:
-    - name: espanso status
+    - name: espanso restart
     - runas: {{ user }}
     - env:
       - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
