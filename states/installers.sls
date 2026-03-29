@@ -70,6 +70,8 @@
 # AUR package installs (migrated from manual downloads)
 # ===========================================================================
 {{ paru_install('tdl', 'tdl-bin') }}
+# Modern TUI man page viewer (replaces man-db with mandoc)
+{{ paru_install('qman', 'qman') }}
 
 # One-time cleanup: remove old manually-installed binary
 tdl_legacy_cleanup:
