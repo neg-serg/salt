@@ -55,6 +55,7 @@ dev:
   - vim  # classic text editor
 
 network:
+  - cloudflare-speed-cli  # CLI internet speed test via Cloudflare
   - curl  # CLI data transfer tool
   - networkmanager  # network connection manager
   - nmap  # network discovery and security auditing
@@ -439,6 +440,7 @@ aur:
   - taoup  # Art of Unix Programming wisdom quotes
   - tanin-git  # TUI ambient sound generator (rain, wind, fire, etc.)
   - tessen  # rofi menu for pass/gopass autotype
+  - tmmpr  # terminal mind mapper with vim keybindings and infinite canvas
   - ttfautohint  # automated font hinting for web
   - unflac  # audio image + cue sheet splitter
   - vicinae  # native desktop launcher (fast, extensible)
