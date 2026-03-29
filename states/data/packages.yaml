@@ -448,6 +448,7 @@ aur:
   - simutil-bin  # TUI for managing Android emulators and iOS simulators
   - sing-box-bin  # universal proxy platform (tun/proxy)
   - strace-tui-bin  # TUI for visualizing and exploring strace output
+  - systemd-manager-tui  # TUI for managing systemd services
   - taoup  # Art of Unix Programming wisdom quotes
   - tanin-git  # TUI ambient sound generator (rain, wind, fire, etc.)
   - tessen  # rofi menu for pass/gopass autotype
