@@ -433,6 +433,7 @@ aur:
   - rofi-file-browser-extended-git  # rofi file browser plugin
   - salt  # remote execution and config management
   - scc  # fast code line counter with COCOMO
+  - simutil-bin  # TUI for managing Android emulators and iOS simulators
   - sing-box-bin  # universal proxy platform (tun/proxy)
   - strace-tui-bin  # TUI for visualizing and exploring strace output
   - taoup  # Art of Unix Programming wisdom quotes
