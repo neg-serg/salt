@@ -52,6 +52,10 @@ done
 source "${_fzf_cache_dir}/key-bindings.zsh" 2>/dev/null
 source "${_fzf_cache_dir}/completion.zsh"   2>/dev/null
 
+# fzf-navigator: interactive filesystem navigation
+[[ -r "${XDG_CONFIG_HOME:-$HOME/.config}/fzf-navigator.sh" ]] && \
+  source "${XDG_CONFIG_HOME:-$HOME/.config}/fzf-navigator.sh"
+
 # Lazy compinit: defer initialization until first Tab press (fish-style trick)
 # This avoids ~15-20ms compinit cost when shell is used for a quick command without Tab
 _fzf_tab_lazy_init() {
