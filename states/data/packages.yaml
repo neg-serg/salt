@@ -426,6 +426,7 @@ aur:
   - opencode-bin  # AI coding agent TUI
   - otter-launcher  # modular prefix-based TUI app launcher
   - oports-git  # clean wrapper around ss to show open ports
+  - oyo  # TUI diff viewer with evolution, split, unified and blame modes
   - par  # paragraph reformatter
   - pinentry-rofi  # rofi-based GPG pinentry
   - pipemixer  # TUI PipeWire volume control
