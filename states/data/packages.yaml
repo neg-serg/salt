@@ -386,8 +386,8 @@ aur:
   - act-bin  # run GitHub Actions locally
   - advancecomp  # recompress zip/png/gz with 7-zip algo
   - albumdetails  # music album metadata generator
-  - amneziawg-dkms  # AmneziaWG DKMS kernel module
-  - amneziawg-tools  # AmneziaWG userspace tools
+  # - amneziawg-dkms  # AmneziaWG DKMS kernel module (disabled: amnezia feature off)
+  # - amneziawg-tools  # AmneziaWG userspace tools (disabled: amnezia feature off)
   - blktrace  # block layer I/O tracer
   - brutefir  # multi-channel FIR convolution engine
   - carapace-bin  # multi-shell completion engine

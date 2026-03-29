@@ -51,7 +51,7 @@ defaults:
     user_services:
       mail: true
       vdirsyncer: true
-    amnezia: true
+    amnezia: false
     steam: true
     mpd: true
     ollama: true
