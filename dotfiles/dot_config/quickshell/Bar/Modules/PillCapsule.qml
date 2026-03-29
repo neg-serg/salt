@@ -15,7 +15,7 @@ OverlayToggleCapsule {
     capsule.centerContent: true
     capsule.cursorShape: Qt.PointingHandCursor
     capsule.implicitWidth: capsule.horizontalPadding * 2 + pillIcon.width
-    capsuleVisible: true
+    capsuleVisible: !Services.PillTracker.taken
     autoToggleOnTap: false
     overlayNamespace: "pill-tracker"
 
@@ -25,7 +25,7 @@ OverlayToggleCapsule {
 
     MaterialIcon {
         id: pillIcon
-        icon: "medication"
+        icon: "pill"
         size: iconBox
         color: Services.PillTracker.taken ? Theme.accentPrimary : Theme.textSecondary
         anchors.centerIn: parent
@@ -96,7 +96,7 @@ OverlayToggleCapsule {
                     Text {
                         text: Services.PillTracker.streak + (Services.PillTracker.streak === 1 ? " day" : " days")
                         font.family: Theme.fontFamily
-                        font.pixelSize: Math.round(Theme.fontSizeMedium * capsuleScale)
+                        font.pixelSize: parseInt(Theme.fontSizeMedium * capsuleScale)
                         font.bold: true
                         color: Theme.textPrimary
                         anchors.verticalCenter: parent.verticalCenter
@@ -229,7 +229,7 @@ OverlayToggleCapsule {
                                 font.pixelSize: Math.round((Theme.fontSizeSmall - 1) * capsuleScale)
                                 color: modelData.status === "taken" ? Theme.accentPrimary
                                      : modelData.status === "missed" ? Theme.textSecondary
-                                     : Theme.textTertiary
+                                     : Theme.textDisabled
                                 font.bold: modelData.status === "taken"
                             }
                         }
