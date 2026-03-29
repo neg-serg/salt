@@ -125,9 +125,10 @@ Rectangle {
                         }
                         RowLayout {
                             spacing: Math.round(Theme.sidePanelSpacingSmall * 0.5 * Theme.scale(Screen))
-                            Text {
-                                text: WeatherIcons.moonIcon(new Date())
-                                font.pixelSize: Math.round(Theme.fontSizeSmall * Theme.scale(Screen))
+                            MoonPhaseIcon {
+                                size: Math.round(Theme.fontSizeSmall * Theme.scale(Screen))
+                                moonColor: Theme.textOn(card.color)
+                                rimColor: Theme.textOn(card.color)
                                 Layout.alignment: Qt.AlignVCenter
                             }
                             Text {

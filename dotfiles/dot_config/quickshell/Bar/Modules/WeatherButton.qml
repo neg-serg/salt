@@ -115,10 +115,11 @@ OverlayToggleCapsule {
             anchors.verticalCenter: parent.verticalCenter
         }
 
-        Text {
-            id: moonLabel
-            text: WeatherIcons.moonIcon(new Date())
-            font.pixelSize: Math.round(Theme.fontSizeSmall * capsuleScale)
+        MoonPhaseIcon {
+            id: moonIcon
+            size: Math.round(Theme.fontSizeSmall * capsuleScale)
+            moonColor: Theme.textSecondary
+            rimColor: Theme.textDisabled
             anchors.verticalCenter: parent.verticalCenter
         }
     }
@@ -165,7 +166,7 @@ OverlayToggleCapsule {
                 var sub = wind ? [wind] : [];
                 if (typeof cur.relative_humidity_2m === 'number')
                     sub.push("Humidity: " + Math.round(cur.relative_humidity_2m) + "%");
-                sub.push(WeatherIcons.moonIcon(new Date()) + " " + WeatherIcons.moonName(new Date()));
+                sub.push("Moon: " + WeatherIcons.moonName(new Date()));
                 return TooltipText.compose(city || "Weather", t, sub);
             }
             return TooltipText.compose("Weather", city, []);
