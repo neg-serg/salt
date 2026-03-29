@@ -283,6 +283,7 @@ other:
   - powertop  # power consumption diagnostics
   - pre-commit  # multi-language git hook framework
   - python-faker  # fake data generator for testing
+  - python-internetarchive  # Internet Archive CLI and Python library (ia)
   - prettyping  # colorful ping wrapper
   - progress  # coreutils progress viewer
   - pv  # pipe data throughput monitor
@@ -374,6 +375,7 @@ other:
   - zathura  # minimalistic document viewer
   - zathura-pdf-poppler  # zathura PDF backend (poppler)
   - zbar  # barcode reader
+  - zellij  # terminal multiplexer with panes and tabs (Rust)
   - zk  # Zettelkasten CLI note tool
   - zmap  # fast Internet-wide network scanner
   - zoxide  # smarter cd (frecency-based)
@@ -417,6 +419,7 @@ aur:
   - mpdas  # MPD AudioScrobbler client
   - neg-pretty-printer  # custom pretty-printer for scripts
   - neo-matrix  # Matrix digital rain simulator
+  - netdump  # interactive network packet analyzer with ASCII visualization
   - newsraft  # TUI feed/RSS reader
   - no-more-secrets  # "Sneakers" data decryption effect
   - oh-my-posh  # cross-shell prompt theme engine
