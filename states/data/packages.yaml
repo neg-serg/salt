@@ -405,6 +405,7 @@ aur:
   - lazytail-bin  # fast terminal log viewer with live filtering and MCP integration
   - lutgen-bin  # LUT-based color palette generator
   - massren  # batch file rename via text editor
+  - mcat-bin  # extended cat: renders markdown, images, PDF, DOCX in terminal
   - mpdas  # MPD AudioScrobbler client
   - neg-pretty-printer  # custom pretty-printer for scripts
   - neo-matrix  # Matrix digital rain simulator
