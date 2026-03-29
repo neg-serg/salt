@@ -19,6 +19,25 @@
 # wlr-which-key: on-screen keybinding cheatsheet for Hyprland (leader key menu)
 {{ paru_install('wlr-which-key', 'wlr-which-key') }}
 
+# --- Kvantum style plugin for bundled-Qt6 apps (e.g. happ) ---
+# Apps that ship their own Qt6 + qt.conf ignore system plugin paths;
+# symlink the system Kvantum style into each app's private plugin dir.
+{% set kvantum_bundled_apps = ['/opt/happ'] %}
+{% for prefix in kvantum_bundled_apps %}
+kvantum_style_dir_{{ loop.index }}:
+  file.directory:
+    - name: {{ prefix }}/lib/plugins/styles
+    - makedirs: True
+
+kvantum_style_link_{{ loop.index }}:
+  file.symlink:
+    - name: {{ prefix }}/lib/plugins/styles/libkvantum.so
+    - target: /usr/lib/qt6/plugins/styles/libkvantum.so
+    - force: True
+    - require:
+      - file: kvantum_style_dir_{{ loop.index }}
+{% endfor %}
+
 # --- swayimg: build and install directly from the local checkout ---
 swayimg_local_link_absent:
   file.absent:
