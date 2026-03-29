@@ -160,6 +160,9 @@ Singleton {
             property string weatherApiBaseUrl: "https://api.open-meteo.com/v1"
             property string weatherGeocodingBaseUrl: "https://geocoding-api.open-meteo.com/v1"
 
+            // Pill tracker reminder deadline (HH:MM format)
+            property string pillReminderDeadline: "10:00"
+
             // Wallpaper accent extraction
             property bool wallpaperAccent: true
         }

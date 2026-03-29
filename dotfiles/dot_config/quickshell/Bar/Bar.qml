@@ -1209,6 +1209,12 @@ Scope {
                                 iconPx: Math.round(Theme.fontSizeSmall * Theme.scale(rightPanel.screen))
                                 iconColor: Theme.textPrimary
                             }
+                            LocalMods.PillCapsule {
+                                id: pillCapsule
+                                visible: WidgetRegistry.isVisible("pills")
+                                Layout.alignment: Qt.AlignVCenter
+                                screen: modelData
+                            }
                             Item {
                                 id: systemTrayWrapper
                                 Layout.alignment: Qt.AlignVCenter
