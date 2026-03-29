@@ -50,6 +50,12 @@ portal_kitty_config:
         color_scheme dark
         accent_color cyan
         contrast normal
+        # Sized popup instead of fullscreen overlay — avoids focus
+        # conflicts with apps like Telegram that fight for focus
+        file_chooser_size 35 120
+        # Allow clipboard read so Ctrl+Shift+V paste works in the chooser
+        # (main kitty.conf only permits write-clipboard write-primary)
+        file_chooser_kitty_override clipboard_control=write-clipboard write-primary read-clipboard read-primary
 
 {% else %}
 # termfilechooser backend (yazi-based file chooser)
