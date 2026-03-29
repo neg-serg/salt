@@ -29,11 +29,11 @@ OverlayToggleCapsule {
     }
     readonly property real _iconScale: {
         var v = Settings.settings.systemMonitorIconScale;
-        return (typeof v === "number" && v > 0) ? v : 0.75;
+        return (typeof v === "number" && v > 0) ? v : 0.85;
     }
     readonly property int _metricSpacing: {
         var v = Settings.settings.systemMonitorSpacing;
-        return (typeof v === "number" && v >= 0) ? Math.round(v * capsuleScale) : Math.round(5 * capsuleScale);
+        return (typeof v === "number" && v >= 0) ? Math.round(v * capsuleScale) : Math.round(3 * capsuleScale);
     }
     readonly property real _warnThr: {
         var v = Settings.settings.systemMonitorWarnThreshold;
