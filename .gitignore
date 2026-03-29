@@ -27,6 +27,9 @@ salt_config/var/
 # Node
 .npm/
 
+# Sentry crash reporter (created by some native apps)
+.sentry-native/
+
 # Tools
 CLAUDE.md
 .claude/
