@@ -18,7 +18,9 @@ User=root
 # Clean up socket on stop
 ExecStopPost=/bin/rm -f /run/salt-daemon.sock
 PrivateTmp=yes
-RestrictNamespaces=yes
+# RestrictNamespaces disabled: Salt states run podman builds that need
+# network/mount/pid namespaces (unshare syscall)
+RestrictNamespaces=no
 RestrictRealtime=yes
 LockPersonality=yes
 
