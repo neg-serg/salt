@@ -51,6 +51,9 @@ curl_bin:
   rofi-systemd:
     url: "https://raw.githubusercontent.com/IvanMalison/rofi-systemd/b8b156b7fd9c9dc0f034a88f1adeb07ecbdd4d7f/rofi-systemd"
     hash: "b0a601b9fceec20117aeb533e03c75569c8700f08ffc3107ea75dde4e0ef43b0"
+  # Internet Archive interactive search TUI (fzf-based)
+  ia-search:
+    url: "https://raw.githubusercontent.com/ahloiscreamo/ia-search/main/ia-search"
   # markdown-native CLI todo manager (niklas-heer/tdx)
   tdx:
     url: "https://github.com/niklas-heer/tdx/releases/download/v${VER}/tdx-linux-amd64"
