@@ -58,7 +58,10 @@ curl_bin:
   tdx:
     url: "https://github.com/niklas-heer/tdx/releases/download/v${VER}/tdx-linux-amd64"
 
-github_tar: {}
+# cross-platform package manager for GitHub Releases (yhoundz/parm)
+github_tar:
+  parm:
+    url: "https://github.com/yhoundz/parm/releases/download/v${VER}/parm-linux-amd64.tar.gz"
 
 pip_pkg:
   httpstat: {}
