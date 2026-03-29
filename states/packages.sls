@@ -4,6 +4,7 @@
 #
 # Run: sudo salt-call --local state.apply packages
 {% from '_macros_pkg.jinja' import pacman_install, paru_install %}
+{% from '_macros_common.jinja' import user %}
 {% import_yaml 'data/packages.yaml' as pkgs %}
 
 # ===================================================================
@@ -38,7 +39,7 @@ rebuild_broken_aur_packages:
             exit 0
         fi
         echo "Rebuilding broken AUR packages: $broken"
-        sudo -u {{ _user }} paru -S --rebuild --noconfirm $broken
+        sudo -u {{ user }} paru -S --rebuild --noconfirm $broken
     - onlyif: checkrebuild 2>/dev/null | grep -q .
     - require:
       - cmd: install_pkg_system
