@@ -177,7 +177,7 @@ PROMPT_ID=$(echo "${RESPONSE}" | python3 -c "import sys,json; print(json.load(sy
 if [[ -z "${PROMPT_ID}" ]]; then
     echo "Error: Failed to submit workflow to ComfyUI" >&2
     echo "Response: ${RESPONSE}" >&2
-    [[ -n "${COMFYUI_PID}" ]] && kill "${COMFYUI_PID}" 2>/dev/null || true
+    if [[ -n "${COMFYUI_PID}" ]]; then kill "${COMFYUI_PID}" 2>/dev/null || true; fi
     exit 1
 fi
 
@@ -214,7 +214,7 @@ else:
         break
     elif [[ "${POLL_RESULT}" == ERROR:* ]]; then
         echo -e "\n[video-ai] Error: ${POLL_RESULT#ERROR:}" >&2
-        [[ -n "${COMFYUI_PID}" ]] && kill "${COMFYUI_PID}" 2>/dev/null || true
+        if [[ -n "${COMFYUI_PID}" ]]; then kill "${COMFYUI_PID}" 2>/dev/null || true; fi
         rm -rf "${WORK_DIR}"
         exit 1
     fi
@@ -247,7 +247,7 @@ fi
 
 if [[ -z "${FIRST_PNG}" ]]; then
     echo "Error: No output files found after generation" >&2
-    [[ -n "${COMFYUI_PID}" ]] && kill "${COMFYUI_PID}" 2>/dev/null || true
+    if [[ -n "${COMFYUI_PID}" ]]; then kill "${COMFYUI_PID}" 2>/dev/null || true; fi
     exit 1
 fi
 
@@ -278,7 +278,7 @@ ffmpeg -y -framerate 24 -pattern_type glob -i "${PNG_DIR}/*.png" \
 # ── Cleanup ──────────────────────────────────────────────────────────
 rm -rf "${WORK_DIR}"
 rm -rf "${COMFYUI_OUTPUT:?}"/*  # Clear ComfyUI output PNGs
-[[ -n "${COMFYUI_PID}" ]] && kill "${COMFYUI_PID}" 2>/dev/null || true
+if [[ -n "${COMFYUI_PID}" ]]; then kill "${COMFYUI_PID}" 2>/dev/null || true; fi
 
 echo "[video-ai] Output: ${OUTPUT_MP4}" >&2
 echo "${OUTPUT_MP4}"

@@ -178,7 +178,7 @@ for (( n=0; n<COUNT; n++ )); do
         echo "Error: Failed to submit workflow to ComfyUI" >&2
         echo "Response: ${RESPONSE}" >&2
         rm -rf "${WORK_DIR}"
-        [[ -n "${COMFYUI_PID}" ]] && kill "${COMFYUI_PID}" 2>/dev/null || true
+        if [[ -n "${COMFYUI_PID}" ]]; then kill "${COMFYUI_PID}" 2>/dev/null || true; fi
         exit 1
     fi
 
@@ -210,7 +210,7 @@ else:
         elif [[ "${POLL_RESULT}" == ERROR:* ]]; then
             echo "[image-gen] Error: ${POLL_RESULT#ERROR:}" >&2
             rm -rf "${WORK_DIR}"
-            [[ -n "${COMFYUI_PID}" ]] && kill "${COMFYUI_PID}" 2>/dev/null || true
+            if [[ -n "${COMFYUI_PID}" ]]; then kill "${COMFYUI_PID}" 2>/dev/null || true; fi
             exit 1
         fi
         sleep 2
