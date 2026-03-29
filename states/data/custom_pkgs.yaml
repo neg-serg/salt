@@ -8,7 +8,10 @@
 #   <name>:
 #     timeout:        (optional) build timeout in seconds (default: 600)
 #     replace_check:  (optional) shell cmd to verify correct variant is installed;
-#                     if it fails, the old package is removed before rebuilding
+#                     if it fails, the old package is removed before rebuilding.
+#                     ⚠ Packages with replace_check are auto-added to IgnorePkg
+#                     in pacman.conf (see custom_pkgs.sls) to prevent pacman -Syu
+#                     from overwriting the fork with a stock version.
 #     conflicts:      (optional) list of old package names to remove before building
 #                     (for predecessor packages with different names, e.g. swww-vulkan → wl)
 #     extra_sources:  (optional) list of additional source trees to deploy:

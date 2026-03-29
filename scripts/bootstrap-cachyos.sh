@@ -190,6 +190,8 @@ Color
 CheckSpace
 VerbosePkgLists
 ParallelDownloads = 5
+# Managed by Salt (custom_pkgs.sls) — protects forked packages from pacman -Syu
+# IgnorePkg =
 SigLevel    = Required DatabaseOptional
 LocalFileSigLevel = Optional
 
