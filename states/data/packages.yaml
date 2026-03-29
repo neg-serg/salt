@@ -393,6 +393,7 @@ aur:
   - dool  # versatile resource statistics tool (dstat replacement)
   - dualsensectl  # PS5 DualSense controller tool
   - eilmeldung-bin  # TUI RSS feed reader with vim keybindings
+  - fsel-bin  # TUI fuzzy launcher, dmenu replacement, clipboard browser
   - epr-git  # CLI EPUB reader
   - freeze-bin  # generate images of code/terminal output
   - gitbutler-bin  # visual Git client (Tauri/Rust/Svelte)
@@ -418,11 +419,13 @@ aur:
   - no-more-secrets  # "Sneakers" data decryption effect
   - oh-my-posh  # cross-shell prompt theme engine
   - opencode-bin  # AI coding agent TUI
+  - otter-launcher  # modular prefix-based TUI app launcher
   - oports-git  # clean wrapper around ss to show open ports
   - par  # paragraph reformatter
   - pinentry-rofi  # rofi-based GPG pinentry
   - pipemixer  # TUI PipeWire volume control
   - pup-bin  # CLI HTML parser (like jq for HTML)
+  - python-ascii_magic  # ASCII art from images (songfetch dependency)
   - python-rapidgzip  # parallel gzip decompressor (Python)
   - quickshell-git  # QtQuick desktop shell toolkit (AUR, built from source)
   - raise  # run-or-raise for Hyprland (neg-serg fork)
@@ -436,6 +439,7 @@ aur:
   - rofi-file-browser-extended-git  # rofi file browser plugin
   - salt  # remote execution and config management
   - scc  # fast code line counter with COCOMO
+  - songfetch  # neofetch-style display for currently playing music (MPRIS)
   - simutil-bin  # TUI for managing Android emulators and iOS simulators
   - sing-box-bin  # universal proxy platform (tun/proxy)
   - strace-tui-bin  # TUI for visualizing and exploring strace output
