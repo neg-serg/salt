@@ -389,6 +389,7 @@ aur:
   - epr-git  # CLI EPUB reader
   - freeze-bin  # generate images of code/terminal output
   - gitbutler-bin  # visual Git client (Tauri/Rust/Svelte)
+  - ghgrab-bin  # download files from GitHub repos without cloning
   - git-extras  # extra git utilities (summary, effort, etc)
   - gram-editor-git  # minimal code editor
   - hishtory-bin  # synced, queryable shell history
