@@ -86,6 +86,9 @@ go_pkg:
   # Terminal regex visualizer
   trex:
     pkg: "github.com/samyakbardiya/trex"
+  # Astrological birth chart calculator with AI interpretations
+  astral-tui:
+    pkg: "github.com/ctrl-vfr/astral-tui"
 
 curl_extract_zip: {}
 

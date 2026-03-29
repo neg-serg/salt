@@ -148,5 +148,24 @@ nface:
         attempts: {{ retry_attempts }}
         interval: {{ retry_interval }}
 
+# --- termmark (terminal Markdown renderer) ---
+termmark:
+  cmd.run:
+    - name: |
+        set -eo pipefail
+        _td=$(mktemp -d)
+        trap 'rm -rf "$_td"' EXIT
+        GIT_CONFIG_GLOBAL=/dev/null git clone --depth=1 https://github.com/ishanawal/TermMark.git "$_td/termmark"
+        cmake -S "$_td/termmark" -B "$_td/termmark/build" -DCMAKE_BUILD_TYPE=Release
+        make -C "$_td/termmark/build"
+        install -m 0755 "$_td/termmark/build/termmark" ~/.local/bin/termmark
+    - runas: {{ user }}
+    - shell: /bin/bash
+    - creates: {{ home }}/.local/bin/termmark
+    - parallel: True
+    - retry:
+        attempts: {{ retry_attempts }}
+        interval: {{ retry_interval }}
+
 # --- blesh (Bash Line Editor) ---
 {{ curl_extract_tar('blesh', 'https://github.com/akinomyoga/ble.sh/releases/download/nightly/ble-nightly.tar.xz', archive_ext='tar.xz', dest='~/.local/share', strip_components=1, creates=home ~ '/.local/share/ble.sh', user=user, home=home) }}
