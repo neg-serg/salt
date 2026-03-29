@@ -36,6 +36,15 @@
   top: auto !important;
 }
 
+/* --- Remove content area border/padding --- */
+#tabbrowser-tabpanels {
+  border: none !important;
+  outline: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+}
+
 /* --- Compact mode: adjust autohide to slide from bottom --- */
 #zen-appcontent-navbar-wrapper[zen-has-hover],
 #zen-appcontent-navbar-wrapper[has-popup-menu],
