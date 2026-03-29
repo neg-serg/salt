@@ -331,7 +331,7 @@ install_{{ name | replace('-', '_') }}:
         curl --http1.1 --fail --silent --show-error --location \
           --ipv4 \
           --connect-timeout 10 --max-time 30 \
-          --retry 2 --retry-delay 2 --retry-max-time 30 \
+          --retry 3 --retry-delay 3 --retry-max-time 60 --retry-all-errors \
           -o '{{ _xpi }}.tmp' \
           'https://addons.mozilla.org/firefox/downloads/latest/{{ ext.slug }}/latest.xpi' &&
         mv -f '{{ _xpi }}.tmp' '{{ _xpi }}' &&

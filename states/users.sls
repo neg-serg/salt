@@ -26,7 +26,7 @@ plugdev_group:
 neg_groups:
   cmd.run:
     - name: usermod -aG wheel,libvirt,plugdev {{ user }}
-    - unless: id -nG {{ user }} | tr ' ' '\n' | rg -qx plugdev
+    - unless: id -nG {{ user }} | grep -qw plugdev
     - require:
       - group: plugdev_group
 
