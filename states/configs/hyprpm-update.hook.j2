@@ -1,0 +1,11 @@
+{%- from '_imports.jinja' import user, home, host -%}
+[Trigger]
+Type = Package
+Operation = Install
+Operation = Upgrade
+Target = hyprland
+
+[Action]
+When = PostTransaction
+Exec = /usr/bin/sudo -u {{ user }} env HOME={{ home }} XDG_RUNTIME_DIR=/run/user/{{ host.uid }} hyprpm update
+Description = Rebuild hyprpm plugin headers for new Hyprland version

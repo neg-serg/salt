@@ -1,7 +1,21 @@
 {% from '_imports.jinja' import user %}
 {% from '_macros_desktop.jinja' import hyprpm_add, hyprpm_enable, hyprpm_update %}
+{% from '_macros_service.jinja' import ensure_dir %}
 
 # wl: installed via custom_pkgs (PKGBUILD → /usr/bin/)
+
+# --- Pacman hook: rebuild hyprpm headers after hyprland package upgrade ---
+{{ ensure_dir('pacman_hooks_dir_hyprpm', '/etc/pacman.d/hooks', mode='0755', user='root') }}
+
+hyprpm_update_pacman_hook:
+  file.managed:
+    - name: /etc/pacman.d/hooks/hyprpm-update.hook
+    - source: salt://configs/hyprpm-update.hook.j2
+    - template: jinja
+    - mode: '0644'
+    - require:
+      - file: pacman_hooks_dir_hyprpm
+
 # --- Hyprland plugins via hyprpm ---
 # hyprpm needs HYPRLAND_INSTANCE_SIGNATURE (detect from socket dir) and
 # headers must match the running Hyprland version (hyprpm update rebuilds them).
