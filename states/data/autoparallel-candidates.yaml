@@ -1043,7 +1043,7 @@ not-applicable-tools:
     reason: "Go binary; document processing"
   - name: gptfdisk  # GPT editor — C++
     reason: "Disk partition table; trivial computation"
-  - name: gram-editor-git  # code editor — C
+  - name: gram-editor-bin  # code editor — C
     reason: "Text editor; event-driven"
   - name: gvfs  # virtual filesystem — C
     reason: "I/O abstraction layer"

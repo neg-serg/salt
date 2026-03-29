@@ -405,7 +405,7 @@ aur:
   - gmap-bin  # Git repository analysis tool for churn and heatmap visualization
   - git-extras  # extra git utilities (summary, effort, etc)
   - gowall-bin  # wallpaper color scheme/palette converter
-  - gram-editor-git  # minimal code editor
+  - gram-editor-bin  # minimal code editor
   - hishtory-bin  # synced, queryable shell history
   - hw-probe  # hardware probe and operability check
   - hyprscratch  # Rust scratchpad manager for Hyprland
