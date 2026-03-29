@@ -68,6 +68,8 @@ cargo_pkg:
     git: "https://github.com/001TMF/ProteinView"
   rsmetrx:
     git: "https://github.com/neg-serg/rsmetrx"
+  panther:
+    git: "https://github.com/PantherApex/Panther"
 
 go_pkg:
   ght:

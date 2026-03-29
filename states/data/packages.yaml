@@ -403,6 +403,7 @@ aur:
   - hishtory-bin  # synced, queryable shell history
   - hw-probe  # hardware probe and operability check
   - hyprscratch  # Rust scratchpad manager for Hyprland
+  - instagram-cli  # Instagram DMs/stories TUI client
   - iosevka-neg-fonts  # custom Iosevka Nerd Fonts (neg-serg)
   - jdupes  # duplicate file finder and deduplicator
   - lazytail-bin  # fast terminal log viewer with live filtering and MCP integration
