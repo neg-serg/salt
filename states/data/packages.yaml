@@ -397,6 +397,7 @@ aur:
   - freeze-bin  # generate images of code/terminal output
   - gitbutler-bin  # visual Git client (Tauri/Rust/Svelte)
   - ghgrab-bin  # download files from GitHub repos without cloning
+  - gmap-bin  # Git repository analysis tool for churn and heatmap visualization
   - git-extras  # extra git utilities (summary, effort, etc)
   - gowall-bin  # wallpaper color scheme/palette converter
   - gram-editor-git  # minimal code editor
@@ -448,4 +449,6 @@ aur:
   - vimiv-qt  # image viewer with vim keybindings
   - vmtouch  # filesystem cache diagnostics and control
   - watchtower-bin  # terminal-based global intelligence dashboard
+  - witr-bin  # TUI process inspector — shows why a process is running
   - xdg-ninja  # check for XDG Base Directory compliance
+  - youtube-tui  # TUI YouTube browser with mpv playback and sixel/kitty preview
