@@ -7,6 +7,8 @@
 {{ ensure_dir('amnezia_cache_dir', cache, require=['mount: mount_one']) }}
 
 # Build all Amnezia components in parallel
+{% set _amnezia_ver = ver.get('amnezia_vpn', '') %}
+{% set _amnezia_ver_marker = '/var/cache/salt/versions/amnezia_vpn@' ~ _amnezia_ver if _amnezia_ver else '' %}
 amnezia_build:
   cmd.script:
     - source: salt://scripts/amnezia-build.sh
@@ -15,8 +17,11 @@ amnezia_build:
     - output_loglevel: info
     - env:
       - BUILD: {{ cache }}
-      - AMNEZIA_VERSION: {{ ver.get('amnezia_vpn', '') }}
+      - AMNEZIA_VERSION: {{ _amnezia_ver }}
     - unless: >-
+{%- if _amnezia_ver %}
+        test -f {{ _amnezia_ver_marker }} &&
+{%- endif %}
         test -f {{ cache }}/amneziawg-go-bin &&
         test -f {{ cache }}/awg-bin &&
         test -f {{ cache }}/AmneziaVPN-bin &&
@@ -26,6 +31,14 @@ amnezia_build:
         interval: {{ retry_interval }}
     - require:
       - file: amnezia_cache_dir
+
+{% if _amnezia_ver %}
+amnezia_version_stamp:
+  cmd.run:
+    - name: mkdir -p /var/cache/salt/versions && rm -f /var/cache/salt/versions/amnezia_vpn@* && touch {{ _amnezia_ver_marker }}
+    - onchanges:
+      - cmd: amnezia_build
+{% endif %}
 
 amneziawg_go_bin:
   file.managed:
