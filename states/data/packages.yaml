@@ -452,3 +452,4 @@ aur:
   - witr-bin  # TUI process inspector — shows why a process is running
   - xdg-ninja  # check for XDG Base Directory compliance
   - youtube-tui  # TUI YouTube browser with mpv playback and sixel/kitty preview
+  - ytsurf  # terminal YouTube client with fzf/rofi selection and mpv playback
