@@ -245,7 +245,7 @@ other:
   - mpd  # music player daemon
   - mpdris2-git  # MPRIS2 bridge for MPD
   - python-mutagen  # audio metadata reader (enables mpdris2 embedded cover art)
-  - mtools  # MS-DOS disk access utilities
+  # - mtools  # MS-DOS disk access utilities (conflicts with mcat-bin: both own /usr/bin/mcat)
   - mtr  # traceroute + ping combined
   - multipath-tools  # device-mapper multipath tools
   - ncdu  # ncurses disk usage analyzer
