@@ -1,14 +1,13 @@
 {% from '_imports.jinja' import host, user, home %}
-{% from '_macros_pkg.jinja' import pacman_install %}
+{% from '_macros_pkg.jinja' import pacman_install, paru_install %}
 {% from '_macros_service.jinja' import ensure_dir %}
-# greetd display manager: cage kiosk compositor + quickshell greeter
+# greetd display manager: sysc-greet TUI greeter on Hyprland compositor
 
 include:
   - systemd_resources
 
 {{ pacman_install('greetd', 'greetd') }}
-{{ pacman_install('cage', 'cage') }}
-{{ pacman_install('wlr_randr', 'wlr-randr') }}
+{{ paru_install('sysc_greet', 'sysc-greet-hyprland') }}
 
 {{ ensure_dir('greetd_config_dir', '/etc/greetd', mode='0755', user='root') }}
 
@@ -20,65 +19,22 @@ greetd_main_config:
         vt = {{ host.greetd_vt }}
 
         [default_session]
-        command = "/etc/greetd/greeter-wrapper"
-        user = "{{ user }}"
+        command = "start-hyprland -- --config /etc/greetd/hyprland-greeter-config.conf"
+        user = "greeter"
     - user: root
     - group: root
     - mode: '0644'
     - require:
       - file: greetd_config_dir
 
-greetd_greeter_wrapper:
-  file.managed:
-    - name: /etc/greetd/greeter-wrapper
-    - source: salt://scripts/greetd-greeter-wrapper.sh.j2
-    - template: jinja
-    - context:
-        greetd_scale: {{ host.greetd_scale }}
-        cursor_theme: {{ host.cursor_theme }}
-        cursor_size: {{ host.cursor_size }}
-        home: {{ home }}
-        primary_output: {{ host.primary_output }}
-        display: {{ host.display }}
-    - user: root
-    - group: root
-    - mode: '0755'
-    - require:
-      - file: greetd_config_dir
-
-greetd_session_wrapper:
-  file.managed:
-    - name: /etc/greetd/session-wrapper
-    - source: salt://scripts/greetd-session-wrapper.sh
-    - user: root
-    - group: root
-    - mode: '0755'
-    - require:
-      - file: greetd_config_dir
-
-{% if host.primary_output %}
-greetd_wallpaper:
-  cmd.run:
-    - name: |
-        wallpaper=$(tr '\0' '\n' < {{ home }}/.cache/wl/{{ host.primary_output }} 2>/dev/null | rg '^/')
-        if [ -n "$wallpaper" ] && [ -f "$wallpaper" ]; then
-          cp -f "$wallpaper" {{ home }}/.cache/greeter-wallpaper
-        fi
-    - runas: {{ user }}
-    - shell: /bin/bash
-    - unless: |
-        [ -f {{ home }}/.cache/greeter-wallpaper ] &&
-        [ ! {{ home }}/.cache/wl/{{ host.primary_output }} -nt {{ home }}/.cache/greeter-wallpaper ]
-    - require:
-      - file: greetd_config_dir
-{% endif %}
-
 greetd_cleanup_stale:
   file.absent:
     - names:
       - /etc/greetd/config.toml.pacnew
+      - /etc/greetd/config.toml.bak
       - /etc/greetd/regreet.toml
-      - /etc/greetd/hyprland-greeter.conf
+      - /etc/greetd/greeter-wrapper
+      - /etc/greetd/session-wrapper
 
 greetd_enabled:
   service.enabled:
