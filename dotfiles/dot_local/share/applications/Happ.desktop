@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=Happ
-Exec=env QT_STYLE_OVERRIDE= /opt/happ/bin/Happ %f
+Exec=env QT_STYLE_OVERRIDE= /opt/happ/bin/Happ %U
 Icon=happ
 MimeType=application/x-happ;application/json;
 Categories=Utility;

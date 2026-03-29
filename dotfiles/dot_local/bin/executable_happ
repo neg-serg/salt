@@ -1,0 +1,5 @@
+#!/usr/bin/env zsh
+# Wrapper: clear QT_STYLE_OVERRIDE to avoid Kvantum ABI mismatch
+# (happ bundles Qt 6.10, system has 6.11)
+unset QT_STYLE_OVERRIDE
+exec /opt/happ/bin/Happ "$@"
