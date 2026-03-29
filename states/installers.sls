@@ -110,5 +110,23 @@ qmk_udev_rules_reload:
     - onchanges:
       - cmd: qmk_udev_rules
 
+# --- termcell (terminal CSV editor) ---
+{{ git_clone_deploy('termcell', 'https://github.com/xqtr/termcell.git', '~/.local/share/termcell', creates=home ~ '/.local/share/termcell/termcell.py', user=user, home=home) }}
+
+termcell_wrapper:
+  file.managed:
+    - name: {{ home }}/.local/bin/termcell
+    - contents: |
+        #!/bin/bash
+        exec python3 ~/.local/share/termcell/termcell.py "$@"
+    - mode: '0755'
+    - user: {{ user }}
+    - group: {{ user }}
+    - require:
+      - cmd: install_termcell
+
+# --- fzf-navigator (sourced shell script for filesystem navigation) ---
+{{ http_file('fzf_navigator', 'https://raw.githubusercontent.com/benward2301/fzf-navigator/main/fzf-navigator.sh', home ~ '/.config/fzf-navigator.sh', user=user) }}
+
 # --- blesh (Bash Line Editor) ---
 {{ curl_extract_tar('blesh', 'https://github.com/akinomyoga/ble.sh/releases/download/nightly/ble-nightly.tar.xz', archive_ext='tar.xz', dest='~/.local/share', strip_components=1, creates=home ~ '/.local/share/ble.sh', user=user, home=home) }}

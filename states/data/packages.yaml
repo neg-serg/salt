@@ -48,6 +48,8 @@ dev:
   - nodejs  # JavaScript runtime
   - npm  # JavaScript package manager
   - python-pipx  # install Python apps in isolated envs
+  - python-pyperclip  # cross-platform clipboard module (termcell dep)
+  - python-textual  # modern TUI framework (termcell dep)
   - rust  # systems programming language
   - uv  # ultra-fast Python package manager (Rust)
   - vim  # classic text editor
@@ -393,6 +395,7 @@ aur:
   - gitbutler-bin  # visual Git client (Tauri/Rust/Svelte)
   - ghgrab-bin  # download files from GitHub repos without cloning
   - git-extras  # extra git utilities (summary, effort, etc)
+  - gowall-bin  # wallpaper color scheme/palette converter
   - gram-editor-git  # minimal code editor
   - hishtory-bin  # synced, queryable shell history
   - hw-probe  # hardware probe and operability check
@@ -417,6 +420,7 @@ aur:
   - quickshell-git  # QtQuick desktop shell toolkit (AUR, built from source)
   - raise  # run-or-raise for Hyprland (neg-serg fork)
   - raysession  # NSM session manager for audio apps
+  - resterm-bin  # terminal REST client for .http/.rest files
   - richcolors  # render color palettes from hex files
   - rmlint  # duplicate and lint file remover
   - rofi-file-browser-extended-git  # rofi file browser plugin
