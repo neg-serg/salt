@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Services.Greetd
+import qs
 
 Scope {
 	id: root

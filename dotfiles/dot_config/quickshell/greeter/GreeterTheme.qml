@@ -28,15 +28,16 @@ Singleton {
         onFileChanged: reload()
         Component.onCompleted: reload()
         onLoadFailed: function() { root._data = null; }
+        onAdapterUpdated: {
+            try {
+                root._data = themeAdapter;
+            } catch (e) {
+                root._data = null;
+            }
+        }
         JsonAdapter {
             id: themeAdapter
-            onObjectChanged: {
-                try {
-                    root._data = themeAdapter;
-                } catch (e) {
-                    root._data = null;
-                }
-            }
+            property var greeter: ({})
         }
     }
 
