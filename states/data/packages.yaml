@@ -413,6 +413,7 @@ aur:
   - no-more-secrets  # "Sneakers" data decryption effect
   - oh-my-posh  # cross-shell prompt theme engine
   - opencode-bin  # AI coding agent TUI
+  - oports-git  # clean wrapper around ss to show open ports
   - par  # paragraph reformatter
   - pinentry-rofi  # rofi-based GPG pinentry
   - pipemixer  # TUI PipeWire volume control
@@ -430,6 +431,7 @@ aur:
   - sing-box-bin  # universal proxy platform (tun/proxy)
   - strace-tui-bin  # TUI for visualizing and exploring strace output
   - taoup  # Art of Unix Programming wisdom quotes
+  - tanin-git  # TUI ambient sound generator (rain, wind, fire, etc.)
   - tessen  # rofi menu for pass/gopass autotype
   - ttfautohint  # automated font hinting for web
   - unflac  # audio image + cue sheet splitter
