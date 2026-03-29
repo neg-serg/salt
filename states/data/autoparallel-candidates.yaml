@@ -1309,8 +1309,6 @@ not-applicable-tools:
     reason: "Python runtime"
   - name: vicinae  # desktop launcher — C++
     reason: "App launcher; event-driven, small workloads"
-  - name: vimiv-qt  # image viewer — Python/C++
-    reason: "Python/Qt GUI; image display"
   - name: virt-manager  # VM GUI — Python
     reason: "Python runtime; libvirt management"
   - name: vmtouch  # cache diagnostics — C
