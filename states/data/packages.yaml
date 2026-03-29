@@ -396,6 +396,7 @@ aur:
   - hyprscratch  # Rust scratchpad manager for Hyprland
   - iosevka-neg-fonts  # custom Iosevka Nerd Fonts (neg-serg)
   - jdupes  # duplicate file finder and deduplicator
+  - lazytail-bin  # fast terminal log viewer with live filtering and MCP integration
   - lutgen-bin  # LUT-based color palette generator
   - massren  # batch file rename via text editor
   - mpdas  # MPD AudioScrobbler client
