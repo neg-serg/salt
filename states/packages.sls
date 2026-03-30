@@ -33,13 +33,16 @@
 rebuild_broken_aur_packages:
   cmd.run:
     - name: |
-        broken=$(checkrebuild 2>/dev/null | awk '{print $2}' | sort -u)
+        # Exclude packages that bundle their own private libs (false positives):
+        #   proton-ge-custom-bin — bundles libvpx.so.6/libwebp.so.6 in its own prefix;
+        #     loaded via LD_LIBRARY_PATH at runtime, not from system lib path.
+        broken=$(checkrebuild 2>/dev/null | awk '{print $2}' | grep -v '^proton-ge-custom-bin$' | sort -u)
         if [ -z "$broken" ]; then
             echo "No broken packages"
             exit 0
         fi
         echo "Rebuilding broken AUR packages: $broken"
         sudo -u {{ user }} paru -S --rebuild --noconfirm $broken
-    - onlyif: checkrebuild 2>/dev/null | grep -q .
+    - onlyif: checkrebuild 2>/dev/null | awk '{print $2}' | grep -qv '^proton-ge-custom-bin$'
     - require:
       - cmd: install_pkg_system
