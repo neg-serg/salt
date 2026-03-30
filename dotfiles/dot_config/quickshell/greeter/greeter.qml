@@ -23,7 +23,10 @@ ShellRoot {
 				Qt.quit();
 			} else {
 				if (root.useSessionLock) lock.locked = false;
-				Greetd.launch(["/etc/greetd/session-wrapper"]);
+				const cmd = context.currentSessionExec
+					? context.currentSessionExec
+					: "/etc/greetd/session-wrapper";
+				Greetd.launch(cmd.split(" "));
 			}
 		}
 	}
@@ -47,6 +50,7 @@ ShellRoot {
 			LockContent {
 				anchors.fill: parent
 				state: context.state
+				context: context
 			}
 		}
 	}
@@ -68,6 +72,7 @@ ShellRoot {
 		LockContent {
 			anchors.fill: parent
 			state: context.state
+			context: context
 		}
 	}
 }

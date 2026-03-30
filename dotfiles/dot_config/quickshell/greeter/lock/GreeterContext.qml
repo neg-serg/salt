@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import Quickshell.Services.Greetd
 import qs
 
@@ -9,13 +10,65 @@ Scope {
 
 	property bool testMode: false
 
+	// User and session selection
+	property var users: []
+	property int currentUserIndex: 0
+	property var sessions: []
+	property int currentSessionIndex: 0
+
+	readonly property string currentUser: users.length > 0 ? users[currentUserIndex] : "neg"
+	readonly property string currentSessionName: sessions.length > 0 ? sessions[currentSessionIndex].name : "Hyprland"
+	readonly property string currentSessionExec: sessions.length > 0 ? sessions[currentSessionIndex].exec : ""
+
+	function cycleUser() {
+		if (users.length > 1)
+			currentUserIndex = (currentUserIndex + 1) % users.length;
+	}
+
+	function cycleSession() {
+		if (sessions.length > 1)
+			currentSessionIndex = (currentSessionIndex + 1) % sessions.length;
+	}
+
+	// Read login users from /etc/passwd (uid >= 1000, has valid shell)
+	Process {
+		id: userProc
+		command: ["sh", "-c", "awk -F: '$3 >= 1000 && $3 < 60000 && $7 !~ /nologin|false/ {print $1}' /etc/passwd | sort"]
+		running: true
+		stdout: SplitParser {
+			onRead: data => {
+				const u = data.trim();
+				if (u) root.users = root.users.concat([u]);
+			}
+		}
+	}
+
+	// Read wayland/x sessions from .desktop files
+	Process {
+		id: sessionProc
+		command: ["sh", "-c",
+			"for f in /usr/share/wayland-sessions/*.desktop /usr/share/xsessions/*.desktop; do " +
+			"[ -f \"$f\" ] && printf '%s\\t%s\\n' " +
+			"\"$(sed -n 's/^Name=//p' \"$f\" | head -1)\" " +
+			"\"$(sed -n 's/^Exec=//p' \"$f\" | head -1)\"; done"
+		]
+		running: true
+		stdout: SplitParser {
+			onRead: data => {
+				const parts = data.split("\t");
+				if (parts.length === 2 && parts[0] && parts[1])
+					root.sessions = root.sessions.concat([{name: parts[0], exec: parts[1]}]);
+			}
+		}
+	}
+
 	property LockState state: LockState {
 		onTryPasswordUnlock: {
 			isUnlocking = true;
 			if (root.testMode) {
 				testAuthTimer.start();
 			} else {
-				Greetd.createSession("neg");
+				Greetd.createSession(root.currentUser);
 			}
 		}
 	}
