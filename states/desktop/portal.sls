@@ -18,16 +18,17 @@ portal_config:
     - user: {{ user }}
     - group: {{ user }}
     - mode: '0644'
+    - replace: False
     - contents: |
         [preferred]
-{% if kitty_ui %}
+{%- if kitty_ui %}
         default=hyprland;kitty;gtk
         org.freedesktop.impl.portal.FileChooser=kitty
         org.freedesktop.impl.portal.Settings=kitty
-{% else %}
+{%- else %}
         default=hyprland;gtk
         org.freedesktop.impl.portal.FileChooser=termfilechooser
-{% endif %}
+{%- endif %}
     - require:
       - file: portal_conf_dir
 
