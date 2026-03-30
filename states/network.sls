@@ -1,5 +1,5 @@
 {% from '_imports.jinja' import host, home %}
-{% from '_macros_service.jinja' import ensure_dir, service_with_unit %}
+{% from '_macros_service.jinja' import ensure_dir, service_with_unit, service_stopped %}
 {% from '_macros_pkg.jinja' import paru_install, simple_service %}
 {% set net = host.features.network %}
 
@@ -92,10 +92,45 @@ outline_user_in_group:
     - require:
       - group: outline_vpn_group
 
-{{ service_with_unit('outline-proxy-controller',
+# Cleanup: old dash-named service (Salt used to deploy outline-proxy-controller,
+# but the AppImage client expects outline_proxy_controller with underscores)
+{{ service_stopped('outline_old_dash_service', 'outline-proxy-controller',
+     onlyif='test -f /etc/systemd/system/outline-proxy-controller.service') }}
+
+outline_old_dash_service_file:
+  file.absent:
+    - name: /etc/systemd/system/outline-proxy-controller.service
+    - require:
+      - service: outline_old_dash_service
+
+{{ service_with_unit('outline_proxy_controller',
      'salt://units/outline-proxy-controller.service.j2',
      template='jinja', context={'uid': host.uid},
      requires=['cmd: outline_controller_binary', 'group: outline_vpn_group']) }}
+
+# NM dispatcher: suppress DHCP default route when Outline VPN is active.
+# OutlineProxyController detects extra default gateways as "routing polluted"
+# and enters a reconnect loop every ~2s. This deletes the conflicting route
+# on DHCP events and when outline-tun0 comes up.
+outline_nm_dispatcher:
+  file.managed:
+    - name: /etc/NetworkManager/dispatcher.d/10-outline-route-fix
+    - mode: '0755'
+    - contents: |
+        #!/bin/bash
+        IFACE="$1"
+        ACTION="$2"
+
+        case "$IFACE/$ACTION" in
+            outline-tun0/up)
+                ip route del default proto dhcp 2>/dev/null
+                ;;
+            */up|*/dhcp4-change|*/connectivity-change)
+                if [[ "$(cat /sys/class/net/outline-tun0/operstate 2>/dev/null)" == "up" ]]; then
+                    ip route del default proto dhcp 2>/dev/null
+                fi
+                ;;
+        esac
 {% endif %}
 
 # --- Tailscale: mesh VPN (client only, --accept-dns=false) ---
