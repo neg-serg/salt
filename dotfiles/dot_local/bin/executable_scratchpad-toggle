@@ -1,29 +1,43 @@
 #!/usr/bin/env zsh
-# Toggle a hyprscratch scratchpad and fix position.
+# Toggle a hyprscratch scratchpad and fix position + size.
 # Hyprland 0.54 ignores windowrule `move` for windows on special workspaces,
-# so we apply movewindowpixel after toggle once the client is discoverable.
+# so we apply movewindowpixel/resizewindowpixel after toggle once the client
+# is discoverable.  This also prevents apps (e.g. Telegram) from overriding
+# the desired size on their own.
 #
 # Usage: scratchpad-toggle <name>
 
 local name=$1
 [[ -z $name ]] && { print -u2 "usage: scratchpad-toggle <name>"; exit 1 }
 
-# Desired positions (x y) per scratchpad — scaled pixels for 1920x1080
+# Desired positions (x y) per scratchpad — logical pixels for 1920x1080
 typeset -A positions
 positions=(
     amnezia  "960 32"
-    im       "1334 10"
-    music    "288 540"
+    im       "1420 20"
+    music    "360 560"
     torrment "19 0"
     teardown "19 0"
     mixer    "1280 32"
 )
 
+# Desired sizes (w h) per scratchpad — must match hyprscratch.conf
+typeset -A sizes
+sizes=(
+    amnezia  "960 860"
+    im       "480 740"
+    music    "1200 480"
+    torrment "1440 420"
+    teardown "1440 460"
+    mixer    "620 840"
+)
+
 hyprscratch toggle "$name"
 
-# Only fix position if we have an override for this scratchpad.
+# Only fix geometry if we have an override for this scratchpad.
 local pos=${positions[$name]}
-[[ -z $pos ]] && exit 0
+local sz=${sizes[$name]}
+[[ -z $pos && -z $sz ]] && exit 0
 
 # Read the scratchpad's class from config to find the window
 local config=${XDG_CONFIG_HOME:-$HOME/.config}/hypr/hyprscratch.conf
@@ -45,6 +59,9 @@ for c in json.load(sys.stdin):
     sleep 0.05
 done
 
-# Hidden scratchpads still keep their client address, so applying the move here
-# is harmless and ensures the next reveal also lands in the expected position.
-[[ -n $addr ]] && hyprctl dispatch movewindowpixel "exact ${=pos},address:$addr"
+[[ -z $addr ]] && exit 0
+
+# Enforce size first, then position — this prevents apps from overriding
+# the desired geometry and keeps scratchpads consistent across toggles.
+[[ -n $sz ]]  && hyprctl dispatch resizewindowpixel "exact ${=sz},address:$addr"
+[[ -n $pos ]] && hyprctl dispatch movewindowpixel "exact ${=pos},address:$addr"
