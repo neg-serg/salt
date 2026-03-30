@@ -8,7 +8,7 @@ config:
   path: /opt/zapret2/config
   profile: youtube-hostlist
   tcp_ports: "80,443"
-  udp_ports: ""
+  udp_ports: "443"
   default_mode: prepare
   fwtype: iptables
   getlist: get_antizapret_domains.sh
