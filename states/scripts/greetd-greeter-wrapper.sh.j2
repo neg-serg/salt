@@ -1,0 +1,127 @@
+#!/bin/sh
+# Greeter wrapper: runs quickshell greeter inside cage kiosk compositor.
+# cage (wlroots-based) handles SIGTERM cleanly — no DRM workarounds needed,
+# unlike Hyprland's aquamarine which has a 5-second modeset timeout.
+#
+# Crash guard: if the greeter crashes 3 times within 30 seconds,
+# falls back to agreety (terminal greeter). Normal login resets the counter
+# because the session lasts longer than 30s.
+
+set -eu
+
+PATH=/usr/local/sbin:/usr/local/bin:/usr/bin
+
+LOGGER_BIN=/usr/bin/logger
+AGREETY_BIN=/usr/bin/agreety
+CAGE_BIN=/usr/bin/cage
+QS_BIN=/usr/bin/qs
+WLR_RANDR_BIN=/usr/bin/wlr-randr
+GREETER_QML={{ home }}/.config/quickshell/greeter/greeter.qml
+SESSION_WRAPPER=/etc/greetd/session-wrapper
+CRASH_FILE=/tmp/greetd-crash-count
+LOG_DIR=
+LOG_FILE=
+
+init_log_path() {
+    runtime_dir=${XDG_RUNTIME_DIR:-}
+    state_home=${XDG_STATE_HOME:-${HOME:-/tmp}/.local/state}
+
+    if [ -n "$runtime_dir" ] && [ -d "$runtime_dir" ]; then
+        LOG_DIR="$runtime_dir/greetd"
+    else
+        LOG_DIR="$state_home/greetd"
+    fi
+
+    if mkdir -p "$LOG_DIR" 2>/dev/null; then
+        LOG_FILE="$LOG_DIR/greeter-wrapper.log"
+    else
+        LOG_FILE=
+    fi
+}
+
+log() {
+    timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    message="$timestamp greetd-wrapper: $*"
+    printf '%s\n' "$message" >&2
+    if [ -x "$LOGGER_BIN" ]; then
+        "$LOGGER_BIN" -t greetd-wrapper -- "$*"
+    fi
+    if [ -n "${LOG_FILE:-}" ]; then
+        printf '%s\n' "$message" >> "$LOG_FILE" 2>/dev/null || true
+    fi
+}
+
+fallback_to_agreety() {
+    reason="$1"
+    log "falling back to agreety: $reason"
+    if [ ! -x "$AGREETY_BIN" ]; then
+        log "agreety binary missing at $AGREETY_BIN"
+        exit 1
+    fi
+    exec "$AGREETY_BIN" --cmd "$SESSION_WRAPPER"
+}
+
+if [ -f "$CRASH_FILE" ] && [ $(($(date +%s) - $(stat -c %Y "$CRASH_FILE"))) -lt 30 ]; then
+    count=$(cat "$CRASH_FILE")
+else
+    count=0
+fi
+count=$((count + 1))
+echo "$count" > "$CRASH_FILE"
+log "starting greeter attempt=$count qml=$GREETER_QML"
+
+if [ "$count" -ge 3 ]; then
+    echo 0 > "$CRASH_FILE"
+    fallback_to_agreety "crash guard triggered after $count rapid attempts"
+fi
+
+export GREETER_MODE=cage
+export QT_QPA_PLATFORM=wayland
+{% if greetd_scale > 1 %}
+export QT_SCALE_FACTOR={{ greetd_scale }}
+{% endif %}
+export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+export XCURSOR_THEME={{ cursor_theme }}
+export XCURSOR_SIZE={{ cursor_size }}
+export XKB_DEFAULT_LAYOUT=us,ru
+export XKB_DEFAULT_OPTIONS=grp:alt_shift_toggle
+
+ulimit -c 0
+init_log_path
+
+for bin in "$CAGE_BIN" "$QS_BIN" "$AGREETY_BIN"; do
+    if [ ! -x "$bin" ]; then
+        fallback_to_agreety "required binary missing: $bin"
+    fi
+done
+
+if [ ! -x "$SESSION_WRAPPER" ]; then
+    fallback_to_agreety "session wrapper missing or not executable: $SESSION_WRAPPER"
+fi
+
+if [ ! -f "$GREETER_QML" ]; then
+    fallback_to_agreety "greeter QML missing: $GREETER_QML"
+fi
+{% if primary_output and display %}
+log "launching cage greeter on {{ primary_output }} mode {{ display }}Hz"
+exec "$CAGE_BIN" -s -- sh -c '
+for _ in 1 2 3 4 5 6 7 8 9 10; do
+    [ -n "${XDG_RUNTIME_DIR:-}" ] && [ -n "${WAYLAND_DISPLAY:-}" ] && [ -S "${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY}" ] && break
+    sleep 0.1
+done
+for _ in 1 2 3 4 5; do
+    "$0" --output "$1" --mode "$2" >/dev/null 2>&1 && break
+    sleep 0.1
+done
+exec "$3" -p "$4"
+' "$WLR_RANDR_BIN" "{{ primary_output }}" "{{ display }}Hz" "$QS_BIN" "$GREETER_QML"
+{% else %}
+log "launching cage greeter without explicit output mode"
+exec "$CAGE_BIN" -s -- sh -c '
+for _ in 1 2 3 4 5 6 7 8 9 10; do
+    [ -n "${XDG_RUNTIME_DIR:-}" ] && [ -n "${WAYLAND_DISPLAY:-}" ] && [ -S "${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY}" ] && break
+    sleep 0.1
+done
+exec "$0" -p "$1"
+' "$QS_BIN" "$GREETER_QML"
+{% endif %}
