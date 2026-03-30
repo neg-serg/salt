@@ -61,22 +61,53 @@ xray_legacy_cleanup:
 {% if host.features.outline %}
 {{ paru_install('outline-client-appimage', 'outline-client-appimage') }}
 
-# Extract and deploy the privileged proxy controller from the AppImage
-outline_controller_binary:
+# Extract AppImage to /opt/outline-client/app/ so we can setcap tun2socks
+# (FUSE-mounted AppImage doesn't support file capabilities)
+outline_extract_appimage:
   cmd.run:
     - name: |
         set -e
-        tmpdir=$(mktemp -d)
-        cd "$tmpdir"
-        /opt/outline-client/Outline-Client.AppImage --appimage-extract \
-          'resources/app.asar.unpacked/client/electron/linux_proxy_controller/dist/OutlineProxyController' \
-          > /dev/null 2>&1
-        install -m 755 squashfs-root/resources/app.asar.unpacked/client/electron/linux_proxy_controller/dist/OutlineProxyController \
-          /usr/local/sbin/OutlineProxyController
-        rm -rf "$tmpdir"
-    - unless: test -f /usr/local/sbin/OutlineProxyController
+        cd /opt/outline-client
+        rm -rf app.new app
+        ./Outline-Client.AppImage --appimage-extract > /dev/null 2>&1
+        mv squashfs-root app.new
+        mv app.new app
+    - unless: test -x /opt/outline-client/app/Outline
     - require:
       - cmd: install_outline_client_appimage
+
+# Extract the privileged proxy controller from the extracted app
+outline_controller_binary:
+  cmd.run:
+    - name: >-
+        install -m 755
+        /opt/outline-client/app/resources/app.asar.unpacked/client/electron/linux_proxy_controller/dist/OutlineProxyController
+        /usr/local/sbin/OutlineProxyController
+    - unless: test -f /usr/local/sbin/OutlineProxyController
+    - require:
+      - cmd: outline_extract_appimage
+
+# Grant tun2socks CAP_NET_ADMIN so it can create TUN devices without sudo
+outline_tun2socks_caps:
+  cmd.run:
+    - name: setcap cap_net_admin+eip /opt/outline-client/app/resources/app.asar.unpacked/output/client/linux-amd64/tun2socks
+    - unless: >-
+        getcap /opt/outline-client/app/resources/app.asar.unpacked/output/client/linux-amd64/tun2socks
+        | grep -q cap_net_admin
+    - require:
+      - cmd: outline_extract_appimage
+
+# Launcher script: run extracted Electron binary instead of AppImage
+# (avoids FUSE mount where setcap doesn't work)
+outline_launcher:
+  file.managed:
+    - name: /usr/local/bin/outline-client
+    - mode: '0755'
+    - contents: |
+        #!/bin/bash
+        exec /opt/outline-client/app/Outline "$@"
+    - require:
+      - cmd: outline_extract_appimage
 
 # Group for socket ownership — lets unprivileged client talk to the controller
 outline_vpn_group:
