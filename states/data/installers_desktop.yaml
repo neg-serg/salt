@@ -45,6 +45,7 @@ paru_install:
   opensoundmeter: opensoundmeter  # real-time audio spectrum/impedance analyzer
   overskride: overskride-bin  # Bluetooth GUI manager for Linux
   proton-ge: proton-ge-custom-bin  # custom Proton (Wine) build for Steam
+  protonup-rs: protonup-rs-bin  # CLI manager for Proton-GE / Wine-GE version management
   roomeqwizard: roomeqwizard  # room acoustics measurement and EQ tool
   xwaylandvideobridge: xwaylandvideobridge  # bridge for screen sharing on Wayland via XWayland
   yandex-browser: yandex-browser  # Chromium-based browser with Yandex services

@@ -36,7 +36,27 @@
   top: auto !important;
 }
 
-/* --- Remove content area border/padding --- */
+/* --- Remove content area border/padding/radius --- */
+
+/* Override Zen's webview border-radius variable at root level */
+:root {
+  --zen-webview-border-radius: 0px !important;
+}
+
+/* Remove border-radius from the browser viewport element directly */
+browser {
+  border-radius: 0 !important;
+}
+
+/* Remove the sidebar container margin that creates the "frame" effect */
+:root:not([inDOMFullscreen="true"])
+  #tabbrowser-tabbox
+  #tabbrowser-tabpanels
+  .browserSidebarContainer {
+  border-radius: 0 !important;
+  margin: 0 !important;
+}
+
 #tabbrowser-tabpanels {
   border: none !important;
   outline: none !important;
