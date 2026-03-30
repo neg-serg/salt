@@ -82,6 +82,7 @@ package_checks:
     - zsh                             # Z shell
     # -- desktop --
     - dunst                           # notification daemon
+    - ghostty                         # GPU-accelerated terminal (Zig)
     - hyprland                        # Wayland tiling compositor
     - kitty                           # GPU-accelerated terminal
     - quickshell-git                  # Qt6 desktop shell framework (AUR, built from source)
