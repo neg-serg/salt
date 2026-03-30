@@ -39,10 +39,13 @@ rebuild_broken_aur_packages:
         broken=$(checkrebuild 2>/dev/null | awk '{print $2}' | grep -v '^proton-ge-custom-bin$' | sort -u)
         if [ -z "$broken" ]; then
             echo "No broken packages"
-            exit 0
+        else
+            echo "Rebuilding broken AUR packages: $broken"
+            sudo -u {{ user }} paru -S --rebuild --noconfirm $broken
         fi
-        echo "Rebuilding broken AUR packages: $broken"
-        sudo -u {{ user }} paru -S --rebuild --noconfirm $broken
-    - onlyif: checkrebuild 2>/dev/null | awk '{print $2}' | grep -qv '^proton-ge-custom-bin$'
+        touch /var/cache/salt/checkrebuild.stamp
+    - onlyif: >-
+        [ /var/lib/pacman/local -nt /var/cache/salt/checkrebuild.stamp ] &&
+        checkrebuild 2>/dev/null | awk '{print $2}' | grep -qv '^proton-ge-custom-bin$'
     - require:
       - cmd: install_pkg_system
