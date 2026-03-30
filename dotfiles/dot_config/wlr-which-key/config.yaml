@@ -42,22 +42,22 @@ menu:
     submenu:
       - key: "a"
         desc: AmneziaVPN
-        cmd: scratchpad-toggle amnezia
+        cmd: ~/.local/bin/scratchpad-toggle amnezia
       - key: "d"
         desc: Teardown
-        cmd: hyprscratch toggle teardown
+        cmd: ~/.local/bin/scratchpad-toggle teardown
       - key: "e"
         desc: IM
-        cmd: scratchpad-toggle im
+        cmd: ~/.local/bin/scratchpad-toggle im
       - key: "f"
         desc: Music
-        cmd: scratchpad-toggle music
+        cmd: ~/.local/bin/scratchpad-toggle music
       - key: "t"
         desc: Torrents
-        cmd: hyprscratch toggle torrment
+        cmd: ~/.local/bin/scratchpad-toggle torrment
       - key: "m"
         desc: Mixer
-        cmd: hyprscratch toggle mixer
+        cmd: ~/.local/bin/scratchpad-toggle mixer
 
   # --- Power ---
   - key: "p"
