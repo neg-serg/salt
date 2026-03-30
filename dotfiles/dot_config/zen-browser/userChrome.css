@@ -41,6 +41,7 @@
 /* Override Zen's webview border-radius variable at root level */
 :root {
   --zen-webview-border-radius: 0px !important;
+  --zen-element-separation: 4px !important;
 }
 
 /* Remove border-radius from the browser viewport element directly */
