@@ -166,7 +166,7 @@ xen_plasma_x11_session_desktop:
         [Desktop Entry]
         Name=Plasma (X11)
         Comment=KDE Plasma Desktop on Xorg
-        Exec=startplasma-x11
+        Exec=startx /usr/bin/startplasma-x11
         TryExec=startplasma-x11
         Type=XSession
         DesktopNames=KDE
