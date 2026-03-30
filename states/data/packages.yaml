@@ -181,6 +181,8 @@ other:
   - gitleaks  # git secrets/keys auditor
   - gitlogue  # cinematic Git commit replay for the terminal
   - git-lfs  # git large file storage
+  - ghostty  # fast GPU-accelerated terminal emulator (Zig)
+  - ghostty-shell-integration  # shell integration scripts for ghostty
   - glow  # CLI markdown renderer
   - goaccess  # real-time web log analyzer
   - goimapnotify  # IMAP IDLE notification daemon (Go)
@@ -395,6 +397,7 @@ aur:
   - dualsensectl  # PS5 DualSense controller tool
   - eilmeldung-bin  # TUI RSS feed reader with vim keybindings
   - flclashx-bin  # multi-platform proxy client based on ClashMeta (FlClash fork)
+  - v2rayn-bin  # V2Ray/Xray GUI client (.NET, supports multiple proxy protocols)
   - fsel-bin  # TUI fuzzy launcher, dmenu replacement, clipboard browser
   - epr-git  # CLI EPUB reader
   - freeze-bin  # generate images of code/terminal output

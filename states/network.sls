@@ -36,7 +36,7 @@ vm_bridge_firewall:
 
 # --- Xray: VLESS/Reality proxy service ---
 {% if net.xray %}
-{{ paru_install('xray', 'xray-bin') }}
+{{ paru_install('xray', 'xray') }}
 
 # One-time cleanup: remove old manually-installed binary
 xray_legacy_cleanup:
