@@ -52,6 +52,7 @@ defaults:
       mail: true
       vdirsyncer: true
     amnezia: false
+    outline: true
     steam: true
     mpd: true
     ollama: true

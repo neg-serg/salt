@@ -56,6 +56,11 @@ xray_legacy_cleanup:
 {{ service_with_unit('sing-box-tun', 'salt://units/sing-box-tun.service', template='jinja', context={'home': host.home, 'uid': host.uid}, enabled=None) }}
 {% endif %}
 
+# --- Outline: Shadowsocks-based VPN client (AppImage) ---
+{% if host.features.outline %}
+{{ paru_install('outline-client-appimage', 'outline-client-appimage') }}
+{% endif %}
+
 # --- Tailscale: mesh VPN (client only, --accept-dns=false) ---
 {% if net.tailscale %}
 {{ simple_service('tailscale', 'tailscale', service='tailscaled') }}
