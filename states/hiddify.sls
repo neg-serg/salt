@@ -41,11 +41,11 @@ hiddify_gui_capabilities:
     - name: setcap {{ hiddify_caps }} {{ hiddify_gui }}
     - runas: root
     - onlyif: test -x {{ hiddify_gui }}
-    - unless: getcap {{ hiddify_gui }} 2>/dev/null | grep -q 'cap_net_admin.*cap_net_bind_service.*cap_net_raw'
+    - unless: getcap {{ hiddify_gui }} 2>/dev/null | grep -q 'cap_net_bind_service.*cap_net_admin.*cap_net_raw'
 
 hiddify_core_cli_capabilities:
   cmd.run:
     - name: setcap {{ hiddify_caps }} {{ hiddify_cli }}
     - runas: root
     - onlyif: test -x {{ hiddify_cli }}
-    - unless: getcap {{ hiddify_cli }} 2>/dev/null | grep -q 'cap_net_admin.*cap_net_bind_service.*cap_net_raw'
+    - unless: getcap {{ hiddify_cli }} 2>/dev/null | grep -q 'cap_net_bind_service.*cap_net_admin.*cap_net_raw'
