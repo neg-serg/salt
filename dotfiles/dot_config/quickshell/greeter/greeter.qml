@@ -23,10 +23,12 @@ ShellRoot {
 				Qt.quit();
 			} else {
 				if (root.useSessionLock) lock.locked = false;
-				const cmd = context.currentSessionExec
-					? context.currentSessionExec
-					: "/etc/greetd/session-wrapper";
-				Greetd.launch(cmd.split(" "));
+				// Always route through session-wrapper so /etc/profile and
+				// environment.d are sourced (greetd/PAM gives a bare env).
+				const args = ["/etc/greetd/session-wrapper"];
+				if (context.currentSessionExec)
+					args.push(...context.currentSessionExec.split(" "));
+				Greetd.launch(args);
 			}
 		}
 	}
