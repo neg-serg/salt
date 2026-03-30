@@ -44,8 +44,6 @@ rebuild_broken_aur_packages:
             sudo -u {{ user }} paru -S --rebuild --noconfirm $broken
         fi
         touch /var/cache/salt/checkrebuild.stamp
-    - onlyif: >-
-        [ /var/lib/pacman/local -nt /var/cache/salt/checkrebuild.stamp ] &&
-        checkrebuild 2>/dev/null | awk '{print $2}' | grep -qv '^proton-ge-custom-bin$'
+    - onlyif: "[ /var/lib/pacman/local -nt /var/cache/salt/checkrebuild.stamp ]"
     - require:
       - cmd: install_pkg_system
