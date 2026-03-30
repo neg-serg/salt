@@ -3,11 +3,7 @@
 {% from '_macros_service.jinja' import ensure_dir %}
 
 # --- XDG Desktop Portal backend selection ---
-# When kitty_desktop_ui is enabled, kitty's built-in desktop-ui kitten handles
-# both FileChooser (choose-files) and Settings (color-scheme) portals.
-# When disabled, xdg-desktop-portal-termfilechooser + yazi is used instead.
-
-{% set kitty_ui = host.features.get('kitty_desktop_ui', false) %}
+# Uses xdg-desktop-portal-termfilechooser + yazi for file dialogs.
 
 # Portal configuration — selects which backend handles each interface
 {{ ensure_dir('portal_conf_dir', home ~ '/.config/xdg-desktop-portal', mode='0755') }}
@@ -21,52 +17,13 @@ portal_config:
     - replace: False
     - contents: |
         [preferred]
-{%- if kitty_ui %}
-        default=hyprland;kitty;gtk
-        org.freedesktop.impl.portal.FileChooser=kitty
-        org.freedesktop.impl.portal.Settings=kitty
-{%- else %}
         default=hyprland;gtk
         org.freedesktop.impl.portal.FileChooser=termfilechooser
-{%- endif %}
     - require:
       - file: portal_conf_dir
 
-{% if kitty_ui %}
-# kitty desktop-ui portal: enable D-Bus autostart and config
-portal_kitty_enable:
-  cmd.run:
-    - name: kitten desktop-ui enable-portal
-    - runas: {{ user }}
-    - unless: test -f {{ home }}/.local/share/dbus-1/services/org.freedesktop.impl.portal.desktop.kitty.service
-
-portal_kitty_config:
-  file.managed:
-    - name: {{ home }}/.config/kitty/desktop-ui-portal.conf
-    - user: {{ user }}
-    - group: {{ user }}
-    - mode: '0644'
-    - contents: |
-        # kitty desktop-ui portal configuration
-        color_scheme dark
-        accent_color cyan
-        contrast normal
-        # Sized popup instead of fullscreen overlay — avoids focus
-        # conflicts with apps like Telegram that fight for focus
-        file_chooser_size 35 120
-        # Allow clipboard read so Ctrl+Shift+V paste works in the chooser
-        # (main kitty.conf only permits write-clipboard write-primary)
-        file_chooser_kitty_override clipboard_control=write-clipboard write-primary read-clipboard read-primary
-
-{% else %}
 # termfilechooser backend (yazi-based file chooser)
 {{ paru_install('xdg_termfilechooser', 'xdg-desktop-portal-termfilechooser-boydaihungst-git') }}
-
-# Clean up kitty portal artifacts when switching back
-portal_kitty_config_absent:
-  file.absent:
-    - name: {{ home }}/.config/kitty/desktop-ui-portal.conf
-{% endif %}
 
 # Restart portal after config changes so the new backend takes effect
 portal_restart:

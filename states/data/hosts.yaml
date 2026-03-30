@@ -68,7 +68,7 @@ defaults:
     opencode_telegram: true
     video_ai: true
     xen_vr: false
-    kitty_desktop_ui: false
+
     music_analysis: false
     tidal: false
 
