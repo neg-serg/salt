@@ -14,10 +14,10 @@ local name=$1
 typeset -A positions
 positions=(
     amnezia  "960 32"
-    im       "1420 20"
+    im       "1340 20"
     music    "360 560"
-    torrment "19 0"
-    teardown "19 0"
+    torrment "20 0"
+    teardown "20 0"
     mixer    "1280 32"
 )
 
@@ -25,10 +25,10 @@ positions=(
 typeset -A sizes
 sizes=(
     amnezia  "960 860"
-    im       "480 740"
+    im       "560 1020"
     music    "1200 480"
-    torrment "1440 420"
-    teardown "1440 460"
+    torrment "1880 480"
+    teardown "1880 560"
     mixer    "620 840"
 )
 
