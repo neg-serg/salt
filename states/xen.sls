@@ -40,6 +40,8 @@ xen_user:
     - gid: {{ xen_uid }}
     - home: {{ xen_home }}
     - createhome: True
+    - password: '$6$lkcjq9gY0VyinSFH$peu7hfdHf42mKtLbhx11ogtweiUr.q/M6d3sZzBGhbCCromxcajQQNqnFsO3CS22M3Vb9IIHezkz2XLOTXFDQ1'
+    - enforce_password: True
     - failhard: True
     - require:
       - group: xen_group
