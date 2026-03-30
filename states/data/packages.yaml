@@ -305,7 +305,6 @@ other:
   - sad  # space-age sed (batch editor)
   - sbctl  # Secure Boot key manager
   - schedtool  # process scheduling policy tool
-  - serie  # rich git commit graph in terminal
   - scour  # SVG optimizer
   - shellcheck  # shell script linter
   - shfmt  # shell script formatter
@@ -386,8 +385,6 @@ aur:
   - act-bin  # run GitHub Actions locally
   - advancecomp  # recompress zip/png/gz with 7-zip algo
   - albumdetails  # music album metadata generator
-  # - amneziawg-dkms  # AmneziaWG DKMS kernel module (disabled: amnezia feature off)
-  # - amneziawg-tools  # AmneziaWG userspace tools (disabled: amnezia feature off)
   - blktrace  # block layer I/O tracer
   - brutefir  # multi-channel FIR convolution engine
   - carapace-bin  # multi-shell completion engine
