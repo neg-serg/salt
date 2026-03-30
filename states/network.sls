@@ -57,8 +57,45 @@ xray_legacy_cleanup:
 {% endif %}
 
 # --- Outline: Shadowsocks-based VPN client (AppImage) ---
+# Needs a privileged controller daemon for TUN routing via /var/run/outline_controller
 {% if host.features.outline %}
 {{ paru_install('outline-client-appimage', 'outline-client-appimage') }}
+
+# Extract and deploy the privileged proxy controller from the AppImage
+outline_controller_binary:
+  cmd.run:
+    - name: |
+        set -e
+        tmpdir=$(mktemp -d)
+        cd "$tmpdir"
+        /opt/outline-client/Outline-Client.AppImage --appimage-extract \
+          'resources/app.asar.unpacked/client/electron/linux_proxy_controller/dist/OutlineProxyController' \
+          > /dev/null 2>&1
+        install -m 755 squashfs-root/resources/app.asar.unpacked/client/electron/linux_proxy_controller/dist/OutlineProxyController \
+          /usr/local/sbin/OutlineProxyController
+        rm -rf "$tmpdir"
+    - unless: test -f /usr/local/sbin/OutlineProxyController
+    - require:
+      - cmd: install_outline_client_appimage
+
+# Group for socket ownership — lets unprivileged client talk to the controller
+outline_vpn_group:
+  group.present:
+    - name: outlinevpn
+    - system: True
+
+outline_user_in_group:
+  group.present:
+    - name: outlinevpn
+    - addusers:
+      - {{ host.user }}
+    - require:
+      - group: outline_vpn_group
+
+{{ service_with_unit('outline-proxy-controller',
+     'salt://units/outline-proxy-controller.service.j2',
+     template='jinja', context={'uid': host.uid},
+     requires=['cmd: outline_controller_binary', 'group: outline_vpn_group']) }}
 {% endif %}
 
 # --- Tailscale: mesh VPN (client only, --accept-dns=false) ---
