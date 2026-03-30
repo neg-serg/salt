@@ -13,16 +13,31 @@ Scope {
 	// User and session selection
 	property var users: []
 	property int currentUserIndex: 0
-	property var sessions: []
+	property var allSessions: []
 	property int currentSessionIndex: 0
+
+	// Sessions filtered by current user's allowed session type
+	readonly property var sessions: {
+		const utype = userSessionType[currentUser] || "wayland";
+		return allSessions.filter(s => s.type === utype);
+	}
+
+	// Map user → session type. Users not listed default to "wayland".
+	// Managed declaratively: add new users here when their session type is known.
+	readonly property var userSessionType: ({
+		"neg": "wayland",
+		"xen": "x11"
+	})
 
 	readonly property string currentUser: users.length > 0 ? users[currentUserIndex] : "neg"
 	readonly property string currentSessionName: sessions.length > 0 ? sessions[currentSessionIndex].name : "Hyprland"
 	readonly property string currentSessionExec: sessions.length > 0 ? sessions[currentSessionIndex].exec : ""
 
 	function cycleUser() {
-		if (users.length > 1)
+		if (users.length > 1) {
 			currentUserIndex = (currentUserIndex + 1) % users.length;
+			currentSessionIndex = 0;
+		}
 	}
 
 	function cycleSession() {
@@ -43,12 +58,16 @@ Scope {
 		}
 	}
 
-	// Read wayland/x sessions from .desktop files
+	// Read sessions from .desktop files, tagged by type (wayland/x11)
 	Process {
 		id: sessionProc
 		command: ["sh", "-c",
-			"for f in /usr/share/wayland-sessions/*.desktop /usr/share/xsessions/*.desktop; do " +
-			"[ -f \"$f\" ] && printf '%s\\t%s\\n' " +
+			"for f in /usr/share/wayland-sessions/*.desktop; do " +
+			"[ -f \"$f\" ] && printf 'wayland\\t%s\\t%s\\n' " +
+			"\"$(sed -n 's/^Name=//p' \"$f\" | head -1)\" " +
+			"\"$(sed -n 's/^Exec=//p' \"$f\" | head -1)\"; done; " +
+			"for f in /usr/share/xsessions/*.desktop; do " +
+			"[ -f \"$f\" ] && printf 'x11\\t%s\\t%s\\n' " +
 			"\"$(sed -n 's/^Name=//p' \"$f\" | head -1)\" " +
 			"\"$(sed -n 's/^Exec=//p' \"$f\" | head -1)\"; done"
 		]
@@ -56,8 +75,8 @@ Scope {
 		stdout: SplitParser {
 			onRead: data => {
 				const parts = data.split("\t");
-				if (parts.length === 2 && parts[0] && parts[1])
-					root.sessions = root.sessions.concat([{name: parts[0], exec: parts[1]}]);
+				if (parts.length === 3 && parts[1] && parts[2])
+					root.allSessions = root.allSessions.concat([{type: parts[0], name: parts[1], exec: parts[2]}]);
 			}
 		}
 	}
