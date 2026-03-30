@@ -79,7 +79,7 @@ def test_system_description_includes_os_release_state():
     with open(path) as fh:
         source = fh.read()
 
-    assert "- os_release" in source
+    assert "system_os_release" in source
 
 
 def test_hyprlock_uses_fancy_name_fallback_for_os_release():

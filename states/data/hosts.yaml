@@ -97,6 +97,7 @@ hosts:
       network:
         tailscale: true
         zapret2: true
+      floorp: true
       music_analysis: true
       tidal: true
       xen_vr: true

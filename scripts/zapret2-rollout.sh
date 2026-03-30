@@ -180,7 +180,10 @@ def resolved_state_path(explicit_path, default_path):
 
 
 def run_ok(cmd):
-    return subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0
+    try:
+        return subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0
+    except FileNotFoundError:
+        return False
 
 
 def run_capture(cmd):
@@ -294,6 +297,16 @@ def preflight_report(data, approval_file_arg):
                 "safe_handling": "reported only",
             }
         ]
+    elif scenario == "approval_required":
+        prereqs = [
+            {"id": "kernel_support", "category": "kernel", "result": "pass", "evidence": "linux"},
+            {"id": "packet_filter", "category": "packet_filter", "result": "pass", "evidence": "nftables/iptables detected"},
+            {"id": "queueing_support", "category": "queueing", "result": "pass", "evidence": "/proc/net/netfilter present"},
+            {"id": "package_source", "category": "package_source", "result": "pass", "evidence": "paru available"},
+            {"id": "service_dependency", "category": "service_dependency", "result": "pass", "evidence": "systemctl available"},
+            {"id": "permissions", "category": "permissions", "result": "warn", "evidence": "safe-mode can run unprivileged"},
+        ]
+        conflicts = []
     else:
         prereqs = [
             {

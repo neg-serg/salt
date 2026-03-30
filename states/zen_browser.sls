@@ -53,5 +53,11 @@ zen_floorp_profile_import:
       - file: floorp_user_js
 {% endif %}
 
+zen_reset_extensions_json:
+  file.absent:
+    - name: {{ zen_profile }}/extensions.json
+    - onchanges:
+      - file: zen_user_js
+
 {{ browser_extensions('zen', zen_profile, zen.extensions, 'zen_user_js') }}
 {% endif %}

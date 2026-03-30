@@ -42,6 +42,6 @@ swayimg_local_checkout_build:
         meson install -C "$src/build-salt"
         su - {{ user }} -c 'git -C "{{ home }}/src/1st-level/swayimg" describe --tags --long --always' > /usr/local/share/.swayimg-build-version
     - shell: /bin/bash
-    - unless: test -f /usr/local/share/.swayimg-build-version && test "$(cat /usr/local/share/.swayimg-build-version)" = "$(su - {{ user }} -c 'git -C {{ home }}/src/1st-level/swayimg describe --tags --long --always')"
+    - unless: test -f /usr/local/bin/swayimg && test -f /usr/local/share/.swayimg-build-version && test "$(cat /usr/local/share/.swayimg-build-version)" = "$(su - {{ user }} -c 'git -C {{ home }}/src/1st-level/swayimg describe --tags --long --always')"
     - require:
       - file: swayimg_local_link_absent
