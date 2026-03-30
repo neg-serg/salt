@@ -27,14 +27,6 @@ zen_userchrome:
     - group: {{ user }}
     - makedirs: True
 
-zen_supergradient_theme:
-  file.recurse:
-    - name: {{ zen_profile }}/chrome/zen-themes/af7ee14f-e9d4-4806-8438-c59b02b77715
-    - source: salt://dotfiles/dot_config/zen-browser/zen-themes/af7ee14f-e9d4-4806-8438-c59b02b77715
-    - user: {{ user }}
-    - group: {{ user }}
-    - makedirs: True
-
 {{ ensure_dir('zen_migration_dir', zen_migration_dir) }}
 
 {% if host.get('migrate_floorp_profile_to_zen', false) and host.features.floorp and host.floorp_profile %}
