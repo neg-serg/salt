@@ -67,6 +67,19 @@ browser {
   border-radius: 0 !important;
 }
 
+/* --- Navbar: sharp corners and larger font --- */
+#nav-bar {
+  border-radius: 0 !important;
+  font-size: 1.15em !important;
+}
+
+#nav-bar toolbarbutton,
+#urlbar-input,
+#urlbar,
+.urlbar-input-box {
+  font-size: inherit !important;
+}
+
 /* --- Compact mode: adjust autohide to slide from bottom --- */
 #zen-appcontent-navbar-wrapper[zen-has-hover],
 #zen-appcontent-navbar-wrapper[has-popup-menu],
