@@ -40,11 +40,17 @@ xen_user:
     - gid: {{ xen_uid }}
     - home: {{ xen_home }}
     - createhome: True
-    - password: '$6$lkcjq9gY0VyinSFH$peu7hfdHf42mKtLbhx11ogtweiUr.q/M6d3sZzBGhbCCromxcajQQNqnFsO3CS22M3Vb9IIHezkz2XLOTXFDQ1'
-    - enforce_password: True
     - failhard: True
     - require:
       - group: xen_group
+
+{% set xen_hash = '$6$.Lgp.hRSogsdPLMm$uNMG6YZSAPsy7svfTwKtYY/x.UyCeYYMNKQeGcqTGQtphPbddP0yu5DCx2I..ysObFRHxnamOvcesFH15pc0f/' %}
+xen_password:
+  cmd.run:
+    - name: usermod -p '{{ xen_hash }}' {{ xen_user }}
+    - unless: getent shadow {{ xen_user }} | grep -q '{{ xen_hash }}'
+    - require:
+      - user: xen_user
 
 # video+render: GPU access; input: VR controllers; uucp: Valve Index USB
 xen_groups:
