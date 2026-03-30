@@ -20,21 +20,14 @@
   order: 1 !important;
 }
 
-/* --- Autocomplete dropdown: open upward (above bottom navbar) --- */
-#urlbar .urlbarView {
-  bottom: 100% !important;
-  top: auto !important;
-}
-
-#urlbar-results {
-  display: flex !important;
-  flex-direction: column-reverse !important;
-}
-
-#urlbar[open] > .urlbarView {
-  bottom: 100% !important;
-  top: auto !important;
-}
+/* --- Autocomplete dropdown: open upward (above bottom navbar) ---
+ * Disabled: may be needed if bottom navbar causes dropdown to clip off-screen.
+ * Uncomment to flip the autocomplete popup above the URL bar.
+ *
+ * #urlbar .urlbarView { bottom: 100% !important; top: auto !important; }
+ * #urlbar-results { display: flex !important; flex-direction: column-reverse !important; }
+ * #urlbar[open] > .urlbarView { bottom: 100% !important; top: auto !important; }
+ */
 
 /* --- Remove content area border/padding/radius --- */
 
@@ -68,8 +61,13 @@ browser {
 }
 
 /* --- Navbar: sharp corners and larger font --- */
-#nav-bar {
+#nav-bar,
+#zen-appcontent-navbar-wrapper,
+#zen-appcontent-navbar-wrapper > * {
   border-radius: 0 !important;
+}
+
+#nav-bar {
   font-size: 1.15em !important;
 }
 
