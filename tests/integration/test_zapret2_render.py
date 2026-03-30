@@ -38,3 +38,39 @@ def test_zapret2_unit_uses_upstream_service_entrypoints():
     assert "Type=forking" in source
     assert "ExecStart=/opt/zapret2/init.d/sysv/zapret2 start" in source
     assert "ExecStop=/opt/zapret2/init.d/sysv/zapret2 stop" in source
+
+
+def test_zapret2_config_template_contains_kyber_quic_profiles():
+    source = (REPO_ROOT / "states" / "configs" / "zapret2.conf.j2").read_text()
+
+    # Template uses Jinja2 loop variable {{ blob }} — blob paths live in zapret2.yaml
+    assert "for blob in quic_kyber_blobs" in source
+    assert "hostlist-domains=googlevideo.com" in source
+    assert "{{ blob }}" in source
+
+
+def test_zapret2_config_template_contains_google_tls_profile():
+    source = (REPO_ROOT / "states" / "configs" / "zapret2.conf.j2").read_text()
+
+    # Template uses Jinja2 variable {{ tls_google_blob }} — path lives in zapret2.yaml
+    assert "{{ tls_google_blob }}" in source
+    assert "hostlist-domains=youtube.com,googlevideo.com" in source
+
+
+def test_zapret2_data_model_contains_kyber_blobs_and_new_domains():
+    import yaml
+
+    data = yaml.safe_load((REPO_ROOT / "states" / "data" / "zapret2.yaml").read_text())
+
+    assert "quic_kyber_blobs" in data["config"]
+    assert len(data["config"]["quic_kyber_blobs"]) == 2
+    assert "tls_google_blob" in data["config"]
+    assert "yt3.ggpht.com" in data["hostlist"]["domains"]
+    assert "lh3.googleusercontent.com" in data["hostlist"]["domains"]
+
+
+def test_zapret2_sls_passes_kyber_context_to_config():
+    source = (REPO_ROOT / "states" / "zapret2.sls").read_text()
+
+    assert "quic_kyber_blobs" in source
+    assert "tls_google_blob" in source

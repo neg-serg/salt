@@ -19,9 +19,13 @@ FILTER_TTL_EXPIRED_ICMP=1
 
 NFQWS2_OPT="
 --filter-tcp=80 --filter-l7=http <HOSTLIST> --payload=http_req --out-range=-d10 --lua-desync=fake:blob=fake_default_http:ip_autottl=-2,3-20:ip6_autottl=-2,3-20:tcp_md5 --lua-desync=fakedsplit:ip_autottl=-2,3-20:ip6_autottl=-2,3-20:tcp_md5 --new
+--filter-tcp=443 --filter-l7=tls --hostlist-domains=youtube.com,googlevideo.com --payload=tls_client_hello --out-range=-d10 --lua-desync=fake:blob={{ tls_google_blob }}:ip_autottl=-2,3-20:ip6_autottl=-2,3-20:tcp_md5:repeats=6 --lua-desync=multidisorder:pos=midsld --new
 --filter-tcp=443 --filter-l7=tls <HOSTLIST> --payload=tls_client_hello --out-range=-d10 --lua-desync=wssize:wsize=1:scale=6 --lua-desync=multidisorder:pos=midsld --new
 --filter-tcp=443 --filter-l7=tls --payload=tls_client_hello --out-range=-d10 --lua-desync=fake:blob=fake_default_tls:tcp_md5:tcp_seq=-10000:repeats=6 --lua-desync=multidisorder:pos=midsld --new
 {% if udp_ports %}
+{% for blob in quic_kyber_blobs %}
+--filter-udp=443 --filter-l7=quic --hostlist-domains=googlevideo.com --payload=quic_initial --lua-desync=fake:blob={{ blob }}:repeats=11 --new
+{% endfor %}
 --filter-udp=443 --filter-l7=quic <HOSTLIST> --payload=quic_initial --lua-desync=fake:blob=/opt/zapret2/files/fake/quic_initial_www_google_com.bin:repeats=11 --new
 --filter-udp=443 --filter-l7=quic --payload=quic_initial --lua-desync=fake:blob=fake_default_quic:repeats=11
 {% endif %}

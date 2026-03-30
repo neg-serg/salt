@@ -94,6 +94,44 @@ Activation requires an explicit approval file. Without it, `scripts/zapret2-roll
 
 Even with approval present, the default review flow still avoids live execution unless the operator deliberately invokes the activation path with the required inputs. This applies both to separate live activation and to activation performed in the same rollout window as `scripts/salt-apply.sh`.
 
+## Testing and Verification
+
+### Verify active profiles after service start
+
+```bash
+# Check nfqws2 is running with Kyber QUIC profiles:
+pgrep -a nfqws2 | grep -c kyber        # expect ≥ 2
+
+# Check Google TLS fake profile is deployed:
+grep tls_clienthello_www_google_com.bin /opt/zapret2/config
+
+# Check new hostlist domains:
+grep yt3.ggpht.com /opt/zapret2/ipset/zapret-hosts-user.txt
+```
+
+### Manual connectivity checks
+
+```bash
+# YouTube HTTPS (TLS 1.3):
+curl -m 10 -sI https://www.youtube.com | head -3
+
+# YouTube HTTP/3 (QUIC) — requires curl with HTTP/3 support:
+curl --http3 -m 10 -sI https://www.youtube.com | head -3
+```
+
+### Full automated strategy scan (blockcheck2)
+
+```bash
+# Scan all strategies for youtube.com in batch mode:
+sudo BATCH=1 DOMAINS=youtube.com /opt/zapret2/blockcheck2.sh
+
+# Test only QUIC/HTTP3:
+sudo BATCH=1 DOMAINS=youtube.com ENABLE_HTTP=0 ENABLE_HTTPS_TLS12=0 ENABLE_HTTPS_TLS13=0 ENABLE_HTTP3=1 /opt/zapret2/blockcheck2.sh
+
+# Save output to log:
+sudo BATCH=1 DOMAINS=youtube.com /opt/zapret2/blockcheck2.sh | tee /tmp/blockcheck.log
+```
+
 ## Notes
 
 - The current branch prepares `zapret2` ownership and validation safely.

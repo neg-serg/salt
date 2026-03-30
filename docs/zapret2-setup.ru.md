@@ -71,6 +71,44 @@ scripts/zapret2-rollout.sh smoke
 
 Даже при наличии approval безопасный review flow по умолчанию не выполняет live activation, пока оператор не запустит этот путь осознанно с нужными входами.
 
+## Тестирование и проверка
+
+### Проверка активных профилей после запуска сервиса
+
+```bash
+# Убедиться, что nfqws2 запущен с Kyber QUIC профилями:
+pgrep -a nfqws2 | grep -c kyber        # ожидается ≥ 2
+
+# Убедиться, что Google TLS профиль развёрнут:
+grep tls_clienthello_www_google_com.bin /opt/zapret2/config
+
+# Проверить новые домены в hostlist:
+grep yt3.ggpht.com /opt/zapret2/ipset/zapret-hosts-user.txt
+```
+
+### Ручная проверка доступности
+
+```bash
+# YouTube HTTPS (TLS 1.3):
+curl -m 10 -sI https://www.youtube.com | head -3
+
+# YouTube HTTP/3 (QUIC) — требуется curl с поддержкой HTTP/3:
+curl --http3 -m 10 -sI https://www.youtube.com | head -3
+```
+
+### Полное автоматическое сканирование стратегий (blockcheck2)
+
+```bash
+# Сканировать все стратегии для youtube.com в пакетном режиме:
+sudo BATCH=1 DOMAINS=youtube.com /opt/zapret2/blockcheck2.sh
+
+# Тестировать только QUIC/HTTP3:
+sudo BATCH=1 DOMAINS=youtube.com ENABLE_HTTP=0 ENABLE_HTTPS_TLS12=0 ENABLE_HTTPS_TLS13=0 ENABLE_HTTP3=1 /opt/zapret2/blockcheck2.sh
+
+# Сохранить вывод в лог:
+sudo BATCH=1 DOMAINS=youtube.com /opt/zapret2/blockcheck2.sh | tee /tmp/blockcheck.log
+```
+
 ## Примечания
 
 - Текущая ветка безопасно подготавливает ownership и validation для `zapret2`.

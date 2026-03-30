@@ -52,6 +52,8 @@ zapret2_config:
         approval_file: {{ approval_file }}
         tcp_ports: {{ zapret2.config.tcp_ports }}
         udp_ports: {{ zapret2.config.udp_ports }}
+        quic_kyber_blobs: {{ zapret2.config.quic_kyber_blobs }}
+        tls_google_blob: {{ zapret2.config.tls_google_blob }}
     - require:
       - file: zapret2_config_dir
 
