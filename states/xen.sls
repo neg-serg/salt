@@ -174,59 +174,51 @@ xen_plasma_x11_session_desktop:
 # ── KDE Breeze Dark theme for xen ─────────────────────────────────
 {{ ensure_dir('xen_kde_config_dir', xen_home ~ '/.config', user=xen_user) }}
 
-# Global KDE settings: Breeze Dark color scheme, dark Plasma theme
-xen_kdeglobals:
+{% set _kdeglobals %}
+[General]
+ColorScheme=BreezeDark
+WidgetStyle=Breeze
+
+[KDE]
+LookAndFeelPackage=org.kde.breezedark.desktop
+widgetStyle=Breeze
+
+[Icons]
+Theme=breeze-dark
+{% endset %}
+{% set _plasmarc %}
+[Theme]
+name=breeze-dark
+{% endset %}
+{% set _kwinrc %}
+[org.kde.kdecoration2]
+library=org.kde.breeze
+theme=Breeze
+{% endset %}
+{% set _konsolerc %}
+[Desktop Entry]
+DefaultProfile=VR.profile
+{% endset %}
+# KDE Breeze Dark seed configs (initial deploy only)
+{% for state_id, filename, contents in [
+  ('xen_kdeglobals', 'kdeglobals', _kdeglobals),
+  ('xen_plasmarc', 'plasmarc', _plasmarc),
+  ('xen_kwinrc', 'kwinrc', _kwinrc),
+  ('xen_konsolerc', 'konsolerc', _konsolerc),
+] %}
+{{ state_id }}:
   file.managed:
-    - name: {{ xen_home }}/.config/kdeglobals
+    - name: {{ xen_home }}/.config/{{ filename }}
     - user: {{ xen_user }}
     - group: {{ xen_user }}
     - mode: '0644'
     - replace: False
     - contents: |
-        [General]
-        ColorScheme=BreezeDark
-        WidgetStyle=Breeze
-
-        [KDE]
-        LookAndFeelPackage=org.kde.breezedark.desktop
-        widgetStyle=Breeze
-
-        [Icons]
-        Theme=breeze-dark
+{{ contents | trim | indent(8, first=True) }}
     - require:
       - user: xen_user
       - file: xen_kde_config_dir
-
-# Plasma shell: use Breeze Dark look-and-feel
-xen_plasmarc:
-  file.managed:
-    - name: {{ xen_home }}/.config/plasmarc
-    - user: {{ xen_user }}
-    - group: {{ xen_user }}
-    - mode: '0644'
-    - replace: False
-    - contents: |
-        [Theme]
-        name=breeze-dark
-    - require:
-      - user: xen_user
-      - file: xen_kde_config_dir
-
-# KWin: dark window decorations
-xen_kwinrc:
-  file.managed:
-    - name: {{ xen_home }}/.config/kwinrc
-    - user: {{ xen_user }}
-    - group: {{ xen_user }}
-    - mode: '0644'
-    - replace: False
-    - contents: |
-        [org.kde.kdecoration2]
-        library=org.kde.breeze
-        theme=Breeze
-    - require:
-      - user: xen_user
-      - file: xen_kde_config_dir
+{% endfor %}
 
 # Konsole: dark profile
 {{ ensure_dir('xen_konsole_dir', xen_home ~ '/.local/share/konsole', user=xen_user) }}
@@ -248,20 +240,6 @@ xen_konsole_profile:
         Parent=FALLBACK/
     - require:
       - file: xen_konsole_dir
-
-xen_konsolerc:
-  file.managed:
-    - name: {{ xen_home }}/.config/konsolerc
-    - user: {{ xen_user }}
-    - group: {{ xen_user }}
-    - mode: '0644'
-    - replace: False
-    - contents: |
-        [Desktop Entry]
-        DefaultProfile=VR.profile
-    - require:
-      - user: xen_user
-      - file: xen_kde_config_dir
 
 # ── TTY3 for xen login (emergency fallback) ───────────────────────
 xen_getty_tty3:
