@@ -93,21 +93,17 @@ mail_directories:
 {{ user_service_enable('enable_user_services', filtered_services, start_now=filtered_timers, requires=_unit_reqs) }}
 
 # --- Disable services for disabled features ---
-{%- set disabled_mail_units = [] -%}
-{%- for entry in us.enable_services + us.enable_now_timers -%}
-{%- if 'mail' in entry.get('features', []) -%}
-{%- do disabled_mail_units.append(entry.name) -%}
+{%- set _all_feature_units = us.enable_services + us.enable_now_timers -%}
+{%- for feature_name, is_enabled in feature_enabled.items() -%}
+{%- if not is_enabled -%}
+{%- set disabled_units = [] -%}
+{%- for entry in _all_feature_units -%}
+{%- if feature_name in entry.get('features', []) -%}
+{%- do disabled_units.append(entry.name) -%}
 {%- endif -%}
 {%- endfor -%}
-{% if not svc.mail %}
-{{ user_service_disable('disable_mail_services', disabled_mail_units) }}
-{% endif %}
-{%- set disabled_vdirsyncer_units = [] -%}
-{%- for entry in us.enable_now_timers -%}
-{%- if 'vdirsyncer' in entry.get('features', []) -%}
-{%- do disabled_vdirsyncer_units.append(entry.name) -%}
+{%- if disabled_units %}
+{{ user_service_disable('disable_' ~ feature_name ~ '_services', disabled_units) }}
+{%- endif -%}
 {%- endif -%}
 {%- endfor -%}
-{% if not svc.vdirsyncer %}
-{{ user_service_disable('disable_vdirsyncer_services', disabled_vdirsyncer_units) }}
-{% endif %}
