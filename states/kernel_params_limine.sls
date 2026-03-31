@@ -102,6 +102,7 @@ limine_snapper_sync_config:
         sed -i \
           -e 's|^#\?TARGET_OS_NAME=.*|TARGET_OS_NAME="CachyOS"|' \
           -e 's|^ROOT_SNAPSHOTS_PATH="/@/.snapshots"|ROOT_SNAPSHOTS_PATH="/@snapshots"|' \
+          -e 's|^#\?SNAPSHOT_FORMAT_CHOICE=.*|SNAPSHOT_FORMAT_CHOICE=8|' \
           -e 's|^COMMANDS_BEFORE_SAVE=|#COMMANDS_BEFORE_SAVE=|' \
           -e 's|^COMMANDS_AFTER_SAVE=|#COMMANDS_AFTER_SAVE=|' \
           "$CONF"
@@ -110,6 +111,7 @@ limine_snapper_sync_config:
         [ -f "$CONF" ] || exit 0
         grep -q '^TARGET_OS_NAME="CachyOS"' "$CONF" &&
         grep -q '^ROOT_SNAPSHOTS_PATH="/@snapshots"' "$CONF" &&
+        grep -q '^SNAPSHOT_FORMAT_CHOICE=8' "$CONF" &&
         ! grep -q '^COMMANDS_BEFORE_SAVE=' "$CONF" &&
         ! grep -q '^COMMANDS_AFTER_SAVE=' "$CONF"
 
