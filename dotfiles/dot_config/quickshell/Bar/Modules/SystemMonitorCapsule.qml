@@ -52,8 +52,13 @@ OverlayToggleCapsule {
     readonly property bool _visGpu: Services.SystemMonitor.gpuAvailable
         && Settings.settings.showGpuMonitor !== false
     readonly property bool _visTemp: Settings.settings.showTempMonitor !== false
+    readonly property real _swapShowThreshold: {
+        var v = Settings.settings.systemMonitorSwapShowThreshold;
+        return (typeof v === "number" && v >= 0) ? v : 0.4;
+    }
     readonly property bool _visSwap: Services.SystemMonitor.swapAvailable
         && Settings.settings.showSwapMonitor !== false
+        && Services.SystemMonitor.swapPercent >= _swapShowThreshold
     readonly property bool _anyVisible: _visCpu || _visRam || _visIo || _visGpu || _visTemp || _visSwap
 
     readonly property bool _idleCpu: _hideIdle && Services.SystemMonitor.cpuPercent < _idleThreshold
@@ -114,29 +119,6 @@ OverlayToggleCapsule {
             }
         }
 
-        // ── I/O ──
-        Row {
-            visible: root._visIo
-            spacing: Math.round(2 * capsuleScale)
-            anchors.verticalCenter: parent.verticalCenter
-            MaterialIcon {
-                icon: "storage"
-                size: root._iconSz
-                color: root._idleIo ? Theme.textDisabled : SysUi.thresholdColor(Services.SystemMonitor.ioPercent,
-                    Theme.textSecondary, Theme.warning, Theme.error, root._warnThr, root._critThr)
-                Behavior on color { ColorFastInOutBehavior {} }
-                anchors.verticalCenter: parent.verticalCenter
-            }
-            MonitorBar {
-                value: Services.SystemMonitor.ioPercent
-                barHeight: root.barH
-                warnThreshold: root._warnThr
-                critThreshold: root._critThr
-                screen: root.screen
-                anchors.verticalCenter: parent.verticalCenter
-            }
-        }
-
         // ── GPU ──
         Row {
             visible: root._visGpu
@@ -178,6 +160,29 @@ OverlayToggleCapsule {
                 barHeight: root.barH
                 warnThreshold: 0.43
                 critThreshold: 0.71
+                screen: root.screen
+                anchors.verticalCenter: parent.verticalCenter
+            }
+        }
+
+        // ── I/O ──
+        Row {
+            visible: root._visIo
+            spacing: Math.round(2 * capsuleScale)
+            anchors.verticalCenter: parent.verticalCenter
+            MaterialIcon {
+                icon: "storage"
+                size: root._iconSz
+                color: root._idleIo ? Theme.textDisabled : SysUi.thresholdColor(Services.SystemMonitor.ioPercent,
+                    Theme.textSecondary, Theme.warning, Theme.error, root._warnThr, root._critThr)
+                Behavior on color { ColorFastInOutBehavior {} }
+                anchors.verticalCenter: parent.verticalCenter
+            }
+            MonitorBar {
+                value: Services.SystemMonitor.ioPercent
+                barHeight: root.barH
+                warnThreshold: root._warnThr
+                critThreshold: root._critThr
                 screen: root.screen
                 anchors.verticalCenter: parent.verticalCenter
             }

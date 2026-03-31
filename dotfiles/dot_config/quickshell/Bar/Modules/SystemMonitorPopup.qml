@@ -78,33 +78,6 @@ PanelOverlaySurface {
             }
         }
 
-        // ── I/O ──
-        Row {
-            visible: Settings.settings.showIoMonitor !== false
-            spacing: Math.round(6 * root.overlayScale)
-            MaterialIcon {
-                icon: "storage"; size: root._iconSz
-                color: SysUi.thresholdColor(Services.SystemMonitor.ioPercent,
-                    Theme.textSecondary, Theme.warning, Theme.error, 0.5, 0.8)
-                anchors.verticalCenter: parent.verticalCenter
-            }
-            Text {
-                text: "I/O"
-                font.family: Theme.fontFamily
-                font.pixelSize: root._fontSize
-                color: Theme.textSecondary
-                anchors.verticalCenter: parent.verticalCenter
-            }
-            Text {
-                text: "R:" + SysUi.formatKiBps(Services.SystemMonitor.ioReadKiBps) +
-                      "  W:" + SysUi.formatKiBps(Services.SystemMonitor.ioWriteKiBps)
-                font.family: Theme.fontFamily
-                font.pixelSize: root._fontSize
-                color: Theme.textPrimary
-                anchors.verticalCenter: parent.verticalCenter
-            }
-        }
-
         // ── GPU ──
         Row {
             visible: Services.SystemMonitor.gpuAvailable && Settings.settings.showGpuMonitor !== false
@@ -157,9 +130,42 @@ PanelOverlaySurface {
             }
         }
 
-        // ── Swap ──
+        // ── I/O ──
         Row {
-            visible: Services.SystemMonitor.swapAvailable && Settings.settings.showSwapMonitor !== false
+            visible: Settings.settings.showIoMonitor !== false
+            spacing: Math.round(6 * root.overlayScale)
+            MaterialIcon {
+                icon: "storage"; size: root._iconSz
+                color: SysUi.thresholdColor(Services.SystemMonitor.ioPercent,
+                    Theme.textSecondary, Theme.warning, Theme.error, 0.5, 0.8)
+                anchors.verticalCenter: parent.verticalCenter
+            }
+            Text {
+                text: "I/O"
+                font.family: Theme.fontFamily
+                font.pixelSize: root._fontSize
+                color: Theme.textSecondary
+                anchors.verticalCenter: parent.verticalCenter
+            }
+            Text {
+                text: "R:" + SysUi.formatKiBps(Services.SystemMonitor.ioReadKiBps) +
+                      "  W:" + SysUi.formatKiBps(Services.SystemMonitor.ioWriteKiBps)
+                font.family: Theme.fontFamily
+                font.pixelSize: root._fontSize
+                color: Theme.textPrimary
+                anchors.verticalCenter: parent.verticalCenter
+            }
+        }
+
+        // ── Swap (hidden until usage exceeds threshold, default 40%) ──
+        Row {
+            readonly property real _swapShowThr: {
+                var v = Settings.settings.systemMonitorSwapShowThreshold;
+                return (typeof v === "number" && v >= 0) ? v : 0.4;
+            }
+            visible: Services.SystemMonitor.swapAvailable
+                && Settings.settings.showSwapMonitor !== false
+                && Services.SystemMonitor.swapPercent >= _swapShowThr
             spacing: Math.round(6 * root.overlayScale)
             MaterialIcon {
                 icon: "swap_horiz"; size: root._iconSz
