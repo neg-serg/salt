@@ -41,6 +41,8 @@ Item {
     property var _prevCpu: null
     property var _prevIo: null
     property real _prevIoTs: 0
+    property string _gpuPath: ""
+    property string _tempPath: ""
 
     readonly property int _pollMs: {
         var v = Settings.settings.systemMonitorPollMs;
@@ -62,8 +64,47 @@ Item {
             if (!cpuRamProbe.running) cpuRamProbe.start();
             if (!swapProbe.running) swapProbe.start();
             if (!ioProbe.running) ioProbe.start();
-            if (!tempProbe.running) tempProbe.start();
-            if (!gpuProbe.running) gpuProbe.start();
+            if (root._tempPath && !tempProbe.running) tempProbe.start();
+            if (root._gpuPath && !gpuProbe.running) gpuProbe.start();
+        }
+    }
+
+    // ── One-time GPU path discovery (pick discrete GPU by largest VRAM) ──
+    ProcessRunner {
+        id: gpuDiscover
+        cmd: ["dash", "-c",
+            "best=''; bv=0;" +
+            "for d in /sys/class/drm/card[0-9]*/device; do " +
+            "  [ -f \"$d/gpu_busy_percent\" ] || continue;" +
+            "  v=$(cat \"$d/mem_info_vram_total\" 2>/dev/null) || v=0;" +
+            "  [ \"$v\" -gt \"$bv\" ] && bv=$v && best=$d;" +
+            "done;" +
+            "[ -n \"$best\" ] && echo \"$best/gpu_busy_percent\""]
+        autoStart: true
+        restartOnExit: false
+        onLine: (s) => {
+            var p = String(s).trim();
+            if (p) { root._gpuPath = p; root.gpuAvailable = true; }
+        }
+    }
+
+    // ── One-time temperature path discovery (k10temp/coretemp/zenpower via hwmon) ──
+    ProcessRunner {
+        id: tempDiscover
+        cmd: ["dash", "-c",
+            "for h in /sys/class/hwmon/hwmon*/; do " +
+            "  n=$(cat \"${h}name\" 2>/dev/null);" +
+            "  case $n in k10temp|coretemp|zenpower) " +
+            "    f=\"${h}temp1_input\";" +
+            "    [ -r \"$f\" ] && echo \"$f\" && exit;; esac;" +
+            "done;" +
+            "f=/sys/class/thermal/thermal_zone0/temp;" +
+            "[ -r \"$f\" ] && echo \"$f\""]
+        autoStart: true
+        restartOnExit: false
+        onLine: (s) => {
+            var p = String(s).trim();
+            if (p) root._tempPath = p;
         }
     }
 
@@ -153,11 +194,11 @@ Item {
         }
     }
 
-    // ── CPU temperature probe ──
+    // ── CPU temperature probe (path resolved once by tempDiscover) ──
     ProcessRunner {
         id: tempProbe
-        cmd: ["dash", "-c", "cat /sys/class/thermal/thermal_zone0/temp 2>/dev/null || echo 0"]
-        autoStart: true
+        cmd: root._tempPath ? ["cat", root._tempPath] : []
+        autoStart: false
         restartOnExit: false
         onLine: (s) => {
             try {
@@ -168,24 +209,16 @@ Item {
         }
     }
 
-    // ── GPU probe (amdgpu sysfs) ──
+    // ── GPU probe (path resolved once by gpuDiscover) ──
     ProcessRunner {
         id: gpuProbe
-        cmd: ["dash", "-c",
-            "f=$(ls /sys/class/drm/card*/device/gpu_busy_percent 2>/dev/null | head -1);" +
-            "if [ -n \"$f\" ]; then cat \"$f\"; else echo -1; fi"]
-        autoStart: true
+        cmd: root._gpuPath ? ["cat", root._gpuPath] : []
+        autoStart: false
         restartOnExit: false
         onLine: (s) => {
             try {
-                var val = parseInt(String(s).trim(), 10);
-                if (val < 0) {
-                    root.gpuAvailable = false;
-                    root.gpuPercent = 0;
-                } else {
-                    root.gpuAvailable = true;
-                    root.gpuPercent = Math.max(0, Math.min(1, val / 100));
-                }
+                var val = parseInt(String(s).trim(), 10) || 0;
+                root.gpuPercent = Math.max(0, Math.min(1, val / 100));
             } catch (e) { console.warn("[SystemMonitor.gpu]", e); }
         }
     }
