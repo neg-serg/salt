@@ -80,5 +80,7 @@
             "spectrumVerticalRaise": 0.75
         }
     },
-    "weatherCity": "Saint Petersburg"
+    "weatherCity": "Saint Petersburg",
+    "weatherLatitude": 59.9375,
+    "weatherLongitude": 30.3086
 }

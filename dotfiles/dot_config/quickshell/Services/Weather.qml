@@ -23,25 +23,43 @@ Item {
         if (root.lastFetchTime > 0 && (now - root.lastFetchTime) < ttlMs) return;
         root.isLoading = true;
         root.errorString = "";
-        WeatherHelper.fetchCityWeather(root.city,
-            function(result) {
-                root.weatherData = result.weather;
-                root.lastFetchTime = now;
-                root.errorString = "";
-                root.isLoading = false;
-            },
-            function(err) {
-                root.errorString = String(err || "Weather error");
-                root.isLoading = false;
-            },
-            {
-                userAgent: Settings.settings.userAgent,
-                debug: Settings.settings.debugNetwork,
-                timeoutMs: Theme.weatherHttpTimeoutMs,
-                weatherApiBaseUrl: Settings.settings.weatherApiBaseUrl || undefined,
-                geocodingApiBaseUrl: Settings.settings.weatherGeocodingBaseUrl || undefined
-            }
-        );
+
+        var opts = {
+            userAgent: Settings.settings.userAgent,
+            debug: Settings.settings.debugNetwork,
+            timeoutMs: Theme.weatherHttpTimeoutMs,
+            weatherApiBaseUrl: Settings.settings.weatherApiBaseUrl || undefined,
+            geocodingApiBaseUrl: Settings.settings.weatherGeocodingBaseUrl || undefined
+        };
+
+        function _onWeather(weatherData) {
+            root.weatherData = weatherData;
+            root.lastFetchTime = now;
+            root.errorString = "";
+            root.isLoading = false;
+        }
+        function _onError(err) {
+            root.errorString = String(err || "Weather error");
+            root.isLoading = false;
+        }
+
+        // Skip geocoding if coordinates are provided directly
+        var lat = Number(Settings.settings.weatherLatitude);
+        var lon = Number(Settings.settings.weatherLongitude);
+        if (isFinite(lat) && isFinite(lon) && lat !== 0 && lon !== 0) {
+            WeatherHelper.fetchWeather(lat, lon, _onWeather, _onError, {
+                weatherTtlMs: opts.weatherTtlMs,
+                errorTtlMs: opts.errorTtlMs,
+                timeoutMs: opts.timeoutMs,
+                cityKey: root.city,
+                weatherApiBaseUrl: opts.weatherApiBaseUrl
+            });
+        } else {
+            WeatherHelper.fetchCityWeather(root.city,
+                function(result) { _onWeather(result.weather); },
+                _onError, opts
+            );
+        }
     }
 
     function start() { enabled = true; fetchNow(); }
