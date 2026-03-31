@@ -130,9 +130,10 @@ PanelOverlaySurface {
             }
         }
 
-        // ── I/O ──
+        // ── I/O (hidden when idle) ──
         Row {
             visible: Settings.settings.showIoMonitor !== false
+                && Services.SystemMonitor.ioPercent >= 0.03
             spacing: Math.round(6 * root.overlayScale)
             MaterialIcon {
                 icon: "storage"; size: root._iconSz

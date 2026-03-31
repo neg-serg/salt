@@ -49,6 +49,7 @@ OverlayToggleCapsule {
     readonly property bool _visCpu: Settings.settings.showCpuMonitor !== false
     readonly property bool _visRam: Settings.settings.showRamMonitor !== false
     readonly property bool _visIo: Settings.settings.showIoMonitor !== false
+        && !_idleIo
     readonly property bool _visGpu: Services.SystemMonitor.gpuAvailable
         && Settings.settings.showGpuMonitor !== false
     readonly property bool _visTemp: Settings.settings.showTempMonitor !== false
