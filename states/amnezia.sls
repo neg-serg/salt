@@ -40,45 +40,22 @@ amnezia_version_stamp:
       - cmd: amnezia_build
 {% endif %}
 
-amneziawg_go_bin:
+{% for state_id, src, dest in [
+  ('amneziawg_go_bin', 'amneziawg-go-bin', 'amneziawg-go'),
+  ('amneziawg_tools_bin', 'awg-bin', 'awg'),
+  ('amnezia_vpn_bin', 'AmneziaVPN-bin', 'AmneziaVPN'),
+  ('amnezia_service_bin', 'AmneziaVPN-service-bin', 'AmneziaVPN-service'),
+] %}
+{{ state_id }}:
   file.managed:
-    - name: /usr/local/bin/amneziawg-go
-    - source: {{ cache }}/amneziawg-go-bin
+    - name: /usr/local/bin/{{ dest }}
+    - source: {{ cache }}/{{ src }}
     - mode: '0755'
     - user: root
     - group: root
     - require:
       - cmd: amnezia_build
-
-amneziawg_tools_bin:
-  file.managed:
-    - name: /usr/local/bin/awg
-    - source: {{ cache }}/awg-bin
-    - mode: '0755'
-    - user: root
-    - group: root
-    - require:
-      - cmd: amnezia_build
-
-amnezia_vpn_bin:
-  file.managed:
-    - name: /usr/local/bin/AmneziaVPN
-    - source: {{ cache }}/AmneziaVPN-bin
-    - mode: '0755'
-    - user: root
-    - group: root
-    - require:
-      - cmd: amnezia_build
-
-amnezia_service_bin:
-  file.managed:
-    - name: /usr/local/bin/AmneziaVPN-service
-    - source: {{ cache }}/AmneziaVPN-service-bin
-    - mode: '0755'
-    - user: root
-    - group: root
-    - require:
-      - cmd: amnezia_build
+{% endfor %}
 
 # Verification (only runs when the binary actually changed)
 {% for state_id, cmd, bin_state in [
