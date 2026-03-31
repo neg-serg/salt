@@ -23,7 +23,7 @@ section() { echo -e "\n${BOLD}── $1 ──${NC}"; }
 # --- Packages ---
 section "Packages"
 
-for pkg in greetd cage quickshell; do
+for pkg in greetd hyprland quickshell; do
     ver=$(pacman -Q "$pkg" 2>/dev/null | awk '{print $2}')
     if [ -n "$ver" ]; then
         ok "$pkg $ver installed"
@@ -35,7 +35,7 @@ done
 # --- Binaries ---
 section "Binaries"
 
-for bin in greetd agreety qs cage; do
+for bin in greetd agreety qs Hyprland; do
     path=$(command -v "$bin" 2>/dev/null)
     if [ -n "$path" ]; then
         ok "$bin → $path"
@@ -47,7 +47,7 @@ done
 # --- Config files ---
 section "Config Files (/etc/greetd/)"
 
-for f in config.toml greeter-wrapper session-wrapper; do
+for f in config.toml greeter-wrapper session-wrapper hyprland-greeter.conf; do
     fp="/etc/greetd/$f"
     if [ -f "$fp" ]; then
         ok "$fp exists"

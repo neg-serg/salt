@@ -1,0 +1,53 @@
+# Minimal Hyprland config for greetd greeter.
+# Monitor settings are templated from the same host data as the desktop session
+# to ensure identical mode, scaling, and color management.
+
+monitorv2 {
+  output = {{ primary_output }}
+  mode = {{ display }}
+  position = 0x0
+  scale = {{ greetd_scale }}
+  vrr = 3
+  bitdepth = 10
+  cm = auto
+}
+{% if disable_outputs %}
+{% for output in disable_outputs %}
+
+monitorv2 {
+  output = {{ output }}
+  disabled = true
+}
+{% endfor %}
+{% endif %}
+
+input {
+    kb_layout = us,ru
+    kb_options = grp:alt_shift_toggle
+    sensitivity = 0
+}
+
+cursor {
+    no_hardware_cursors = true
+}
+
+misc {
+    disable_hyprland_logo = true
+    force_default_wallpaper = 0
+    disable_autoreload = true
+}
+
+animations {
+    enabled = false
+}
+
+decoration {
+    blur {
+        enabled = false
+    }
+    shadow {
+        enabled = false
+    }
+}
+
+exec-once = qs -p {{ home }}/.config/quickshell/greeter/greeter.qml

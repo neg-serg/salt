@@ -13,6 +13,7 @@ defaults:
   primary_output: ""
   greetd_vt: 1
   greetd_scale: 1
+  greetd_disable_outputs: []
   timezone: Europe/Moscow
   locale: en_US.UTF-8
   floorp_profile: ""
@@ -78,6 +79,8 @@ hosts:
     display: 3840x2160@240
     primary_output: DP-2
     greetd_scale: 2
+    greetd_disable_outputs:
+      - DP-1
     floorp_profile: c85pjaxk.default-default
     zen_profile: "qnkh60k3.Default (release)"
     migrate_floorp_profile_to_zen: true

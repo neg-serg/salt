@@ -1,14 +1,12 @@
 {% from '_imports.jinja' import host, user, home %}
 {% from '_macros_pkg.jinja' import pacman_install %}
 {% from '_macros_service.jinja' import ensure_dir %}
-# greetd display manager: cage kiosk compositor + quickshell greeter
+# greetd display manager: hyprland compositor + quickshell greeter
 
 include:
   - systemd_resources
 
 {{ pacman_install('greetd', 'greetd') }}
-{{ pacman_install('cage', 'cage') }}
-{{ pacman_install('wlr_randr', 'wlr-randr') }}
 
 {{ ensure_dir('greetd_config_dir', '/etc/greetd', mode='0755', user='root') }}
 
@@ -22,6 +20,23 @@ greetd_main_config:
         [default_session]
         command = "/etc/greetd/greeter-wrapper"
         user = "{{ user }}"
+    - user: root
+    - group: root
+    - mode: '0644'
+    - require:
+      - file: greetd_config_dir
+
+greetd_hyprland_config:
+  file.managed:
+    - name: /etc/greetd/hyprland-greeter.conf
+    - source: salt://scripts/hyprland-greeter.conf.j2
+    - template: jinja
+    - context:
+        primary_output: {{ host.primary_output }}
+        display: {{ host.display }}
+        greetd_scale: {{ host.greetd_scale }}
+        disable_outputs: {{ host.greetd_disable_outputs }}
+        home: {{ home }}
     - user: root
     - group: root
     - mode: '0644'
@@ -45,6 +60,7 @@ greetd_greeter_wrapper:
     - mode: '0755'
     - require:
       - file: greetd_config_dir
+      - file: greetd_hyprland_config
 
 greetd_session_wrapper:
   file.managed:
@@ -79,7 +95,6 @@ greetd_cleanup_stale:
       - /etc/greetd/config.toml.pacnew
       - /etc/greetd/config.toml.bak
       - /etc/greetd/regreet.toml
-      - /etc/greetd/hyprland-greeter.conf
       - /etc/greetd/hyprland-greeter-config.conf
       - /etc/greetd/kitty.conf
 
