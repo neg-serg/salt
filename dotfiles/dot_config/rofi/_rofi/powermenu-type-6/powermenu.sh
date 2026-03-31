@@ -9,13 +9,25 @@
 #
 ## style-1   style-2   style-3   style-4   style-5
 
-# Current Theme
-dir="$HOME/.config/rofi/_rofi/powermenu-type-6"
+# Current Theme — accepts theme dir name as $1
+theme_dir="${1:-powermenu-type-6}"
+dir="$HOME/.config/rofi/_rofi/$theme_dir"
 theme='style-1'
 
 # CMDs
 uptime="${$(uptime -p)#up }"
 host=$(hostname)
+
+# Build mesg and mainbox style based on theme
+if [[ "$theme_dir" == "type-5" ]]; then
+  local _ll; last $USER | read -r _ll
+  local -a _lf=(${=_ll}); lastlogin="${_lf[5]} ${_lf[6]} ${_lf[7]}"
+  mesg=" Last Login: $lastlogin |  Uptime: $uptime"
+  mainbox_style='mainbox {children: [ "message", "listview" ];}'
+else
+  mesg=" Uptime: $uptime"
+  mainbox_style='mainbox {orientation: vertical; children: [ "message", "listview" ];}'
+fi
 
 # Options
 hibernate=''
@@ -31,14 +43,14 @@ no=''
 rofi_cmd() {
   rofi -dmenu \
     -p " $USER@$host" \
-    -mesg " Uptime: $uptime" \
+    -mesg "$mesg" \
     -theme ${dir}/${theme}.rasi
 }
 
 # Confirmation CMD
 confirm_cmd() {
   rofi -theme-str 'window {location: center; anchor: center; fullscreen: false; width: 350px;}' \
-    -theme-str 'mainbox {orientation: vertical; children: [ "message", "listview" ];}' \
+    -theme-str "$mainbox_style" \
     -theme-str 'listview {columns: 2; lines: 1;}' \
     -theme-str 'element-text {horizontal-align: 0.5;}' \
     -theme-str 'textbox {horizontal-align: 0.5;}' \
