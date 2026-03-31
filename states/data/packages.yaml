@@ -94,6 +94,7 @@ system:
   - lvm2  # logical volume manager
   - parted  # partition editor
   - strace  # system call tracer
+  - stress-ng  # system stress testing (CPU, memory, I/O, etc.)
   - sysstat  # performance monitoring (iostat, sar, mpstat)
   - pacman-contrib  # pacman helper scripts (paccache, checkupdates)
   - rebuild-detector  # detect AUR packages broken by soname bumps (checkrebuild)
