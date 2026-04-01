@@ -31,7 +31,7 @@
 {{ prefix }}_reset_extensions_json:
   file.absent:
     - name: {{ profile }}/extensions.json
-    - onchanges:
+    - onchanges_any:
       - file: {{ user_js_id }}
 {%- for ext in extensions %}
       - cmd: {{ prefix }}_ext_{{ ext.slug | replace('-', '_') }}
