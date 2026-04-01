@@ -17,6 +17,26 @@
 {%- set sudo_timeout_minutes = -1 -%}
 {%- set ollama_pull_timeout = 14400 -%}
 
+{#- Shell snippet: download a URL to cache_path with optional sha256 verification.
+    Outputs bash lines for use inside cmd.run name: blocks.
+    Caller must have already set `set -eo pipefail` and any temp dir / trap.
+    After this macro, the file is available at the cache_path for cp/install.
+    Usage (inside macro name: block):
+        {{ download_cached(url, _cache_path, hash=hash) }}
+        cp "$cache" "$_td/archive.tar.gz"
+-#}
+{%- macro download_cached(url, cache_path, hash=None) %}
+        cache='{{ cache_path }}'
+        mkdir -p "$(dirname "$cache")"
+        if [ ! -f "$cache" ]; then
+          curl -fsSL '{{ url }}' -o "$cache.tmp"
+{%- if hash %}
+          echo '{{ hash }}  '"$cache.tmp" | sha256sum -c --strict
+{%- endif %}
+          mv -f "$cache.tmp" "$cache"
+        fi
+{%- endmacro -%}
+
 {#- Shell one-liner: create version-encoded marker (used inside cmd.run name: blocks).
     target: absolute path to installed artifact — creates a symlink so creates: detects deletion.
     When omitted, creates a plain touch file (for cases without a single artifact, e.g. fonts).

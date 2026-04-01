@@ -1,5 +1,5 @@
 {% from '_imports.jinja' import user, home, pkg_list, retry_attempts, retry_interval %}
-{% from '_macros_install.jinja' import curl_bin, curl_extract_tar, curl_extract_zip %}
+{% from '_macros_install.jinja' import install_catalog %}
 {% from '_macros_pkg.jinja' import paru_install %}
 {% import_yaml 'data/installers_desktop.yaml' as apps %}
 {% import_yaml 'data/versions.yaml' as ver %}
@@ -7,30 +7,13 @@
 # Definitions in data/installers_desktop.yaml; adding/updating is a YAML-only edit.
 
 # --- ZIP archives (app bundles + binaries) ---
-{% for name, opts in apps.curl_extract_zip.items() %}
-{% set _v = ver.get(name, '') %}
-{% set url = opts.url | replace('${VER}', _v) %}
-{{ curl_extract_zip(name, url, binary_path=opts.get('binary_path'), binaries=opts.get('binaries'), chmod=opts.get('chmod', False), dest=opts.get('dest'), symlink=opts.get('symlink'), hash=opts.get('hash'), version=_v if _v else None, user=user, home=home) }}
-{% endfor %}
+{{ install_catalog(apps.curl_extract_zip, ver, 'curl_extract_zip', user=user, home=home) }}
 
 # --- tar.gz archives ---
-{% for name, opts in apps.curl_extract_tar.items() %}
-{% set _v = ver.get(name, '') %}
-{% set url = opts.url | replace('${VER}', _v) %}
-{{ curl_extract_tar(name, url, opts.binary_pattern, bin=opts.get('bin'), chmod=opts.get('chmod', False), hash=opts.get('hash'), version=_v if _v else None, user=user, home=home) }}
-{% endfor %}
+{{ install_catalog(apps.curl_extract_tar, ver, 'curl_extract_tar', user=user, home=home) }}
 
 # --- Direct binary downloads ---
-{% for name, raw in apps.curl_bin.items() %}
-{% set _v = ver.get(name, '') %}
-{% if raw is mapping %}
-{% set resolved_url = raw.url | replace('${VER}', _v) %}
-{{ curl_bin(name, resolved_url, version=_v if _v else None, hash=raw.get('hash'), user=user, home=home) }}
-{% else %}
-{% set resolved_url = raw | replace('${VER}', _v) %}
-{{ curl_bin(name, resolved_url, version=_v if _v else None, user=user, home=home) }}
-{% endif %}
-{% endfor %}
+{{ install_catalog(apps.curl_bin, ver, 'curl_bin', user=user, home=home) }}
 
 # --- AUR packages (v4l2loopback-dkms for droidcam installed via pacman outside Salt) ---
 {% for name, pkg in apps.paru_install.items() %}

@@ -1,12 +1,12 @@
 {# Download/install macros: curl_bin, pip_pkg, cargo_pkg, curl_extract_tar,
    curl_extract_zip, firefox_extension, download_font_zip, git_clone_deploy,
-   http_file.
+   http_file, github_release_to, install_catalog.
 
    Policy: prefer official repositories first, then AUR, and use these macros
    only when a package-managed install is unavailable or intentionally unsuitable.
 #}
 
-{% from '_macros_common.jinja' import user as _user, home as _home, retry_attempts as _retry_attempts, retry_interval as _retry_interval, ver_dir as _ver_dir, sys_ver_dir as _sys_ver_dir, download_cache as _download_cache, ver_stamp as _ver_stamp %}
+{% from '_macros_common.jinja' import user as _user, home as _home, retry_attempts as _retry_attempts, retry_interval as _retry_interval, ver_dir as _ver_dir, sys_ver_dir as _sys_ver_dir, download_cache as _download_cache, ver_stamp as _ver_stamp, download_cached as _download_cached %}
 
 {# Fallback: go install (module path).
    Usage: {{ go_pkg('ght', pkg='github.com/kwame-Owusu/ght') }}
@@ -40,15 +40,7 @@ install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: |
         set -eo pipefail
-        cache='{{ _cache_path }}'
-        mkdir -p "$(dirname "$cache")"
-        if [ ! -f "$cache" ]; then
-          curl -fsSL '{{ url }}' -o "$cache.tmp"
-{%- if hash %}
-          echo '{{ hash }}  '"$cache.tmp" | sha256sum -c --strict
-{%- endif %}
-          mv -f "$cache.tmp" "$cache"
-        fi
+{{ _download_cached(url, _cache_path, hash=hash) }}
         cp "$cache" {{ _tmp }}
 {%- if hash and not version %}
         echo '{{ hash }}  {{ _tmp }}' | sha256sum -c --strict
@@ -124,21 +116,10 @@ install_{{ name | replace('-', '_') }}:
         interval: {{ _retry_interval }}
 {%- endmacro -%}
 
-{# Fallback: download and extract tar.gz/tar.xz archive, move binary(ies) to ~/.local/bin/.
-   Supports: TAG fetching, nested directories, multiple binaries, optional chmod.
-   archive_ext: tar.gz (default) | tar.xz. fetch_tag: True (default False) to fetch latest ${TAG} from GitHub API.
-   strip_v: True (default False) to set VER=${TAG#v} for URLs using ${VER} (version without v prefix).
-   binary_pattern: path pattern for finding binaries after extraction (e.g., "nu-*/nu" or "streaming_extractor_music").
-   binaries: optional list of binary names to move. If None, uses basename of binary_pattern.
-   chmod: True (default False) to chmod +x extracted binaries.
-   bin: output binary name (default: basename of binary_pattern). Use when archive name differs from desired binary name.
-   dest: extract directly to this directory (skips find+move, for non-binary archives).
-   strip_components: --strip-components=N for tar (used with dest).
-   creates: override creates guard (default: ~/.local/bin/<binary> or dest).
-   Usage: {{ curl_extract_tar('nushell', 'https://github.com/nushell/nushell/releases/latest/download/nu-${TAG}-x86_64-unknown-linux-musl.tar.gz', 'nu-*/nu', fetch_tag=True) }}
-          {{ curl_extract_tar('hyprevents', 'https://github.com/vilari-mickopf/hyprevents/archive/refs/heads/master.tar.gz', 'hyprevents/hyprevents', binaries=['hyprevents', 'event_handler', 'event_loader']) }}
-          {{ curl_extract_tar('blesh', 'https://github.com/.../ble-nightly.tar.xz', archive_ext='tar.xz', dest='~/.local/share', strip_components=1, creates=home ~ '/.local/share/ble.sh') }}
-          {{ curl_extract_tar('nyxt', '...', 'Nyxt-x86_64.AppImage', bin='nyxt', chmod=True) }}
+{# Download and extract tar.gz/tar.xz archive to ~/.local/bin/.
+   fetch_tag: fetch latest GitHub release tag into ${TAG}; strip_v: set VER=${TAG#v}.
+   binary_pattern: find pattern after extraction; binaries: list of names to move.
+   dest+strip_components: extract directly to a directory (skip binary find+move).
 #}
 {%- macro curl_extract_tar(name, url, binary_pattern=None, archive_ext='tar.gz', fetch_tag=False, strip_v=False, binaries=None, bin=None, chmod=False, dest=None, strip_components=None, creates=None, bin_dest=None, hash=None, version=None, user=_user, home=_home) -%}
 {%- set ext_flag = 'J' if archive_ext == 'tar.xz' else 'z' -%}
@@ -160,23 +141,20 @@ install_{{ name | replace('-', '_') }}:
         set -eo pipefail
         _td=$(mktemp -d)
         trap 'rm -rf "$_td"' EXIT
-        cache_dir='{{ _download_cache }}'
-        mkdir -p "$cache_dir"
-        cache='{{ _cache_path }}'
 {%- if fetch_tag %}
         TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ repo_path }}/releases/latest | rg -oP '[^/]+$')
 {%- if strip_v %}
         VER=${TAG#v}
 {%- endif %}
-        cache="$cache_dir/{{ name }}-${TAG:-latest}.{{ archive_ext }}"
-{%- endif %}
+        cache='{{ _download_cache }}/{{ name }}-'"${TAG:-latest}.{{ archive_ext }}"
+        mkdir -p "$(dirname "$cache")"
         if [ ! -f "$cache" ]; then
           curl -fsSL "{{ url }}" -o "$cache.tmp"
-{%- if hash %}
-          echo '{{ hash }}  '"$cache.tmp" | sha256sum -c --strict
-{%- endif %}
           mv -f "$cache.tmp" "$cache"
         fi
+{%- else %}
+{{ _download_cached(url, _cache_path, hash=hash) }}
+{%- endif %}
         cp "$cache" "$_td/archive.{{ archive_ext }}"
 {%- if dest %}
         mkdir -p {{ dest }}
@@ -211,20 +189,9 @@ install_{{ name | replace('-', '_') }}:
 
 {%- endmacro -%}
 
-{# Fallback: download and extract ZIP archive, move binary(ies) to ~/.local/bin/.
-   Supports: nested directories, multiple binaries, optional chmod.
-   binary_path: path pattern relative to extraction dir (e.g., "yazi-x86_64-unknown-linux-musl/yazi").
-   binaries: optional list of binaries to move. If None, uses last part of binary_path.
-   bin: output binary name (default: last part of binary_path). Use when archive name differs from desired name.
-   chmod: True (default False) to chmod +x extracted binaries.
-   dest: extract directly to this directory (skips find+move, for app bundles).
-   symlink: create symlink from dest/<symlink> to ~/.local/bin/<name> after extraction.
-   creates: override creates guard (default: ~/.local/bin/<binary> or dest).
-   Usage: {{ curl_extract_zip('xray', 'https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip', 'xray/xray', chmod=True) }}
-          {{ curl_extract_zip('yazi', 'https://github.com/sxyazi/yazi/releases/latest/download/yazi-x86_64-unknown-linux-musl.zip', 'yazi-x86_64-unknown-linux-musl', binaries=['yazi', 'ya']) }}
-          {{ curl_extract_zip('kanata', '...', 'kanata_linux_x64', bin='kanata', chmod=True) }}
-          {{ curl_extract_zip('roomeqwizard', '...', dest='~/.local/opt/roomeqwizard') }}
-          {{ curl_extract_zip('throne', '...', dest='~/.local/opt/throne', symlink='Throne') }}
+{# Download and extract ZIP archive, move binary(ies) to ~/.local/bin/.
+   binary_path: relative path after extraction; binaries: list to move; dest: extract to directory.
+   symlink: create symlink from dest/<symlink> to ~/.local/bin/<name>.
 #}
 {%- macro curl_extract_zip(name, url, binary_path=None, binaries=None, bin=None, chmod=False, dest=None, symlink=None, creates=None, hash=None, version=None, user=_user, home=_home) -%}
 {%- set out_name = bin or (binaries[0] if binaries else (binary_path.rsplit('/', 1)[-1] if binary_path else name)) -%}
@@ -238,15 +205,7 @@ install_{{ name | replace('-', '_') }}:
         set -eo pipefail
         _td=$(mktemp -d)
         trap 'rm -rf "$_td"' EXIT
-        cache='{{ _cache_path }}'
-        mkdir -p "$(dirname "$cache")"
-        if [ ! -f "$cache" ]; then
-          curl -fsSL "{{ url }}" -o "$cache.tmp"
-{%- if hash %}
-          echo '{{ hash }}  '"$cache.tmp" | sha256sum -c --strict
-{%- endif %}
-          mv -f "$cache.tmp" "$cache"
-        fi
+{{ _download_cached(url, _cache_path, hash=hash) }}
         cp "$cache" "$_td/archive.zip"
 {%- if dest %}
         mkdir -p {{ dest }}
@@ -285,10 +244,7 @@ install_{{ name | replace('-', '_') }}:
 
 {%- endmacro -%}
 
-{# Download and extract a .7z archive to a destination directory using 7z.
-   Useful for Steam skins and other 7z-distributed bundles.
-   Usage: {{ curl_extract_7z('modern_steam_skin', 'https://.../SteamDarkMode.7z', home ~ '/.local/share/Steam/skins', creates=home ~ '/.local/share/Steam/skins/steamui', version=ver.modern_steam, require=['cmd: install_p7zip']) }}
-#}
+{# Download and extract a .7z archive to dest using 7z. #}
 {%- macro curl_extract_7z(name, url, dest, creates=None, hash=None, version=None, user=_user, home=_home, require=None) -%}
 {%- set _dest = dest | replace('~', home) -%}
 {%- set _vd = _ver_dir if user else _sys_ver_dir -%}
@@ -299,15 +255,7 @@ install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: |
         set -eo pipefail
-        cache='{{ _cache_path }}'
-        mkdir -p "$(dirname "$cache")"
-        if [ ! -f "$cache" ]; then
-          curl -fsSL '{{ url }}' -o "$cache.tmp"
-{%- if hash %}
-          echo '{{ hash }}  '"$cache.tmp" | sha256sum -c --strict
-{%- endif %}
-          mv -f "$cache.tmp" "$cache"
-        fi
+{{ _download_cached(url, _cache_path, hash=hash) }}
         _td=$(mktemp -d)
         trap 'rm -rf "$_td"' EXIT
         cp "$cache" "$_td/archive.7z"
@@ -366,12 +314,7 @@ install_{{ name | replace('-', '_') }}:
 {%- endif %}
 {%- endmacro -%}
 
-{# Download and install a font from a ZIP archive to ~/.local/share/fonts/<subdir>.
-   Creates the target directory, downloads/unzips, runs fc-cache, cleans up.
-   version: when set, tracks version in .salt-installed marker for update-on-bump.
-   Usage: {{ download_font_zip('sf_pro_display', 'https://font.download/dl/font/sf-pro-display.zip', 'SFProDisplay') }}
-          {{ download_font_zip('fira_code_nerd', '.../${VER}/...', 'FiraCodeNerd', version=ver.fira_code_nerd) }}
-#}
+{# Download font ZIP to ~/.local/share/fonts/<subdir>, run fc-cache. #}
 {%- macro download_font_zip(name, url, subdir, hash=None, version=None, user=_user, home=_home) -%}
 {%- set fonts_dir = home ~ '/.local/share/fonts' -%}
 {%- set _cache_key = name ~ '-' ~ (version if version else 'latest') -%}
@@ -389,15 +332,7 @@ install_{{ name }}:
         set -eo pipefail
         _td=$(mktemp -d)
         trap 'rm -rf "$_td"' EXIT
-        cache='{{ _cache_path }}'
-        mkdir -p "$(dirname "$cache")"
-        if [ ! -f "$cache" ]; then
-          curl -fsSL '{{ url }}' -o "$cache.tmp"
-{%- if hash %}
-          echo '{{ hash }}  '"$cache.tmp" | sha256sum -c --strict
-{%- endif %}
-          mv -f "$cache.tmp" "$cache"
-        fi
+{{ _download_cached(url, _cache_path, hash=hash) }}
         cp "$cache" "$_td/archive.zip"
         unzip -o "$_td/archive.zip" -d {{ fonts_dir }}/{{ subdir }}
         fc-cache -f {{ fonts_dir }}/{{ subdir }}
@@ -425,13 +360,7 @@ install_{{ name }}:
       - file: {{ name }}_font_dir
 {%- endmacro -%}
 
-{# Git clone a repo to /tmp, copy selected items to dest, clean up.
-   items: list of paths relative to repo root to cp -r (e.g., ['Flight-Dark-GTK', 'Flight-light-GTK'] or ['*/']).
-          If omitted, clones directly to dest (repo itself IS the install).
-   creates: idempotency guard (defaults to dest).
-   Usage: {{ git_clone_deploy('flight-gtk', 'https://github.com/neg-serg/Flight-Plasma-Themes.git', '~/.local/share/themes', ['Flight-Dark-GTK', 'Flight-light-GTK']) }}
-          {{ git_clone_deploy('zi', 'https://github.com/z-shell/zi.git', '~/.config/zi/bin', creates=home ~ '/.config/zi/bin/zi.zsh') }}
-#}
+{# Git clone a repo, copy selected items to dest. items: list of paths to cp -r. #}
 {%- macro git_clone_deploy(name, repo, dest, items=None, creates=None, user=_user, home=_home) -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
@@ -457,38 +386,23 @@ install_{{ name | replace('-', '_') }}:
         interval: {{ _retry_interval }}
 {%- endmacro -%}
 
-{# Download a single file via curl and install to destination with optional mode.
-   Supports sha256 hash verification, cached downloads, and version markers to trigger updates.
-   Creates parent directories automatically via install -D and honors retry/parallel.
-   Usage: {{ http_file('mpv_script_stats', 'https://example/script.lua', home ~ '/.config/mpv/scripts/stats.lua', require=['file: mpv_scripts_dir']) }}
-          {{ http_file('qmk_rules', 'https://.../50-qmk.rules', '/etc/udev/rules.d/50-qmk.rules', user=None, hash='sha256:...') }}
-#}
+{# Download a single file via curl to dest with optional hash, cache, and version marker. #}
 {%- macro http_file(name, url, dest, mode='0644', user=_user, creates=None, require=None, parallel=True, hash=None, version=None, cache=True) -%}
 {%- set _vd = _ver_dir if user else _sys_ver_dir -%}
 {{ name }}:
   cmd.run:
     - name: |
         set -eo pipefail
-        src=""
 {%- if cache %}
-        cache_dir='{{ _download_cache }}'
-        mkdir -p "$cache_dir"
-        cache="$cache_dir/{{ name }}"
-        if [ ! -f "$cache" ]; then
-          curl -fsSL '{{ url }}' -o "$cache.tmp"
-{%- if hash %}
-          echo '{{ hash }}  '"$cache.tmp" | sha256sum -c --strict
-{%- endif %}
-          mv -f "$cache.tmp" "$cache"
-        fi
+{{ _download_cached(url, _download_cache ~ '/' ~ name, hash=hash) }}
         src="$cache"
 {%- else %}
         src=$(mktemp)
         trap 'rm -f "$src"' EXIT
         curl -fsSL '{{ url }}' -o "$src"
-{%- endif %}
 {%- if hash %}
         echo '{{ hash }}  '"$src" | sha256sum -c --strict
+{%- endif %}
 {%- endif %}
         install -m {{ mode }} -D "$src" '{{ dest }}'
 {%- if version %}
@@ -513,11 +427,7 @@ install_{{ name | replace('-', '_') }}:
 {%- endif %}
 {%- endmacro -%}
 
-{# Download a file from Hugging Face using the shared http_file machinery.
-   repo: repository path (e.g. "org/model"), file: artifact path inside the repo.
-   This keeps retry/cache/idempotency behavior aligned with other HTTP downloads.
-   Usage: {{ huggingface_file('foo_model', 'org/model', 'weights.gguf', '/path/to/weights.gguf') }}
-#}
+{# Download a file from Hugging Face via http_file. #}
 {%- macro huggingface_file(name, repo, file, dest, mode='0644', user=_user, creates=None, require=None, parallel=True, hash=None, version=None, cache=True) -%}
 {{ http_file(
     name,
@@ -534,17 +444,7 @@ install_{{ name | replace('-', '_') }}:
 ) }}
 {%- endmacro -%}
 
-{# npm build workflow: npm install + build + optional version pin.
-   Generates 2–3 chained cmd.run states:
-     {{ name }}_npm_install — npm install (network op, with retry)
-     {{ name }}_build — npm run build (requires install)
-     {{ name }}_version — git checkout + rebuild (only if version set, with retry)
-   dir: project working directory (must already contain package.json).
-   version: git tag to pin; when set, generates a version state.
-   install_creates: file marker for npm install (default: dir/node_modules/.package-lock.json).
-   build_creates: file marker for build (default: dir/dist/index.js).
-   Usage: {{ npm_build_workflow('nanoclaw', dir=home ~ '/.local/share/nanoclaw', version=ver.nanoclaw, require=['cmd: nanoclaw_clone']) }}
-#}
+{# npm install + build + optional version pin. Generates 2–3 chained cmd.run states. #}
 {%- macro npm_build_workflow(name, dir, version=None, install_creates=None, build_creates=None, user=_user, require=None) -%}
 {%- set _install_creates = install_creates or (dir ~ '/node_modules/.package-lock.json') -%}
 {%- set _build_creates = build_creates or (dir ~ '/dist/index.js') -%}
@@ -588,4 +488,78 @@ install_{{ name | replace('-', '_') }}:
     - require:
       - cmd: {{ name }}_build
 {%- endif %}
+{%- endmacro -%}
+
+{# Download latest GitHub release asset to dest. format: 'file' (default) or 'zip'. #}
+{%- macro github_release_to(state_id, name, repo, asset, dest, format='file', tag=None, hash=None, version=None, creates=None, require=None, user=_user) -%}
+{%- set _creates = creates or (dest ~ '/' ~ name) -%}
+{{ state_id }}:
+  cmd.run:
+    - name: |
+        set -eo pipefail
+{%- if tag %}
+        TAG="{{ tag }}"
+{%- else %}
+        TAG=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/{{ repo }}/releases/latest | rg -oP '[^/]+$')
+        [ -n "$TAG" ] || { echo "Failed to fetch release tag for {{ repo }}" >&2; exit 1; }
+{%- endif %}
+{%- if format == 'zip' %}
+        _td=$(mktemp -d)
+        trap 'rm -rf "$_td"' EXIT
+        curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o "$_td/archive.zip"
+{%- if hash %}
+        echo '{{ hash }}  '"$_td/archive.zip" | sha256sum -c --strict
+{%- endif %}
+        unzip -qo "$_td/archive.zip" -d {{ dest }}
+{%- else %}
+        curl -fsSL "https://github.com/{{ repo }}/releases/download/${TAG}/{{ asset }}" -o '{{ dest }}/{{ name }}.tmp'
+{%- if hash %}
+        echo '{{ hash }}  {{ dest }}/{{ name }}.tmp' | sha256sum -c --strict
+{%- endif %}
+        mv -f '{{ dest }}/{{ name }}.tmp' '{{ dest }}/{{ name }}'
+{%- endif %}
+{%- if version %}
+        {{ _ver_stamp(_ver_dir, name, version, target=_creates) }}
+{%- endif %}
+    - runas: {{ user }}
+    - shell: /bin/bash
+    - creates: {{ _ver_dir ~ '/' ~ name ~ '@' ~ version if version else _creates }}
+    - parallel: True
+{%- if require %}
+    - require:
+      - file: {{ require }}
+{%- endif %}
+    - retry:
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
+{%- endmacro -%}
+
+{# Data-driven installer loop: iterate a YAML catalog, resolve versions, and
+   dispatch to the appropriate macro. Consolidates the repeated for-loop +
+   version-resolution pattern from installers.sls / installers_desktop.sls.
+   macro_type: 'curl_bin' | 'curl_extract_tar' | 'curl_extract_zip'.
+   Extra kwargs are forwarded to the underlying macro.
+   Usage: {{ install_catalog(tools.curl_bin, ver, 'curl_bin') }}
+          {{ install_catalog(apps.curl_extract_zip, ver, 'curl_extract_zip', user=user, home=home) }}
+#}
+{%- macro install_catalog(catalog, ver_dict, macro_type, exclude=None) -%}
+{% for name, raw in catalog.items() %}
+{% if not exclude or name not in exclude %}
+{% set _v = ver_dict.get(name | replace('-', '_'), '') %}
+{% if raw is mapping %}
+{% set _url = raw.url | replace('${VER}', _v) %}
+{% set _hash = raw.get('hash') %}
+{% else %}
+{% set _url = raw | replace('${VER}', _v) %}
+{% set _hash = None %}
+{% endif %}
+{% if macro_type == 'curl_bin' %}
+{{ curl_bin(name, _url, version=_v if _v else None, hash=_hash, **kwargs) }}
+{% elif macro_type == 'curl_extract_tar' %}
+{{ curl_extract_tar(name, _url, binary_pattern=raw.binary_pattern if raw is mapping and raw.binary_pattern is defined else name, bin=raw.get('bin') if raw is mapping else None, version=_v if _v else None, hash=_hash, **kwargs) }}
+{% elif macro_type == 'curl_extract_zip' %}
+{{ curl_extract_zip(name, _url, binary_path=raw.get('binary_path') if raw is mapping else None, binaries=raw.get('binaries') if raw is mapping else None, chmod=raw.get('chmod', False) if raw is mapping else False, dest=raw.get('dest') if raw is mapping else None, symlink=raw.get('symlink') if raw is mapping else None, version=_v if _v else None, hash=_hash, **kwargs) }}
+{% endif %}
+{% endif %}
+{% endfor %}
 {%- endmacro -%}

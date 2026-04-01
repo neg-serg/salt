@@ -1,6 +1,5 @@
 {% from '_imports.jinja' import user, home, retry_attempts, retry_interval %}
-{% from '_macros_install.jinja' import cargo_pkg, curl_bin, curl_extract_tar, curl_extract_zip, git_clone_deploy, go_pkg, http_file, pip_pkg %}
-{% from '_macros_github.jinja' import github_tar %}
+{% from '_macros_install.jinja' import cargo_pkg, curl_bin, curl_extract_tar, curl_extract_zip, git_clone_deploy, go_pkg, http_file, install_catalog, pip_pkg %}
 {% from '_macros_pkg.jinja' import paru_install %}
 {% import_yaml 'data/installers.yaml' as tools %}
 {% import_yaml 'data/versions.yaml' as ver %}
@@ -11,28 +10,10 @@
 # ===========================================================================
 
 # --- Direct binary downloads to ~/.local/bin/ ---
-{% for name, raw in tools.curl_bin.items() %}
-{% set _v = ver.get(name | replace('-', '_'), '') %}
-{% if raw is mapping %}
-{% set resolved_url = raw.url | replace('${VER}', _v) %}
-{{ curl_bin(name, resolved_url, version=_v if _v else None, hash=raw.get('hash')) }}
-{% else %}
-{% set resolved_url = raw | replace('${VER}', _v) %}
-{{ curl_bin(name, resolved_url, version=_v if _v else None) }}
-{% endif %}
-{% endfor %}
+{{ install_catalog(tools.curl_bin, ver, 'curl_bin') }}
 
 # --- GitHub tar.gz archives ---
-{% for name, raw in tools.github_tar.items() %}
-{% set _v = ver.get(name | replace('-', '_'), '') %}
-{% if raw is mapping %}
-{% set resolved_url = raw.url | replace('${VER}', _v) %}
-{{ github_tar(name, resolved_url, version=_v if _v else None, hash=raw.get('hash')) }}
-{% else %}
-{% set resolved_url = raw | replace('${VER}', _v) %}
-{{ github_tar(name, resolved_url, version=_v if _v else None) }}
-{% endif %}
-{% endfor %}
+{{ install_catalog(tools.github_tar, ver, 'curl_extract_tar') }}
 
 # --- pip installs (pipx) ---
 {% for name, opts in tools.pip_pkg.items() %}
@@ -50,21 +31,10 @@
 {% endfor %}
 
 # --- ZIP archive extractions ---
-{% for name, opts in tools.curl_extract_zip.items() %}
-{% set _v = ver.get(name, '') %}
-{% set resolved_url = opts.url | replace('${VER}', _v) %}
-{{ curl_extract_zip(name, resolved_url, opts.binary_path, binaries=opts.get('binaries'), chmod=opts.get('chmod', False), hash=opts.get('hash'), version=_v if _v else None) }}
-{% endfor %}
+{{ install_catalog(tools.curl_extract_zip, ver, 'curl_extract_zip') }}
 
 # --- tar.gz archive extractions ---
-{% set skip_tar_installs = ['essentia'] %}
-{% for name, opts in tools.get('curl_extract_tar', {}).items() %}
-{% if name not in skip_tar_installs %}
-{% set _v = ver.get(name, '') %}
-{% set resolved_url = opts.url | replace('${VER}', _v) %}
-{{ curl_extract_tar(name, resolved_url, binary_pattern=opts.binary_pattern, bin=opts.get('bin'), hash=opts.get('hash'), version=_v if _v else None) }}
-{% endif %}
-{% endfor %}
+{{ install_catalog(tools.get('curl_extract_tar', {}), ver, 'curl_extract_tar', exclude=['essentia']) }}
 
 # ===========================================================================
 # AUR package installs (migrated from manual downloads)

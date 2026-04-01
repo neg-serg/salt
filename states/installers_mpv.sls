@@ -2,7 +2,7 @@
 {% from '_imports.jinja' import user, home, retry_attempts, retry_interval, ver_dir %}
 {% from '_macros_service.jinja' import ensure_dir %}
 {% from '_macros_install.jinja' import http_file %}
-{% from '_macros_github.jinja' import github_release_to %}
+{% from '_macros_install.jinja' import github_release_to %}
 {% import_yaml 'data/mpv_scripts.yaml' as mpv %}
 {% import_yaml 'data/versions.yaml' as ver %}
 
