@@ -45,6 +45,12 @@
 {%- set _hypr_sig_cmd = 'ls /run/user/' ~ host.uid ~ '/hypr/ 2>/dev/null | head -1' -%}
 {%- set _hypr_onlyif = 'ls /run/user/' ~ host.uid ~ '/hypr/ 2>/dev/null | grep -q .' -%}
 
+{# Shared env block for hyprpm commands (HOME + XDG_RUNTIME_DIR) #}
+{%- set _hypr_env = [
+  'HOME: ' ~ _home,
+  'XDG_RUNTIME_DIR: ' ~ host.runtime_dir,
+] -%}
+
 {# Update hyprpm headers (rebuilds plugin headers for current Hyprland version).
    check_plugins: optional list of plugin names to verify (all must exist in hyprpm list
    for the state to be skipped).
@@ -66,8 +72,9 @@
 {%- endfor %}
 {%- endif %}
     - env:
-      - HOME: {{ _home }}
-      - XDG_RUNTIME_DIR: /run/user/{{ host.uid }}
+{%- for entry in _hypr_env %}
+      - {{ entry }}
+{%- endfor %}
 {%- if require %}
     - require:
 {%- for req in require %}
@@ -97,8 +104,9 @@
         export HYPRLAND_INSTANCE_SIGNATURE=$( {{ _hypr_sig_cmd }} ) &&
         hyprpm list 2>&1 | grep -q '{{ check_plugin }}'
     - env:
-      - HOME: {{ _home }}
-      - XDG_RUNTIME_DIR: /run/user/{{ host.uid }}
+{%- for entry in _hypr_env %}
+      - {{ entry }}
+{%- endfor %}
 {%- if require %}
     - require:
 {%- for req in require %}
@@ -127,8 +135,9 @@
         export HYPRLAND_INSTANCE_SIGNATURE=$( {{ _hypr_sig_cmd }} ) &&
         hyprpm list 2>&1 | grep -A1 '{{ plugin }}' | grep -q 'enabled:.*true'
     - env:
-      - HOME: {{ _home }}
-      - XDG_RUNTIME_DIR: /run/user/{{ host.uid }}
+{%- for entry in _hypr_env %}
+      - {{ entry }}
+{%- endfor %}
 {%- if require %}
     - require:
 {%- for req in require %}

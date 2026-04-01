@@ -2,6 +2,12 @@
 
 {% from '_macros_common.jinja' import user as _user, home as _home, healthcheck_timeout as _healthcheck_timeout, host %}
 
+{# Shared env block for systemctl --user commands (daemon-reload, enable, restart, disable) #}
+{%- set _systemctl_env = [
+  'XDG_RUNTIME_DIR: ' ~ host.runtime_dir,
+  'DBUS_SESSION_BUS_ADDRESS: unix:path=' ~ host.runtime_dir ~ '/bus',
+] -%}
+
 {# Resolve symbolic inventory values for managed systemd resources.
    Currently supports __CURRENT_USER__ for user-owned tmpfiles entries.
 #}
@@ -323,8 +329,9 @@ test -e {{ _path }}
     - name: systemctl --user daemon-reload
     - runas: {{ user }}
     - env:
-      - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
-      - DBUS_SESSION_BUS_ADDRESS: unix:path={{ host.runtime_dir }}/bus
+{%- for entry in _systemctl_env %}
+      - {{ entry }}
+{%- endfor %}
     - onchanges:
       - file: {{ name }}
 {%- endmacro -%}
@@ -361,8 +368,9 @@ test -e {{ _path }}
     - name: systemctl --user daemon-reload
     - runas: {{ user }}
     - env:
-      - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
-      - DBUS_SESSION_BUS_ADDRESS: unix:path={{ host.runtime_dir }}/bus
+{%- for entry in _systemctl_env %}
+      - {{ entry }}
+{%- endfor %}
     - onchanges:
       - file: {{ name }}
 {%- endmacro -%}
@@ -400,8 +408,9 @@ test -e {{ _path }}
     - shell: /bin/bash
     - runas: {{ user }}
     - env:
-      - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
-      - DBUS_SESSION_BUS_ADDRESS: unix:path={{ host.runtime_dir }}/bus
+{%- for entry in _systemctl_env %}
+      - {{ entry }}
+{%- endfor %}
 {%- if all_units %}
     - unless: |
         set -e
@@ -456,8 +465,9 @@ test -e {{ _path }}
     - name: systemctl --user restart {{ service }}
     - runas: {{ user }}
     - env:
-      - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
-      - DBUS_SESSION_BUS_ADDRESS: unix:path={{ host.runtime_dir }}/bus
+{%- for entry in _systemctl_env %}
+      - {{ entry }}
+{%- endfor %}
 {%- if onlyif %}
     - onlyif: {{ onlyif }}
 {%- endif %}
@@ -484,8 +494,9 @@ test -e {{ _path }}
     - name: systemctl --user disable --now {{ units | join(' ') }} 2>/dev/null || true
     - runas: {{ user }}
     - env:
-      - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
-      - DBUS_SESSION_BUS_ADDRESS: unix:path={{ host.runtime_dir }}/bus
+{%- for entry in _systemctl_env %}
+      - {{ entry }}
+{%- endfor %}
     - onlyif: |
         export XDG_RUNTIME_DIR={{ host.runtime_dir }}
         export DBUS_SESSION_BUS_ADDRESS=unix:path={{ host.runtime_dir }}/bus
