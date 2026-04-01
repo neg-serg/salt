@@ -1,5 +1,5 @@
 {% from '_imports.jinja' import user, home, retry_attempts, retry_interval %}
-{% from '_macros_install.jinja' import cargo_pkg, curl_bin, curl_extract_tar, curl_extract_zip, git_clone_deploy, go_pkg, http_file, install_catalog, pip_pkg %}
+{% from '_macros_install.jinja' import cargo_pkg, curl_bin, curl_extract_tar, curl_extract_zip, git_clone_build, git_clone_deploy, go_pkg, http_file, install_catalog, pip_pkg %}
 {% from '_macros_pkg.jinja' import paru_install %}
 {% import_yaml 'data/installers.yaml' as tools %}
 {% import_yaml 'data/versions.yaml' as ver %}
@@ -101,41 +101,10 @@ termcell_wrapper:
 {{ http_file('fzf_navigator', 'https://raw.githubusercontent.com/benward2301/fzf-navigator/main/fzf-navigator.sh', home ~ '/.config/fzf-navigator.sh', user=user) }}
 
 # --- nface (terminal ASCII webcam via ncurses/v4l2) ---
-nface:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        _td=$(mktemp -d)
-        trap 'rm -rf "$_td"' EXIT
-        GIT_CONFIG_GLOBAL=/dev/null git clone --depth=1 https://github.com/tomScheers/nFace.git "$_td/nface"
-        make -C "$_td/nface"
-        install -m 0755 "$_td/nface/bin/nface" ~/.local/bin/nface
-    - runas: {{ user }}
-    - shell: /bin/bash
-    - creates: {{ home }}/.local/bin/nface
-    - parallel: True
-    - retry:
-        attempts: {{ retry_attempts }}
-        interval: {{ retry_interval }}
+{{ git_clone_build('nface', 'https://github.com/tomScheers/nFace.git', 'make', 'bin/nface') }}
 
 # --- termmark (terminal Markdown renderer) ---
-termmark:
-  cmd.run:
-    - name: |
-        set -eo pipefail
-        _td=$(mktemp -d)
-        trap 'rm -rf "$_td"' EXIT
-        GIT_CONFIG_GLOBAL=/dev/null git clone --depth=1 https://github.com/ishanawal/TermMark.git "$_td/termmark"
-        cmake -S "$_td/termmark" -B "$_td/termmark/build" -DCMAKE_BUILD_TYPE=Release
-        make -C "$_td/termmark/build"
-        install -m 0755 "$_td/termmark/build/termmark" ~/.local/bin/termmark
-    - runas: {{ user }}
-    - shell: /bin/bash
-    - creates: {{ home }}/.local/bin/termmark
-    - parallel: True
-    - retry:
-        attempts: {{ retry_attempts }}
-        interval: {{ retry_interval }}
+{{ git_clone_build('termmark', 'https://github.com/ishanawal/TermMark.git', 'cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && make -C build', 'build/termmark') }}
 
 # --- blesh (Bash Line Editor) ---
 {{ curl_extract_tar('blesh', 'https://github.com/akinomyoga/ble.sh/releases/download/nightly/ble-nightly.tar.xz', archive_ext='tar.xz', dest='~/.local/share', strip_components=1, creates=home ~ '/.local/share/ble.sh', user=user, home=home) }}

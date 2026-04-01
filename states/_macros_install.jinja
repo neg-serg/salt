@@ -386,6 +386,35 @@ install_{{ name | replace('-', '_') }}:
         interval: {{ _retry_interval }}
 {%- endmacro -%}
 
+{# Git clone + build from source + install binary to ~/.local/bin/.
+   build_cmds: shell commands to build (run inside cloned dir via cd).
+   binary_src: path to built binary relative to clone root.
+   comment: optional package description comment.
+   Usage: {{ git_clone_build('nface', 'https://github.com/tomScheers/nFace.git', 'make', 'bin/nface', comment='terminal ASCII webcam via ncurses/v4l2') }}
+          {{ git_clone_build('termmark', 'https://github.com/ishanawal/TermMark.git', 'cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && make -C build', 'build/termmark', comment='terminal Markdown renderer') }}
+#}
+{%- macro git_clone_build(name, repo_url, build_cmds, binary_src, binary_dest=None, comment=None, user=_user, home=_home) -%}
+{%- set _dest = binary_dest or (home ~ '/.local/bin/' ~ name) -%}
+{# {{ comment }} #}
+{{ name }}:
+  cmd.run:
+    - name: |
+        set -eo pipefail
+        _td=$(mktemp -d)
+        trap 'rm -rf "$_td"' EXIT
+        GIT_CONFIG_GLOBAL=/dev/null git clone --depth=1 {{ repo_url }} "$_td/{{ name }}"
+        cd "$_td/{{ name }}"
+        {{ build_cmds }}
+        install -m 0755 "$_td/{{ name }}/{{ binary_src }}" {{ _dest }}
+    - runas: {{ user }}
+    - shell: /bin/bash
+    - creates: {{ _dest }}
+    - parallel: True
+    - retry:
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
+{%- endmacro -%}
+
 {# Download a single file via curl to dest with optional hash, cache, and version marker. #}
 {%- macro http_file(name, url, dest, mode='0644', user=_user, creates=None, require=None, parallel=True, hash=None, version=None, cache=True) -%}
 {%- set _vd = _ver_dir if user else _sys_ver_dir -%}
