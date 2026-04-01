@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2034,SC1091  # vars used by sourced lib-comfyui.sh
 # Image generation runner: submit workflow to ComfyUI, collect output PNGs.
 # Usage: video-ai-generate-image.sh --model MODEL --prompt "TEXT" [OPTIONS]
 set -euo pipefail
@@ -115,33 +116,9 @@ if [[ -n "${IMAGE}" ]]; then
 fi
 
 # ── Start ComfyUI if not running ─────────────────────────────────────
-mkdir -p "${COMFYUI_OUTPUT}" "${IMAGES_DIR}"
-COMFYUI_PID=""
-if ! curl -sf "${COMFYUI_URL}/system_stats" >/dev/null 2>&1; then
-    echo "[image-gen] Starting ComfyUI on port ${COMFYUI_PORT}..." >&2
-    cd "${COMFYUI_DIR}"
-    "${VENV_PYTHON}" main.py \
-        --listen 127.0.0.1 \
-        --port "${COMFYUI_PORT}" \
-        --disable-auto-launch \
-        --output-directory "${COMFYUI_OUTPUT}" \
-        >/dev/null 2>&1 &
-    COMFYUI_PID=$!
-
-    echo -n "[image-gen] Waiting for ComfyUI..." >&2
-    for i in $(seq 1 120); do
-        if curl -sf "${COMFYUI_URL}/system_stats" >/dev/null 2>&1; then
-            echo " ready (${i}s)" >&2
-            break
-        fi
-        if [[ $i -eq 120 ]]; then
-            echo " timeout!" >&2
-            kill "${COMFYUI_PID}" 2>/dev/null || true
-            exit 1
-        fi
-        sleep 1
-    done
-fi
+# shellcheck source=lib-comfyui.sh
+source "$(dirname "$0")/lib-comfyui.sh"
+comfyui_start "image-gen" "${IMAGES_DIR}"
 
 # ── Generate images ──────────────────────────────────────────────────
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
@@ -167,54 +144,8 @@ for (( n=0; n<COUNT; n++ )); do
 
     echo "[image-gen] Generating image $((n+1))/${COUNT} (seed: ${CURRENT_SEED})..." >&2
 
-    # Submit workflow
-    RESPONSE=$(curl -sf -X POST "${COMFYUI_URL}/prompt" \
-        -H "Content-Type: application/json" \
-        -d @"${WORKFLOW_RESOLVED}")
-
-    PROMPT_ID=$(echo "${RESPONSE}" | python3 -c "import sys,json; print(json.load(sys.stdin)['prompt_id'])" 2>/dev/null || true)
-
-    if [[ -z "${PROMPT_ID}" ]]; then
-        echo "Error: Failed to submit workflow to ComfyUI" >&2
-        echo "Response: ${RESPONSE}" >&2
-        rm -rf "${WORK_DIR}"
-        if [[ -n "${COMFYUI_PID}" ]]; then kill "${COMFYUI_PID}" 2>/dev/null || true; fi
-        exit 1
-    fi
-
-    # Poll for completion
-    while true; do
-        HISTORY=$(curl -sf "${COMFYUI_URL}/history/${PROMPT_ID}" 2>/dev/null || echo "{}")
-        POLL_RESULT=$(echo "${HISTORY}" | python3 -c "
-import sys, json
-h = json.load(sys.stdin)
-if '${PROMPT_ID}' in h:
-    st = h['${PROMPT_ID}'].get('status', {})
-    if st.get('completed', False) or st.get('status_str') == 'success':
-        print('DONE')
-    elif st.get('status_str') == 'error':
-        for msg in st.get('messages', []):
-            if msg[0] == 'execution_error':
-                print('ERROR:' + msg[1].get('exception_message', 'Unknown error'))
-                break
-        else:
-            print('ERROR:unknown')
-    else:
-        print('RUNNING')
-else:
-    print('RUNNING')
-" 2>/dev/null || echo "RUNNING")
-
-        if [[ "${POLL_RESULT}" == "DONE" ]]; then
-            break
-        elif [[ "${POLL_RESULT}" == ERROR:* ]]; then
-            echo "[image-gen] Error: ${POLL_RESULT#ERROR:}" >&2
-            rm -rf "${WORK_DIR}"
-            if [[ -n "${COMFYUI_PID}" ]]; then kill "${COMFYUI_PID}" 2>/dev/null || true; fi
-            exit 1
-        fi
-        sleep 2
-    done
+    comfyui_submit "image-gen" "${WORKFLOW_RESOLVED}"
+    comfyui_poll "image-gen"
 
     # Collect output PNG
     OUTPUT_PNG=$(find "${COMFYUI_OUTPUT}" -name "*.png" -newer "${WORKFLOW_RESOLVED}" 2>/dev/null | sort | tail -1)

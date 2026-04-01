@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2034,SC1091  # vars used by sourced lib-comfyui.sh
 # Video AI generation runner: submit workflow to ComfyUI, encode output as MP4.
 # Usage: video-ai-generate.sh --model MODEL_ID --prompt "TEXT" [--image PATH] [--compat]
 #        [--width W] [--height H] [--frames N]
@@ -137,101 +138,18 @@ echo "[video-ai] Resolution: ${WIDTH}x${HEIGHT}, Frames: ${FRAMES}" >&2
 
 # ── Start ComfyUI if not running ─────────────────────────────────────
 COMFYUI_OUTPUT="${VIDEO_AI_DIR}/comfyui-output"
-mkdir -p "${COMFYUI_OUTPUT}"
-COMFYUI_PID=""
-if ! curl -sf "${COMFYUI_URL}/system_stats" >/dev/null 2>&1; then
-    echo "[video-ai] Starting ComfyUI on port ${COMFYUI_PORT}..." >&2
-    cd "${COMFYUI_DIR}"
-    "${VENV_PYTHON}" main.py \
-        --listen 127.0.0.1 \
-        --port "${COMFYUI_PORT}" \
-        --disable-auto-launch \
-        --output-directory "${COMFYUI_OUTPUT}" \
-        >/dev/null 2>&1 &
-    COMFYUI_PID=$!
-
-    # Wait for ComfyUI to become ready
-    echo -n "[video-ai] Waiting for ComfyUI..." >&2
-    for i in $(seq 1 120); do
-        if curl -sf "${COMFYUI_URL}/system_stats" >/dev/null 2>&1; then
-            echo " ready (${i}s)" >&2
-            break
-        fi
-        if [[ $i -eq 120 ]]; then
-            echo " timeout!" >&2
-            kill "${COMFYUI_PID}" 2>/dev/null || true
-            exit 1
-        fi
-        sleep 1
-    done
-fi
+# shellcheck source=lib-comfyui.sh
+source "$(dirname "$0")/lib-comfyui.sh"
+comfyui_start "video-ai"
 
 # ── Submit workflow ──────────────────────────────────────────────────
 echo "[video-ai] Submitting workflow..." >&2
-RESPONSE=$(curl -sf -X POST "${COMFYUI_URL}/prompt" \
-    -H "Content-Type: application/json" \
-    -d @"${WORKFLOW_RESOLVED}")
-
-PROMPT_ID=$(echo "${RESPONSE}" | python3 -c "import sys,json; print(json.load(sys.stdin)['prompt_id'])" 2>/dev/null || true)
-
-if [[ -z "${PROMPT_ID}" ]]; then
-    echo "Error: Failed to submit workflow to ComfyUI" >&2
-    echo "Response: ${RESPONSE}" >&2
-    if [[ -n "${COMFYUI_PID}" ]]; then kill "${COMFYUI_PID}" 2>/dev/null || true; fi
-    exit 1
-fi
-
+comfyui_submit "video-ai" "${WORKFLOW_RESOLVED}"
 echo "[video-ai] Prompt ID: ${PROMPT_ID}" >&2
 
 # ── Poll for progress ────────────────────────────────────────────────
 echo "[video-ai] Generating..." >&2
-while true; do
-    HISTORY=$(curl -sf "${COMFYUI_URL}/history/${PROMPT_ID}" 2>/dev/null || echo "{}")
-
-    # Check if complete or errored
-    POLL_RESULT=$(echo "${HISTORY}" | python3 -c "
-import sys, json
-h = json.load(sys.stdin)
-if '${PROMPT_ID}' in h:
-    st = h['${PROMPT_ID}'].get('status', {})
-    if st.get('completed', False) or st.get('status_str') == 'success':
-        print('DONE')
-    elif st.get('status_str') == 'error':
-        for msg in st.get('messages', []):
-            if msg[0] == 'execution_error':
-                print('ERROR:' + msg[1].get('exception_message', 'Unknown error'))
-                break
-        else:
-            print('ERROR:unknown')
-    else:
-        print('RUNNING')
-else:
-    print('RUNNING')
-" 2>/dev/null || echo "RUNNING")
-
-    if [[ "${POLL_RESULT}" == "DONE" ]]; then
-        echo -e "\n[video-ai] Generation complete!" >&2
-        break
-    elif [[ "${POLL_RESULT}" == ERROR:* ]]; then
-        echo -e "\n[video-ai] Error: ${POLL_RESULT#ERROR:}" >&2
-        if [[ -n "${COMFYUI_PID}" ]]; then kill "${COMFYUI_PID}" 2>/dev/null || true; fi
-        rm -rf "${WORK_DIR}"
-        exit 1
-    fi
-
-    # Show progress
-    PROGRESS=$(curl -sf "${COMFYUI_URL}/prompt" 2>/dev/null | python3 -c "
-import sys, json
-try:
-    data = json.load(sys.stdin)
-    qi = data.get('exec_info', {}).get('queue_remaining', '?')
-    print(f'queue: {qi}', end='')
-except: pass
-" 2>/dev/null || echo "...")
-    echo -ne "\r[video-ai] ${PROGRESS}  " >&2
-
-    sleep 2
-done
+comfyui_poll "video-ai" --progress
 
 # ── Find output files ────────────────────────────────────────────────
 mkdir -p "${OUTPUT_DIR}"
