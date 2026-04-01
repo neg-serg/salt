@@ -14,10 +14,16 @@ def test_zen_extension_manifest_keeps_surfingkeys():
 
 
 def test_zen_browser_state_resets_extension_metadata_when_profile_changes():
-    text = read("states/zen_browser.sls")
-    assert "zen_reset_extensions_json" in text
-    assert "- name: {{ zen_profile }}/extensions.json" in text
-    assert "- file: zen_user_js" in text
+    sls = read("states/zen_browser.sls")
+    macro = read("states/_macros_desktop.jinja")
+    # zen_browser.sls invokes browser_extensions with zen_user_js as trigger
+    assert "browser_extensions('zen'" in sls
+    assert "'zen_user_js'" in sls
+    # The macro generates reset_extensions_json with onchanges_any on user_js_id
+    assert "reset_extensions_json" in macro
+    assert "extensions.json" in macro
+    assert "onchanges_any" in macro
+    assert "{{ user_js_id }}" in macro
 
 
 def test_surfingkeys_config_keeps_zen_helper_actions():
