@@ -35,37 +35,21 @@ hyprpm_cache_dir:
 
 # Pre-create repo cache dirs so hyprpm doesn't call sudo mkdir (which fails
 # without a TTY in Salt context).
-hyprpm_repo_cache_hyprland_plugins:
+{%- set _hyprpm_repos = {
+  'hyprland_plugins': 'hyprland-plugins',
+  'hyprglass':        'HyprGlass',
+  'hyprtasking':      'hyprtasking',
+  'darkwindow':       'Hypr-DarkWindow',
+} %}
+{% for id_suffix, dir_name in _hyprpm_repos.items() %}
+hyprpm_repo_cache_{{ id_suffix }}:
   file.directory:
-    - name: {{ hyprpm_cache }}/hyprland-plugins
+    - name: {{ hyprpm_cache }}/{{ dir_name }}
     - user: {{ user }}
     - group: {{ user }}
     - require:
       - file: hyprpm_cache_dir
-
-hyprpm_repo_cache_hyprglass:
-  file.directory:
-    - name: {{ hyprpm_cache }}/HyprGlass
-    - user: {{ user }}
-    - group: {{ user }}
-    - require:
-      - file: hyprpm_cache_dir
-
-hyprpm_repo_cache_hyprtasking:
-  file.directory:
-    - name: {{ hyprpm_cache }}/hyprtasking
-    - user: {{ user }}
-    - group: {{ user }}
-    - require:
-      - file: hyprpm_cache_dir
-
-hyprpm_repo_cache_darkwindow:
-  file.directory:
-    - name: {{ hyprpm_cache }}/Hypr-DarkWindow
-    - user: {{ user }}
-    - group: {{ user }}
-    - require:
-      - file: hyprpm_cache_dir
+{% endfor %}
 
 {{ hyprpm_update('hyprpm_headers_update',
     check_plugins=['xtra-dispatchers', 'HyprGlass', 'hyprtasking', 'Hypr-DarkWindow'],
