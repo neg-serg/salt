@@ -336,23 +336,27 @@ install_{{ name | replace('-', '_') }}:
 {# Download Firefox/Floorp extension .xpi from addons.mozilla.org.
    ext: dict with 'id' (extension GUID) and 'slug' (AMO slug).
    profile: path to browser profile directory.
+   Download failures are non-fatal — state succeeds with a warning and retries
+   on next apply (creates guard re-triggers when .xpi is still missing).
    Usage: {{ firefox_extension(ext, floorp_profile, require='floorp_extensions_dir') }}
 #}
 {%- macro firefox_extension(ext, profile, require=None, user=_user, prefix='floorp_ext') -%}
 {%- set _xpi = profile ~ '/extensions/' ~ ext.id ~ '.xpi' -%}
-{%- set _stamp = profile ~ '/extensions/.stamp-' ~ ext.id -%}
 {{ prefix }}_{{ ext.slug | replace('-', '_') }}:
   cmd.run:
     - name: |
         rm -f '{{ _xpi }}.tmp'
-        curl --http1.1 --fail --silent --show-error --location \
+        if curl --http1.1 --fail --silent --show-error --location \
           --ipv4 \
           --connect-timeout 10 --max-time 30 \
           --retry 3 --retry-delay 3 --retry-max-time 60 --retry-all-errors \
           -o '{{ _xpi }}.tmp' \
-          'https://addons.mozilla.org/firefox/downloads/latest/{{ ext.slug }}/latest.xpi' &&
-        mv -f '{{ _xpi }}.tmp' '{{ _xpi }}' &&
-        touch '{{ _stamp }}'
+          'https://addons.mozilla.org/firefox/downloads/latest/{{ ext.slug }}/latest.xpi'; then
+          mv -f '{{ _xpi }}.tmp' '{{ _xpi }}'
+        else
+          rm -f '{{ _xpi }}.tmp'
+          echo "WARNING: download of {{ ext.slug }} failed, will retry on next apply" >&2
+        fi
     - creates: {{ _xpi }}
     - runas: {{ user }}
     - parallel: True
