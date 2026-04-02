@@ -33,6 +33,12 @@ repos:
         language: system
         files: ^(scripts|states/scripts)/.*\.sh$
 
+      - id: zsh-syntax
+        name: zsh-syntax
+        entry: bash -c 'r=0; for f; do case "$(head -n1 "$f")" in (*"env zsh"*|*"/bin/zsh"*) zsh -n "$f" || r=1;; esac; done; exit $r' --
+        language: system
+        files: ^dotfiles/dot_local/bin/
+
       - id: yamllint
         name: yamllint
         entry: yamllint

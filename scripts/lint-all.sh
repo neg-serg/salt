@@ -62,6 +62,36 @@ else
     echo "  No bash/sh scripts to check"
 fi
 
+# Zsh scripts in dotfiles (zsh -n syntax check)
+zsh_files=()
+while IFS= read -r -d "" path; do
+    first=$(head -n1 "$path")
+    case "$first" in
+        "#!/usr/bin/env zsh"*|"#!/bin/zsh"*)
+            zsh_files+=("$path")
+            ;;
+    esac
+done < <(find dotfiles/dot_local/bin -maxdepth 1 -type f -print0 2>/dev/null)
+
+if [ ${#zsh_files[@]} -gt 0 ]; then
+    zsh_err=0
+    for f in "${zsh_files[@]}"; do
+        if ! zsh -n "$f" 2>&1; then
+            ((zsh_err++))
+        fi
+    done
+    if [ "$zsh_err" -gt 0 ]; then
+        echo "  FAIL: zsh-syntax ($zsh_err file(s))" >&2
+        ((errors++))
+    else
+        echo "--- zsh-syntax ---"
+        echo "  OK ($((${#zsh_files[@]})) scripts checked)"
+    fi
+else
+    echo "--- zsh-syntax ---"
+    echo "  No zsh scripts to check"
+fi
+
 run_check "yamllint" yamllint states/data/*.yaml states/configs/*.yaml .github/workflows/*.yaml
 
 if $HAS_SALT_LINT; then
