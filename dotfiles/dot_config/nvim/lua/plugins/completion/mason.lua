@@ -42,8 +42,14 @@ return {
     dependencies = { 'mason-org/mason.nvim' },
     opts = {
       ensure_installed = {
+        'clang-format',
+        'cmake-format',
         'prettierd',
+        'ruff',
+        'shellcheck',
+        'shfmt',
         'stylua',
+        'yamllint',
       },
     },
   },

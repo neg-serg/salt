@@ -25,7 +25,7 @@ return {'saghen/blink.cmp',
   opts = {
     keymap = { preset = 'super-tab' }, -- See :h blink-cmp-config-keymap for defining your own keymap
     appearance = { nerd_font_variant = 'mono'},
-    completion = { documentation = { auto_show = false } }, -- (Default) Only show the documentation popup when manually triggered
+    completion = { documentation = { auto_show = true, auto_show_delay_ms = 200 } },
     sources = {
       default = { 'lsp', 'path', 'snippets', 'buffer', 'minuet' },
       providers = {
