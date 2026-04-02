@@ -51,7 +51,6 @@ return {'folke/noice.nvim', -- better UX
                         {event='msg_show', find='line %d+ of %d+'},
                         {event='msg_show', find='%d+ line'},
                         {event='msg_show', find='%d+ more line'},
-                        {event='msg_show', kind='search_count'},
                         {event='msg_show', find='%d+L, %d+B'},
                         {event='msg_show', find='^Hunk %d+ of %d'},
                         {event='msg_show', find='%d+ change'},
@@ -98,7 +97,7 @@ return {'folke/noice.nvim', -- better UX
                 ['vim.lsp.util.convert_input_to_markdown_lines']=true,
                 ['vim.lsp.util.stylize_markdown']=true,
             },
-            hover={enabled=false},
+            hover={enabled=true},
             signature={
                 enabled=true,
                 auto_open={
