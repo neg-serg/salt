@@ -73,6 +73,35 @@ def render_for_scenario(env, scenario_name, sls_files):
     return errors
 
 
+def render_all_states():
+    """Render all states for all matrix scenarios, returning structured results.
+
+    Returns list of dicts: {file, scenario, success, error}
+    """
+    matrix = load_matrix()
+    if not matrix:
+        return []
+
+    sls_files = sorted(glob.glob("states/*.sls"))
+    results = []
+
+    for entry in matrix:
+        name = entry.get("name")
+        env = _make_render_env()
+        errors = render_for_scenario(env, name, sls_files)
+        error_files = {path for path, _ in errors}
+        for path in sls_files:
+            if path in error_files:
+                exc = next(e for p, e in errors if p == path)
+                results.append(
+                    {"file": path, "scenario": name, "success": False, "error": str(exc)}
+                )
+            else:
+                results.append({"file": path, "scenario": name, "success": True, "error": None})
+
+    return results
+
+
 def main():
     matrix = load_matrix()
     if not matrix:
