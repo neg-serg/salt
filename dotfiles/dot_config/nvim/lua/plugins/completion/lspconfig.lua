@@ -26,15 +26,27 @@ return {
       float = { border = 'rounded', source = 'if_many' },
     })
 
-    if vim.lsp.inlay_hint then
-      local group = vim.api.nvim_create_augroup('NegLspInlayHints', { clear = true })
+    do
+      local group = vim.api.nvim_create_augroup('NegLspAttach', { clear = true })
       vim.api.nvim_create_autocmd('LspAttach', {
         group = group,
         callback = function(event)
-          vim.keymap.set('n', '<leader>uh', function()
-            local enabled = vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf })
-            vim.lsp.inlay_hint.enable(not enabled, { bufnr = event.buf })
-          end, { buffer = event.buf, desc = 'Inlay Hints: toggle' })
+          local buf = event.buf
+          local function bmap(mode, lhs, rhs, desc)
+            vim.keymap.set(mode, lhs, rhs, { buffer = buf, silent = true, desc = desc })
+          end
+          bmap('n', 'gr', vim.lsp.buf.references, 'LSP: references')
+          bmap('n', 'gi', vim.lsp.buf.implementation, 'LSP: implementation')
+          bmap({'n', 'v'}, '<leader>ca', vim.lsp.buf.code_action, 'LSP: code action')
+          bmap('n', '<leader>D', vim.lsp.buf.type_definition, 'LSP: type definition')
+          bmap('n', '<leader>ws', vim.lsp.buf.workspace_symbol, 'LSP: workspace symbol')
+          bmap('n', '<leader>ds', vim.lsp.buf.document_symbol, 'LSP: document symbol')
+          if vim.lsp.inlay_hint then
+            bmap('n', '<leader>uh', function()
+              local enabled = vim.lsp.inlay_hint.is_enabled({ bufnr = buf })
+              vim.lsp.inlay_hint.enable(not enabled, { bufnr = buf })
+            end, 'Inlay Hints: toggle')
+          end
         end,
       })
     end

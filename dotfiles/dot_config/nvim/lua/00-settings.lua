@@ -157,7 +157,7 @@ vim.api.nvim_create_autocmd('UIEnter', {
 })
 o.cdhome=true                                -- :cd without argument goes to the home directory
 o.completeopt='menu,menuone,noselect'        -- Completion options
-o.formatoptions='n1jcroqlj'                  -- Format settings
+o.formatoptions='n1jcroql'                    -- Format settings
 o.cpoptions='_$ABFWcdesa'                    -- Vim-exclusive stuff
 o.ruler=false                                -- No ruler
 o.cmdheight=0                                -- Fancy cmdheight for neovim

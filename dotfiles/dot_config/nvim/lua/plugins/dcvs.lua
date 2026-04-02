@@ -93,6 +93,13 @@ return {
           bmap('n', '<leader>g]', gs.next_hunk, 'Git: next hunk')
           bmap('n', '<leader>g[', gs.prev_hunk, 'Git: prev hunk')
           bmap('n', '<leader>g?', gs.preview_hunk, 'Git: preview hunk')
+          bmap('n', '<leader>gs', gs.stage_hunk, 'Git: stage hunk')
+          bmap('v', '<leader>gs', function() gs.stage_hunk({vim.fn.line('.'), vim.fn.line('v')}) end, 'Git: stage hunk (visual)')
+          bmap('n', '<leader>gr', gs.reset_hunk, 'Git: reset hunk')
+          bmap('v', '<leader>gr', function() gs.reset_hunk({vim.fn.line('.'), vim.fn.line('v')}) end, 'Git: reset hunk (visual)')
+          bmap('n', '<leader>gS', gs.stage_buffer, 'Git: stage buffer')
+          bmap('n', '<leader>gR', gs.reset_buffer, 'Git: reset buffer')
+          bmap('n', '<leader>gu', gs.undo_stage_hunk, 'Git: undo stage hunk')
         end,
         signs={
           add={text='▎', show_count=false},
