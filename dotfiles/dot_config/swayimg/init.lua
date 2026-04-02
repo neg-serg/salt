@@ -4,6 +4,7 @@
 local home = os.getenv("HOME")
 local actions = home .. "/.local/bin/swayimg-actions.sh"
 local trash = home .. "/trash/1st-level/pic"
+os.execute("mkdir -p '" .. trash .. "'")
 
 -- Helper: run swayimg-actions.sh with current file path (non-blocking)
 local function run(mode, args)
@@ -12,11 +13,12 @@ local function run(mode, args)
     os.execute(actions .. " " .. args .. " '" .. file_path .. "' &")
 end
 
--- Helper: run swayimg-actions.sh with extra trailing arg
-local function run_to(mode, args, dest)
+-- Trash: move file to trash dir; inotify handles imagelist removal + navigation
+local function trash_current(mode)
     local image = mode.current_image()
-    local file_path = image["path"]:gsub("'", "'\\''")
-    os.execute(actions .. " " .. args .. " '" .. file_path .. "' " .. dest .. " &")
+    if not image then return end
+    local escaped = image["path"]:gsub("'", "'\\''")
+    os.execute("mv '" .. escaped .. "' '" .. trash .. "/'")
 end
 
 -- Shared toggle helpers
@@ -190,7 +192,7 @@ swayimg.viewer.on_key("m", function() swayimg.viewer.flip_vertical() end)
 
 -- File actions via swayimg-actions.sh
 swayimg.viewer.on_key("c", function() run(swayimg.viewer, "copyname") end)
-swayimg.viewer.on_key("d", function() run_to(swayimg.viewer, "mv", trash) end)
+swayimg.viewer.on_key("d", function() trash_current(swayimg.viewer) end)
 swayimg.viewer.on_key("r", function() run(swayimg.viewer, "repeat") end)
 swayimg.viewer.on_key("v", function() run(swayimg.viewer, "mv") end)
 
@@ -201,7 +203,7 @@ swayimg.viewer.on_key("Ctrl+3", function() run(swayimg.viewer, "wall-full") end)
 swayimg.viewer.on_key("Ctrl+4", function() run(swayimg.viewer, "wall-tile") end)
 swayimg.viewer.on_key("Ctrl+5", function() run(swayimg.viewer, "wall-center") end)
 swayimg.viewer.on_key("Ctrl+c", function() run(swayimg.viewer, "cp") end)
-swayimg.viewer.on_key("Ctrl+d", function() run_to(swayimg.viewer, "mv", trash) end)
+swayimg.viewer.on_key("Ctrl+d", function() trash_current(swayimg.viewer) end)
 swayimg.viewer.on_key("Ctrl+w", function() run(swayimg.viewer, "wall-cover") end)
 swayimg.viewer.on_key("Ctrl+comma", function() run(swayimg.viewer, "rotate-left") end)
 swayimg.viewer.on_key("Ctrl+period", function() run(swayimg.viewer, "rotate-right") end)
@@ -287,7 +289,7 @@ swayimg.gallery.on_key("Insert", function() swayimg.imagelist.mark() end)
 
 -- File actions
 swayimg.gallery.on_key("c", function() run(swayimg.gallery, "copyname") end)
-swayimg.gallery.on_key("d", function() run_to(swayimg.gallery, "mv", trash) end)
+swayimg.gallery.on_key("d", function() trash_current(swayimg.gallery) end)
 swayimg.gallery.on_key("r", function() run(swayimg.gallery, "repeat") end)
 swayimg.gallery.on_key("v", function() run(swayimg.gallery, "mv") end)
 
@@ -298,7 +300,7 @@ swayimg.gallery.on_key("Ctrl+3", function() run(swayimg.gallery, "wall-full") en
 swayimg.gallery.on_key("Ctrl+4", function() run(swayimg.gallery, "wall-tile") end)
 swayimg.gallery.on_key("Ctrl+5", function() run(swayimg.gallery, "wall-center") end)
 swayimg.gallery.on_key("Ctrl+c", function() run(swayimg.gallery, "cp") end)
-swayimg.gallery.on_key("Ctrl+d", function() run_to(swayimg.gallery, "mv", trash) end)
+swayimg.gallery.on_key("Ctrl+d", function() trash_current(swayimg.gallery) end)
 swayimg.gallery.on_key("Ctrl+w", function() run(swayimg.gallery, "wall-cover") end)
 swayimg.gallery.on_key("Ctrl+comma", function() run(swayimg.gallery, "rotate-left") end)
 swayimg.gallery.on_key("Ctrl+period", function() run(swayimg.gallery, "rotate-right") end)
@@ -360,7 +362,7 @@ swayimg.slideshow.on_key("f", fullscreen)
 swayimg.slideshow.on_key("i", toggle_info)
 
 -- File actions
-swayimg.slideshow.on_key("Ctrl+d", function() run_to(swayimg.slideshow, "mv", trash) end)
+swayimg.slideshow.on_key("Ctrl+d", function() trash_current(swayimg.slideshow) end)
 swayimg.slideshow.on_key("Shift+c", function() run(swayimg.slideshow, "range-cp") end)
 swayimg.slideshow.on_key("Shift+d", function() run(swayimg.slideshow, "range-trash") end)
 swayimg.slideshow.on_key("Shift+m", function() run(swayimg.slideshow, "range-mark") end)
