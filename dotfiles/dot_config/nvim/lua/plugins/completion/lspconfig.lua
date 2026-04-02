@@ -107,31 +107,8 @@ return {
       },
     })
 
-    -- Global LSP/Help keymaps (replace vim-ref behavior)
-    vim.keymap.set('n', 'K', function()
-      local clients = {}
-      if vim.lsp and vim.lsp.get_clients then
-        clients = vim.lsp.get_clients({ bufnr = 0 })
-      end
-      if clients and #clients > 0 then
-        return vim.lsp.buf.hover()
-      end
-      local word = vim.fn.expand('<cword>')
-      if word ~= '' then
-        vim.cmd('help ' .. word)
-      end
-    end, { desc = 'Hover or :help cword' })
-
-    vim.keymap.set('n', 'gd', function()
-      local clients = {}
-      if vim.lsp and vim.lsp.get_clients then
-        clients = vim.lsp.get_clients({ bufnr = 0 })
-      end
-      if clients and #clients > 0 then
-        return vim.lsp.buf.definition()
-      end
-      -- Fallback: try tag jump when no LSP available
-      pcall(vim.cmd, 'tag ' .. vim.fn.expand('<cword>'))
-    end, { desc = 'Go to definition (LSP/tag)' })
+    -- K (hover) and gd (definition) are provided natively by Neovim 0.11+.
+    -- No custom overrides needed — native versions handle LSP-attached
+    -- buffers automatically and fall back to :help/tags in non-LSP contexts.
   end,
 }

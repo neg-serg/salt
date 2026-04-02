@@ -9,7 +9,9 @@ return {
           markdown = {'vale'},
           sh = {'shellcheck'},
           bash = {'shellcheck'},
+          zsh = {'shellcheck'},
           yaml = {'yamllint'},
+          nix = {'statix'},
         }
         vim.api.nvim_create_autocmd({ 'BufReadPost', 'BufWritePost', 'InsertLeave' }, {
           group = vim.api.nvim_create_augroup('NegNvimLint', { clear = true }),
