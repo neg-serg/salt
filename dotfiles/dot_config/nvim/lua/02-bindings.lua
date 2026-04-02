@@ -61,6 +61,65 @@ map('o', '<M-e>', '<End>', {noremap=true})
 map('i', '<C-e>', "<C-o>$", {noremap=true})
 
 map('n', 'et', function() require('75-smart-cd').smart_cd() end, {desc = 'Smart directory change'})
+
+-- ── Extended keys (terminal sends unicode codepoints for chords) ────
+local xk = require('keys').xk
+
+-- Window resize: C-S-h/j/k/l
+map('n', xk[[<C-S-h>]], '3<C-w><', {silent=true, desc = 'Resize window left'})
+map('n', xk[[<C-S-l>]], '3<C-w>>', {silent=true, desc = 'Resize window right'})
+map('n', xk[[<C-S-j>]], '3<C-w>+', {silent=true, desc = 'Resize window down'})
+map('n', xk[[<C-S-k>]], '3<C-w>-', {silent=true, desc = 'Resize window up'})
+
+-- Splits: C-\ vertical, C-S-\ horizontal
+map('n', xk[[<C-\>]], '<Cmd>vsplit<CR>', {silent=true, desc = 'Vertical split'})
+map('n', xk[[<C-S-\>]], '<Cmd>split<CR>', {silent=true, desc = 'Horizontal split'})
+
+-- Search/pickers: C-S-f live grep, C-S-p commands, M-Space buffers
+map('n', xk[[<C-S-f>]], function() require('fzf-lua').live_grep() end, {desc = 'Live grep'})
+map('n', xk[[<C-S-p>]], function() require('fzf-lua').commands() end, {desc = 'Command palette'})
+map('n', xk[[<M-Space>]], function() require('fzf-lua').buffers() end, {desc = 'Buffer picker'})
+map('n', xk[[<C-S-t>]], function() require('fzf-lua').tabs() end, {desc = 'Tab picker'})
+
+-- Terminal: C-/ toggle (replaces removed snacks terminal binding)
+map({'n', 't'}, xk[[<C-/>]], function()
+  local tt = require('toggleterm')
+  tt.toggle()
+end, {silent=true, desc = 'Toggle terminal'})
+
+-- Code: C-S-r rename, C-S-a code action, C-S-o symbols outline
+map('n', xk[[<C-S-r>]], function() return ':IncRename ' .. vim.fn.expand('<cword>') end,
+  {expr=true, desc = 'Rename symbol'})
+map('n', xk[[<C-S-a>]], vim.lsp.buf.code_action, {desc = 'Code action'})
+map('n', xk[[<C-S-o>]], function() require('fzf-lua').lsp_document_symbols() end, {desc = 'Document symbols'})
+
+-- Diagnostics: C-. next, C-S-. prev, C-M-. list all
+map('n', xk[[<C-.>]], function() vim.diagnostic.jump({ count = 1 }) end, {desc = 'Next diagnostic'})
+map('n', xk[[<C-S-.>]], function() vim.diagnostic.jump({ count = -1 }) end, {desc = 'Prev diagnostic'})
+map('n', xk[[<C-M-.>]], '<Cmd>Trouble diagnostics toggle<CR>', {desc = 'Diagnostics list'})
+
+-- Git: C-S-q quick diff HEAD, C-M-q git status picker
+map('n', xk[[<C-S-q>]], '<Cmd>DiffviewOpen<CR>', {desc = 'Git diff'})
+map('n', xk[[<C-M-q>]], function() require('fzf-lua').git_status() end, {desc = 'Git status'})
+
+-- Buffer: C-S-w close, C-S-n next, C-S-i inlay hints toggle
+map('n', xk[[<C-S-w>]], '<Cmd>bd<CR>', {silent=true, desc = 'Close buffer'})
+map('n', xk[[<C-S-n>]], '<Cmd>bnext<CR>', {silent=true, desc = 'Next buffer'})
+map('n', xk[[<C-S-i>]], function()
+  if vim.lsp.inlay_hint then
+    local enabled = vim.lsp.inlay_hint.is_enabled({ bufnr = 0 })
+    vim.lsp.inlay_hint.enable(not enabled, { bufnr = 0 })
+  end
+end, {desc = 'Toggle inlay hints'})
+
+-- Misc: C-S-u undo tree, C-` zen mode, M-c copy file path
+map('n', xk[[<C-S-u>]], '<Cmd>TimeMachineToggle<CR>', {desc = 'Undo tree'})
+map('n', xk[[<C-`>]], '<Cmd>ZenMode<CR>', {desc = 'Zen mode'})
+map('n', xk[[<M-c>]], function()
+  local path = vim.fn.expand('%:.')
+  vim.fn.setreg('+', path)
+  vim.notify('Copied: ' .. path)
+end, {desc = 'Copy relative path'})
 -- <CR> in normal mode: smart link follower
 -- Cascade: URL → LSP definition → gf → NOP (never redundant j-move)
 -- Filetype-specific overrides (ftplugin/) take precedence via buffer-local mappings.
