@@ -36,12 +36,12 @@ return {
           local function bmap(mode, lhs, rhs, desc)
             vim.keymap.set(mode, lhs, rhs, { buffer = buf, silent = true, desc = desc })
           end
-          bmap('n', 'gr', vim.lsp.buf.references, 'LSP: references')
-          bmap('n', 'gi', vim.lsp.buf.implementation, 'LSP: implementation')
-          bmap({'n', 'v'}, '<leader>ca', vim.lsp.buf.code_action, 'LSP: code action')
+          -- Neovim 0.11 provides native LSP keymaps via LspAttach:
+          --   grr = references, gri = implementation, gra = code action,
+          --   grn = rename, gO = document symbols
+          -- Only add keymaps that have no native equivalent:
           bmap('n', '<leader>D', vim.lsp.buf.type_definition, 'LSP: type definition')
           bmap('n', '<leader>ws', vim.lsp.buf.workspace_symbol, 'LSP: workspace symbol')
-          bmap('n', '<leader>ds', vim.lsp.buf.document_symbol, 'LSP: document symbol')
           if vim.lsp.inlay_hint then
             bmap('n', '<leader>uh', function()
               local enabled = vim.lsp.inlay_hint.is_enabled({ bufnr = buf })
@@ -72,6 +72,21 @@ return {
     -- System-installed servers (pacman/AUR — not managed by Mason, must enable manually)
     configure('cmake', nil, true)
     configure('systemd_ls', nil, true)
+
+    -- lua_ls: configured here, lazydev.nvim injects workspace libraries at runtime
+    configure('lua_ls', {
+      settings = {
+        Lua = {
+          runtime = { version = 'LuaJIT' },
+          diagnostics = { disable = { 'incomplete-signature-doc', 'lowercase-global' } },
+          workspace = { checkThirdParty = false },
+          completion = { callSnippet = 'Replace', keywordSnippet = 'Replace' },
+          hint = { enable = true },
+          telemetry = { enable = false },
+          doc = { privateName = { '^_' } },
+        },
+      },
+    })
 
     -- Mason-managed servers: config only, mason-lspconfig handles enable via automatic_enable
     configure('clangd', {

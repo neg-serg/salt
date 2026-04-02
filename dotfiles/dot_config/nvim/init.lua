@@ -4,9 +4,8 @@
 -- " At this point do slow actions
 -- :profile pause
 -- :noautocmd qall!
-if vim.fn.has("nvim-0.9.2") ~= 1 then
-    local message=table.concat({"You are using an unsupported version of Neovim."}, "\n")
-    vim.notify(message, vim.log.levels.ERROR)
+if vim.fn.has("nvim-0.11") ~= 1 then
+    vim.notify("This config requires Neovim 0.11+", vim.log.levels.ERROR)
 end
 if vim.loader then vim.loader.enable() end
 vim.g.mapleader = ','

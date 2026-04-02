@@ -12,7 +12,6 @@ local disabled_built_ins={
     '2html_plugin',
     'bugreport',
     'compiler',
-    'did_load_filetypes',
     'getscript',
     'getscriptPlugin',
     'gzip',

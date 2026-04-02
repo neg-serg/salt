@@ -23,41 +23,4 @@ return {
       private = { "^_" },
     },
   },
-
-  -- lua-language-server setup to work with lazydev
-  {"neovim/nvim-lspconfig",
-    ft = "lua",
-    opts = {
-      servers = {
-        lua_ls = {
-          on_init = function(client)
-            -- Disable third-party checks prompts
-            client.config.settings.Lua.workspace.checkThirdParty = false
-          end,
-          settings = {
-            Lua = {
-              runtime = { version = "LuaJIT" },
-              diagnostics = {
-                globals = { "vim" },
-                disable = { "incomplete-signature-doc", "lowercase-global" },
-              },
-              workspace = {
-                library = vim.api.nvim_get_runtime_file("", true),
-                maxPreload = 2000,
-                preloadFileSize = 1000,
-                checkThirdParty = false,
-              },
-              completion = {
-                callSnippet = "Replace",
-                keywordSnippet = "Replace",
-              },
-              hint = { enable = true },
-              telemetry = { enable = false },
-              doc = { privateName = { "^_" } },
-            },
-          },
-        },
-      },
-    },
-  },
 }
