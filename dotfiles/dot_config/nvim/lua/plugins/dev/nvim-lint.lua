@@ -6,7 +6,6 @@ return {
     event = { "BufReadPost", "BufNewFile", "BufWritePost" },
     config=function()
         require('lint').linters_by_ft = {
-          markdown = {'vale'},
           sh = {'shellcheck'},
           bash = {'shellcheck'},
           zsh = {'shellcheck'},

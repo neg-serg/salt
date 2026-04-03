@@ -1,5 +1,6 @@
 pragma Singleton
 import QtQuick
+import Quickshell.Services.SystemTray
 import qs.Services as Services
 import "../Helpers/ConnectivityUi.js" as ConnUi
 
@@ -17,6 +18,9 @@ QtObject {
     readonly property string throughputText: ConnUi.formatThroughput(rxKiBps, txKiBps) || "-/-"
     property bool vpnConnected: false
     property string vpnInterface: ""
+
+    // Hiddify SNI tray item (null when Hiddify is not running)
+    property var hiddifyTrayItem: null
 
     function updateVpnState(list) {
         const arr = Array.isArray(list) ? list : []
@@ -40,6 +44,25 @@ QtObject {
         vpnInterface = match
     }
 
+    function _isHiddifyItem(item) {
+        if (!item) return false
+        const id = item.id ? String(item.id).toLowerCase() : ""
+        const title = item.title ? String(item.title).toLowerCase() : ""
+        return id.includes("hiddify") || title.includes("hiddify")
+    }
+
+    function updateHiddifyTrayItem() {
+        const items = SystemTray.items
+        const arr = Array.isArray(items) ? items : []
+        for (let it of arr) {
+            if (_isHiddifyItem(it)) {
+                hiddifyTrayItem = it
+                return
+            }
+        }
+        hiddifyTrayItem = null
+    }
+
     property Connections _interfaceWatcher: Connections {
         target: Services.Connectivity
         function onInterfacesChanged() {
@@ -47,7 +70,13 @@ QtObject {
         }
     }
 
+    property Connections _trayWatcher: Connections {
+        target: SystemTray
+        function onItemsChanged() { root.updateHiddifyTrayItem() }
+    }
+
     Component.onCompleted: {
-        updateVpnState(interfaces);
+        updateVpnState(interfaces)
+        updateHiddifyTrayItem()
     }
 }

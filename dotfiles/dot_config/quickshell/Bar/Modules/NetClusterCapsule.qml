@@ -1,4 +1,5 @@
 import QtQuick
+import Quickshell
 import qs.Components
 import qs.Settings
 import "../../Components" as LocalComponents
@@ -26,6 +27,8 @@ ConnectivityCapsule {
     readonly property bool vpnConnected: ConnectivityState.vpnConnected
     readonly property bool hasLink: ConnectivityState.hasLink
     readonly property bool hasInternet: ConnectivityState.hasInternet
+    readonly property var hiddifyTrayItem: ConnectivityState.hiddifyTrayItem
+    readonly property bool hiddifyHasTrayIcon: !!(hiddifyTrayItem && hiddifyTrayItem.icon)
     readonly property bool _hasLeading: true
     readonly property int _baseClusterSpacing: Math.max(0, Theme.networkCapsuleIconSpacing)
     readonly property int _baseIconMargin: Math.max(0, Theme.networkCapsuleIconHorizontalMargin)
@@ -46,26 +49,66 @@ ConnectivityCapsule {
     labelVisible: throughputText && throughputText.length > 0
     readonly property string _richThroughputText: _formatThroughputRich(throughputText)
 
+    // Hiddify tray menu popup
+    CustomTrayMenu { id: hiddifyMenu }
+
     leadingContent: Row {
         id: iconRow
         visible: root._hasLeading
         spacing: root.clusterSpacing
         height: root.desiredInnerHeight
 
-        LocalComponents.ConnectivityIconSlot {
-            id: vpnSlot
-            active: ConnectivityState.vpnConnected
-            square: root.iconSquare
-            box: root.desiredInnerHeight
-            mode: "material"
-            icon: "verified_user"
-            rounded: root.vpnIconRounded
-            color: root.vpnIconColor
-            screen: root.screen
-            labelRef: root.labelItem
-            alignTarget: root.labelItem
-            outerHorizontalMargin: root.iconHorizontalMargin
+        Item {
+            id: vpnSlotWrapper
+            width: vpnSlot.width
+            height: vpnSlot.height
             anchors.verticalCenter: parent.verticalCenter
+
+            LocalComponents.ConnectivityIconSlot {
+                id: vpnSlot
+                active: ConnectivityState.vpnConnected
+                square: root.iconSquare
+                box: root.desiredInnerHeight
+                mode: "material"
+                icon: "verified_user"
+                rounded: root.vpnIconRounded
+                // Dim the fallback icon when Hiddify icon is shown on top
+                color: root.hiddifyHasTrayIcon ? "transparent" : root.vpnIconColor
+                screen: root.screen
+                labelRef: root.labelItem
+                alignTarget: root.labelItem
+                outerHorizontalMargin: root.iconHorizontalMargin
+
+                // Hiddify real tray icon rendered on top when available
+                LocalComponents.TrayIcon {
+                    visible: root.hiddifyHasTrayIcon
+                    anchors.centerIn: parent
+                    size: Math.max(8, vpnSlot.box - 4)
+                    source: root.hiddifyTrayItem ? (root.hiddifyTrayItem.icon || "") : ""
+                    screen: root.screen
+                }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                visible: !!root.hiddifyTrayItem
+                cursorShape: Qt.PointingHandCursor
+                acceptedButtons: Qt.LeftButton | Qt.RightButton
+                onClicked: mouse => {
+                    if (!root.hiddifyTrayItem) return
+                    if (mouse.button === Qt.LeftButton) {
+                        if (!root.hiddifyTrayItem.onlyMenu)
+                            root.hiddifyTrayItem.activate()
+                    } else if (mouse.button === Qt.RightButton) {
+                        if (root.hiddifyTrayItem.hasMenu && root.hiddifyTrayItem.menu) {
+                            hiddifyMenu.menu = root.hiddifyTrayItem.menu
+                            hiddifyMenu.showAt(vpnSlotWrapper,
+                                (vpnSlotWrapper.width / 2) - (hiddifyMenu.width / 2),
+                                vpnSlotWrapper.height + 4)
+                        }
+                    }
+                }
+            }
         }
 
         LocalComponents.ConnectivityIconSlot {
