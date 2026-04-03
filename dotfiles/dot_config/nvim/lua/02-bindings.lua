@@ -63,7 +63,7 @@ map('i', '<C-e>', "<C-o>$", {noremap=true})
 map('n', 'et', function() require('75-smart-cd').smart_cd() end, {desc = 'Smart directory change'})
 
 -- ── Extended keys (terminal sends unicode codepoints for chords) ────
-local xk = require('keys').xk
+local xk = require('03-xkeys').xk
 
 -- Window resize: C-S-h/j/k/l
 map('n', xk[[<C-S-h>]], '3<C-w><', {silent=true, desc = 'Resize window left'})
