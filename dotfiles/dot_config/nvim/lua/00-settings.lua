@@ -97,7 +97,6 @@ o.pumheight=10                               -- Do not make pmenu too wide
 o.scrolljump=0                               -- Lines to scroll when cursor leaves screen
 o.scrollback=10000                             -- Terminal scrollback lines
 o.shiftwidth=4                               -- Spaces for autoindents
-o.termguicolors=true                         -- Enable termguicolors
 o.wildignorecase=true                        -- Ignore case for wildmenu
 o.wildignore='*.7z,*.aux,*.avi,*.bak,*.bib,*.class,*.cls,*.cmi,'..
     '*.cmo,*.doc,*.docx,*.dvi,*.flac,*.flv,*.gif,*.ico,'..
@@ -112,8 +111,6 @@ o.showcmd=false                              -- Do not show command output
 o.showtabline=0                              -- Do not show tab line
 o.smartcase=true                             -- Case sensitive when uc present
 o.softtabstop=4                              -- Let backspace delete indent
-o.splitbelow=true                            -- Puts new split windows to the bottom of the current
-o.splitright=true                            -- Puts new vsplit windows to the right of the current
 o.switchbuf='useopen,usetab'                 -- useopen may be useful for re-using QuickFix window.
 o.tabstop=4                                  -- An indentation every four columns
 o.timeoutlen=400                             -- 400 ms wait to sequence complete
