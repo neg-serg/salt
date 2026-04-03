@@ -14,6 +14,7 @@ do
   au({ 'BufEnter', 'BufNewFile' }, {
     group = pr,
     callback = function(args)
+      if vim.bo[args.buf].buftype ~= '' then return end
       local name = vim.api.nvim_buf_get_name(args.buf)
       if not name or name == '' then return end
       local filedir = vim.fn.fnamemodify(name, ':p:h')
@@ -26,21 +27,20 @@ do
 end
 
 local function restore_cursor()
-    au({"FileType"}, { buffer=0, once=true,
+    au('FileType', { buffer=0, once=true,
         callback = function()
-            local types = {"nofile", "fugitive", "gitcommit", "gitrebase", "commit", "rebase", }
-            if vim.fn.expand("%") == "" or vim.tbl_contains(types, vim.bo.filetype) then
-                return
-            end
-            local line = vim.fn.line
-            if line([['"]]) > 0 and line([['"]]) <= line("$") then
-                vim.api.nvim_command("normal! " .. [[g`"zv']])
+            if vim.fn.expand('%') == '' or vim.bo.buftype ~= '' then return end
+            local ft = vim.bo.filetype
+            if ft == 'gitcommit' or ft == 'gitrebase' or ft == 'commit' or ft == 'rebase' then return end
+            local mark = vim.fn.line([['"]])
+            if mark > 0 and mark <= vim.fn.line('$') then
+                vim.cmd.normal{[[g`"zv']], bang=true}
             end
         end,
     })
 end
 
-au({'FocusGained','FileChangedShell'}, {command='checktime', group=main})
+au({'FocusGained','FileChangedShell'}, {callback=function() vim.cmd.checktime() end, group=main})
 -- Close transient windows with q
 au({'Filetype'}, {
     pattern={'help', 'startuptime', 'qf', 'lspinfo'},
@@ -61,7 +61,9 @@ au('BufLeave', {pattern='term://*', callback=function() vim.cmd.stopinsert() end
 au({"BufReadPost"}, {callback=restore_cursor, group=main, desc="auto line return"})
 -- Clear search register at startup so hlsearch doesn't restore stale matches from shada.
 au('VimEnter', {callback=function() vim.fn.setreg('/', '') end, once=true, group=mode_change})
-au({'BufWritePost'}, {pattern='fonts.conf', command='!fc-cache', group=custom_updates})
+au('BufWritePost', {pattern='fonts.conf', callback=function()
+    vim.system({'fc-cache'}, { detach = true })
+end, group=custom_updates})
 au({'TextYankPost'}, {
     callback=function() vim.hl.on_yank{timeout=60, higroup="Search"} end,
     group=hi_yank})
