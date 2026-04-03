@@ -554,7 +554,7 @@ return function(ctx)
   -- Search debounce
   local SEARCH_DEBOUNCE_MS = 90
   local last_sc = { t = 0, out = '', pat = '', cur = 0, tot = 0 }
-  local function now_ms() return math.floor(vim.loop.hrtime() / 1e6) end
+  local function now_ms() return math.floor(vim.uv.hrtime() / 1e6) end
 
   -- ── Mode pill ─────────────────────────────────────────────────────────────
   local function mode_info()
@@ -578,15 +578,18 @@ return function(ctx)
 
   -- ── Macro timer state ─────────────────────────────────────────────────────
   local macro_start = nil
+  local macro_aug = api.nvim_create_augroup('HeirlineMacroTimer', { clear = true })
   api.nvim_create_autocmd('RecordingEnter', {
-    callback = function() macro_start = vim.loop.hrtime() end,
+    group = macro_aug,
+    callback = function() macro_start = vim.uv.hrtime() end,
   })
   api.nvim_create_autocmd('RecordingLeave', {
+    group = macro_aug,
     callback = function() macro_start = nil end,
   })
   local function macro_elapsed()
     if not macro_start then return '00:00' end
-    local s = (vim.loop.hrtime() - macro_start) / 1e9
+    local s = (vim.uv.hrtime() - macro_start) / 1e9
     local mm = math.floor(s / 60)
     local ss = math.floor(s % 60)
     return string.format('%02d:%02d', mm, ss)

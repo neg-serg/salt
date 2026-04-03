@@ -61,7 +61,6 @@ return {
   -- │ █▓▒░ andymass/vim-matchup                                                     │
   {'andymass/vim-matchup',
     config=function()
-      vim.g.matchup_matchparen_enabled=0
       vim.g.matchup_motion_enabled=0
     end,
     event={'BufRead','BufNewFile'}},

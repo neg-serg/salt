@@ -23,7 +23,6 @@ return {
 				json = prettier,
 				lua = { "stylua" },
 				python = { "ruff_fix", "ruff_format" }, -- Use Ruff for fixing imports and formatting (faster than isort+black)
-				nix = { "nixfmt" },
 				rust = { "rustfmt", lsp_format = "fallback" }, -- You can also customize some of the format options for the filetype
 				sh = { "shfmt" },
 				zsh = { "shfmt" },
