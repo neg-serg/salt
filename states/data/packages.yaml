@@ -51,6 +51,7 @@ dev:
   - python-textual  # modern TUI framework (termcell dep)
   - rust  # systems programming language
   - uv  # ultra-fast Python package manager (Rust)
+  - vale  # prose linter (neovim diagnostics dependency)
 
 network:
   - cloudflare-speed-cli  # CLI internet speed test via Cloudflare
