@@ -19,6 +19,8 @@
 models:
   # ── General-purpose ──────────────────────────────────────────────
   - qwen3.5:27b              # Alibaba; newest general, лучший <30B general-purpose ~17GB Q4
+  - gemma4:27b               # Google; Gemma 4 27B, multimodal, 128K ctx ~17GB Q4
+  - gemma4:9b                # Google; Gemma 4 9B, fast, fits VRAM entirely ~6GB Q4
   # gemma3:27b              → удалён: не поддерживает tool calling (Ollama API 400)
   - qwen3:32b                # Alibaba; dense 32B, top quality general ~20GB Q4
   - llama3.3:70b-instruct-q5_K_M  # Meta; 128K ctx, лучше 3.1 на instruction following ~50GB Q5_K_M (RAM offload)
