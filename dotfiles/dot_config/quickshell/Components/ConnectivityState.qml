@@ -26,8 +26,9 @@ QtObject {
             const ifname = (it && it.ifname) ? String(it.ifname) : ""
             if (!ifname.length) continue
             const nameLower = ifname.toLowerCase()
-            const looksAmnezia = nameLower.includes("awg") || nameLower.includes("amnez")
-            if (!looksAmnezia) continue
+            const looksVpn = nameLower.includes("awg") || nameLower.includes("amnez")
+                          || nameLower.startsWith("tun") || nameLower.startsWith("outline-tun")
+            if (!looksVpn) continue
             const addrs = Array.isArray(it?.addr_info) ? it.addr_info : []
             if (addrs.length > 0) {
                 found = true
