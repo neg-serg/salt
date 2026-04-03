@@ -96,7 +96,7 @@ end
 local function open_link(opts)
   opts = opts or {}
   local link = link_at_cursor()
-  if not link then return vim.cmd([[normal! gf]]) end
+  if not link then return pcall(vim.cmd, [[normal! gf]]) end
   if link.type == 'url' then
     return nav.open_url(link.url)
   elseif link.type == 'heading' then
