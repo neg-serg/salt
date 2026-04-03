@@ -41,6 +41,7 @@ hostlist:
     - youtube-nocookie.com
     - yt3.ggpht.com
     - lh3.googleusercontent.com
+    - registry.ollama.ai
 
 service:
   name: zapret2

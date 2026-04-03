@@ -92,6 +92,7 @@ zapret2_list_update_timer:
   'zapret2',
   'salt://units/zapret2.service.j2',
   enabled=True,
+  running=True,
   template='jinja',
   context={
     'config_path': cfg_path,
