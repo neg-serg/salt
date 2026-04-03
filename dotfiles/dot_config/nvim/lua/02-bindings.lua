@@ -65,16 +65,9 @@ map('n', 'et', function() require('75-smart-cd').smart_cd() end, {desc = 'Smart 
 -- ── Extended keys (terminal sends unicode codepoints for chords) ────
 local xk = require('03-xkeys').xk
 
--- Window resize: C-S-h/j/k/l
-map('n', xk[[<C-S-h>]], '3<C-w><', {silent=true, desc = 'Resize window left'})
-map('n', xk[[<C-S-l>]], '3<C-w>>', {silent=true, desc = 'Resize window right'})
-map('n', xk[[<C-S-j>]], '3<C-w>+', {silent=true, desc = 'Resize window down'})
-map('n', xk[[<C-S-k>]], '3<C-w>-', {silent=true, desc = 'Resize window up'})
-
 -- Splits: C-\ vertical, C-S-\ horizontal
 map('n', xk[[<C-\>]], '<Cmd>vsplit<CR>', {silent=true, desc = 'Vertical split'})
 map('n', xk[[<C-S-\>]], '<Cmd>split<CR>', {silent=true, desc = 'Horizontal split'})
-
 -- Search/pickers: C-S-f live grep, C-S-p commands, M-Space buffers
 map('n', xk[[<C-S-f>]], function() require('fzf-lua').live_grep() end, {desc = 'Live grep'})
 map('n', xk[[<C-S-p>]], function() require('fzf-lua').commands() end, {desc = 'Command palette'})
