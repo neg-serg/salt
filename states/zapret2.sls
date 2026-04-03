@@ -54,6 +54,7 @@ zapret2_config:
         udp_ports: {{ zapret2.config.udp_ports }}
         quic_kyber_blobs: {{ zapret2.config.quic_kyber_blobs }}
         tls_google_blob: {{ zapret2.config.tls_google_blob }}
+        vpn_domains: {{ zapret2.vpn_providers.domains | join(',') }}
     - require:
       - file: zapret2_config_dir
 
