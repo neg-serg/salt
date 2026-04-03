@@ -3,8 +3,6 @@ local gr = vim.api.nvim_create_augroup
 
 local main = gr("main", {clear=true})
 local utils = gr("utils", {clear=true})
-local mode_change = gr("mode_change", {clear=true})
-local custom_updates = gr("custom_updates", {clear=true})
 local hi_yank = gr("hi_yank", {clear=true})
 
 -- Auto set window-local cwd to project root for reliable gf/path resolution.
@@ -48,10 +46,6 @@ au({'Filetype'}, {
         vim.keymap.set('n', 'q', '<Cmd>close<CR>', {buffer=args.buf, silent=true})
     end,
     group=main})
-au({"BufNewFile","BufRead"}, {
-    group=main,
-    pattern="**/systemd/**/*.service",
-    callback=function() vim.bo.filetype="systemd" end})
 au('TermOpen', {pattern='term://*', callback=function()
     vim.cmd.startinsert()
     vim.wo.number = false
@@ -60,10 +54,10 @@ end, group=main})
 au('BufLeave', {pattern='term://*', callback=function() vim.cmd.stopinsert() end, group=main})
 au({"BufReadPost"}, {callback=restore_cursor, group=main, desc="auto line return"})
 -- Clear search register at startup so hlsearch doesn't restore stale matches from shada.
-au('VimEnter', {callback=function() vim.fn.setreg('/', '') end, once=true, group=mode_change})
+au('VimEnter', {callback=function() vim.fn.setreg('/', '') end, once=true, group=main})
 au('BufWritePost', {pattern='fonts.conf', callback=function()
     vim.system({'fc-cache'}, { detach = true })
-end, group=custom_updates})
+end, group=main})
 au({'TextYankPost'}, {
     callback=function() vim.hl.on_yank{timeout=60, higroup="Search"} end,
     group=hi_yank})
