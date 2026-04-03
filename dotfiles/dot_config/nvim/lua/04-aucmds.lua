@@ -2,7 +2,6 @@ local au = vim.api.nvim_create_autocmd
 local gr = vim.api.nvim_create_augroup
 
 local main = gr("main", {clear=true})
-local shada = gr("shada", {clear=true})
 local utils = gr("utils", {clear=true})
 local mode_change = gr("mode_change", {clear=true})
 local custom_updates = gr("custom_updates", {clear=true})
@@ -42,24 +41,26 @@ local function restore_cursor()
 end
 
 au({'FocusGained','FileChangedShell'}, {command='checktime', group=main})
--- Disables automatic commenting on newline:
+-- Close transient windows with q
 au({'Filetype'}, {
     pattern={'help', 'startuptime', 'qf', 'lspinfo'},
-    command='nnoremap <buffer><silent> q :close<CR>',
+    callback=function(args)
+        vim.keymap.set('n', 'q', '<Cmd>close<CR>', {buffer=args.buf, silent=true})
+    end,
     group=main})
 au({"BufNewFile","BufRead"}, {
     group=main,
     pattern="**/systemd/**/*.service",
     callback=function() vim.bo.filetype="systemd" end})
--- Update binds when sxhkdrc is updated.
-au({'BufEnter'}, {command='set noreadonly', group=main})
-au({'TermOpen'}, {pattern={'term://*'}, command='startinsert | setl nonumber | let &l:stl=" terminal %="', group=main})
-au({'BufLeave'}, {pattern={'term://*'}, command='stopinsert', group=main})
+au('TermOpen', {pattern='term://*', callback=function()
+    vim.cmd.startinsert()
+    vim.wo.number = false
+    vim.wo.stl = ' terminal %='
+end, group=main})
+au('BufLeave', {pattern='term://*', callback=function() vim.cmd.stopinsert() end, group=main})
 au({"BufReadPost"}, {callback=restore_cursor, group=main, desc="auto line return"})
--- Clear search context when entering insert mode, which implicitly stops the
--- highlighting of whatever was searched for with hlsearch on. It should also
--- not be persisted between sessions.
-au({'BufReadPre','FileReadPre'}, {command=[[let @/ = '']], group=mode_change})
+-- Clear search register at startup so hlsearch doesn't restore stale matches from shada.
+au('VimEnter', {callback=function() vim.fn.setreg('/', '') end, once=true, group=mode_change})
 au({'BufWritePost'}, {pattern='fonts.conf', command='!fc-cache', group=custom_updates})
 au({'TextYankPost'}, {
     callback=function() vim.hl.on_yank{timeout=60, higroup="Search"} end,
@@ -67,16 +68,18 @@ au({'TextYankPost'}, {
 au({'DirChanged'}, {pattern={'window','tab','tabpage','global'}, callback=function()
     vim.system({'zoxide', 'add', vim.fn.getcwd()}, { detach = true })
     end,group=main})
-au({'BufWritePost'}, {pattern={'*'},
-    callback=function()
-        if string.match(vim.fn.getline(1), "^#!.*/bin/") then
+au('BufWritePost', {pattern='*',
+    callback=function(args)
+        if vim.bo[args.buf].buftype ~= '' then return end
+        if vim.fn.getline(1):find('^#!.*/bin/') then
             vim.system({'chmod', 'a+x', vim.fn.expand('<afile>')}, { detach = true })
         end
     end, group=utils})
-au({'BufNewFile','BufWritePre'}, {pattern={'*'},
-    command=[[if @% !~# '\(://\)' | call mkdir(expand('<afile>:p:h'), 'p') | endif]],
-    group=utils
-})
+au({'BufNewFile','BufWritePre'}, {pattern='*',
+    callback=function(args)
+        local dir = vim.fn.fnamemodify(args.file, ':p:h')
+        if not dir:find('://') then vim.fn.mkdir(dir, 'p') end
+    end, group=utils})
 
 vim.g.markdown_fenced_languages={'shell=bash'}
 vim.filetype.add({
