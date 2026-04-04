@@ -141,7 +141,7 @@ ConnectivityCapsule {
             text: root._rxRichText
             textFormat: Text.RichText
             font.family: Theme.fontFamily
-            font.weight: Font.ExtraBold
+            font.weight: Font.Black
             font.pixelSize: root._stackedRowFontPx
             font.letterSpacing: 0.5
             color: Theme.textPrimary
@@ -150,7 +150,7 @@ ConnectivityCapsule {
             text: root._txRichText
             textFormat: Text.RichText
             font.family: Theme.fontFamily
-            font.weight: Font.ExtraBold
+            font.weight: Font.Black
             font.pixelSize: root._stackedRowFontPx
             font.letterSpacing: 0.5
             color: Theme.textPrimary
