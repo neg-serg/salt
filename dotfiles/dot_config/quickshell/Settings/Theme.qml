@@ -995,6 +995,7 @@ Singleton {
     property int networkCapsuleIconHorizontalMargin: Math.max(0, val('network.capsule.iconHorizontalMargin', keyboardCapsuleIconHorizontalMargin))
     property int networkCapsuleGapTightenPx: Math.max(0, val('network.capsule.gapTightenPx', 0))
     property string networkCapsuleIconAlignMode: val('network.capsule.iconAlignMode', "optical")
+    property bool networkCapsuleStacked: val('network.capsule.stacked', false)
     // VPN icon/layout tuning and accent mix
     property real vpnAccentSaturateBoost: val('vpn.accent.saturateBoost', 0.12)
     property real vpnAccentLightenTowardWhite: val('vpn.accent.lightenTowardWhite', 0.20)

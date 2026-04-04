@@ -45,9 +45,14 @@ ConnectivityCapsule {
     iconVisible: false
     glyphLeadingActive: _hasLeading
     labelIsRichText: true
-    labelText: _richThroughputText
-    labelVisible: throughputText && throughputText.length > 0
+    labelText: Theme.networkCapsuleStacked ? "" : _richThroughputText
+    labelVisible: !Theme.networkCapsuleStacked && throughputText && throughputText.length > 0
     readonly property string _richThroughputText: _formatThroughputRich(throughputText)
+
+    // Stacked (two-row) layout properties
+    readonly property string _rxRichText: _dimLeadingZeros(ConnUi.formatRxText(throughputText))
+    readonly property string _txRichText: _dimLeadingZeros(ConnUi.formatTxText(throughputText))
+    readonly property int _stackedRowFontPx: Math.max(8, Math.round(labelPixelSize * 0.7))
 
     // Hiddify tray menu popup
     CustomTrayMenu { id: hiddifyMenu }
@@ -123,6 +128,32 @@ ConnectivityCapsule {
             alignTarget: root.labelItem
             outerHorizontalMargin: root.iconHorizontalMargin
             anchors.verticalCenter: parent.verticalCenter
+        }
+    }
+
+    // Stacked two-row throughput display (RX top, TX bottom)
+    Column {
+        visible: Theme.networkCapsuleStacked && root.throughputText && root.throughputText.length > 0
+        spacing: -2
+        y: 2
+
+        Text {
+            text: root._rxRichText
+            textFormat: Text.RichText
+            font.family: Theme.fontFamily
+            font.weight: Font.ExtraBold
+            font.pixelSize: root._stackedRowFontPx
+            font.letterSpacing: 0.5
+            color: Theme.textPrimary
+        }
+        Text {
+            text: root._txRichText
+            textFormat: Text.RichText
+            font.family: Theme.fontFamily
+            font.weight: Font.ExtraBold
+            font.pixelSize: root._stackedRowFontPx
+            font.letterSpacing: 0.5
+            color: Theme.textPrimary
         }
     }
 

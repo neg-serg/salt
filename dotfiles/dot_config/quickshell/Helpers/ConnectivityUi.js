@@ -41,3 +41,15 @@ function errorColor(settings, theme) {
     return err || theme.error;
 }
 
+function formatRxText(throughputStr) {
+    if (!throughputStr || throughputStr === "-/-") return "-";
+    var parts = throughputStr.split("/");
+    return parts[0] !== undefined ? parts[0] : "-";
+}
+
+function formatTxText(throughputStr) {
+    if (!throughputStr || throughputStr === "-/-") return "-";
+    var parts = throughputStr.split("/");
+    return parts[1] !== undefined ? parts[1] : "-";
+}
+
