@@ -20,9 +20,6 @@ dotfiles:
         "${HOME}/.config/chezmoi/chezmoi.toml" 2>/dev/null || true
     chezmoi apply --force --source dotfiles
 
-apply-opencode:
-    scripts/salt-apply.sh opencode
-
 apply-user-services:
     scripts/salt-apply.sh user_services
 
@@ -161,23 +158,6 @@ logs-prune DAYS="14" DRY_RUN="":
     else \
         python3 scripts/cleanup-logs.py --days {{DAYS}}; \
     fi
-
-# Revert to last pre-apply btrfs snapshot
-rollback:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    pre=$(sudo snapper list --columns number,type,description | grep 'salt-pre:' | tail -1 | awk '{print $1}')
-    if [ -z "$pre" ]; then
-        echo "No salt pre-apply snapshot found" >&2
-        exit 1
-    fi
-    post=$(sudo snapper list --columns number,type,description | grep 'salt-post:' | tail -1 | awk '{print $1}')
-    if [ -z "$post" ]; then
-        echo "No matching post-apply snapshot found" >&2
-        exit 1
-    fi
-    echo "Rolling back: snapshot #${pre}..#${post}"
-    sudo snapper undochange "${pre}..${post}"
 
 # Generate Salt state dependency graph
 dep-graph *ARGS:
