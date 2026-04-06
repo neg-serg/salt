@@ -56,18 +56,18 @@ defaults:
     outline: true
     steam: true
     mpd: true
-    ollama: true
-    llama_embed: true
+    ollama: false
+    llama_embed: false
     floorp: false
     espanso: false
     kanata: true
     flatpak: true
     sudo_ssh_agent: false
-    opencode: true
-    openclaw: true
-    nanoclaw: true
-    telethon_bridge: true
-    opencode_telegram: true
+    opencode: falst
+    openclaw: false
+    nanoclaw: false
+    telethon_bridge: false
+    opencode_telegram: false
     video_ai: true
     xen_vr: false
 
@@ -79,8 +79,6 @@ hosts:
     display: 3840x2160@240
     primary_output: DP-2
     greetd_scale: 2
-    greetd_disable_outputs:
-      - DP-1
     floorp_profile: c85pjaxk.default-default
     zen_profile: "qnkh60k3.Default (release)"
     migrate_floorp_profile_to_zen: true
@@ -90,21 +88,21 @@ hosts:
     features:
       fancontrol: true
       monitoring:
-        loki: true
-        promtail: true
-        grafana: true
+        loki: false
+        promtail: false
+        grafana: false
       services:
         transmission: true
       user_services:
         mail: false
         vdirsyncer: false
       network:
-        tailscale: true
-        zapret2: true
-      floorp: true
+        tailscale: false
+        zapret2: false
+      floorp: false
       music_analysis: true
       tidal: true
-      xen_vr: true
+      xen_vr: false
 
 aliases:
   cachyos: telfir
