@@ -8,7 +8,6 @@
 # Requires multilib repo for lib32 dependencies.
 # Inline cmd.run (not pacman_install macro): --ask 4 resolves CachyOS
 # lib32-mesa-git vs multilib lib32-mesa conflict; macro doesn't support extra args.
-{% set modern_skin_version = ver.get('modern_steam', '') %}
 
 {{ config_file_edit('multilib_repo',
     cmd="printf '\\n[multilib]\\nInclude = /etc/pacman.d/mirrorlist\\n' >> /etc/pacman.conf && pacman -Sy",
@@ -38,34 +37,7 @@ steam_pkg:
       - cmd: vulkan_radeon_pkg
 
 {{ ensure_dir('steam_library_dir', host.mnt_zero ~ '/steam/steamapps', require=['mount: mount_zero']) }}
-
-{{ ensure_dir('steam_skins_dir', home ~ '/.local/share/Steam/skins') }}
-
 {{ pacman_install('p7zip', '7zip') }}
-
-{{ curl_extract_7z('modern_steam_skin', 'https://github.com/SleepDaemon/Modern-Steam/releases/download/v' ~ modern_skin_version ~ '/SteamDarkMode.7z', home ~ '/.local/share/Steam/skins', creates=home ~ '/.local/share/Steam/skins/steamui', version=modern_skin_version if modern_skin_version else None, user=user, require=['cmd: install_p7zip', 'file: steam_skins_dir']) }}
-
-# Activate Modern-Steam CSS skin: symlink *.custom.css into Steam's
-# steamui/ and clientui/ directories where the new UI auto-loads them.
-{% set skins = home ~ '/.local/share/Steam/skins' %}
-{% set steam = home ~ '/.local/share/Steam' %}
-{% for css_pair in [
-  (skins ~ '/steamui/config.css', steam ~ '/steamui/config.css'),
-  (skins ~ '/steamui/libraryroot.custom.css', steam ~ '/steamui/libraryroot.custom.css'),
-  (skins ~ '/clientui/friends.custom.css', steam ~ '/clientui/friends.custom.css'),
-  (skins ~ '/clientui/ofriends.custom.css', steam ~ '/clientui/ofriends.custom.css'),
-] %}
-steam_skin_link_{{ loop.index }}:
-  file.symlink:
-    - name: {{ css_pair[1] }}
-    - target: {{ css_pair[0] }}
-    - user: {{ user }}
-    - group: {{ user }}
-    - force: True
-    - onlyif: test -f {{ css_pair[0] }}
-    - require:
-      - cmd: install_modern_steam_skin
-{% endfor %}
 
 gamemode_config:
   file.managed:
