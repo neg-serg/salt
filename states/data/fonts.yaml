@@ -19,8 +19,6 @@
 # ─────────────────────────────────────────────────────────────────────
 
 pacman:
-  jetbrains-mono-nerd: ttf-jetbrains-mono-nerd
-  icomoon-feather: ttf-icomoon-feather
   font-awesome: otf-font-awesome
   noto-fonts: noto-fonts
   noto-fonts-emoji: noto-fonts-emoji
