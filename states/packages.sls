@@ -25,25 +25,3 @@
 {% for pkg in pkgs.get('aur', []) %}
 {{ paru_install('pkg_aur_' ~ pkg, pkg) }}
 {% endfor %}
-
-# ===================================================================
-# Auto-rebuild AUR packages broken by soname bumps (e.g. protobuf)
-# ===================================================================
-
-rebuild_broken_aur_packages:
-  cmd.run:
-    - name: |
-        # Exclude packages that bundle their own private libs (false positives):
-        #   proton-ge-custom-bin — bundles libvpx.so.6/libwebp.so.6 in its own prefix;
-        #     loaded via LD_LIBRARY_PATH at runtime, not from system lib path.
-        broken=$(checkrebuild 2>/dev/null | awk '{print $2}' | grep -v '^proton-ge-custom-bin$' | sort -u)
-        if [ -z "$broken" ]; then
-            echo "No broken packages"
-        else
-            echo "Rebuilding broken AUR packages: $broken"
-            sudo -u {{ user }} paru -S --rebuild --noconfirm $broken
-        fi
-        touch /var/cache/salt/checkrebuild.stamp
-    - onlyif: "[ /var/lib/pacman/local -nt /var/cache/salt/checkrebuild.stamp ]"
-    - require:
-      - cmd: install_pkg_system
