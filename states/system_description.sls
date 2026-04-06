@@ -70,7 +70,7 @@ include:
   - audio
   - desktop
   - fonts
-  - greetd
+# - greetd
 
   # Shared systemd-managed service identities and paths
   - systemd_resources
@@ -92,7 +92,7 @@ include:
   - monitoring_alerts
   - user_services
   - snapshots
-  - code_rag
+# - code_rag
 
   # ── Feature-gated (skipped entirely when disabled) ──────────────────
 {% if host.features.amnezia %}
