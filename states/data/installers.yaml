@@ -67,8 +67,8 @@ pip_pkg:
   httpstat: {}
   scdl: {}
   # push-to-talk voice typing for terminal via local Whisper (lmacan1/talktype)
-  talktype:
-    pkg: "talktype[local] @ git+https://github.com/lmacan1/talktype.git"
+# talktype:
+#   pkg: "talktype[local] @ git+https://github.com/lmacan1/talktype.git"
   texicode:
     bin: txc
 
