@@ -30,7 +30,7 @@ defaults:
       loki: false
       promtail: false
       grafana: false
-      alerts: true
+      alerts: false
     fancontrol: false
     dns:
       unbound: false
@@ -56,8 +56,8 @@ defaults:
     outline: true
     steam: true
     mpd: true
-    ollama: false
-    llama_embed: false
+    ollama: true
+    llama_embed: true
     floorp: false
     espanso: false
     kanata: true
