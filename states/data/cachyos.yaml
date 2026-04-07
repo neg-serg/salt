@@ -29,11 +29,6 @@
 required_files:
   sudo_nopasswd: "/etc/sudoers.d/99-${USER}-nopasswd"
   vconsole: /etc/vconsole.conf
-  limine_conf: /boot/limine.conf
-  limine_efi: /boot/EFI/BOOT/BOOTX64.EFI
-  snapper_config: /etc/snapper/configs/root
-  mirrorlist_v4: /etc/pacman.d/cachyos-v4-mirrorlist
-  mirrorlist: /etc/pacman.d/cachyos-mirrorlist
   nm_iwd_backend: /etc/NetworkManager/conf.d/wifi-iwd.conf
 
 verify_checks:
@@ -62,8 +57,6 @@ enabled_services:
   networkmanager: NetworkManager
   iwd: iwd
   sshd: sshd
-  snapper_timeline: snapper-timeline.timer
-  snapper_cleanup: snapper-cleanup.timer
 
 package_checks:
   pkg:
@@ -85,7 +78,7 @@ package_checks:
     - ghostty                         # GPU-accelerated terminal (Zig)
     - hyprland                        # Wayland tiling compositor
     - kitty                           # GPU-accelerated terminal
-    - quickshell-git                  # Qt6 desktop shell framework (AUR, built from source)
+    - quickshell                      # Qt6 desktop shell framework (AUR, built from source)
     - rofi                            # application launcher
     - swappy                          # screenshot annotation tool
     - swayosd                         # on-screen display for Wayland
@@ -151,4 +144,3 @@ package_checks:
     - neg-pretty-printer              # custom pretty-printer
     - raise                           # window raise utility
     - richcolors                      # terminal color utility
-    - taoup                           # Unix philosophy quotes
