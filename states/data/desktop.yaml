@@ -34,6 +34,7 @@ running_services:
   - dbus-broker
   - openrgb
   - bluetooth
+  - sshd
   - systemd-timesyncd
 
 dconf_settings:
