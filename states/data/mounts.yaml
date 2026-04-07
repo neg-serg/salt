@@ -1,4 +1,4 @@
-# Disk mounts and btrfs compression targets
+# Disk mounts
 # Used by mounts.sls
 #
 # ── Schema ────────────────────────────────────────────────────────────
@@ -9,9 +9,6 @@
 #     path:   (required) mount point (e.g. /mnt/one)
 #     fstype: (required) filesystem type (xfs, btrfs, etc.)
 #     — mounted with options: noatime, persist: True, failhard: True
-#
-# btrfs_compress:
-#   - <path>                       — filesystem path to set zstd:-1 compression on
 #
 # ─────────────────────────────────────────────────────────────────────
 
@@ -24,16 +21,3 @@ disks:
     device: /dev/mapper/xenon-one
     path: /mnt/one
     fstype: xfs
-
-btrfs_compress:
-  - /home
-  - /var
-
-# btrfs nocow: disable copy-on-write for high-churn directories.
-# Reduces fragmentation and write amplification for caches, databases, containers.
-# chattr +C only affects new files in existing dirs; existing files keep CoW.
-btrfs_nocow:
-  - /var/lib/bitcoind
-  - /var/lib/containers
-  - /var/lib/jellyfin
-  - /var/log

@@ -61,7 +61,6 @@ package_checks:
   pkg:
     # -- base system --
     - base                            # minimal Arch Linux installation
-    - btrfs-progs                     # btrfs filesystem utilities
     - limine                          # multiprotocol bootloader
     - linux-cachyos-lts               # CachyOS LTS kernel
     - linux-firmware                  # firmware files for Linux

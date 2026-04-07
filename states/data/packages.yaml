@@ -89,7 +89,6 @@ gaming:
 system:
   - bottom  # graphical process/system monitor (btm)
   - btop  # resource monitor (C++ bpytop port)
-  - btrfs-progs  # btrfs filesystem utilities
   - htop  # interactive process viewer
   - lsof  # list open files
   - lvm2  # logical volume manager

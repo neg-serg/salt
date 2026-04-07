@@ -935,8 +935,6 @@ not-applicable-tools:
     reason: "Python runtime; C extensions for crypto already optimized"
   - name: bpftrace  # eBPF tracing — C++
     reason: "Kernel tracing tool; computation is in eBPF VM"
-  - name: btrfs-progs  # btrfs utilities — C
-    reason: "Filesystem operations; I/O-bound"
   - name: bucklespring  # keyboard sounds — C
     reason: "Audio playback; trivial computation"
   - name: carapace-bin  # shell completion — Go

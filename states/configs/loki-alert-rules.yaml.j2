@@ -43,15 +43,3 @@ groups:
         annotations:
           summary: "OOM killer activated"
           description: "A process was killed by the OOM killer"
-
-      # btrfs errors: immediate alert
-      - alert: BtrfsError
-        expr: |
-          count_over_time({job="systemd-journal", transport="kernel"} |~ "BTRFS (error|warning)" [1m]) > 0
-        for: 0m
-        labels:
-          severity: critical
-          source: loki
-        annotations:
-          summary: "btrfs filesystem error detected"
-          description: "Kernel reported btrfs error — check filesystem immediately"

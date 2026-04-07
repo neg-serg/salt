@@ -7,7 +7,7 @@
 {{ user }} ALL=(ALL) NOPASSWD: /usr/bin/loginctl, /usr/bin/networkctl, /usr/bin/machinectl, /usr/bin/bootctl
 
 # Storage and filesystems
-{{ user }} ALL=(ALL) NOPASSWD: /usr/bin/mount, /usr/bin/umount, /usr/bin/btrfs
+{{ user }} ALL=(ALL) NOPASSWD: /usr/bin/mount, /usr/bin/umount
 
 # Network and VPN
 {{ user }} ALL=(ALL) NOPASSWD: /usr/bin/ip, /usr/bin/resolvectl, /usr/bin/firewall-cmd

@@ -120,5 +120,3 @@ resources:
     warning_load_pct: 90
     sustained_minutes: 5
 
-  btrfs:
-    warning_pct: 85

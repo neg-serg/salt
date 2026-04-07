@@ -67,7 +67,6 @@ FS_OPTIONAL+=({{ fs.optional | default(false) | lower }})
 MEM_WARN_PCT={{ res.memory.warning_available_pct }}
 CPU_WARN_PCT={{ res.cpu.warning_load_pct }}
 CPU_SUSTAINED_MIN={{ res.cpu.sustained_minutes }}
-BTRFS_WARN_PCT={{ res.btrfs.warning_pct }}
 {% raw %}
 # ── State tracking ──────────────────────────────────────────────────
 typeset -A PREV_FAILED           # service → 1 if was failed last poll
@@ -452,7 +451,6 @@ poll_resources() {
     local fs_path warn crit optional usage_pct fs_key avail
     local mem_total mem_avail avail_pct top_procs
     local load_avg nproc_count load_x100 threshold_x100
-    local btrfs_output data_used data_total meta_used meta_total data_pct meta_pct
 
     # ── Filesystem usage ─────────────────────────────
     for i in {1..${#FS_PATHS[@]}}; do
@@ -527,38 +525,6 @@ poll_resources() {
         fi
     fi
 
-    # ── btrfs usage ──────────────────────────────────
-    if command -v btrfs &>/dev/null; then
-        btrfs_output=$(btrfs filesystem usage -b / 2>/dev/null) || return
-
-        data_used=$(echo "$btrfs_output" | awk '/Data,/ {getline; if (/Used:/) print $2}')
-        data_total=$(echo "$btrfs_output" | awk '/Data,/ {split($2,a,":"); gsub(/Size:/,"",a[1]); print $2}')
-        meta_used=$(echo "$btrfs_output" | awk '/Metadata,/ {getline; if (/Used:/) print $2}')
-        meta_total=$(echo "$btrfs_output" | awk '/Metadata,/ {split($2,a,":"); gsub(/Size:/,"",a[1]); print $2}')
-
-        # Parse btrfs data ratio
-        if [[ -n "$data_used" && -n "$data_total" && "$data_total" -gt 0 ]] 2>/dev/null; then
-            data_pct=$(( data_used * 100 / data_total ))
-            if (( data_pct >= BTRFS_WARN_PCT )); then
-                dispatch_alert --scope resource --service btrfs --type data \
-                    --severity warning \
-                    --message "btrfs data usage at ${data_pct}% ($(( data_used / 1073741824 ))GB / $(( data_total / 1073741824 ))GB)"
-            else
-                dispatch_recover --scope resource --service btrfs --type data
-            fi
-        fi
-
-        if [[ -n "$meta_used" && -n "$meta_total" && "$meta_total" -gt 0 ]] 2>/dev/null; then
-            meta_pct=$(( meta_used * 100 / meta_total ))
-            if (( meta_pct >= BTRFS_WARN_PCT )); then
-                dispatch_alert --scope resource --service btrfs --type metadata \
-                    --severity critical \
-                    --message "btrfs METADATA usage at ${meta_pct}% — this can cause write failures even with free data space"
-            else
-                dispatch_recover --scope resource --service btrfs --type metadata
-            fi
-        fi
-    fi
 }
 
 # ── Drift check (daily) ─────────────────────────────────────────────
