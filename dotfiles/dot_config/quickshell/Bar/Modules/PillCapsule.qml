@@ -10,6 +10,7 @@ OverlayToggleCapsule {
 
     readonly property real capsuleScale: capsule.capsuleScale
     readonly property int iconBox: capsule.capsuleInner
+    readonly property int fontPxMedium: Math.round(Theme.fontSizeMedium * capsuleScale)
 
     capsule.backgroundKey: "pills"
     capsule.centerContent: true
@@ -89,14 +90,14 @@ OverlayToggleCapsule {
 
                     MaterialIcon {
                         icon: "local_fire_department"
-                        size: Math.round(Theme.fontSizeMedium * capsuleScale)
+                        size: root.fontPxMedium
                         color: Services.PillTracker.streak > 0 ? "#FF6D00" : Theme.textSecondary
                         anchors.verticalCenter: parent.verticalCenter
                     }
                     Text {
                         text: Services.PillTracker.streak + (Services.PillTracker.streak === 1 ? " day" : " days")
                         font.family: Theme.fontFamily
-                        font.pixelSize: Math.round(Theme.fontSizeMedium * capsuleScale)
+                        font.pixelSize: root.fontPxMedium
                         font.bold: true
                         color: Theme.textPrimary
                         anchors.verticalCenter: parent.verticalCenter
@@ -110,7 +111,7 @@ OverlayToggleCapsule {
 
                     MaterialIcon {
                         icon: "chevron_left"
-                        size: Math.round(Theme.fontSizeMedium * capsuleScale)
+                        size: root.fontPxMedium
                         color: Theme.textSecondary
                         anchors.verticalCenter: parent.verticalCenter
                         MouseArea {
@@ -141,7 +142,7 @@ OverlayToggleCapsule {
                     }
                     MaterialIcon {
                         icon: "chevron_right"
-                        size: Math.round(Theme.fontSizeMedium * capsuleScale)
+                        size: root.fontPxMedium
                         color: Theme.textSecondary
                         anchors.verticalCenter: parent.verticalCenter
                         MouseArea {

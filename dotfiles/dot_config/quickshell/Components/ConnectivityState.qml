@@ -72,7 +72,7 @@ QtObject {
 
     property Connections _trayWatcher: Connections {
         target: SystemTray.items
-        function onCountChanged() { root.updateHiddifyTrayItem() }
+        function onValuesChanged() { root.updateHiddifyTrayItem() }
     }
 
     Component.onCompleted: {
