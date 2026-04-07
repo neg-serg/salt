@@ -13,8 +13,8 @@
 {{ pacman_install('chromium', 'chromium') }}
 # google-chrome: Google Chrome stable (AUR), for testing and Google-specific integrations
 {{ paru_install('google_chrome', 'google-chrome') }}
-# zen-browser: performance-focused Firefox fork with compact UI
-{{ pacman_install('zen_browser', 'zen-browser-bin') }}
+# zen-browser: performance-focused Firefox fork with compact UI (AUR)
+{{ paru_install('zen_browser', 'zen-browser-bin') }}
 # xdg-desktop-portal-termfilechooser: conditionally managed in desktop.portal
 # wlr-which-key: on-screen keybinding cheatsheet for Hyprland (leader key menu)
 {{ paru_install('wlr-which-key', 'wlr-which-key') }}
