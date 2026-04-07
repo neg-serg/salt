@@ -19,9 +19,6 @@ vulkan_radeon_pkg:
   cmd.run:
     - name: pacman -S --noconfirm --needed --ask 4 vulkan-radeon lib32-vulkan-radeon
     - unless: grep -qxF 'vulkan-radeon' {{ pkg_list }}
-    - retry:
-        attempts: {{ retry_attempts }}
-        interval: {{ retry_interval }}
     - require:
       - cmd: pacman_db_warmup
       - cmd: multilib_repo
@@ -30,9 +27,6 @@ steam_pkg:
   cmd.run:
     - name: pacman -S --noconfirm --needed --ask 4 steam gamescope mangohud goverlay gamemode protontricks
     - unless: grep -qxF 'steam' {{ pkg_list }}
-    - retry:
-        attempts: {{ retry_attempts }}
-        interval: {{ retry_interval }}
     - require:
       - cmd: vulkan_radeon_pkg
 

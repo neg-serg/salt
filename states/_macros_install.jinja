@@ -20,9 +20,6 @@ install_{{ name | replace('-', '_') }}:
     - runas: {{ user }}
     - creates: {{ _bin_path }}
     - parallel: True
-    - retry:
-        attempts: {{ _retry_attempts }}
-        interval: {{ _retry_interval }}
 {%- endmacro -%}
 
 {# Fallback: download binary directly to ~/.local/bin/ and chmod +x.
@@ -81,9 +78,6 @@ install_{{ name | replace('-', '_') }}:
     - runas: {{ user }}
     - creates: {{ home }}/.local/bin/{{ bin or name }}
     - parallel: True
-    - retry:
-        attempts: {{ _retry_attempts }}
-        interval: {{ _retry_interval }}
 {%- endmacro -%}
 
 {# Fallback: cargo install (crates.io or git).
@@ -116,9 +110,6 @@ install_{{ name | replace('-', '_') }}:
 {%- endfor %}
 {%- endif %}
     - parallel: True
-    - retry:
-        attempts: {{ _retry_attempts }}
-        interval: {{ _retry_interval }}
 {%- endmacro -%}
 
 {# Download and extract tar.gz/tar.xz archive to ~/.local/bin/.
@@ -487,9 +478,6 @@ install_{{ name | replace('-', '_') }}:
     - name: cd {{ dir }} && npm install --no-fund --no-audit 2>&1
     - runas: {{ user }}
     - creates: {{ _install_creates }}
-    - retry:
-        attempts: {{ _retry_attempts }}
-        interval: {{ _retry_interval }}
 {%- if require %}
     - require:
 {%- for req in require %}

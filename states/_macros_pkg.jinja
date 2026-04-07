@@ -16,9 +16,6 @@ install_{{ name | replace('-', '_') }}:
 {%- else %}
     - unless: grep -qxF '{{ check or pkgs.split()[0] }}' {{ host.pkg_list }}
 {%- endif %}
-    - retry:
-        attempts: {{ _retry_attempts }}
-        interval: {{ _retry_interval }}
     - require:
       - cmd: pacman_db_warmup
 {%- if requires %}
@@ -74,9 +71,6 @@ install_{{ name | replace('-', '_') }}:
     - name: sudo -u {{ _user }} paru -S --noconfirm --needed {{ pkg }}
     - unless: grep -qxF '{{ check or pkg }}' {{ host.pkg_list }}
 {%- endif %}
-    - retry:
-        attempts: {{ _retry_attempts }}
-        interval: {{ _retry_interval }}
     - require:
       - cmd: pacman_db_warmup
 {%- if requires %}
@@ -141,9 +135,6 @@ build_{{ safe }}:
     - shell: /bin/bash
     - timeout: {{ timeout }}
     - unless: {{ _pkg_guard }}
-    - retry:
-        attempts: {{ _retry_attempts }}
-        interval: {{ _retry_interval }}
     - require:
       - file: {{ safe }}_pkgbuild
 {%- for src in (extra_sources or []) %}
@@ -173,9 +164,6 @@ install_{{ name | replace('-', '_') }}:
 {%- endif %}
     - runas: {{ user }}
     - parallel: True
-    - retry:
-        attempts: {{ _retry_attempts }}
-        interval: {{ _retry_interval }}
 {%- endmacro -%}
 
 {# Install a Flatpak app from Flathub (user-level).
