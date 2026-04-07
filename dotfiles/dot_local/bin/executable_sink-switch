@@ -2,7 +2,15 @@
 # Audio sink switcher for PipeWire/WirePlumber
 # Based on hyprland-sink-switcher, adapted for rofi + notify-send
 
-get_sinks() { pactl list sinks short | awk '{print $2}'; }
+ALLOWED_SINKS=(rme-genelec rme-headphones)
+
+get_sinks() {
+    local all sink
+    all=(${(f)"$(pactl list sinks short | awk '{print $2}')"})
+    for sink in "${all[@]}"; do
+        (( ${ALLOWED_SINKS[(Ie)$sink]} )) && print -- "$sink"
+    done
+}
 
 get_default_sink() { pactl info | awk '/Default Sink:/{print $3}'; }
 
