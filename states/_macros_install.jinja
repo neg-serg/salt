@@ -66,13 +66,18 @@ install_{{ name | replace('-', '_') }}:
           {{ pip_pkg('neovim_python_deps', pkg='neovim-remote', bin='nvr') }}
           {{ pip_pkg('dr14_tmeter', pkg='git+https://...', env='GIT_CONFIG_GLOBAL=/dev/null') }}
 #}
-{%- macro pip_pkg(name, pkg=None, bin=None, env=None, user=_user, home=_home) -%}
+{%- macro pip_pkg(name, pkg=None, bin=None, env=None, preinstall=None, user=_user, home=_home) -%}
 {%- set _env = env ~ ' ' if env else '' -%}
+{%- set _preinstall = ' --preinstall ' ~ preinstall if preinstall else '' -%}
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: |
-        {{ _env }}pipx install {{ pkg or name }} 2>/dev/null || true
+        {{ _env }}pipx install{{ _preinstall }} {{ pkg or name }} 2>/dev/null || true
+{%- if preinstall %}
+        test -x {{ home }}/.local/bin/{{ bin or name }} || { pipx uninstall {{ name }} 2>/dev/null; {{ _env }}pipx install{{ _preinstall }} {{ pkg or name }}; }
+{%- else %}
         test -x {{ home }}/.local/bin/{{ bin or name }} || {{ _env }}pipx reinstall {{ pkg or name }}
+{%- endif %}
     - runas: {{ user }}
     - creates: {{ home }}/.local/bin/{{ bin or name }}
     - parallel: True
