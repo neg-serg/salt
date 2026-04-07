@@ -63,7 +63,7 @@ defaults:
     kanata: true
     flatpak: true
     sudo_ssh_agent: false
-    opencode: falst
+    opencode: false
     openclaw: false
     nanoclaw: false
     telethon_bridge: false
