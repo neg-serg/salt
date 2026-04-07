@@ -18,6 +18,8 @@ OverlayToggleCapsule {
     autoToggleOnTap: true
     overlayNamespace: "sideleft-weather"
 
+    Component.onCompleted: Services.Weather.start()
+
     readonly property var _weatherData: Services.Weather.weatherData
     readonly property var _current: _weatherData && _weatherData.current ? _weatherData.current : null
     readonly property string weatherIcon: _current && typeof _current.weather_code === 'number'
