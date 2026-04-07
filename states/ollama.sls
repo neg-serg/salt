@@ -1,28 +1,66 @@
 {% from '_imports.jinja' import host, user, home, retry_attempts, retry_interval, ollama_pull_timeout %}
 {% import_yaml 'data/service_catalog.yaml' as catalog %}
-{% from '_macros_service.jinja' import ensure_dir, service_with_unit_and_healthcheck %}
+{% from '_macros_service.jinja' import ensure_dir, service_with_unit %}
 {% import_yaml 'data/ollama.yaml' as ollama %}
 # Ollama LLM server: systemd service, model pulls
-{{ service_with_unit_and_healthcheck('ollama', 'salt://units/ollama.service.j2', template='jinja', context={'user': user, 'home': home, 'mnt_one': host.mnt_one, 'ollama_port': catalog.ollama.port}, onlyif='command -v ollama', catalog=catalog) }}
+# Service is NOT enabled at boot (manual_start) — VRAM is shared with desktop GPU.
+# Salt starts ollama temporarily for model pulls, then stops it.
+{{ service_with_unit('ollama', 'salt://units/ollama.service.j2', template='jinja', context={'user': user, 'home': home, 'mnt_one': host.mnt_one, 'ollama_port': catalog.ollama.port}, enabled=False) }}
 
 {{ ensure_dir('ollama_models_dir', host.mnt_one ~ '/ollama/models', require=['mount: mount_one']) }}
 
 {% set ollama_base = '127.0.0.1:' ~ catalog.ollama.port %}
+{% set manifests = host.mnt_one ~ '/ollama/models/manifests/registry.ollama.ai' %}
+
+{# Resolve manifest path: "model:tag" → library/model/tag, "ns/model:tag" → ns/model/tag.
+   Models without explicit tag default to "latest". #}
+{%- macro manifest_path(model) -%}
+{%- set parts = model.split(':') -%}
+{%- set name = parts[0] -%}
+{%- set tag = parts[1] if parts | length > 1 else 'latest' -%}
+{%- if '/' in name -%}
+{{ manifests }}/{{ name }}/{{ tag }}
+{%- else -%}
+{{ manifests }}/library/{{ name }}/{{ tag }}
+{%- endif -%}
+{%- endmacro -%}
+
+# Temporarily start ollama for model pulls (skipped when all manifests present)
+ollama_tmp_start:
+  cmd.run:
+    - name: |
+        systemctl start ollama
+        for i in $(seq 1 30); do
+          curl -sf http://{{ ollama_base }}/api/tags >/dev/null 2>&1 && exit 0
+          sleep 1
+        done
+        echo "ollama failed to start within 30s" >&2; exit 1
+    - unless: {% for model in ollama.models %}test -f "{{ manifest_path(model) }}" && {% endfor %}true
+    - require:
+      - cmd: ollama_daemon_reload
+
 {% for model in ollama.models %}
 pull_{{ model | replace('.', '_') | replace(':', '_') | replace('-', '_') }}:
   cmd.run:
     - name: ollama pull {{ model }}
-    - unless: >-
-        curl -sf http://{{ ollama_base }}/api/tags |
-        grep -q '"{{ model }}[":]'
+    - unless: test -f "{{ manifest_path(model) }}"
     - timeout: {{ ollama_pull_timeout }}
-    - parallel: True
     - retry:
         attempts: {{ retry_attempts }}
         interval: {{ retry_interval }}
     - require:
-      - cmd: ollama_start
+      - cmd: ollama_tmp_start
 {% if host.features.network.get('zapret2', false) %}
       - service: zapret2_running
 {% endif %}
+{% endfor %}
+
+# Stop ollama after model pulls to free VRAM
+ollama_tmp_stop:
+  cmd.run:
+    - name: systemctl stop ollama
+    - onlyif: systemctl is-active ollama
+    - require:
+{% for model in ollama.models %}
+      - cmd: pull_{{ model | replace('.', '_') | replace(':', '_') | replace('-', '_') }}
 {% endfor %}
