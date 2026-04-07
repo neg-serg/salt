@@ -39,7 +39,6 @@ verify_checks:
   hostname: "rg -q '^${HOSTNAME}' /etc/hostname"
   hosts: "rg -q '${HOSTNAME}' /etc/hosts"
   limine_conf_content: "rg -q 'vmlinuz-linux-cachyos-lts' /boot/limine.conf"
-  snapper_registered: "rg -q 'root' /etc/conf.d/snapper 2>/dev/null"
   mkinitcpio_lvm2_hook: "rg -q 'lvm2' /etc/mkinitcpio.conf"
   mkinitcpio_zstd: "rg -q '^COMPRESSION=\"zstd\"' /etc/mkinitcpio.conf"
   initramfs_exists: "test -f /boot/initramfs-linux-cachyos-lts.img"
@@ -69,8 +68,6 @@ package_checks:
     - networkmanager                  # network connection manager
     - openssh                         # SSH server and client
     - paru                            # AUR helper
-    - snap-pac                        # pacman hook for snapper snapshots
-    - snapper                         # btrfs snapshot manager
     - sudo                            # privilege escalation
     - zsh                             # Z shell
     # -- desktop --

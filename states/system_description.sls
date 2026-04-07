@@ -87,11 +87,10 @@ include:
   - installers_themes
   - custom_pkgs
 
-  # Services, monitoring, user units, snapshots
+  # Services, monitoring, user units
   - services
   - monitoring_alerts
   - user_services
-  - snapshots
 # - code_rag
 
   # ── Feature-gated (skipped entirely when disabled) ──────────────────

@@ -1095,8 +1095,6 @@ not-applicable-tools:
     reason: "GUI rendering delegated to Qt/GPU"
   - name: libnotify  # notification library — C
     reason: "Library; D-Bus messaging"
-  - name: limine-snapper-sync  # snapshot sync
-    reason: "Shell script"
   - name: liquidctl  # cooler control — Python
     reason: "Python runtime; USB HID I/O"
   - name: lldb  # LLVM debugger — C++
