@@ -44,7 +44,7 @@ dev:
   - git  # distributed version control
   - lua-language-server  # LSP for Lua
   - neovim  # modern Vim fork
-  - nodejs-lts-iron  # JavaScript runtime (LTS)
+  - nodejs-lts-jod  # JavaScript runtime (LTS)
   - npm  # JavaScript package manager
   - python-pipx  # install Python apps in isolated envs
   - python-pyperclip  # cross-platform clipboard module (termcell dep)
@@ -365,7 +365,6 @@ other:
   - wf-recorder  # Wayland screen recorder
   - which  # show full path of commands
   - whois  # WHOIS client
-  - wiremix  # TUI PipeWire audio mixer
   - wireshark-cli  # network protocol analyzer (CLI)
 # - wlogout  # Wayland logout menu (AUR, moved to aur section)
   - wtype  # Wayland xdotool (type text)
