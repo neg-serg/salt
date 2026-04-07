@@ -187,7 +187,6 @@ install_flatpak_{{ safe }}:
   cmd.run:
     - name: sudo -u {{ user }} flatpak install -y --user flathub {{ app_id }}
     - unless: sudo -u {{ user }} flatpak list --user --app --columns=application | grep -qxF '{{ app_id }}'
-    - parallel: True
     - retry:
         attempts: {{ _retry_attempts }}
         interval: {{ _retry_interval }}

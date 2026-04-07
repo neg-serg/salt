@@ -17,5 +17,5 @@ apps:
   - net.veloren.airshipper                       # Veloren game launcher
   - org.gimp.GIMP                               # image editor
   - org.libreoffice.LibreOffice                 # office suite
-  - org.zdoom.GZDoom                            # GZDoom source port
+  - org.zdoom.UZDoom                            # UZDoom (successor of GZDoom, rebased)
   - tk.deat.Jazz2Resurrection                   # Jazz Jackrabbit 2 reimplementation
