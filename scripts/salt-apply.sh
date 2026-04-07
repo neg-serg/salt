@@ -235,7 +235,6 @@ if ensure_daemon; then
 else
     run_direct && RC=$? || RC=$?
 fi
-disown
 
 # ── Post-run: check log for errors that may have been missed ──────────────────
 check_log_errors() {
