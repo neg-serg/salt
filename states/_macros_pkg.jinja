@@ -11,7 +11,11 @@
 install_{{ name | replace('-', '_') }}:
   cmd.run:
     - name: pacman -S --noconfirm --needed {{ pkgs }}
+{%- if check == '__ALL__' %}
+    - unless: pacman -Qq {{ pkgs }} >/dev/null 2>&1
+{%- else %}
     - unless: grep -qxF '{{ check or pkgs.split()[0] }}' {{ host.pkg_list }}
+{%- endif %}
     - retry:
         attempts: {{ _retry_attempts }}
         interval: {{ _retry_interval }}

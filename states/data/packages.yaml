@@ -11,8 +11,8 @@ base:
   - base  # minimal Arch Linux installation
   - base-devel  # build tools for Arch packages
   - limine  # multiprotocol bootloader
-  - linux-cachyos-lts  # CachyOS BORE LTS kernel
-  - linux-cachyos-lts-headers  # kernel headers for module builds
+  - linux  # Arch Linux default kernel
+  - linux-headers  # kernel headers for module builds
   - linux-firmware  # firmware blobs for Linux
 
 desktop:
@@ -44,14 +44,14 @@ dev:
   - git  # distributed version control
   - lua-language-server  # LSP for Lua
   - neovim  # modern Vim fork
-  - nodejs  # JavaScript runtime
+  - nodejs-lts-iron  # JavaScript runtime (LTS)
   - npm  # JavaScript package manager
   - python-pipx  # install Python apps in isolated envs
   - python-pyperclip  # cross-platform clipboard module (termcell dep)
   - python-textual  # modern TUI framework (termcell dep)
   - ruby  # Ruby programming language (provides irb)
   - jupyterlab  # interactive computational notebooks
-  - rust  # systems programming language
+  - rustup  # Rust toolchain installer and manager
   - subversion  # Apache SVN version control
   - uv  # ultra-fast Python package manager (Rust)
   - vale  # prose linter (neovim diagnostics dependency)
@@ -116,11 +116,12 @@ other:
   - borg  # deduplicating backup with encryption
   - bpftrace  # eBPF tracing language
   - bucklespring  # Model-M keyboard sound simulator
-  - cachyos-keyring  # CachyOS package signing keys
-  - cachyos-mirrorlist  # CachyOS repository mirrors
-  - cachyos-rate-mirrors  # CachyOS mirror ranking helper
-  - cachyos-settings  # CachyOS default settings
-  - cachyos-v3-mirrorlist  # CachyOS v3 repository mirrors
+# CachyOS packages (require CachyOS repos — not configured)
+# - cachyos-keyring  # CachyOS package signing keys
+# - cachyos-mirrorlist  # CachyOS repository mirrors
+# - cachyos-rate-mirrors  # CachyOS mirror ranking helper
+# - cachyos-settings  # CachyOS default settings
+# - cachyos-v3-mirrorlist  # CachyOS v3 repository mirrors
   - carla  # audio plugin host
   - cava  # console audio visualizer
   - ccid  # USB smart card driver
@@ -130,7 +131,7 @@ other:
   - chezmoi  # dotfiles manager
   - choose  # human-friendly alternative to cut/awk
   - chromaprint  # audio fingerprinting library
-  - claude-code  # Anthropic CLI agentic coding tool
+# - claude-code  # Anthropic CLI agentic coding tool (custom PKGBUILD, managed separately)
   - cliphist  # Wayland clipboard manager
   - convmv  # filename encoding converter
   - corectrl  # GPU/CPU control application
@@ -166,7 +167,7 @@ other:
   - fd  # fast find replacement
   - figlet  # ASCII art text generator
   - fio  # storage benchmark and I/O tester
-  - floorp-bin  # Secondary managed Firefox-based browser (explicit launcher path only)
+# - floorp-bin  # Secondary managed Firefox-based browser (AUR, currently not installed)
   - fortune-mod  # random quote generator
   - fping  # parallel ping utility
   - freerdp  # RDP client implementation
@@ -237,7 +238,7 @@ other:
   - lowdown  # Markdown translator
   - lshw  # hardware info tool
   - lsp-plugins  # audio DSP plugin collection
-  - man-db  # man page reader
+# - man-db  # man page reader (conflicts with mandoc from code_rag.sls)
   - man-pages  # Linux man pages
   - mediainfo  # media file metadata viewer
   - media-player-info  # media player capability database
@@ -247,7 +248,7 @@ other:
   - moreutils  # extra Unix tools (sponge, ts, parallel, etc)
   - mpc  # MPD CLI client
   - mpd  # music player daemon
-  - mpdris2-git  # MPRIS2 bridge for MPD
+# - mpdris2-git  # MPRIS2 bridge for MPD (AUR, moved to aur section)
   - python-mutagen  # audio metadata reader (enables mpdris2 embedded cover art)
   - mtr  # traceroute + ping combined
   - multipath-tools  # device-mapper multipath tools
@@ -269,9 +270,9 @@ other:
   - ouch  # compress/decompress archives easily
   - pandoc-cli  # document format converter
   - parallel  # shell job parallelizer
-  - paru  # AUR helper
+# - paru  # AUR helper (AUR, bootstrapped separately)
   - pastel  # CLI color tool (generate, convert, analyze)
-  - patool  # portable archive file manager
+# - patool  # portable archive file manager (AUR, moved to aur section)
   - pbzip2  # parallel bzip2 implementation
   - pcmanfm  # lightweight file manager
   - pcsc-tools  # smart card reader tools
@@ -322,7 +323,7 @@ other:
   - s-tui  # terminal CPU stress test and monitor
   - sudo  # privileged command execution
   - swappy  # Wayland screenshot editor
-  - systemd-language-server  # LSP for systemd units
+# - systemd-language-server  # LSP for systemd units (removed from AUR)
   - systemd-resolvconf  # resolvconf via systemd-resolved
   - tabiew  # lightweight TUI to view and query CSV files
   - taplo-cli  # TOML toolkit (formatter, linter)
@@ -366,7 +367,7 @@ other:
   - whois  # WHOIS client
   - wiremix  # TUI PipeWire audio mixer
   - wireshark-cli  # network protocol analyzer (CLI)
-  - wlogout  # Wayland logout menu
+# - wlogout  # Wayland logout menu (AUR, moved to aur section)
   - wtype  # Wayland xdotool (type text)
   - xfsprogs  # XFS filesystem utilities
   - xh  # fast HTTP client (Rust)
@@ -390,6 +391,7 @@ aur:
 # - blktrace  # block layer I/O tracer
 # - brutefir  # multi-channel FIR convolution engine
 # - carapace-bin  # multi-shell completion engine
+  - claude-code  # Anthropic CLI agentic coding tool
   - cmake-language-server  # LSP for CMake
   - dcfldd  # forensic dd replacement with hashing
   - ddccontrol  # DDC monitor parameter control
@@ -418,6 +420,7 @@ aur:
   - lazytail-bin  # fast terminal log viewer with live filtering and MCP integration
   - lutgen-bin  # LUT-based color palette generator
   - massren  # batch file rename via text editor
+  - mpdris2-git  # MPRIS2 bridge for MPD
   - mcat-bin  # extended cat: renders markdown, images, PDF, DOCX in terminal
   - mpdas  # MPD AudioScrobbler client
   - neg-pretty-printer  # custom pretty-printer for scripts
@@ -431,6 +434,8 @@ aur:
   - oports-git  # clean wrapper around ss to show open ports
   - oyo  # TUI diff viewer with evolution, split, unified and blame modes
   - par  # paragraph reformatter
+  - patool  # portable archive file manager
+  - paru  # AUR helper
   - pup-bin  # CLI HTML parser (like jq for HTML)
   - python-ascii_magic  # ASCII art from images (songfetch dependency)
   - python-rapidgzip  # parallel gzip decompressor (Python)
@@ -462,6 +467,7 @@ aur:
   - watchtower-bin  # terminal-based global intelligence dashboard
   - witr-bin  # TUI process inspector — shows why a process is running
   - wget2  # next-gen wget with HTTP/2 and parallel downloads
+  - wlogout  # Wayland logout menu
   - xdg-ninja  # check for XDG Base Directory compliance
   - youtube-tui  # TUI YouTube browser with mpv playback and sixel/kitty preview
 # - ytsurf  # terminal YouTube client with fzf/rofi selection and mpv playback

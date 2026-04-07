@@ -5,27 +5,14 @@
 # --- Hyprland ecosystem packages ---
 {{ pacman_install('hyprland_desktop', desktop.hyprland_packages | join(' ')) }}
 {{ pacman_install('screenshot_tools', desktop.screenshot_packages | join(' ')) }}
-# rsync: file synchronization (used by Salt, backups, dotfile deploys)
-{{ pacman_install('rsync', 'rsync') }}
-# localsend: LAN file sharing (AirDrop alternative, no internet required)
-{{ pacman_install('localsend', 'localsend') }}
-# chromium: secondary browser for sites that break on Firefox/Gecko
-{{ pacman_install('chromium', 'chromium') }}
-# google-chrome: Google Chrome stable (AUR), for testing and Google-specific integrations
-{{ paru_install('google_chrome', 'google-chrome') }}
-# zen-browser: performance-focused Firefox fork with compact UI (AUR)
-{{ paru_install('zen_browser', 'zen-browser-bin') }}
+{{ pacman_install('rsync', 'rsync') }} # rsync: file synchronization (used by Salt, backups, dotfile deploys)
+{{ pacman_install('localsend', 'localsend') }} # localsend: LAN file sharing (AirDrop alternative, no internet required)
+{{ pacman_install('chromium', 'chromium') }} # chromium: secondary browser for sites that break on Firefox/Gecko
+{{ paru_install('google_chrome', 'google-chrome') }} # google-chrome: Google Chrome stable (AUR), for testing and Google-specific integrations
+{{ paru_install('zen_browser', 'zen-browser-bin') }} # zen-browser: performance-focused Firefox fork with compact UI (AUR)
 # xdg-desktop-portal-termfilechooser: conditionally managed in desktop.portal
 # wlr-which-key: on-screen keybinding cheatsheet for Hyprland (leader key menu)
 {{ paru_install('wlr-which-key', 'wlr-which-key') }}
-
-# --- Bundled-Qt6 apps: disable Kvantum (ABI mismatch with system Qt) ---
-# happ bundles Qt 6.10 while system ships 6.11; the symlinked Kvantum
-# plugin fails to instantiate.  Desktop-file override in dotfiles/
-# clears QT_STYLE_OVERRIDE so the app falls back to Fusion cleanly.
-happ_kvantum_symlink_absent:
-  file.absent:
-    - name: /opt/happ/lib/plugins/styles/libkvantum.so
 
 # --- swayimg: build and install directly from the local checkout ---
 swayimg_local_link_absent:

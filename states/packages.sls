@@ -14,7 +14,8 @@
 {% for category in ['base', 'desktop', 'dev', 'network', 'audio', 'media', 'fonts', 'gaming', 'system', 'other'] %}
 {%- set pkg_list = pkgs.get(category, []) -%}
 {%- if pkg_list %}
-{{ pacman_install('pkg_' ~ category, pkg_list | join(' '), check=pkg_list[-1]) }}
+{#- pacman -Qq checks ALL packages — fails if ANY is missing, triggering install #}
+{{ pacman_install('pkg_' ~ category, pkg_list | join(' '), check='__ALL__') }}
 {% endif %}
 {%- endfor %}
 
