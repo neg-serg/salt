@@ -96,7 +96,7 @@ OverlayToggleCapsule {
                     Text {
                         text: Services.PillTracker.streak + (Services.PillTracker.streak === 1 ? " day" : " days")
                         font.family: Theme.fontFamily
-                        font.pixelSize: parseInt(Theme.fontSizeMedium * capsuleScale)
+                        font.pixelSize: Math.round(Theme.fontSizeMedium * capsuleScale)
                         font.bold: true
                         color: Theme.textPrimary
                         anchors.verticalCenter: parent.verticalCenter
