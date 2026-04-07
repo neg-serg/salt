@@ -78,45 +78,6 @@ get_sudo() {
     fi
 }
 
-# ── Snapper: pre/post-apply snapshots ──────────────────────────────────────────
-# Pre-snapshot runs in the background while Salt starts up, saving ~2s.
-SNAPPER_PRE_PID=""
-SNAPPER_PRE_TMPFILE=""
-
-snapshot_pre() {
-    if command -v snapper &>/dev/null; then
-        SNAPPER_PRE_TMPFILE=$(mktemp)
-        (
-            num=$("${SUDO_CMD[@]}" snapper create --type pre --print-number \
-                  --cleanup-algorithm number \
-                  --description "salt-pre: ${STATE}" 2>/dev/null) || exit 0
-            echo "$num" > "$SNAPPER_PRE_TMPFILE"
-        ) &
-        SNAPPER_PRE_PID=$!
-    fi
-}
-
-snapshot_pre_collect() {
-    if [[ -n "${SNAPPER_PRE_PID:-}" ]]; then
-        wait "$SNAPPER_PRE_PID" 2>/dev/null || true
-        if [[ -s "${SNAPPER_PRE_TMPFILE:-}" ]]; then
-            SNAPPER_PRE_NUM=$(<"$SNAPPER_PRE_TMPFILE")
-            echo "(snapshot #${SNAPPER_PRE_NUM}: pre-apply)"
-        fi
-        rm -f "${SNAPPER_PRE_TMPFILE:-}" 2>/dev/null
-    fi
-}
-
-snapshot_post() {
-    if [[ -n "${SNAPPER_PRE_NUM:-}" ]]; then
-        local num
-        num=$("${SUDO_CMD[@]}" snapper create --type post --pre-number "${SNAPPER_PRE_NUM}" \
-              --print-number --cleanup-algorithm number \
-              --description "salt-post: ${STATE}" 2>/dev/null) || return 0
-        echo "(snapshot #${num}: post-apply, pre=#${SNAPPER_PRE_NUM})"
-    fi
-}
-
 # ── Daemon helpers ─────────────────────────────────────────────────────────────
 daemon_running() {
     [[ -S "$DAEMON_SOCK" ]] || return 1
@@ -265,8 +226,6 @@ get_sudo
 maintenance_lock_create
 trap maintenance_lock_remove EXIT
 
-snapshot_pre
-
 if ensure_daemon; then
     run_via_daemon && RC=$? || RC=$?
     if [[ $RC -eq 75 ]]; then
@@ -276,11 +235,6 @@ if ensure_daemon; then
 else
     run_direct && RC=$? || RC=$?
 fi
-
-snapshot_pre_collect
-
-# Post-snapshot runs detached — we don't need to wait for it
-snapshot_post &
 disown
 
 # ── Post-run: check log for errors that may have been missed ──────────────────
