@@ -6,7 +6,7 @@
 {% from '_macros_install.jinja' import pip_pkg %}
 {% from '_macros_pkg.jinja' import pacman_install %}
 
-{{ pip_pkg('code_rag', pkg=home ~ '/src/1st-level/@rag/code-rag', bin='code-rag-index') }}
+# {{ pip_pkg('code_rag', pkg=home ~ '/src/1st-level/@rag/code-rag', bin='code-rag-index') }}
 
 {# docs-rag: external documentation ingestion (web, manpages, local) into shared LanceDB.
    Provides docs-import, docs-manpages, docs-remove, docs-list CLI commands.
