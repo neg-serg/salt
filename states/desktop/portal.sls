@@ -23,7 +23,7 @@ portal_config:
       - file: portal_conf_dir
 
 # termfilechooser backend (yazi-based file chooser)
-{{ paru_install('xdg_termfilechooser', 'xdg-desktop-portal-termfilechooser-boydaihungst-git') }}
+{{ paru_install('xdg_termfilechooser', 'xdg-desktop-portal-termfilechooser-hunkyburrito-git') }}
 
 # Restart portal after config changes so the new backend takes effect
 portal_restart:
