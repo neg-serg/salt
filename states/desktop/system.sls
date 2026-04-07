@@ -1,5 +1,5 @@
 # Desktop environment: services, SSH, dconf themes
-{% from '_imports.jinja' import user %}
+{% from '_imports.jinja' import user, home %}
 {% from '_macros_pkg.jinja' import pacman_install %}
 {% from '_macros_service.jinja' import ensure_dir, service_stopped %}
 {% import_yaml 'data/desktop.yaml' as desktop %}
@@ -37,6 +37,29 @@ desktop_services_enabled:
       - {{ svc }}
 {% endfor %}
     - enable: True
+
+# --- SSH hardening: keys only, no passwords, no root login ---
+sshd_hardening:
+  file.managed:
+    - name: /etc/ssh/sshd_config.d/10-hardening.conf
+    - source: salt://configs/sshd-hardening.conf
+    - mode: '0644'
+
+sshd_authorized_keys:
+  cmd.run:
+    - name: |
+        install -m 0600 -o {{ user }} -g {{ user }} /dev/null {{ home }}/.ssh/authorized_keys
+        cat {{ home }}/.ssh/id_ed25519.pub > {{ home }}/.ssh/authorized_keys
+    - unless: test -s {{ home }}/.ssh/authorized_keys && grep -qF "$(cat {{ home }}/.ssh/id_ed25519.pub)" {{ home }}/.ssh/authorized_keys
+    - onlyif: test -f {{ home }}/.ssh/id_ed25519.pub
+    - require:
+      - file: ssh_dir
+
+sshd_restart:
+  service.running:
+    - name: sshd
+    - watch:
+      - file: sshd_hardening
 
 # libvirtd: socket-activated only. The service must be DISABLED so systemd doesn't
 # start the full daemon at boot (1.2s on critical path). The socket starts it
