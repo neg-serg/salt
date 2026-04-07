@@ -50,6 +50,7 @@ dev:
   - python-pyperclip  # cross-platform clipboard module (termcell dep)
   - python-textual  # modern TUI framework (termcell dep)
   - ruby  # Ruby programming language (provides irb)
+  - jupyterlab  # interactive computational notebooks
   - rust  # systems programming language
   - subversion  # Apache SVN version control
   - uv  # ultra-fast Python package manager (Rust)
@@ -257,7 +258,6 @@ other:
   - nm-connection-editor  # NetworkManager GUI editor
   - nss-mdns  # glibc mDNS hostname resolution
   - nuspell  # fast spellchecking library
-  - nvidia-settings  # NVIDIA GPU configuration tool
   - nvtop  # GPU process monitor (AMD/Intel/NVIDIA)
   - ollama  # local LLM runner
   - ollama-vulkan  # local LLM runner (Vulkan backend)
