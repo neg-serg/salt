@@ -1,5 +1,6 @@
 pragma Singleton
 import QtQuick
+import Quickshell
 import qs.Settings
 import qs.Components
 // No runtime clamping: Settings.json is validated by schema
@@ -93,9 +94,10 @@ Item {
 
     // --- rsmetrx streaming (JSON lines: { rx_kib_s, tx_kib_s })
     property bool _rsmetrxWarned: false
+    readonly property string _rsmetrxBin: Quickshell.env("HOME") + "/.local/share/cargo/bin/rsmetrx"
     ProcessRunner {
         id: rsStream
-        cmd: ["rsmetrx"]
+        cmd: [root._rsmetrxBin]
         backoffMs: Theme.networkRestartBackoffMs
         debounceMs: 100
         jsonLine: true
