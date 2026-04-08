@@ -15,15 +15,40 @@ Salt states + chezmoi dotfiles для конфигурации рабочей с
 ## Использование
 
 ```bash
-# Применить Salt states + chezmoi dotfiles
-scripts/salt-apply.sh
+# Применить всё (system_description → все стейты)
+just apply
 
-# Применить конкретный state
-scripts/salt-apply.sh desktop
+# Применить один стейт
+just apply desktop
+just apply openclaw_agent
 
-# Пробный запуск
-scripts/salt-apply.sh --test
+# Применить группу стейтов (подмножество связанных)
+just group core
+just group desktop
+just group ai
+
+# Пробный запуск (без изменений)
+just test
+just test group/network
 ```
+
+### Группы стейтов
+
+Группы позволяют накатить связанный кусок системы без прогона всех ~200
+стейтов.  Удобно для починки одной сломанной области или пошагового
+развёртывания с нуля.
+
+| Группа | Что включает | Время |
+|--------|-------------|-------|
+| `core` | users, zsh, mounts, kernel, hardware, systemd_resources | ~0.6 с |
+| `network` | dns, network | ~0.1 с |
+| `desktop` | audio, desktop (hyprland, portals, packages), fonts | ~0.7 с |
+| `packages` | pacman packages, все installers, custom PKGBUILDs | ~0.6 с |
+| `services` | system services, monitoring, user systemd units | ~0.5 с |
+| `ai` | ollama, openclaw, nanoclaw, opencode, image_gen (по feature flags) | ~0.4 с |
+
+Группы лежат в `states/group/*.sls` — это обычные `include:` списки без
+новой логики. Отдельные стейты тоже работают: `just apply mpd`, `just apply steam` и т.д.
 
 ## Документация
 

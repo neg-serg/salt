@@ -17,15 +17,40 @@ Salt states + chezmoi dotfiles for CachyOS (Arch-based) workstation configuratio
 ## Usage
 
 ```bash
-# Apply Salt states + chezmoi dotfiles
-scripts/salt-apply.sh
+# Apply everything (system_description → all states)
+just apply
 
-# Apply specific state
-scripts/salt-apply.sh desktop
+# Apply a single state
+just apply desktop
+just apply openclaw_agent
 
-# Dry run
-scripts/salt-apply.sh --test
+# Apply a state group (subset of related states)
+just group core
+just group desktop
+just group ai
+
+# Dry run (no changes)
+just test
+just test group/network
 ```
+
+### State groups
+
+Groups let you apply a coherent slice of the system without running all
+~200 states.  Useful for fixing one broken area or bootstrapping incrementally.
+
+| Group | What it covers | Typical run time |
+|-------|---------------|-----------------|
+| `core` | users, zsh, mounts, kernel, hardware, systemd_resources | ~0.6 s |
+| `network` | dns, network | ~0.1 s |
+| `desktop` | audio, desktop (hyprland, portals, packages), fonts | ~0.7 s |
+| `packages` | pacman packages, all installers, custom PKGBUILDs | ~0.6 s |
+| `services` | system services, monitoring, user systemd units | ~0.5 s |
+| `ai` | ollama, openclaw, nanoclaw, opencode, image_gen (feature-gated) | ~0.4 s |
+
+Groups live in `states/group/*.sls`.  Each is a thin `include:` list — no
+new logic, just a convenient entry point.  Individual states still work:
+`just apply mpd`, `just apply steam`, etc.
 
 ## Documentation
 
