@@ -26,6 +26,10 @@ apply-user-services:
 apply-installers:
     scripts/salt-apply.sh installers
 
+# Apply a state group (core, network, desktop, packages, services, ai)
+group GROUP:
+    scripts/salt-apply.sh group/{{GROUP}}
+
 # Capture current system packages into states/data/packages.yaml
 pkg-snapshot *ARGS:
     ./scripts/pkg-snapshot.zsh {{ARGS}}

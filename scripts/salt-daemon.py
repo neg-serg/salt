@@ -75,14 +75,17 @@ _ALLOWED_LOG_DIR = os.path.join(_SCRIPT_DIR, "logs")
 
 
 def _discover_allowed_states():
-    """Build allowed state set from states/*.sls files on disk."""
+    """Build allowed state set from states/**/*.sls files on disk."""
     import glob
 
     states_dir = os.path.join(_SCRIPT_DIR, "states")
     found = set()
-    for path in glob.glob(os.path.join(states_dir, "*.sls")):
-        name = os.path.basename(path).removesuffix(".sls")
-        found.add(name)
+    for path in glob.glob(os.path.join(states_dir, "**", "*.sls"), recursive=True):
+        rel = os.path.relpath(path, states_dir).removesuffix(".sls")
+        # Salt uses dot-separated names; also allow slash-separated for convenience
+        dot_name = rel.replace(os.sep, ".")
+        found.add(dot_name)
+        found.add(rel)
     return frozenset(found)
 
 
@@ -374,6 +377,8 @@ class DaemonServer:
             effective_timeout = self.timeout
 
         # ── Validate state name ──────────────────────────────────────────
+        # Normalise slash-separated paths to dot-separated Salt state names
+        state = state.replace("/", ".")
         if state not in _ALLOWED_STATES:
             log.warning("Rejected disallowed state: %r", state)
             try:

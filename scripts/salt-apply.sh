@@ -37,9 +37,13 @@ for arg in "$@"; do
     esac
 done
 
+# Normalise state name: accept both group/core and group.core
+SALT_STATE="${STATE//\//.}"
+
 LOG_DIR="${PROJECT_DIR}/logs"
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
-LOG_FILE="${SALT_LOG_FILE:-${LOG_DIR}/${STATE}-${TIMESTAMP}.log}"
+LOG_STEM="${STATE//\//-}"
+LOG_FILE="${SALT_LOG_FILE:-${LOG_DIR}/${LOG_STEM}-${TIMESTAMP}.log}"
 mkdir -p "${LOG_DIR}"
 install -m 0640 /dev/null "${LOG_FILE}"
 
@@ -132,7 +136,7 @@ run_via_daemon() {
     exit_code=$(python3 - <<PYEOF
 import json, socket, sys
 req = json.dumps({
-    'state': '${STATE}',
+    'state': '${SALT_STATE}',
     'kwargs': json.loads('${kwargs}'),
     'log_file': '${LOG_FILE}'
 }) + '\n'
@@ -188,7 +192,7 @@ run_direct() {
         --local --log-level=warning
         --log-file="${LOG_FILE}" --log-file-level=debug
         --state-output=mixed_id
-        state.sls "${STATE}"
+        state.sls "${SALT_STATE}"
     )
     $TEST_MODE && salt_cmd+=(test=True)
 
