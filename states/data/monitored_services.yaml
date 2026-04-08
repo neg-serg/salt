@@ -119,4 +119,3 @@ resources:
   cpu:
     warning_load_pct: 90
     sustained_minutes: 5
-

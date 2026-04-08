@@ -6,6 +6,7 @@ Usage: salt-show.py <state>           # e.g. group.core, desktop, system_descrip
 
 Outputs a compact list grouped by source .sls file.
 """
+
 import json
 import os
 import subprocess
@@ -28,11 +29,16 @@ def main():
 
     # Use salt-runner to call state.show_sls in JSON output
     cmd = [
-        "sudo", VENV_PYTHON, "-u", SALT_RUNNER,
+        "sudo",
+        VENV_PYTHON,
+        "-u",
+        SALT_RUNNER,
         f"--config-dir={RUNTIME_DIR}",
-        "--local", "--log-level=error",
+        "--local",
+        "--log-level=error",
         "--out=json",
-        "state.show_sls", state,
+        "state.show_sls",
+        state,
     ]
 
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
