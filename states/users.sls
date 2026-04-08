@@ -25,7 +25,7 @@ plugdev_group:
 # user.present groups broken on Python 3.14 (crypt module removed)
 neg_groups:
   cmd.run:
-    - name: usermod -aG wheel,libvirt,plugdev {{ user }}
+    - name: usermod -aG wheel,libvirt,kvm,plugdev {{ user }}
     - unless: id -nG {{ user }} | grep -qw plugdev
     - require:
       - group: plugdev_group

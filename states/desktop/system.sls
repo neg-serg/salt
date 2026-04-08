@@ -79,6 +79,26 @@ libvirtd_socket_enabled:
       - cmd: install_libvirt
       - service: libvirtd_service_disabled
 
+# swtpm: software TPM emulator — libvirt uses it automatically for VMs with TPM
+# devices (required for Windows 11). No daemon needed; libvirt spawns swtpm per-VM.
+{{ pacman_install('swtpm', 'swtpm') }}
+
+# Looking Glass: shared memory for IVSHMEM frame relay from Windows VM.
+# The tmpfiles.d entry creates /dev/shm/looking-glass owned by the user on boot.
+looking_glass_shm:
+  file.managed:
+    - name: /etc/tmpfiles.d/10-looking-glass.conf
+    - contents: |
+        # Type Path               Mode UID  GID Age Argument
+        f /dev/shm/looking-glass 0660 {{ user }} kvm -
+    - mode: '0644'
+
+looking_glass_shm_create:
+  cmd.run:
+    - name: systemd-tmpfiles --create /etc/tmpfiles.d/10-looking-glass.conf
+    - onchanges:
+      - file: looking_glass_shm
+
 # pcscd is socket-activated: scdaemon connects on demand for Yubikey smart card operations.
 {{ pacman_install('pcsclite', 'pcsclite') }}
 

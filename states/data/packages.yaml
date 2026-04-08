@@ -95,6 +95,7 @@ system:
   - parted  # partition editor
   - strace  # system call tracer
   - stress-ng  # system stress testing (CPU, memory, I/O, etc.)
+  - swtpm  # software TPM emulator for QEMU VMs (Windows 11 requirement)
   - sysstat  # performance monitoring (iostat, sar, mpstat)
   - pacman-contrib  # pacman helper scripts (paccache, checkupdates)
   - rebuild-detector  # detect AUR packages broken by soname bumps (checkrebuild)
@@ -154,6 +155,7 @@ other:
   - dos2unix  # text file line-ending converter
   - duf  # disk usage/free utility
   - dust  # intuitive du replacement (Rust)
+  - edk2-ovmf  # UEFI firmware for QEMU VMs (x86_64)
   - efibootmgr  # EFI boot manager editor
   - elfutils  # ELF/DWARF utilities
   - enca  # charset analyzer and converter
@@ -415,6 +417,7 @@ aur:
   - instagram-cli  # Instagram DMs/stories TUI client
   - iosevka-neg-fonts  # custom Iosevka Nerd Fonts (neg-serg)
   - jdupes  # duplicate file finder and deduplicator
+  - looking-glass  # low-latency VM display client (IVSHMEM frame relay)
   - lazytail-bin  # fast terminal log viewer with live filtering and MCP integration
   - lutgen-bin  # LUT-based color palette generator
   - massren  # batch file rename via text editor
