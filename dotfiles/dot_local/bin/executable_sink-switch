@@ -24,8 +24,10 @@ friendly_name() {
 set_sink() {
     local sink="$1"
     pactl set-default-sink "$sink"
-    # Move all playing streams to the new sink
-    pactl list sink-inputs short | awk '{print $1}' | while read -r input; do
+    # Move application streams to the new sink (skip PipeWire loopback internals)
+    pactl -f json list sink-inputs \
+        | jq -r '.[] | select(.properties["node.name"] | test("^output\\.loopback") | not) | .index' \
+        | while read -r input; do
         pactl move-sink-input "$input" "$sink"
     done
     notify-send -t 2000 -h string:x-canonical-private-synchronous:sink-switch \
