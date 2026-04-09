@@ -42,6 +42,8 @@ unit_files:
   - {id: rclone_gdrive_service, filename: rclone-gdrive.service}
   - {id: rclone_yadisk_service, filename: rclone-yadisk.service}
   - {id: wl_service, filename: wl.service}
+  - {id: wl_watchdog_service, filename: wl-watchdog.service}
+  - {id: wl_watchdog_timer, filename: wl-watchdog.timer}
 
 # Services/sockets to enable (systemctl --user enable)
 enable_services:
@@ -67,3 +69,4 @@ enable_now_timers:
   - {name: vdirsyncer.timer, features: [vdirsyncer]}
   - {name: salt-drift.timer}
   - {name: gpu-unstick.timer}
+  - {name: wl-watchdog.timer}
