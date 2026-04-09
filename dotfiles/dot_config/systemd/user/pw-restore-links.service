@@ -1,0 +1,17 @@
+[Unit]
+Description=Restore PipeWire loopback links for RME ADI-2/4 Pro SE
+After=wireplumber.service
+Requires=wireplumber.service
+
+[Service]
+Type=oneshot
+# WirePlumber needs a moment to enumerate ALSA devices and create loopback nodes
+ExecStartPre=/bin/sleep 3
+ExecStart=%h/.local/bin/pw-restore-links
+RemainAfterExit=yes
+Restart=on-failure
+RestartSec=5
+RestartMaxDelaySec=30
+
+[Install]
+WantedBy=wireplumber.service

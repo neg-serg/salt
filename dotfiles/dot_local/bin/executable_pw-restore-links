@@ -1,0 +1,84 @@
+#!/usr/bin/env zsh
+#
+# pw-restore-links — restore PipeWire loopback links for RME ADI-2/4 Pro SE
+#
+# Problem:
+#   The PipeWire loopback modules defined in 98-adi2-remap.conf create virtual
+#   sinks (rme-genelec, rme-headphones) that remap stereo FL/FR to specific
+#   channels on the 8-channel USB device.  The config sets node.dont-reconnect=true
+#   to prevent accidental rerouting, but this means a momentary USB disconnect
+#   (suspend, hub reset, firmware hiccup) permanently breaks the link chain:
+#
+#     app → rme-genelec (virtual sink) → [BROKEN] → RME hardware output
+#
+#   Audio plays into the virtual sink but never reaches the DAC.
+#
+# Solution:
+#   This script discovers each virtual sink's link-group via pw-cli, then
+#   re-establishes the links from the loopback output to the correct hardware
+#   playback ports.  It is idempotent — safe to run at any time.
+#
+# Channel mapping (must match 98-adi2-remap.conf):
+#   rme-genelec    → AUX4, AUX5  (AES outputs → Genelec monitors)
+#   rme-headphones → AUX0, AUX1  (Phones 1/2)
+#
+# Usage:
+#   pw-restore-links          # restore all links, report status
+#
+# Integration:
+#   Runs automatically via pw-restore-links.service (after wireplumber.service)
+#   Can also be invoked manually when audio disappears.
+#
+# Dependencies: pw-cli, pw-link (pipewire package)
+
+set -euo pipefail
+
+readonly hw_out="alsa_output.usb-RME_ADI-2_4_Pro_SE__53011083__B992903C2BD8DC8-00.pro-output-0"
+
+typeset -A sink_channels=(
+    [rme-genelec]="AUX4 AUX5"
+    [rme-headphones]="AUX0 AUX1"
+)
+
+err=0
+
+for sink in ${(k)sink_channels}; do
+    channels=(${=sink_channels[$sink]})
+
+    # Find the link-group shared between the virtual sink and its loopback output.
+    # The link-group name includes a PID that changes on every PipeWire restart,
+    # so we resolve it dynamically rather than hardcoding.
+    link_group=$(pw-cli info "$sink" 2>/dev/null \
+        | grep 'node.link-group' \
+        | head -1 \
+        | sed 's/.*"\(.*\)"/\1/')
+
+    if [[ -z "$link_group" ]]; then
+        print -u2 "SKIP: virtual sink '$sink' not found"
+        (( err++ ))
+        continue
+    fi
+
+    # The loopback playback (output) node is named "output.<link-group>"
+    loopback_out="output.${link_group}"
+
+    for ch in "${channels[@]}"; do
+        src="${loopback_out}:output_${ch}"
+        dst="${hw_out}:playback_${ch}"
+
+        if pw-link "$src" "$dst" 2>/dev/null; then
+            print "LINKED: $sink $ch"
+        elif pw-link -l 2>/dev/null | grep -qF "$src"; then
+            print "OK:     $sink $ch (already linked)"
+        else
+            print -u2 "FAIL:   $sink $ch — could not link $src → $dst"
+            (( err++ ))
+        fi
+    done
+done
+
+if (( err > 0 )); then
+    print -u2 "\n${err} error(s), check PipeWire status"
+    exit 1
+fi
+print "\nAll loopback links restored"
