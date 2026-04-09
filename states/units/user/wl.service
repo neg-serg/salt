@@ -1,0 +1,19 @@
+[Unit]
+Description=Wayland wallpaper daemon (Vulkan)
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStartPre=/usr/bin/rm -f %t/wl.sock
+ExecStart=/usr/bin/wl-daemon
+ExecStartPost=/bin/sh -c 'for i in 1 2 3 4 5; do /usr/bin/wl restore && exit 0; sleep 0.5; done'
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=true
+RestrictNamespaces=yes
+RestrictRealtime=yes
+LockPersonality=yes
+
+[Install]
+WantedBy=graphical-session.target

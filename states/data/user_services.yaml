@@ -41,6 +41,7 @@ unit_files:
   - {id: chezmoi_watch_service, filename: chezmoi-watch.service}
   - {id: rclone_gdrive_service, filename: rclone-gdrive.service}
   - {id: rclone_yadisk_service, filename: rclone-yadisk.service}
+  - {id: wl_service, filename: wl.service}
 
 # Services/sockets to enable (systemctl --user enable)
 enable_services:
@@ -57,6 +58,7 @@ enable_services:
   - {name: chezmoi-watch.service}
   - {name: gpg-agent.socket}
   - {name: ssh-agent.socket}
+  - {name: wl.service}
   - {name: systemd-tmpfiles-setup.service}  # creates hashed GPG socket dirs from user-tmpfiles.d/
 
 # Timers to enable and start immediately (systemctl --user enable --now)
