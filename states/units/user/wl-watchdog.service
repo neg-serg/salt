@@ -1,6 +1,0 @@
-[Unit]
-Description=Wallpaper daemon watchdog (restarts wl if layer surface lost)
-
-[Service]
-Type=oneshot
-ExecStart=/bin/sh -c 'if systemctl --user is-active --quiet wl.service && ! hyprctl layers -j 2>/dev/null | grep -q "\"namespace\": \"wl\""; then systemctl --user restart wl.service; fi'
