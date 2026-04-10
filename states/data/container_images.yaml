@@ -31,8 +31,8 @@ ollama:
   registry: docker.io
   image: ollama/ollama
   variant: rocm
-  digest: null           # TBD — resolved in T017 via `podman pull` + `podman image inspect`
-  approved_at: null
+  digest: sha256:24055d988770c0de2552fe14edff8af1508802a074638527f7578fdc332ccdbe
+  approved_at: "2026-04-10"
   note: "Ollama LLM server; ROCm build for AMD 7900 XTX inference"
 
 llama_embed:
