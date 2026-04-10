@@ -155,9 +155,14 @@ def run_state(
         except OSError:
             log.debug("Client disconnected during send")
 
-    # Per-call opts (shallow copy so we don't mutate the shared opts)
+    # Per-call opts (shallow copy so we don't mutate the shared opts).
+    # state_output is NOT overridden here — Salt uses the minion config
+    # default (which is the native `highstate` outputter after feature
+    # 087's cleanup), so operators see raw Salt output without any
+    # custom reformatting.
     run_opts = dict(opts)
-    run_opts["state_output"] = kwargs.get("state_output", "mixed_id")
+    if "state_output" in kwargs:
+        run_opts["state_output"] = kwargs["state_output"]
     if kwargs.get("test"):
         run_opts["test"] = True
 

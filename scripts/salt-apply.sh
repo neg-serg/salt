@@ -118,19 +118,18 @@ ensure_daemon() {
     return 1  # timeout — fall back to direct
 }
 
-# ── AWK formatter (shared by both run paths) ──────────────────────────────────
-AWK_FORMATTER="${SCRIPT_DIR}/salt-formatter.awk"
-
 # ── Run via daemon ─────────────────────────────────────────────────────────────
 run_via_daemon() {
     echo "=== Applying ${STATE} via daemon ($(date)) ==="
     echo "Log: ${LOG_FILE}"
 
-    tail -f "${LOG_FILE}" | awk -v maxlen=100 -f "$AWK_FORMATTER" &
+    # Stream the log file to the terminal as Salt writes to it. No
+    # reformatting — operators see native Salt highstate output directly.
+    tail -n 0 -f "${LOG_FILE}" &
     local tail_pid=$!
 
-    local kwargs='{"state_output":"mixed_id"}'
-    $TEST_MODE && kwargs='{"state_output":"mixed_id","test":true}'
+    local kwargs='{}'
+    $TEST_MODE && kwargs='{"test":true}'
 
     local exit_code
     exit_code=$(python3 - <<PYEOF
@@ -182,31 +181,26 @@ run_direct() {
     echo "Log: ${LOG_FILE}"
     echo "(Start salt-daemon for faster subsequent runs)"
 
-    tail -f "${LOG_FILE}" | awk -v maxlen=100 -f "$AWK_FORMATTER" &
-    local tail_pid=$!
-
     local -a salt_cmd
     salt_cmd=(
         "${SUDO_CMD[@]}" "$VENV_DIR/bin/python3" -u "$SALT_RUNNER"
         --config-dir="${RUNTIME_CONFIG_DIR}"
         --local --log-level=warning
         --log-file="${LOG_FILE}" --log-file-level=debug
-        --state-output=mixed_id
         state.sls "${SALT_STATE}"
     )
     $TEST_MODE && salt_cmd+=(test=True)
 
+    # Let Salt stream native highstate output directly to the terminal
+    # while tee also appends it to the log file for post-run inspection.
     if [[ -n "${SUDO_PASS:-}" ]]; then
-        echo "$SUDO_PASS" | "${salt_cmd[@]}" 2>&1 | tee -a "${LOG_FILE}" > /dev/null
+        echo "$SUDO_PASS" | "${salt_cmd[@]}" 2>&1 | tee -a "${LOG_FILE}"
         local rc="${pipestatus[2]}"
     else
-        "${salt_cmd[@]}" 2>&1 | tee -a "${LOG_FILE}" > /dev/null
+        "${salt_cmd[@]}" 2>&1 | tee -a "${LOG_FILE}"
         local rc="${pipestatus[1]}"
     fi
 
-    sleep 0.3
-    kill "$tail_pid" 2>/dev/null || true
-    wait "$tail_pid" 2>/dev/null || true
     return "$rc"
 }
 
