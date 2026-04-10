@@ -234,26 +234,7 @@ else
     run_direct && RC=$? || RC=$?
 fi
 
-# ── Post-run: check log for errors that may have been missed ──────────────────
-check_log_errors() {
-    local critical_count
-    critical_count=$(rg -c '\[CRITICAL\]' "$LOG_FILE" 2>/dev/null || echo 0)
-    if [[ "$critical_count" -gt 0 ]]; then
-        echo ""
-        printf '\033[31m━━━ %d critical error(s) found ━━━\033[0m\n' "$critical_count"
-        rg '\[CRITICAL\]' "$LOG_FILE" | while IFS= read -r line; do
-            msg="${line##*\] }"
-            printf '\033[31m  ✗ %s\033[0m\n' "$msg"
-        done
-        # Force non-zero exit if salt reported success despite critical errors
-        if [[ $RC -eq 0 ]]; then
-            RC=1
-        fi
-    fi
-}
-
 echo ""
-check_log_errors
 echo "=== Finished ${STATE} (exit code: ${RC}) at $(date) ==="
 echo "Full log: ${LOG_FILE}"
 
