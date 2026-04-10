@@ -23,7 +23,41 @@ User `neg` is in groups: `libvirt`, `kvm`.
 
 ## 1. Create Windows 11 VM
 
-### Via virt-manager (recommended for first setup)
+### Via `win-vm` (declarative, reproducible)
+
+`~/.local/bin/win-vm` is a config-driven lifecycle manager that wraps
+`virt-install`/`virt-xml`/`virsh`. All VM parameters (RAM, CPU topology, ISOs,
+GPU passthrough, Looking Glass, CPU pinning, hugepages, USB) live in
+`~/.config/win-vm/config.sh` — edit once, redefine with one command.
+
+```bash
+win-vm init                        # create ~/.config/win-vm/config.sh
+$EDITOR ~/.config/win-vm/config.sh # set VM_WINDOWS_ISO, tweak any knobs
+win-vm check                       # verify packages, OVMF, libvirt socket
+win-vm prepare                     # download virtio-win ISO, create disk
+win-vm define                      # create libvirt VM from config
+win-vm start                       # boot VM
+virt-viewer -c qemu:///system win11  # connect to console, run installer
+
+# After Windows install completes:
+win-vm eject-install               # detach install ISOs
+
+# Optional post-install customizations:
+win-vm gpu-add                     # PCI passthrough RX 9070 XT (uses VM_GPU_*)
+win-vm lg-enable                   # add IVSHMEM for Looking Glass
+win-vm cpupin                      # pin vCPUs to host cores (uses VM_CPU_PIN_SET)
+win-vm hugepages                   # enable hugepages-backed memory
+win-vm usb-add 0951:16ae           # hot-attach a USB device
+win-vm looking-glass               # run looking-glass-client
+```
+
+Lifecycle: `win-vm status`, `win-vm stop` (ACPI), `win-vm kill` (force off),
+`win-vm edit` (opens `virsh edit`), `win-vm undefine`, `win-vm destroy-all`
+(removes VM + disk + nvram, prompts for confirmation).
+
+Run `win-vm help` for the full reference.
+
+### Via virt-manager (one-off GUI setup)
 
 1. Download Windows 11 ISO and [virtio-win drivers ISO](https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable1/virtio-win.iso)
 2. Open `virt-manager` → Create a new virtual machine
