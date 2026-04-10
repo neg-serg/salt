@@ -56,8 +56,8 @@ promtail:
   registry: docker.io
   image: grafana/promtail
   variant: "3.x"
-  digest: null           # TBD — resolved in T032
-  approved_at: null
+  digest: sha256:238d8562dc29ec83d2f5933c7fd6e9469a90ea316a04f160dcc7cf842910ca94
+  approved_at: "2026-04-10"
   note: "Loki log shipper; reads host systemd journal via bind-mount"
 
 grafana:
