@@ -39,9 +39,9 @@ llama_embed:
   registry: ghcr.io
   image: ggml-org/llama.cpp        # was ggerganov/llama.cpp before mid-2024 rename; see T004 verification note above
   variant: server-vulkan
-  digest: null           # TBD — resolved in T018
-  approved_at: null
-  note: "llama.cpp server build with Vulkan backend; hosts Qwen3-Embedding-8B"
+  digest: sha256:9532e967519cf3bcf15bd6f8c3d8af2c55c7363c04ac56ab3ddd952748259c03
+  approved_at: "2026-04-10"
+  note: "llama.cpp server build with Vulkan backend; hosts Qwen3-Embedding-8B. Manifest-list digest (multi-arch); amd64 sub-manifest is sha256:57fadb107463e96971d3f3354bf8b28ef156bf3d197c45bedcd8f6cc4beb68f5."
 
 # ─── US2: Observability stack ────────────────────────────────────────
 loki:
