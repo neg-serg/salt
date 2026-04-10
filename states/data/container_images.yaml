@@ -48,8 +48,8 @@ loki:
   registry: docker.io
   image: grafana/loki
   variant: "3.x"
-  digest: null           # TBD — resolved in T031
-  approved_at: null
+  digest: sha256:1694e9237e2b3d7cd4ad959bae1f21e12b6184d886d7412bd1b939fb0dd4e75c
+  approved_at: "2026-04-10"
   note: "Grafana Loki log aggregator; blue/green cutover mode"
 
 promtail:
