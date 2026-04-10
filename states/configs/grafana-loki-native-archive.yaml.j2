@@ -1,0 +1,25 @@
+{#- Temporary Grafana datasource that points at the NATIVE Loki instance
+    during the blue/green rollback window (feature 087-containerize-services,
+    T037 sub-step 6, FR-018).
+
+    The native Loki is moved to port {{ native_archive_port }} via a
+    Salt-managed config override so the containerized Loki can take over
+    the primary port. This datasource gives Grafana Explore read access to
+    historical logs on the native instance for the duration of the window.
+
+    This file is ONLY deployed while features.containers.loki is true and
+    the rollback window is open (cutover_date .. cutover_date + 7 days).
+    T054 removes both this file AND the port override atomically with the
+    native Loki pkg.removed — leaving either behind is a spec violation.
+-#}
+apiVersion: 1
+datasources:
+  - uid: loki-native-archive
+    name: "Loki (native, pre-cutover archive, expires {{ cutover_expiry }})"
+    type: loki
+    access: proxy
+    url: http://127.0.0.1:{{ native_archive_port }}
+    isDefault: false
+    editable: false
+    jsonData:
+      timeout: 60

@@ -706,7 +706,15 @@ container_service_PRECONDITION_FAILED_{{ name }}_{{ error_key }}:
     - failhard: True
 {%- endmacro -%}
 
-{%- macro container_service(name, catalog_entry, image_registry, user_scope=False, requires=None, watch=None) -%}
+{%- macro container_service(name, catalog_entry, image_registry, user_scope=False, requires=None, watch=None, quadlet_unit_name=None) -%}
+{#- quadlet_unit_name overrides the Quadlet file basename (and therefore the
+    generated systemd unit name) when set. Used for blue/green cases where the
+    containerized form must coexist with a still-running native unit of the
+    same logical service name (Loki is the canonical example). Defaults to
+    `name`, which gives the containerized form the same systemd unit name as
+    the native form — correct for hard-cutover cases (Ollama, llama_embed,
+    Promtail, Grafana, bridges) where only one form runs at a time. -#}
+{%- set _quadlet_name = quadlet_unit_name if quadlet_unit_name is not none else name -%}
 {#- Precondition 1: containerized flag -#}
 {%- if not catalog_entry.get('containerized', False) -%}
 {{ _cs_fail(name, 'not_containerized', 'catalog entry missing containerized: true') }}
@@ -754,13 +762,13 @@ container_service_PRECONDITION_FAILED_{{ name }}_{{ error_key }}:
 {%- set _manual_start = catalog_entry.get('manual_start', False) -%}
 {%- set _packages = catalog_entry.get('packages', '') -%}
 {%- set _cutover_date = catalog_entry.get('cutover_date') -%}
-{#- Quadlet file location depends on scope -#}
+{#- Quadlet file location depends on scope and on quadlet_unit_name override -#}
 {%- if user_scope -%}
-{%- set _quadlet_path = _home ~ '/.config/containers/systemd/' ~ name ~ '.container' -%}
-{%- set _quadlet_source = 'salt://units/user/' ~ name ~ '.container' -%}
+{%- set _quadlet_path = _home ~ '/.config/containers/systemd/' ~ _quadlet_name ~ '.container' -%}
+{%- set _quadlet_source = 'salt://units/user/' ~ _quadlet_name ~ '.container' -%}
 {%- else -%}
-{%- set _quadlet_path = '/etc/containers/systemd/' ~ name ~ '.container' -%}
-{%- set _quadlet_source = 'salt://units/' ~ name ~ '.container' -%}
+{%- set _quadlet_path = '/etc/containers/systemd/' ~ _quadlet_name ~ '.container' -%}
+{%- set _quadlet_source = 'salt://units/' ~ _quadlet_name ~ '.container' -%}
 {%- endif -%}
 {#- Pre-compute bind-mount list with tilde expansion -#}
 {%- set _expanded_mounts = [] -%}
@@ -826,22 +834,24 @@ container_service_PRECONDITION_FAILED_{{ name }}_{{ error_key }}:
 {%- if not _manual_start %}
 
 # container_service({{ name }}): enable + reset_failed + running + healthcheck
+# (targeting systemd unit "{{ _quadlet_name }}.service" — may differ from state
+# ID prefix when quadlet_unit_name is overridden for blue/green coexistence)
 {{ name }}_enabled:
 {%- if user_scope %}
   cmd.run:
-    - name: systemctl --user is-enabled {{ name }}.service >/dev/null 2>&1 || systemctl --user enable {{ name }}.service
+    - name: systemctl --user is-enabled {{ _quadlet_name }}.service >/dev/null 2>&1 || systemctl --user enable {{ _quadlet_name }}.service
     - runas: {{ _user }}
     - env:
 {%- for entry in _systemctl_env %}
       - {{ entry }}
 {%- endfor %}
-    - unless: systemctl --user is-enabled {{ name }}.service >/dev/null 2>&1
+    - unless: systemctl --user is-enabled {{ _quadlet_name }}.service >/dev/null 2>&1
     - require:
       - cmd: {{ name }}_image_pull
       - cmd: {{ name }}_daemon_reload
 {%- else %}
   service.enabled:
-    - name: {{ name }}
+    - name: {{ _quadlet_name }}
     - require:
       - cmd: {{ name }}_image_pull
       - cmd: {{ name }}_daemon_reload
@@ -849,8 +859,8 @@ container_service_PRECONDITION_FAILED_{{ name }}_{{ error_key }}:
 
 {{ name }}_reset_failed:
   cmd.run:
-    - name: systemctl {% if user_scope %}--user {% endif %}reset-failed {{ name }} 2>/dev/null; true
-    - onlyif: systemctl {% if user_scope %}--user {% endif %}is-failed {{ name }}
+    - name: systemctl {% if user_scope %}--user {% endif %}reset-failed {{ _quadlet_name }} 2>/dev/null; true
+    - onlyif: systemctl {% if user_scope %}--user {% endif %}is-failed {{ _quadlet_name }}
 {%- if user_scope %}
     - runas: {{ _user }}
     - env:
@@ -868,16 +878,16 @@ container_service_PRECONDITION_FAILED_{{ name }}_{{ error_key }}:
 {{ name }}_running:
 {%- if user_scope %}
   cmd.run:
-    - name: systemctl --user is-active {{ name }}.service >/dev/null 2>&1 || systemctl --user start {{ name }}.service
+    - name: systemctl --user is-active {{ _quadlet_name }}.service >/dev/null 2>&1 || systemctl --user start {{ _quadlet_name }}.service
     - runas: {{ _user }}
     - env:
 {%- for entry in _systemctl_env %}
       - {{ entry }}
 {%- endfor %}
-    - unless: systemctl --user is-active {{ name }}.service >/dev/null 2>&1
+    - unless: systemctl --user is-active {{ _quadlet_name }}.service >/dev/null 2>&1
 {%- else %}
   service.running:
-    - name: {{ name }}
+    - name: {{ _quadlet_name }}
 {%- endif %}
     - watch:
       - file: {{ name }}_container
@@ -893,10 +903,12 @@ container_service_PRECONDITION_FAILED_{{ name }}_{{ error_key }}:
       - cmd: {{ name }}_reset_failed
 {%- endif %}
 
-{#- Post-start healthcheck via service_with_healthcheck (skipped for manual_start) -#}
+{#- Post-start healthcheck via service_with_healthcheck (skipped for manual_start).
+    Targets _quadlet_name systemd unit (may differ from logical name for
+    blue/green cases) but preserves state ID prefix based on logical name. -#}
 {%- if not _manual_start %}
 
-{{ service_with_healthcheck(name ~ '_healthcheck', name, catalog={name: catalog_entry}, requires=['cmd: ' ~ name ~ '_running']) }}
+{{ service_with_healthcheck(name ~ '_healthcheck', _quadlet_name, catalog={_quadlet_name: catalog_entry}, requires=['cmd: ' ~ name ~ '_running']) }}
 {%- endif %}
 
 {#- Bounded native-package teardown after rollback window close (research Decision 5, FR-006) -#}

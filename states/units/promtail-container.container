@@ -1,0 +1,42 @@
+{#- Quadlet container unit template for Promtail (log shipper to Loki).
+    Rendered by container_service macro. Context:
+      catalog_entry:    dict from service_catalog.yaml[promtail]
+      image:            fully-resolved registry/image@sha256:... reference
+      expanded_mounts:  list of {host, container, mode} including journal paths
+      user_scope:       False (system scope per FR-017)
+
+    Journal access requires mounting /var/log/journal (persistent journal)
+    and /run/log/journal (runtime journal). Both are declared read-only in
+    the catalog bind_mounts list.
+-#}
+[Unit]
+Description=Promtail log shipper to Loki (containerized)
+Documentation=https://grafana.com/docs/loki/latest/clients/promtail/
+After=network-online.target loki.service
+Wants=network-online.target
+Requires=loki.service
+
+[Container]
+Image={{ image }}
+ContainerName=promtail
+PublishPort=127.0.0.1:{{ catalog_entry.port }}:9080
+{% for m in expanded_mounts -%}
+Volume={{ m.host }}:{{ m.container }}:{{ m.mode }}
+{% endfor -%}
+# Upstream image expects -config.file at the mounted config path.
+Exec=-config.file=/etc/promtail/config.yaml
+HealthCmd=wget -qO- http://127.0.0.1:9080/ready || exit 1
+HealthInterval=30s
+HealthRetries=3
+HealthTimeout=5s
+Notify=healthy
+
+[Service]
+Restart=on-failure
+RestartSec=5
+StartLimitBurst=5
+StartLimitIntervalSec=60
+TimeoutStartSec=60
+
+[Install]
+WantedBy=multi-user.target
