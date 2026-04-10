@@ -69,3 +69,26 @@
       flatpak: false
       opencode: false
       openclaw: false
+
+- name: matrix-containerized
+  description: All US1/US2 containerization flags enabled (exercises the Quadlet/container_service render path)
+  overrides:
+    hostname: matrix-containerized
+    features:
+      monitoring:
+        loki: true
+        promtail: true
+        grafana: true
+      ollama: true
+      llama_embed: true
+      containers:
+        ollama: true
+        llama_embed: true
+        loki: true
+        promtail: true
+        grafana: true
+        # US3 bridge flags stay false — upstream images deferred per research Decision 7
+        telethon_bridge: false
+        opencode_serve: false
+        opencode_telegram_bot: false
+        telecode: false

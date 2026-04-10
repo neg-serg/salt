@@ -141,3 +141,11 @@ Evaluate [SaluteSpeech](https://developers.sber.ru/docs/ru/salutespeech/overview
 - Compare with local alternatives: `faster-whisper` (large-v3), Vosk
 - Decision: cloud API (SaluteSpeech) vs self-hosted (Whisper on GPU)
 - If adopted: Salt state for setup, API key in gopass, systemd service
+
+
+## Verify end-to-end alert pipeline for containerized services (FR-016)
+
+After the containerization feature (087-containerize-services) lands, verify FR-016's promise that container failures surface through the existing Loki/Grafana/`monitoring_alerts.sls` stack. Procedure: stop a containerized service (e.g. loki container), wait for the alert timeout, confirm an alert appears through the existing channel. The chain works by construction (Quadlet → systemd journal → Promtail → Loki → Grafana → monitoring_alerts), but has not been exercised end-to-end. Low priority — deferred from the 087 spec analysis session (finding L1).
+
+- [ ] Stop a containerized service after cutover and confirm alert fires through the existing channel
+- [ ] Record outcome in 087 post-cutover notes

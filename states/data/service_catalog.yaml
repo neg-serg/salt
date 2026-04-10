@@ -1,8 +1,9 @@
 # Unified service catalog — single source of truth for ports, health
 # endpoints, unit names, packages, and scope. Consumed via import_yaml by
-# _macros_service.jinja (service_with_healthcheck) and individual .sls files.
+# _macros_service.jinja (service_with_healthcheck, container_service) and
+# individual .sls files.
 #
-# Fields:
+# Fields (core):
 #   port:         HTTP port (optional — omit for non-HTTP services)
 #   health_path:  URL path for HTTP healthcheck (optional)
 #   health_cmd:   Custom healthcheck command (optional — overrides port+health_path)
@@ -12,6 +13,24 @@
 #   manual_start: true if service should NOT be enabled at boot (optional, default false)
 #   timeout:      healthcheck timeout override in seconds (optional, default 30)
 #   health_host:  bind address override (optional, default 127.0.0.1)
+#
+# Fields (containerization, feature 087-containerize-services):
+#   containerized:    true when the service has a containerized form declared
+#                     (eligibility flag; runtime form is gated by hosts.yaml
+#                     features.containers.<name>).
+#   container_image:  string key into container_images.yaml (must match a
+#                     top-level map key there).
+#   cutover_mode:     `in_place` (inference, bridges) | `blue_green` (observability).
+#   cutover_date:     ISO 8601 date (YYYY-MM-DD) the containers.<name> flag
+#                     first flipped to true, or null. Drives the 7-day rollback
+#                     window via the <name>_native_teardown state guard.
+#   gpu:              none (default) | amdgpu (/dev/kfd + /dev/dri/renderD128)
+#                     | render_group (/dev/dri/renderD128 only, Vulkan-only).
+#   bind_mounts:      list of {host: <path>, container: <path>, mode: ro|rw}.
+#                     Tilde (~) in host paths is expanded to the invoking user's
+#                     home by the container_service macro at render time.
+#   env_file:         absolute host path for Quadlet `EnvironmentFile=`, or null.
+#   privileged:       escape hatch (default false); requires privileged_reason.
 
 loki:                          # Log aggregation (Grafana Loki)
   port: 3100
@@ -19,6 +38,19 @@ loki:                          # Log aggregation (Grafana Loki)
   unit: loki
   scope: system
   packages: loki
+  containerized: true
+  container_image: loki
+  cutover_mode: blue_green     # native Loki moves to port 3101 during rollback window (FR-018)
+  cutover_date: null
+  gpu: none
+  bind_mounts:
+    - host: /etc/loki
+      container: /etc/loki
+      mode: ro                 # Salt-managed config; container reads it read-only
+    - host: /var/lib/loki-container
+      container: /var/lib/loki
+      mode: rw                 # FRESH state dir — does NOT collide with native /var/lib/loki
+  env_file: null
 
 promtail:                      # Log shipper for Loki
   port: 9080
@@ -26,6 +58,22 @@ promtail:                      # Log shipper for Loki
   unit: promtail
   scope: system
   packages: promtail
+  containerized: true
+  container_image: promtail
+  cutover_mode: blue_green     # follows Loki's mode; ships to primary Loki only
+  cutover_date: null
+  gpu: none
+  bind_mounts:
+    - host: /etc/promtail
+      container: /etc/promtail
+      mode: ro
+    - host: /var/log/journal
+      container: /var/log/journal
+      mode: ro                 # systemd journal (persistent)
+    - host: /run/log/journal
+      container: /run/log/journal
+      mode: ro                 # systemd journal (runtime)
+  env_file: null
 
 grafana:                       # Monitoring dashboard
   port: 3030
@@ -33,6 +81,22 @@ grafana:                       # Monitoring dashboard
   unit: grafana
   scope: system
   packages: grafana
+  containerized: true
+  container_image: grafana
+  cutover_mode: blue_green
+  cutover_date: null
+  gpu: none
+  bind_mounts:
+    - host: /etc/grafana.ini
+      container: /etc/grafana/grafana.ini
+      mode: ro
+    - host: /etc/grafana/provisioning
+      container: /etc/grafana/provisioning
+      mode: ro                 # FR-018: provisioning-as-code already Salt-managed in monitoring_loki.sls
+    - host: /var/lib/grafana-container
+      container: /var/lib/grafana
+      mode: rw
+  env_file: null
 
 adguardhome:                   # DNS-level ad blocker
   port: 3000
@@ -47,6 +111,17 @@ ollama:                        # Local LLM inference server
   unit: ollama
   scope: system
   manual_start: true
+  packages: ''                 # Ollama is installed by the service_with_unit template today (not a pacman package); pkg.removed is a no-op
+  containerized: true
+  container_image: ollama
+  cutover_mode: in_place       # single state dir; disk budget forbids blue/green for multi-GB models
+  cutover_date: null
+  gpu: amdgpu                  # /dev/kfd (ROCm) + /dev/dri/renderD128
+  bind_mounts:
+    - host: /mnt/one/ollama/models
+      container: /root/.ollama/models
+      mode: rw
+  env_file: null
 
 llama_embed:                   # llama.cpp embedding server (Vulkan)
   port: 11435
@@ -56,6 +131,16 @@ llama_embed:                   # llama.cpp embedding server (Vulkan)
   packages: llama.cpp-vulkan
   timeout: 90
   manual_start: true
+  containerized: true
+  container_image: llama_embed
+  cutover_mode: in_place
+  cutover_date: null
+  gpu: render_group            # Vulkan-only; no /dev/kfd needed
+  bind_mounts:
+    - host: /mnt/one/llama-embed/models
+      container: /models
+      mode: ro
+  env_file: null
 
 jellyfin:                      # Media server
   port: 8096
@@ -88,3 +173,72 @@ bitcoind:                      # Bitcoin Core node
   scope: system
   packages: bitcoin-daemon
   manual_start: true
+
+# ─── Containerization candidates — US3 bridge tier (deferred per research Decision 7) ───
+# These entries exist so the container_service macro and the feature-matrix
+# toggles have valid references. The digest in container_images.yaml is null
+# for all four, so the macro emits zero containerized states and the native
+# path runs unchanged. Populating a digest later is a single two-line YAML
+# edit that flips the service to its containerized form.
+
+telethon_bridge:               # Telegram bridge (python-telethon)
+  unit: telethon-bridge
+  scope: user
+  packages: python-telethon
+  health_cmd: "systemctl --user is-active telethon-bridge.service"
+  containerized: true
+  container_image: telethon_bridge
+  cutover_mode: in_place
+  cutover_date: null
+  gpu: none
+  bind_mounts:
+    - host: ~/.telethon-bridge
+      container: /data
+      mode: rw
+  env_file: null
+
+opencode_serve:                # OpenCode HTTP API server (consumed by opencode_telegram_bot)
+  port: 4096                   # opencode serve default; verify before first cutover
+  health_path: /
+  unit: opencode-serve
+  scope: user
+  containerized: true
+  container_image: opencode_serve
+  cutover_mode: in_place
+  cutover_date: null
+  gpu: none
+  bind_mounts:
+    - host: ~/.config/opencode
+      container: /config
+      mode: rw
+  env_file: null
+
+opencode_telegram_bot:         # OpenCode Telegram bot (@grinev/opencode-telegram-bot npm)
+  unit: opencode-telegram-bot
+  scope: user
+  health_cmd: "systemctl --user is-active opencode-telegram-bot.service"
+  containerized: true
+  container_image: opencode_telegram_bot
+  cutover_mode: in_place
+  cutover_date: null
+  gpu: none
+  bind_mounts:
+    - host: ~/.config/opencode-telegram-bot
+      container: /config
+      mode: rw
+  env_file: null
+
+telecode:                      # Telecode Telegram agent (Go binary)
+  unit: telecode
+  scope: user
+  health_cmd: "systemctl --user is-active telecode.service"
+  containerized: true
+  container_image: telecode
+  cutover_mode: in_place
+  cutover_date: null
+  gpu: none
+  bind_mounts:
+    - host: ~/.telecode
+      container: /data
+      mode: rw
+  env_file: null

@@ -58,6 +58,23 @@ defaults:
     mpd: true
     ollama: true
     llama_embed: true
+    # Containerization cutover toggles (feature 087-containerize-services).
+    # Each flag is the rollback lever for its service per FR-006:
+    #   - false → native deployment (current behaviour)
+    #   - true  → containerized via Podman Quadlet (requires non-null digest
+    #             in states/data/container_images.yaml)
+    # Flipping a flag to true MUST be paired with setting the service's
+    # cutover_date in service_catalog.yaml in the same commit.
+    containers:
+      ollama: false
+      llama_embed: false
+      loki: false
+      promtail: false
+      grafana: false
+      telethon_bridge: false      # deferred: upstream image pending (research Decision 7)
+      opencode_serve: false       # deferred: upstream image pending
+      opencode_telegram_bot: false # deferred: upstream image pending
+      telecode: false             # deferred: upstream image pending
     floorp: false
     espanso: false
     kanata: true

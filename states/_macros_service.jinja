@@ -635,3 +635,295 @@ test -e {{ _path }}
 {{ service_with_healthcheck(name ~ '_start', name, check_cmd=check_cmd, timeout=timeout, catalog=catalog, requires=healthcheck_requires or ['service: ' ~ name ~ '_enabled']) }}
 {%- endif %}
 {%- endmacro -%}
+
+{# Tilde-expand a bind-mount host path against the caller's home directory.
+   Used by container_service() to render absolute host paths in Quadlet Volume= lines.
+   '~' alone → home; '~/foo' → home/foo; anything else passes through unchanged.
+#}
+{%- macro _tilde_expand(raw_path, home_value) -%}
+{%- if raw_path == '~' -%}
+{{ home_value }}
+{%- elif raw_path is string and raw_path.startswith('~/') -%}
+{{ home_value }}/{{ raw_path[2:] }}
+{%- else -%}
+{{ raw_path }}
+{%- endif -%}
+{%- endmacro -%}
+
+{# Containerized-service supervisor (feature 087-containerize-services).
+   Parallel to service_with_unit: deploys a Podman Quadlet .container unit,
+   pulls the digest-pinned image, reloads systemd, enables/starts the unit,
+   delegates the catalog healthcheck, and schedules bounded native-package
+   teardown after the rollback window closes.
+
+   Arguments:
+     name            - state ID prefix AND Quadlet unit basename; must match a
+                       top-level key in service_catalog.yaml
+     catalog_entry   - dict from service_catalog.yaml[name]; MUST include
+                       containerized: true
+     image_registry  - parsed container_images.yaml map; the macro reads
+                       image_registry[catalog_entry.container_image]
+     user_scope      - True for rootless user-scoped Quadlet (must match
+                       catalog_entry.scope == 'user')
+     requires        - extra state requisites appended to the pull state
+     watch           - extra state requisites appended to the running state
+
+   Emitted states (see specs/087-containerize-services/contracts/container_service_macro.md
+   for the authoritative contract):
+     {name}_container, {name}_image_pull, {name}_daemon_reload,
+     {name}_enabled (skipped if manual_start), {name}_reset_failed (skipped
+     if manual_start), {name}_running (skipped if manual_start),
+     {name}_healthcheck (skipped if manual_start), {name}_native_teardown
+     (skipped if packages is empty).
+
+   Render-time preconditions (fail loudly if violated):
+     1. catalog_entry.containerized == true
+     2. catalog_entry.container_image resolves to a key in image_registry
+     3. image_registry[...].digest matches sha256:<64 hex> (P1/P2 services);
+        null digest is allowed for P3 services but emits ZERO states (the
+        upstream-image gate pattern — FR-014 + research Decision 7)
+     4. catalog_entry.cutover_mode is 'in_place' or 'blue_green'
+     5. user_scope agreement with catalog_entry.scope (FR-017)
+     6. gpu == 'amdgpu' implies scope == 'system' (research Decision 2)
+
+   Usage:
+     {{ container_service('ollama', catalog.ollama, image_registry,
+                          requires=['file: ollama_models_dir', 'mount: mount_one']) }}
+     {{ container_service('telethon_bridge', catalog.telethon_bridge, image_registry,
+                          user_scope=True,
+                          requires=['cmd: install_python_telethon']) }}
+#}
+{#- Helper: emit a fail_without_changes state that surfaces a precondition
+    error at apply time. Render always succeeds so `just validate` is unaffected;
+    the error fires only when Salt actually tries to apply a state tree that
+    invokes container_service with bad inputs. State-ID embeds the message for
+    visibility in `salt-call state.show_sls` output.
+#}
+{%- macro _cs_fail(name, error_key, message) -%}
+container_service_PRECONDITION_FAILED_{{ name }}_{{ error_key }}:
+  test.fail_without_changes:
+    - name: 'container_service({{ name }}): {{ message }}'
+    - failhard: True
+{%- endmacro -%}
+
+{%- macro container_service(name, catalog_entry, image_registry, user_scope=False, requires=None, watch=None) -%}
+{#- Precondition 1: containerized flag -#}
+{%- if not catalog_entry.get('containerized', False) -%}
+{{ _cs_fail(name, 'not_containerized', 'catalog entry missing containerized: true') }}
+{%- else -%}
+{#- Precondition 2: image_registry lookup -#}
+{%- set _image_key = catalog_entry.get('container_image') -%}
+{%- if _image_key is none or _image_key not in image_registry -%}
+{{ _cs_fail(name, 'image_key_missing', 'container_image "' ~ (_image_key or 'null') ~ '" not found in container_images.yaml') }}
+{%- else -%}
+{%- set _img = image_registry[_image_key] -%}
+{#- Precondition 3: digest check (null digest → emit nothing, P3 upstream-image gate) -#}
+{%- if _img.get('digest') is none -%}
+{#- Null digest: emit a single no-op state so the branch has something to
+    anchor downstream require: chains to, and surface the gate status in the
+    apply log. This is the upstream-image gate pattern (research Decision 7). -#}
+{{ name }}_container_deferred:
+  test.succeed_without_changes:
+    - name: {{ name }}
+    - comment: >
+        container_service({{ name }}): image digest is null in container_images.yaml
+        — P3 upstream-image gate is active, no containerized states emitted.
+        Flipping features.containers.{{ name }} to true has no effect until a
+        non-null digest is committed.
+{%- else -%}
+{#- Full P1/P2 path: digest present, run remaining preconditions then emit the full state graph -#}
+{%- set _digest = _img.digest -%}
+{%- set _cutover_mode = catalog_entry.get('cutover_mode') -%}
+{%- set _catalog_scope = catalog_entry.get('scope') -%}
+{%- set _gpu = catalog_entry.get('gpu', 'none') -%}
+{%- set _digest_ok = (_digest is string and _digest.startswith('sha256:') and _digest | length == 71) -%}
+{%- set _cutover_ok = _cutover_mode in ['in_place', 'blue_green'] -%}
+{%- set _scope_ok = (user_scope and _catalog_scope == 'user') or ((not user_scope) and _catalog_scope == 'system') -%}
+{%- set _gpu_ok = not (_gpu == 'amdgpu' and user_scope) -%}
+{%- if not _digest_ok -%}
+{{ _cs_fail(name, 'bad_digest_format', 'image digest "' ~ _digest ~ '" does not match sha256:<64 hex>; FR-014 violation') }}
+{%- elif not _cutover_ok -%}
+{{ _cs_fail(name, 'bad_cutover_mode', 'cutover_mode must be in_place or blue_green, got "' ~ (_cutover_mode or 'null') ~ '"') }}
+{%- elif not _scope_ok -%}
+{{ _cs_fail(name, 'scope_mismatch', 'user_scope=' ~ user_scope ~ ' but catalog scope is "' ~ (_catalog_scope or 'null') ~ '" — FR-017 violation') }}
+{%- elif not _gpu_ok -%}
+{{ _cs_fail(name, 'gpu_scope_violation', 'gpu=amdgpu requires system scope (research Decision 2)') }}
+{%- else -%}
+{#- All preconditions passed: resolve paths and image reference -#}
+{%- set _full_image = _img.registry ~ '/' ~ _img.image ~ '@' ~ _digest -%}
+{%- set _manual_start = catalog_entry.get('manual_start', False) -%}
+{%- set _packages = catalog_entry.get('packages', '') -%}
+{%- set _cutover_date = catalog_entry.get('cutover_date') -%}
+{#- Quadlet file location depends on scope -#}
+{%- if user_scope -%}
+{%- set _quadlet_path = _home ~ '/.config/containers/systemd/' ~ name ~ '.container' -%}
+{%- set _quadlet_source = 'salt://units/user/' ~ name ~ '.container' -%}
+{%- else -%}
+{%- set _quadlet_path = '/etc/containers/systemd/' ~ name ~ '.container' -%}
+{%- set _quadlet_source = 'salt://units/' ~ name ~ '.container' -%}
+{%- endif -%}
+{#- Pre-compute bind-mount list with tilde expansion -#}
+{%- set _expanded_mounts = [] -%}
+{%- for bm in catalog_entry.get('bind_mounts', []) -%}
+{%- set _host = _tilde_expand(bm.host, _home) | trim -%}
+{%- do _expanded_mounts.append({'host': _host, 'container': bm.container, 'mode': bm.mode}) -%}
+{%- endfor -%}
+
+# container_service({{ name }}): Quadlet unit file ({{ 'user' if user_scope else 'system' }} scope)
+{{ name }}_container:
+  file.managed:
+    - name: {{ _quadlet_path }}
+    - source: {{ _quadlet_source }}
+    - template: jinja
+    - mode: '0644'
+    - makedirs: True
+{%- if user_scope %}
+    - user: {{ _user }}
+    - group: {{ _user }}
+{%- endif %}
+    - context:
+        catalog_entry: {{ catalog_entry | tojson }}
+        image: {{ _full_image }}
+        expanded_mounts: {{ _expanded_mounts | tojson }}
+        user_scope: {{ user_scope | tojson }}
+
+# container_service({{ name }}): digest-pinned image pull (idempotent via `podman image exists`)
+{{ name }}_image_pull:
+  cmd.run:
+    - name: podman pull {{ _full_image }}
+    - unless: podman image exists {{ _full_image }}
+    - retry:
+        attempts: {{ retry_attempts }}
+        interval: {{ retry_interval }}
+{%- if user_scope %}
+    - runas: {{ _user }}
+    - env:
+{%- for entry in _systemctl_env %}
+      - {{ entry }}
+{%- endfor %}
+{%- endif %}
+{%- if requires %}
+    - require:
+{%- for req in requires %}
+      - {{ req }}
+{%- endfor %}
+{%- endif %}
+
+# container_service({{ name }}): daemon-reload so Quadlet regenerates the systemd unit
+{{ name }}_daemon_reload:
+  cmd.run:
+    - name: systemctl {% if user_scope %}--user {% endif %}daemon-reload
+{%- if user_scope %}
+    - runas: {{ _user }}
+    - env:
+{%- for entry in _systemctl_env %}
+      - {{ entry }}
+{%- endfor %}
+{%- endif %}
+    - onchanges:
+      - file: {{ name }}_container
+
+{%- if not _manual_start %}
+
+# container_service({{ name }}): enable + reset_failed + running + healthcheck
+{{ name }}_enabled:
+{%- if user_scope %}
+  cmd.run:
+    - name: systemctl --user is-enabled {{ name }}.service >/dev/null 2>&1 || systemctl --user enable {{ name }}.service
+    - runas: {{ _user }}
+    - env:
+{%- for entry in _systemctl_env %}
+      - {{ entry }}
+{%- endfor %}
+    - unless: systemctl --user is-enabled {{ name }}.service >/dev/null 2>&1
+    - require:
+      - cmd: {{ name }}_image_pull
+      - cmd: {{ name }}_daemon_reload
+{%- else %}
+  service.enabled:
+    - name: {{ name }}
+    - require:
+      - cmd: {{ name }}_image_pull
+      - cmd: {{ name }}_daemon_reload
+{%- endif %}
+
+{{ name }}_reset_failed:
+  cmd.run:
+    - name: systemctl {% if user_scope %}--user {% endif %}reset-failed {{ name }} 2>/dev/null; true
+    - onlyif: systemctl {% if user_scope %}--user {% endif %}is-failed {{ name }}
+{%- if user_scope %}
+    - runas: {{ _user }}
+    - env:
+{%- for entry in _systemctl_env %}
+      - {{ entry }}
+{%- endfor %}
+{%- endif %}
+    - require:
+{%- if user_scope %}
+      - cmd: {{ name }}_enabled
+{%- else %}
+      - service: {{ name }}_enabled
+{%- endif %}
+
+{{ name }}_running:
+{%- if user_scope %}
+  cmd.run:
+    - name: systemctl --user is-active {{ name }}.service >/dev/null 2>&1 || systemctl --user start {{ name }}.service
+    - runas: {{ _user }}
+    - env:
+{%- for entry in _systemctl_env %}
+      - {{ entry }}
+{%- endfor %}
+    - unless: systemctl --user is-active {{ name }}.service >/dev/null 2>&1
+{%- else %}
+  service.running:
+    - name: {{ name }}
+{%- endif %}
+    - watch:
+      - file: {{ name }}_container
+{%- for w in (watch or []) %}
+      - {{ w }}
+{%- endfor %}
+    - require:
+{%- if user_scope %}
+      - cmd: {{ name }}_enabled
+{%- else %}
+      - service: {{ name }}_enabled
+{%- endif %}
+      - cmd: {{ name }}_reset_failed
+{%- endif %}
+
+{#- Post-start healthcheck via service_with_healthcheck (skipped for manual_start) -#}
+{%- if not _manual_start %}
+
+{{ service_with_healthcheck(name ~ '_healthcheck', name, catalog={name: catalog_entry}, requires=['cmd: ' ~ name ~ '_running']) }}
+{%- endif %}
+
+{#- Bounded native-package teardown after rollback window close (research Decision 5, FR-006) -#}
+{%- if _packages %}
+
+# container_service({{ name }}): bounded native package teardown after 7-day rollback window
+{{ name }}_native_teardown:
+  pkg.removed:
+    - pkgs:
+{%- for p in _packages.split() %}
+      - {{ p }}
+{%- endfor %}
+{%- if _cutover_date %}
+    - onlyif: >-
+        test "$(( ( $(date +%s) - $(date -d '{{ _cutover_date }}' +%s) ) / 86400 ))" -ge 7
+{%- else %}
+    - onlyif: /bin/false    # cutover_date is null; teardown not yet armed
+{%- endif %}
+    - require:
+{%- if _manual_start %}
+      - cmd: {{ name }}_image_pull
+{%- else %}
+      - cmd: {{ name }}_healthcheck
+{%- endif %}
+{%- endif %}
+{%- endif %}{# close "all preconditions passed" else (Level 4) #}
+{%- endif %}{# close "digest is none" if (Level 3) #}
+{%- endif %}{# close "image key found in registry" else (Level 2) #}
+{%- endif %}{# close "containerized flag true" else (Level 1) #}
+{%- endmacro -%}
