@@ -64,8 +64,8 @@ grafana:
   registry: docker.io
   image: grafana/grafana-oss
   variant: "11.x-oss"
-  digest: null           # TBD — resolved in T033
-  approved_at: null
+  digest: sha256:9419d74cb14745b96cf7068c6c5de30851d63ee45bfbe6387d48b12e62146ea4
+  approved_at: "2026-04-10"
   note: "Grafana OSS; reads /etc/grafana* provisioning from host bind-mount (FR-018)"
 
 # ─── US3: Bridge tier (deferred per research Decision 7) ─────────────
