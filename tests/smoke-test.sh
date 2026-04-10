@@ -99,7 +99,7 @@ echo "--- Applying states ---"
 for state in "${SAFE_STATES[@]}"; do
     echo -n "  Applying ${state}... "
     output=$(run salt-call --local --config-dir=/etc/salt \
-        --log-level=warning --state-output=mixed_id \
+        --log-level=warning \
         state.sls "$state" 2>&1) || true
     if echo "$output" | grep -q "Failed:    0"; then
         printf '%bOK%b\n' "$GREEN" "$NC"
