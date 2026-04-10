@@ -134,7 +134,7 @@ llama_embed:                   # llama.cpp embedding server (Vulkan)
   containerized: true
   container_image: llama_embed
   cutover_mode: in_place
-  cutover_date: null
+  cutover_date: "2026-04-11"
   gpu: render_group            # Vulkan-only; no /dev/kfd needed
   bind_mounts:
     - host: /mnt/one/llama-embed/models

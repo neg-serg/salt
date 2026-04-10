@@ -67,7 +67,7 @@ defaults:
     # cutover_date in service_catalog.yaml in the same commit.
     containers:
       ollama: true
-      llama_embed: false
+      llama_embed: true
       loki: false
       promtail: false
       grafana: false
