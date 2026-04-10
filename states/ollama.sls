@@ -1,13 +1,35 @@
 {% from '_imports.jinja' import host, user, home, retry_attempts, retry_interval, ollama_pull_timeout %}
 {% import_yaml 'data/service_catalog.yaml' as catalog %}
-{% from '_macros_service.jinja' import ensure_dir, service_with_unit %}
+{% import_yaml 'data/container_images.yaml' as image_registry %}
+{% from '_macros_service.jinja' import ensure_dir, service_with_unit, container_service %}
 {% import_yaml 'data/ollama.yaml' as ollama %}
-# Ollama LLM server: systemd service, model pulls
+# Ollama LLM server: systemd service + model pulls.
 # Service is NOT enabled at boot (manual_start) — VRAM is shared with desktop GPU.
 # Salt starts ollama temporarily for model pulls, then stops it.
-{{ service_with_unit('ollama', 'salt://units/ollama.service.j2', template='jinja', context={'user': user, 'home': home, 'mnt_one': host.mnt_one, 'ollama_port': catalog.ollama.port}, enabled=False) }}
+#
+# Feature 087-containerize-services: branches on host.features.containers.ollama.
+#   false (default) → native ollama.service.j2 via service_with_unit
+#   true             → containerized via Podman Quadlet via container_service
+#                      with HTTP API model pulls (H1 fix — no host ollama binary)
+{% set _containerized = host.features.get('containers', {}).get('ollama', False) %}
 
 {{ ensure_dir('ollama_models_dir', host.mnt_one ~ '/ollama/models', require=['mount: mount_one']) }}
+
+{% if _containerized %}
+# ── Containerized form (Podman Quadlet) ────────────────────────────────
+{{ container_service('ollama', catalog.ollama, image_registry,
+    requires=['file: ollama_models_dir', 'mount: mount_one']) }}
+{% else %}
+# ── Native form ────────────────────────────────────────────────────────
+{{ service_with_unit('ollama', 'salt://units/ollama.service.j2', template='jinja', context={'user': user, 'home': home, 'mnt_one': host.mnt_one, 'ollama_port': catalog.ollama.port}, enabled=False) }}
+
+# Rollback cleanup: if the containers.ollama flag flips back to false,
+# make sure the Quadlet unit file is gone so systemd doesn't keep a ghost
+# unit alongside the native service.
+ollama_quadlet_absent:
+  file.absent:
+    - name: /etc/containers/systemd/ollama.container
+{% endif %}
 
 {% set ollama_base = '127.0.0.1:' ~ catalog.ollama.port %}
 {% set manifests = host.mnt_one ~ '/ollama/models/manifests/registry.ollama.ai' %}
@@ -25,7 +47,9 @@
 {%- endif -%}
 {%- endmacro -%}
 
-# Temporarily start ollama for model pulls (skipped when all manifests present)
+# Temporarily start ollama for model pulls (skipped when all manifests present).
+# Works for both native and containerized — `systemctl start ollama` brings up
+# either the pacman-installed ollama.service or the Quadlet-generated one.
 ollama_tmp_start:
   cmd.run:
     - name: |
@@ -42,7 +66,18 @@ ollama_tmp_start:
 {% for model in ollama.models %}
 pull_{{ model | replace('.', '_') | replace(':', '_') | replace('-', '_') }}:
   cmd.run:
+{% if _containerized %}
+    # H1 fix: when containerized, there is no host `ollama` binary to call.
+    # Pull via the HTTP API POST /api/pull, which writes manifest files into
+    # the bind-mounted /mnt/one/ollama/models directory exactly as the
+    # native binary would — the `unless:` manifest check still works.
+    - name: >-
+        curl -sf -X POST http://{{ ollama_base }}/api/pull
+        -H 'Content-Type: application/json'
+        -d '{"name":"{{ model }}","stream":false}'
+{% else %}
     - name: ollama pull {{ model }}
+{% endif %}
     - unless: test -f "{{ manifest_path(model) }}"
     - timeout: {{ ollama_pull_timeout }}
     - retry:
@@ -55,7 +90,8 @@ pull_{{ model | replace('.', '_') | replace(':', '_') | replace('-', '_') }}:
 {% endif %}
 {% endfor %}
 
-# Stop ollama after model pulls to free VRAM
+# Stop ollama after model pulls to free VRAM.
+# `systemctl stop ollama` works for both native and Quadlet-generated units.
 ollama_tmp_stop:
   cmd.run:
     - name: systemctl stop ollama
