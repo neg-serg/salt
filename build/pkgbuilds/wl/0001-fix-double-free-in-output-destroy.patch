@@ -1,0 +1,37 @@
+From: Sergey Miroshnichenko <neg-serg@example.com>
+Subject: [PATCH] daemon: fix double-free in Output::destroy on shutdown
+
+When the daemon is stopped while a wallpaper transition is in flight,
+`Output::destroy` would free `transition.new_texture` and then free
+`wallpaper.texture`, which share the same underlying vk::Image /
+vk::ImageView / vk::DeviceMemory handles (see the transition-completion
+path around main.rs:1094 and the early-destroy guard at main.rs:1181).
+
+The double free was caught by glibc malloc during the teardown of
+radv's internal bookkeeping, aborting the process with SIGABRT from
+within DaemonState::destroy_all.
+
+Fix: do not destroy `transition.new_texture` in Output::destroy — its
+handles are already owned by `self.wallpaper.texture` and will be
+freed via that path.
+---
+ daemon/src/output.rs | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+--- a/daemon/src/output.rs
++++ b/daemon/src/output.rs
+@@ -195,7 +195,13 @@
+         unsafe {
+             if let Some(transition) = self.transition.take() {
+                 transition.old_texture.destroy(device);
+-                transition.new_texture.destroy(device);
++                // NOTE: do NOT destroy transition.new_texture — its Vulkan
++                // handles are shared with self.wallpaper.texture (see the
++                // transition-completion path in main.rs around line 1094
++                // and the early-destroy guard at line 1181). Freeing both
++                // would cause a double-free in the radv allocator and
++                // glibc-malloc would abort the process (SIGABRT in
++                // DaemonState::destroy_all on shutdown).
+             }
+             if let Some(animation) = self.animation.take() {
+                 animation.atlas.destroy(device);

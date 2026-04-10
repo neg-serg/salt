@@ -1,7 +1,7 @@
 # Maintainer: neg-serg <neg-serg@example.com>
 pkgname=wl
 pkgver=0.1.0
-pkgrel=2
+pkgrel=3
 pkgdesc='Wayland wallpaper daemon with Vulkan backend (neg-serg fork of swww)'
 arch=('x86_64')
 url='https://github.com/neg-serg/wl'
@@ -10,9 +10,19 @@ depends=('wayland' 'libffi')
 makedepends=('rust' 'cargo' 'git' 'wayland-protocols')
 conflicts=('swww' 'swww-vulkan')
 provides=('swww')
-source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/main.tar.gz")
+source=(
+    "${pkgname}-${pkgver}.tar.gz::${url}/archive/main.tar.gz"
+    '0001-fix-double-free-in-output-destroy.patch'
+)
 # Update hash after pushing to main: curl -sL ${url}/archive/main.tar.gz | sha256sum
-sha256sums=('SKIP')
+sha256sums=('SKIP' 'SKIP')
+
+prepare() {
+    cd "${pkgname}-main"
+    # Local fix: double-free in Output::destroy on shutdown during transition.
+    # TODO: upstream to github.com/neg-serg/wl and drop this patch.
+    patch -Np1 -i "${srcdir}/0001-fix-double-free-in-output-destroy.patch"
+}
 
 build() {
     cd "${pkgname}-main"
