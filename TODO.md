@@ -149,3 +149,21 @@ After the containerization feature (087-containerize-services) lands, verify FR-
 
 - [ ] Stop a containerized service after cutover and confirm alert fires through the existing channel
 - [ ] Record outcome in 087 post-cutover notes
+
+
+## wl-daemon: reconnect-on-broken-pipe instead of graceful shutdown
+
+When the Wayland compositor emits a fast output-remove-and-readd sequence (monitor hotplug, mode change, `hyprctl reload`, DPMS cycle), `wl-daemon` can race a pending `wl_display_flush()` against the now-closed `wl_output`. The flush returns `EPIPE` (Broken pipe), the error propagates as `wayland flush error` to the main loop, and the daemon currently chooses to `shutting down` cleanly (exit status 0). Observed 2026-04-10 at 20:18:01 on telfir after a DP-2 reconfigure — prior commit 4bb90eb (fix double-free on shutdown during wallpaper transition) converted what used to be SIGABRT into a clean exit, which exposed this handling gap.
+
+The immediate symptom (no wallpaper until manual restart) was mitigated by switching `wl.service` to `Restart=always` + `StartLimitBurst=5/60s` — systemd now bounces the daemon automatically, and the rate limit prevents loops during real session teardown. But that's a workaround: the daemon should be resilient to transient wayland reconfigure events without exiting at all.
+
+**Proper fix (upstream, `build/pkgbuilds/wl/src/wl-main/daemon/`):**
+
+- [ ] Treat `EPIPE` on `wl_display_flush()` as recoverable rather than fatal: tear down the wayland state for the affected output, reconnect the `wl_display`, rebind globals, recreate layer surfaces on the new outputs, rerun `wl restore` internally. No process exit.
+- [ ] Wrap the reconnect path behind a bounded retry (e.g. 5 attempts over 10s) so a real session teardown still terminates the daemon eventually rather than looping.
+- [ ] Emit a clear log line like `wayland connection lost, reconnecting (attempt N/5)` so journal readers understand what's happening.
+- [ ] Keep `Restart=always` in wl.service as defense-in-depth — this change is the *correct* fix, the systemd policy is the *safety net*.
+
+**Secondary cleanup** (same file, cosmetic): the `ExecStartPost=wl restore` retry-loop in the unit file fires before the daemon's IPC socket is ready on fast cold starts, which leaves a `daemon is not running` error line in the journal on every start. Right fix: have `wl-daemon` emit `sd_notify(READY=1)` once the IPC listener is bound, change the unit to `Type=notify`, and drop the sleep-based retry loop entirely. Low priority — the retry loop works, it's just noisy.
+
+**Why not inlined into this session's commits**: unrelated domain. This is upstream work on `github.com/neg-serg/wl` (Rust code), not on the Salt state tree.
