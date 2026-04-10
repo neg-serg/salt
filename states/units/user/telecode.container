@@ -1,0 +1,33 @@
+{#- Quadlet container unit template for Telecode Telegram agent (Go binary)
+    (feature 087-containerize-services, US3 structural scaffolding).
+    DIGEST DEFERRED per research Decision 7 — upstream image pending.
+    Context: see telethon-bridge.container.
+-#}
+[Unit]
+Description=Telecode Telegram agent (containerized)
+After=default.target
+
+[Container]
+Image={{ image }}
+ContainerName=telecode
+{% for m in expanded_mounts -%}
+Volume={{ m.host }}:{{ m.container }}:{{ m.mode }}
+{% endfor -%}
+{% if catalog_entry.env_file -%}
+EnvironmentFile={{ catalog_entry.env_file }}
+{% endif -%}
+HealthCmd=pgrep -f telecode || exit 1
+HealthInterval=30s
+HealthRetries=3
+HealthTimeout=10s
+Notify=healthy
+
+[Service]
+Restart=on-failure
+RestartSec=5
+StartLimitBurst=5
+StartLimitIntervalSec=60
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target

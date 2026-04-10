@@ -1,7 +1,15 @@
-{% from '_imports.jinja' import user, home, proxypilot_key, tg_secret %}
+{% from '_imports.jinja' import host, user, home, proxypilot_key, tg_secret %}
+{% import_yaml 'data/service_catalog.yaml' as catalog %}
+{% import_yaml 'data/container_images.yaml' as image_registry %}
 {% from '_macros_pkg.jinja' import paru_install %}
-{% from '_macros_service.jinja' import ensure_dir, user_service_enable, user_service_file %}
+{% from '_macros_service.jinja' import ensure_dir, user_service_enable, user_service_file, container_service %}
 {% import_yaml 'data/versions.yaml' as ver %}
+# Feature 087-containerize-services: branches on features.containers.telethon_bridge.
+# While container_images.yaml[telethon_bridge].digest is null (research Decision 7,
+# upstream-image gate), the container_service macro emits only a _container_deferred
+# no-op state and the native deployment path continues unchanged — flipping the
+# toggle has no runtime effect until a first-party upstream image is identified.
+{% set _containerized = host.features.get('containers', {}).get('telethon_bridge', False) %}
 # ── Secret resolution ─────────────────────────────────────────────────
 {% set _proxy_key = proxypilot_key() %}
 {% set _tb_creds = home ~ '/.telethon-bridge/credentials' %}
@@ -63,3 +71,19 @@ telethon_bridge_init_script:
 {{ user_service_file('telethon_bridge_service', 'telethon-bridge.service') }}
 
 {{ user_service_enable('telethon_bridge_enabled', start_now=['telethon-bridge.service'], requires=['cmd: install_python_telethon', 'file: telethon_bridge_config', 'file: telethon_bridge_script', 'file: telethon_bridge_service']) }}
+
+{% if _containerized %}
+# ── Containerized form (Podman Quadlet, user scope, digest-gated) ──
+# While container_images.yaml[telethon_bridge].digest is null, this call
+# emits only a test.succeed_without_changes state as a visible gate marker;
+# when a digest is eventually committed, it will emit the full state graph
+# and the native user_service_enable above will need to be gated on
+# `not _containerized` in a follow-up commit.
+{{ container_service('telethon_bridge', catalog.telethon_bridge, image_registry,
+    user_scope=True,
+    requires=['cmd: install_python_telethon', 'file: telethon_bridge_config']) }}
+{% else %}
+telethon_bridge_quadlet_absent:
+  file.absent:
+    - name: {{ home }}/.config/containers/systemd/telethon-bridge.container
+{% endif %}

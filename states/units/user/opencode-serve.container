@@ -1,0 +1,34 @@
+{#- Quadlet container unit template for OpenCode HTTP API server
+    (feature 087-containerize-services, US3 structural scaffolding).
+    DIGEST DEFERRED per research Decision 7 — upstream image pending.
+    Context: see telethon-bridge.container.
+-#}
+[Unit]
+Description=OpenCode HTTP API server (containerized)
+After=default.target
+
+[Container]
+Image={{ image }}
+ContainerName=opencode-serve
+PublishPort=127.0.0.1:{{ catalog_entry.port }}:{{ catalog_entry.port }}
+{% for m in expanded_mounts -%}
+Volume={{ m.host }}:{{ m.container }}:{{ m.mode }}
+{% endfor -%}
+{% if catalog_entry.env_file -%}
+EnvironmentFile={{ catalog_entry.env_file }}
+{% endif -%}
+HealthCmd=curl -sf http://127.0.0.1:{{ catalog_entry.port }}/ || exit 1
+HealthInterval=30s
+HealthRetries=3
+HealthTimeout=5s
+Notify=healthy
+
+[Service]
+Restart=on-failure
+RestartSec=5
+StartLimitBurst=5
+StartLimitIntervalSec=60
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target
