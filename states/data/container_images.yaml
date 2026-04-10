@@ -1,0 +1,110 @@
+# Container image digest registry — single source of truth for FR-014
+# (digest-pinned, upstream-only container references for the 087 feature).
+#
+# Rules:
+#   - Every P1/P2 entry MUST have a non-null `digest` and `approved_at` before
+#     its feature toggle can be flipped to `true` in hosts.yaml.
+#   - P3 bridge entries may have `digest: null` until a first-party upstream
+#     image is identified per research.md Decision 7. The container_service
+#     macro emits zero states for services with a null digest (upstream-image
+#     gate pattern).
+#   - Tag-based references (`image:latest`, `image:vX.Y.Z`) are forbidden
+#     anywhere in this file or in Quadlet unit templates that consume it.
+#   - Digest format is strictly `sha256:<64 hex chars>`; enforced by the
+#     container_service macro at render time.
+#
+# Upstream coordinate verification (T004 step 1):
+#   2026-04-10 — verified via `podman manifest inspect <ref>`:
+#     OK   docker.io/ollama/ollama:rocm
+#     OK   ghcr.io/ggml-org/llama.cpp:server-vulkan    (account renamed from
+#          ggerganov → ggml-org in mid-2024; the ggerganov coordinate is stale
+#          and returns `manifest unknown` — verification caught this before
+#          any task tried to use it, closing H2)
+#     OK   docker.io/grafana/loki:latest
+#     OK   docker.io/grafana/promtail:latest
+#     OK   docker.io/grafana/grafana-oss:latest
+#   Bridge tier (telethon_bridge, opencode_*, telecode): no first-party upstream
+#   images identified yet — deferred per research Decision 7.
+
+# ─── US1: Inference layer ────────────────────────────────────────────
+ollama:
+  registry: docker.io
+  image: ollama/ollama
+  variant: rocm
+  digest: null           # TBD — resolved in T017 via `podman pull` + `podman image inspect`
+  approved_at: null
+  note: "Ollama LLM server; ROCm build for AMD 7900 XTX inference"
+
+llama_embed:
+  registry: ghcr.io
+  image: ggml-org/llama.cpp        # was ggerganov/llama.cpp before mid-2024 rename; see T004 verification note above
+  variant: server-vulkan
+  digest: null           # TBD — resolved in T018
+  approved_at: null
+  note: "llama.cpp server build with Vulkan backend; hosts Qwen3-Embedding-8B"
+
+# ─── US2: Observability stack ────────────────────────────────────────
+loki:
+  registry: docker.io
+  image: grafana/loki
+  variant: "3.x"
+  digest: null           # TBD — resolved in T031
+  approved_at: null
+  note: "Grafana Loki log aggregator; blue/green cutover mode"
+
+promtail:
+  registry: docker.io
+  image: grafana/promtail
+  variant: "3.x"
+  digest: null           # TBD — resolved in T032
+  approved_at: null
+  note: "Loki log shipper; reads host systemd journal via bind-mount"
+
+grafana:
+  registry: docker.io
+  image: grafana/grafana-oss
+  variant: "11.x-oss"
+  digest: null           # TBD — resolved in T033
+  approved_at: null
+  note: "Grafana OSS; reads /etc/grafana* provisioning from host bind-mount (FR-018)"
+
+# ─── US3: Bridge tier (deferred per research Decision 7) ─────────────
+# No first-party upstream images exist for these services yet. Structural
+# support lives in tasks T042–T047 and state files, but the null digest here
+# causes the container_service macro to emit zero containerized states and
+# the native path continues to run unchanged. When an upstream image is
+# identified per service, populate registry/image/variant/digest in a
+# single-purpose commit and flip the matching `features.containers.<name>`
+# flag in hosts.yaml.
+
+telethon_bridge:
+  registry: null
+  image: null
+  variant: null
+  digest: null
+  approved_at: null
+  note: "DEFERRED: no first-party upstream image. Python-telethon bridge; keep native until upstream exists."
+
+opencode_serve:
+  registry: null
+  image: null
+  variant: null
+  digest: null
+  approved_at: null
+  note: "DEFERRED: no first-party upstream image. opencode HTTP API server; keep native."
+
+opencode_telegram_bot:
+  registry: null
+  image: null
+  variant: null
+  digest: null
+  approved_at: null
+  note: "DEFERRED: no first-party upstream image. @grinev/opencode-telegram-bot npm package; keep native."
+
+telecode:
+  registry: null
+  image: null
+  variant: null
+  digest: null
+  approved_at: null
+  note: "DEFERRED: no first-party upstream image. Custom Go binary; keep native."
