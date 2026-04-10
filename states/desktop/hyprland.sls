@@ -38,7 +38,6 @@ hyprpm_cache_dir:
 {%- set _hyprpm_repos = {
   'hyprland_plugins': 'hyprland-plugins',
   'hyprglass':        'HyprGlass',
-  'hyprtasking':      'hyprtasking',
   'darkwindow':       'Hypr-DarkWindow',
 } %}
 {% for id_suffix, dir_name in _hyprpm_repos.items() %}
@@ -52,7 +51,7 @@ hyprpm_repo_cache_{{ id_suffix }}:
 {% endfor %}
 
 {{ hyprpm_update('hyprpm_headers_update',
-    check_plugins=['xtra-dispatchers', 'HyprGlass', 'hyprtasking', 'Hypr-DarkWindow'],
+    check_plugins=['xtra-dispatchers', 'HyprGlass', 'Hypr-DarkWindow'],
     require=['cmd: install_hyprland_desktop', 'file: hyprpm_cache_dir']) }}
 
 {{ hyprpm_add('hyprpm_add_hyprland_plugins',
@@ -72,15 +71,6 @@ hyprpm_repo_cache_{{ id_suffix }}:
 {{ hyprpm_enable('hyprpm_enable_hyprglass',
     'hyprglass',
     require=['cmd: hyprpm_add_hyprglass']) }}
-
-{{ hyprpm_add('hyprpm_add_hyprtasking',
-    'https://github.com/raybbian/hyprtasking',
-    'Repository hyprtasking',
-    require=['cmd: install_hyprland_desktop', 'cmd: hyprpm_headers_update', 'file: hyprpm_repo_cache_hyprtasking']) }}
-
-{{ hyprpm_enable('hyprpm_enable_hyprtasking',
-    'hyprtasking',
-    require=['cmd: hyprpm_add_hyprtasking']) }}
 
 {{ hyprpm_add('hyprpm_add_darkwindow',
     'https://github.com/micha4w/Hypr-DarkWindow',
