@@ -115,7 +115,7 @@ ollama:                        # Local LLM inference server
   containerized: true
   container_image: ollama
   cutover_mode: in_place       # single state dir; disk budget forbids blue/green for multi-GB models
-  cutover_date: null
+  cutover_date: "2026-04-10"
   gpu: amdgpu                  # /dev/kfd (ROCm) + /dev/dri/renderD128
   bind_mounts:
     - host: /mnt/one/ollama/models
