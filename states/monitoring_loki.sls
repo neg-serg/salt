@@ -21,7 +21,7 @@
 {% import_yaml 'data/service_catalog.yaml' as catalog %}
 {% import_yaml 'data/container_images.yaml' as image_registry %}
 {% from '_macros_service.jinja' import ensure_dir, ensure_running, service_stopped, service_with_healthcheck, service_with_unit_and_healthcheck, unit_override, container_service %}
-{% from '_macros_pkg.jinja' import simple_service, pacman_install %}
+{% from '_macros_pkg.jinja' import pacman_install %}
 {% set mon = host.features.monitoring %}
 {% set _loki_containerized = host.features.get('containers', {}).get('loki', False) %}
 {% set _promtail_containerized = host.features.get('containers', {}).get('promtail', False) %}
