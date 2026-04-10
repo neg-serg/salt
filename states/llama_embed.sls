@@ -50,5 +50,5 @@ llama_embed_native_unit_daemon_reload:
 # the Quadlet unit file is removed so systemd doesn't carry a ghost unit.
 llama_embed_quadlet_absent:
   file.absent:
-    - name: /etc/containers/systemd/llama-embed.container
+    - name: /etc/containers/systemd/llama_embed.container
 {% endif %}

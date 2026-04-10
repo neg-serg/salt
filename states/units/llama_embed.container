@@ -33,7 +33,18 @@ GroupAdd={{ salt['cmd.run_stdout']("getent group render | cut -d: -f3", python_s
 # but needs explicit configuration for the embedding workload.
 Exec=--model /models/{{ embed.file }} --embeddings --pooling {{ embed.pooling }} --ctx-size {{ embed.context }} --gpu-layers {{ embed.gpu_layers }} --host 0.0.0.0 --port {{ catalog_entry.port }}
 HealthCmd=curl -sf http://127.0.0.1:{{ catalog_entry.port }}{{ catalog_entry.health_path }} || exit 1
-HealthInterval=30s
+# 2s poll interval + 60s start grace:
+# llama-server needs ~2s to initialize Vulkan + mmap the 6 GB model + bind
+# the port, so the first probe at container-create reliably fails. With
+# the podman default HealthInterval=30s, Notify=healthy only fires on the
+# second probe at t+30s, turning every restart into a 30.47s cold-start
+# number (pure probe-cadence artifact, not a workload regression). A 2s
+# interval lets the second probe hit at ~t+2s — close to real readiness.
+# HealthStartPeriod=60s gives the container a grace window where failing
+# probes do not count toward the retry budget, tolerating slow Vulkan
+# device init on a cold GPU without flipping the unit to failed.
+HealthInterval=2s
+HealthStartPeriod=60s
 HealthRetries=3
 HealthTimeout=5s
 Notify=healthy
