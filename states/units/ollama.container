@@ -21,9 +21,19 @@ Volume={{ m.host }}:{{ m.container }}:{{ m.mode }}
 {% endfor -%}
 AddDevice=/dev/kfd
 AddDevice=/dev/dri/renderD128
-GroupAdd=render
+# Numeric GID required: Podman resolves GroupAdd names against the
+# container's /etc/group, and the upstream Ollama image does not ship
+# a `render` group. Read the host's render GID at render time so the
+# container process gets the supplementary group it needs to access
+# /dev/kfd and /dev/dri/renderD128 even if those nodes were not 666.
+GroupAdd={{ salt['cmd.run_stdout']("getent group render | cut -d: -f3", python_shell=True) }}
 Environment=OLLAMA_HOST=0.0.0.0:11434
-HealthCmd=curl -sf http://127.0.0.1:11434/api/tags || exit 1
+# The upstream Ollama image has neither curl nor wget installed,
+# only /usr/bin/ollama itself. `ollama list` queries the local
+# server's /api/tags endpoint and exits non-zero if the server
+# is not reachable — functionally the same as the curl probe
+# would be on a fatter image.
+HealthCmd=ollama list
 HealthInterval=30s
 HealthRetries=3
 HealthTimeout=5s

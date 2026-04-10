@@ -27,7 +27,8 @@ PublishPort=127.0.0.1:{{ catalog_entry.port }}:{{ catalog_entry.port }}
 Volume={{ m.host }}:{{ m.container }}:{{ m.mode }}
 {% endfor -%}
 AddDevice=/dev/dri/renderD128
-GroupAdd=render
+# Numeric GID at render time — see ollama.container for the rationale.
+GroupAdd={{ salt['cmd.run_stdout']("getent group render | cut -d: -f3", python_shell=True) }}
 # Override the image entrypoint args — the base image runs llama-server
 # but needs explicit configuration for the embedding workload.
 Exec=--model /models/{{ embed.file }} --embeddings --pooling {{ embed.pooling }} --ctx-size {{ embed.context }} --gpu-layers {{ embed.gpu_layers }} --host 0.0.0.0 --port {{ catalog_entry.port }}

@@ -1,6 +1,6 @@
 {# Service-related macros: ensure_dir, udev_rule, ensure_running, service_stopped, service_with_healthcheck, unit_override, config_replace_with_service_control, service_with_unit, service_with_unit_and_healthcheck, user_service_file, user_unit_override, user_service_enable, user_linger, managed_sysusers_line, managed_tmpfiles_line, managed_identity_guard, managed_path_guard #}
 
-{% from '_macros_common.jinja' import user as _user, home as _home, healthcheck_timeout as _healthcheck_timeout, host %}
+{% from '_macros_common.jinja' import user as _user, home as _home, healthcheck_timeout as _healthcheck_timeout, host, retry_attempts as _retry_attempts, retry_interval as _retry_interval %}
 
 {# Shared env block for systemctl --user commands (daemon-reload, enable, restart, disable) #}
 {%- set _systemctl_env = [
@@ -801,8 +801,8 @@ container_service_PRECONDITION_FAILED_{{ name }}_{{ error_key }}:
     - name: podman pull {{ _full_image }}
     - unless: podman image exists {{ _full_image }}
     - retry:
-        attempts: {{ retry_attempts }}
-        interval: {{ retry_interval }}
+        attempts: {{ _retry_attempts }}
+        interval: {{ _retry_interval }}
 {%- if user_scope %}
     - runas: {{ _user }}
     - env:

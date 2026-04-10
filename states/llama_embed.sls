@@ -24,8 +24,22 @@
 
 {% if _containerized %}
 # ── Containerized form (Podman Quadlet) ────────────────────────────────
+# In-place cutover: remove the native systemd unit file so the
+# Quadlet-generated unit is no longer shadowed by the pacman-deployed
+# /etc/systemd/system/llama_embed.service. See ollama.sls for the
+# detailed rationale — same pattern.
+llama_embed_native_unit_absent:
+  file.absent:
+    - name: /etc/systemd/system/llama_embed.service
+
+llama_embed_native_unit_daemon_reload:
+  cmd.run:
+    - name: systemctl daemon-reload
+    - onchanges:
+      - file: llama_embed_native_unit_absent
+
 {{ container_service('llama_embed', catalog.llama_embed, image_registry,
-    requires=['file: llama_embed_models_dir', 'cmd: llama_embed_model']) }}
+    requires=['file: llama_embed_models_dir', 'cmd: llama_embed_model', 'cmd: llama_embed_native_unit_daemon_reload']) }}
 {% else %}
 # ── Native form ────────────────────────────────────────────────────────
 {{ paru_install('llama_cpp_vulkan', 'llama.cpp-vulkan') }}

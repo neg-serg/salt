@@ -17,8 +17,26 @@
 
 {% if _containerized %}
 # ── Containerized form (Podman Quadlet) ────────────────────────────────
+# In-place cutover: remove the native systemd unit file so the
+# Quadlet-generated unit at /run/systemd/system/ollama.service is no
+# longer shadowed by /etc/systemd/system/ollama.service (which takes
+# precedence in systemd's search order). Without this cleanup, a
+# `systemctl start ollama` would still hit the native binary even
+# though the Quadlet file is deployed. Salt's file.managed never
+# proactively removes files written by previous applies, so the
+# cleanup must be explicit.
+ollama_native_unit_absent:
+  file.absent:
+    - name: /etc/systemd/system/ollama.service
+
+ollama_native_unit_daemon_reload:
+  cmd.run:
+    - name: systemctl daemon-reload
+    - onchanges:
+      - file: ollama_native_unit_absent
+
 {{ container_service('ollama', catalog.ollama, image_registry,
-    requires=['file: ollama_models_dir', 'mount: mount_one']) }}
+    requires=['file: ollama_models_dir', 'mount: mount_one', 'cmd: ollama_native_unit_daemon_reload']) }}
 {% else %}
 # ── Native form ────────────────────────────────────────────────────────
 {{ service_with_unit('ollama', 'salt://units/ollama.service.j2', template='jinja', context={'user': user, 'home': home, 'mnt_one': host.mnt_one, 'ollama_port': catalog.ollama.port}, enabled=False) }}
