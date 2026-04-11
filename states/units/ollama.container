@@ -40,7 +40,15 @@ Environment=OLLAMA_HOST=0.0.0.0:11434
 # is not reachable — functionally the same as the curl probe
 # would be on a fatter image.
 HealthCmd=ollama list
-HealthInterval=30s
+# 2s poll interval + 30s start grace — consistent with llama_embed.container
+# so `Notify=healthy` converges on real readiness instead of the default 30s
+# Podman poll cadence. Ollama's cold-start is ~100-200 ms (Go binary exec +
+# /api/tags socket bind), well within the 2s interval; the first probe at
+# container-create usually succeeds, and if it doesn't the retry at t+2s
+# will. HealthStartPeriod=30s gives the container a grace window where
+# early probe failures don't count toward the retry budget.
+HealthInterval=2s
+HealthStartPeriod=30s
 HealthRetries=3
 HealthTimeout=5s
 Notify=healthy
