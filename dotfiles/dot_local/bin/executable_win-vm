@@ -56,8 +56,7 @@
 #
 # ─────────────────────────────────────────────────────────────────────────────
 
-set -euo pipefail
-setopt extended_glob
+setopt ERR_EXIT NO_UNSET PIPE_FAIL extended_glob
 
 # Cache the script path before entering any function, because inside zsh
 # functions $0 is the function name, not the script file.

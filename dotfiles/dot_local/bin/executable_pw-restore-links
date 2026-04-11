@@ -31,7 +31,7 @@
 #
 # Dependencies: pw-cli, pw-link (pipewire package)
 
-set -euo pipefail
+setopt ERR_EXIT NO_UNSET PIPE_FAIL
 
 readonly hw_out="alsa_output.usb-RME_ADI-2_4_Pro_SE__53011083__B992903C2BD8DC8-00.pro-output-0"
 
