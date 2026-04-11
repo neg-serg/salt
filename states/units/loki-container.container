@@ -18,6 +18,9 @@ Documentation=https://grafana.com/docs/loki/
 # Loki is deferred past graphical boot to reduce early-boot I/O contention.
 After=network-online.target graphical.target
 Wants=network-online.target
+# StartLimit* keys belong in [Unit] per systemd.unit(5).
+StartLimitBurst=5
+StartLimitIntervalSec=60
 
 [Container]
 Image={{ image }}
@@ -37,8 +40,6 @@ Notify=healthy
 [Service]
 Restart=on-failure
 RestartSec=5
-StartLimitBurst=5
-StartLimitIntervalSec=60
 TimeoutStartSec=120
 
 [Install]

@@ -15,6 +15,9 @@ Documentation=https://grafana.com/docs/loki/latest/clients/promtail/
 After=network-online.target loki.service
 Wants=network-online.target
 Requires=loki.service
+# StartLimit* keys belong in [Unit] per systemd.unit(5).
+StartLimitBurst=5
+StartLimitIntervalSec=60
 
 [Container]
 Image={{ image }}
@@ -34,8 +37,6 @@ Notify=healthy
 [Service]
 Restart=on-failure
 RestartSec=5
-StartLimitBurst=5
-StartLimitIntervalSec=60
 TimeoutStartSec=60
 
 [Install]

@@ -6,6 +6,9 @@
 [Unit]
 Description=Telecode Telegram agent (containerized)
 After=default.target
+# StartLimit* keys belong in [Unit] per systemd.unit(5).
+StartLimitBurst=5
+StartLimitIntervalSec=60
 
 [Container]
 Image={{ image }}
@@ -25,8 +28,6 @@ Notify=healthy
 [Service]
 Restart=on-failure
 RestartSec=5
-StartLimitBurst=5
-StartLimitIntervalSec=60
 TimeoutStartSec=60
 
 [Install]

@@ -11,6 +11,12 @@ Documentation=https://github.com/ollama/ollama
 After=network-online.target local-fs.target mnt-one.mount
 Wants=network-online.target
 Requires=mnt-one.mount
+# Bounded restart policy per FR-015: up to 5 failures in 60s → unit enters
+# failed state. No silent fallback to native. These two keys live in [Unit]
+# per systemd.unit(5) — placing them in [Service] causes systemd-analyze
+# and the runtime generator to log "Unknown key ... in section [Service]".
+StartLimitBurst=5
+StartLimitIntervalSec=60
 
 [Container]
 Image={{ image }}
@@ -50,8 +56,6 @@ ExecStartPre=/usr/bin/test -e /dev/dri/renderD128
 # failed state. No silent fallback to native.
 Restart=on-failure
 RestartSec=5
-StartLimitBurst=5
-StartLimitIntervalSec=60
 # TimeoutStartSec generous for cold-start model memory-map load on 7900 XTX.
 TimeoutStartSec=120
 

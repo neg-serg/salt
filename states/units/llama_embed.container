@@ -18,6 +18,11 @@ Documentation=https://github.com/ggml-org/llama.cpp
 After=network-online.target local-fs.target mnt-one.mount
 Wants=network-online.target
 Requires=mnt-one.mount
+# Bounded restart policy per FR-015. These two keys live in [Unit] per
+# systemd.unit(5); placing them in [Service] logs "Unknown key" warnings
+# at unit generation.
+StartLimitBurst=5
+StartLimitIntervalSec=60
 
 [Container]
 Image={{ image }}
@@ -54,11 +59,9 @@ Notify=healthy
 # no /dev/kfd required. llama-server also refuses to start without a Vulkan
 # device at the binary level, so fail-loud is double-guaranteed.
 ExecStartPre=/usr/bin/test -e /dev/dri/renderD128
-# Bounded restart policy per FR-015.
+# Bounded restart policy per FR-015 (StartLimit* keys live in [Unit], see above).
 Restart=on-failure
 RestartSec=5
-StartLimitBurst=5
-StartLimitIntervalSec=60
 # TimeoutStartSec=180: Vulkan device init + Q5_K_M 8B model load on cold GPU
 # can take up to 90s; leave headroom.
 TimeoutStartSec=180

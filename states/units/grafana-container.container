@@ -17,6 +17,9 @@ Description=Grafana OSS dashboard (containerized)
 Documentation=https://grafana.com/docs/grafana/
 After=network-online.target
 Wants=network-online.target loki.service
+# StartLimit* keys belong in [Unit] per systemd.unit(5).
+StartLimitBurst=5
+StartLimitIntervalSec=60
 
 [Container]
 Image={{ image }}
@@ -37,8 +40,6 @@ Notify=healthy
 [Service]
 Restart=on-failure
 RestartSec=5
-StartLimitBurst=5
-StartLimitIntervalSec=60
 TimeoutStartSec=90
 
 [Install]
