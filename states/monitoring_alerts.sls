@@ -4,8 +4,8 @@
 {% if host.features.monitoring.alerts %}
 
 # ── Secret resolution ─────────────────────────────────────────────────
-{% set _telegram_token = tg_secret('api/openclaw-telegram', 'telegram-token') %}
-{% set _telegram_uid = tg_secret('api/openclaw-telegram-uid', 'telegram-uid') %}
+{% set _telegram_token = tg_secret('api/nanoclaw-telegram', 'telegram-token') %}
+{% set _telegram_uid = tg_secret('api/nanoclaw-telegram-uid', 'telegram-uid') %}
 
 # ── Directories ──────────────────────────────────────────────────────
 {{ ensure_dir('salt_monitor_cache_dir', home ~ '/.cache/salt-monitor', mode='0755') }}

@@ -15,7 +15,7 @@
 {% set _tb_creds = home ~ '/.telethon-bridge/credentials' %}
 {% set _api_id = tg_secret('api/telegram-telethon-id', 'api-id', cred_base=_tb_creds) %}
 {% set _api_hash = tg_secret('api/telegram-telethon-hash', 'api-hash', cred_base=_tb_creds) %}
-{% set _telegram_uid = tg_secret('api/openclaw-telegram-uid', 'telegram-uid') %}
+{% set _telegram_uid = tg_secret('api/nanoclaw-telegram-uid', 'telegram-uid') %}
 {% set _telegram_uid_levra = tg_secret('api/telegram-uid-levra', 'telegram-uid-levra') %}
 {% set _telegram_uid_guest2 = tg_secret('api/telegram-uid-guest2', 'telegram-uid-guest2') %}
 

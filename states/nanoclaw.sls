@@ -5,8 +5,8 @@
 
 # ── Secret resolution ─────────────────────────────────────────────────
 {% set _proxy_key = proxypilot_key() %}
-{% set _telegram_token = tg_secret('api/openclaw-telegram', 'telegram-token') %}
-{% set _telegram_uid = tg_secret('api/openclaw-telegram-uid', 'telegram-uid') %}
+{% set _telegram_token = tg_secret('api/nanoclaw-telegram', 'telegram-token') %}
+{% set _telegram_uid = tg_secret('api/nanoclaw-telegram-uid', 'telegram-uid') %}
 
 {% set _nanoclaw_dir = home ~ '/.local/share/nanoclaw' %}
 {% set _nanoclaw_config = home ~ '/.config/nanoclaw' %}

@@ -18,7 +18,7 @@
 # ── Secret resolution ─────────────────────────────────────────────────
 {% set _telegram_token_otb = tg_secret('api/opencode-telegram-bot', 'telegram-token', cred_base=home ~ '/.config/opencode-telegram-bot/credentials') %}
 {% set _telegram_token_tc = tg_secret('api/telecode-telegram', 'telegram-token', cred_base=home ~ '/.telecode/credentials') %}
-{% set _telegram_uid = tg_secret('api/openclaw-telegram-uid', 'telegram-uid') %}
+{% set _telegram_uid = tg_secret('api/nanoclaw-telegram-uid', 'telegram-uid') %}
 
 # Guards: deploy configs and enable services only when tokens are available.
 # Without tokens the binaries are still installed but services stay disabled.

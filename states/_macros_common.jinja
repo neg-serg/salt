@@ -82,6 +82,6 @@ mkdir -p {{ vd }} && rm -f '{{ vd }}/{{ name }}' {{ vd }}/{{ name }}@* && {% if 
 {%- endmacro -%}
 
 {%- macro tg_secret(gopass_key, cred_file, cred_base=None) -%}
-{%- set _base = cred_base if cred_base else (home ~ '/.openclaw/credentials') -%}
+{%- set _base = cred_base if cred_base else (home ~ '/.nanoclaw/credentials') -%}
 {{ gopass_secret(gopass_key, "cat " ~ _base ~ "/" ~ cred_file ~ " 2>/dev/null || true") }}
 {%- endmacro -%}
