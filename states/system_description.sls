@@ -133,9 +133,6 @@ include:
 {% if host.features.opencode %}
   - opencode
 {% endif %}
-{% if host.features.openclaw %}
-  - openclaw_agent
-{% endif %}
 {% if host.features.get('nanoclaw', false) %}
   - nanoclaw
 {% endif %}

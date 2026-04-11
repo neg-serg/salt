@@ -16,7 +16,7 @@ for key in \
     lastfm/username lastfm/password lastfm/api-key lastfm/api-secret \
     api/github-token api/brave-search api/context7 \
     api/proxypilot-local api/proxypilot-management \
-    api/anthropic api/openclaw-telegram api/openclaw-telegram-uid \
+    api/anthropic api/nanoclaw-telegram api/nanoclaw-telegram-uid \
     ssh-key yubikey-pin; do
   if gopass show -o "$key" >/dev/null 2>&1; then
     echo "  ✓ $key"
@@ -255,11 +255,11 @@ gopass insert api/context7
 
 ---
 
-## 7. ProxyPilot + OpenClaw (AI tooling)
+## 7. ProxyPilot + AI tooling
 
-Used by: ProxyPilot (AI API proxy), OpenClaw (AI agent gateway), OpenCode (TUI agent).
+Used by: ProxyPilot (AI API proxy), NanoClaw (Telegram agent), OpenCode (TUI agent).
 Templates: `dot_config/proxypilot/config.yaml.tmpl`, `dot_config/zsh/10-secrets.zsh.tmpl`
-Salt states: `opencode.sls`, `openclaw_agent.sls`
+Salt states: `opencode.sls`, `nanoclaw.sls`, `monitoring_alerts.sls`
 
 ### 7a. ProxyPilot API Key (client auth)
 
@@ -281,22 +281,23 @@ gopass insert api/proxypilot-management
 
 ### 7c. Anthropic API Key (direct)
 
-Used by OpenClaw as primary provider (direct Anthropic API access).
+Used as primary provider (direct Anthropic API access).
 
 ```bash
 gopass insert api/anthropic
 # Enter: sk-ant-xxx (Anthropic API key)
 ```
 
-### 7d. OpenClaw Telegram Bot
+### 7d. NanoClaw Telegram Bot
 
-Used by OpenClaw for Telegram integration.
+Used by NanoClaw (Telegram bot) and `monitoring_alerts.sls` (Salt alert
+delivery). Fallback credential files live in `~/.nanoclaw/credentials/`.
 
 ```bash
-gopass insert api/openclaw-telegram
+gopass insert api/nanoclaw-telegram
 # Enter: Telegram bot token (format: 123456:ABC-DEF...)
 
-gopass insert api/openclaw-telegram-uid
+gopass insert api/nanoclaw-telegram-uid
 # Enter: Telegram user ID for allowlist (e.g. 109503498)
 ```
 

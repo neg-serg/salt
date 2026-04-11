@@ -9,9 +9,6 @@ include:
 {% if host.features.llama_embed %}
   - llama_embed
 {% endif %}
-{% if host.features.openclaw %}
-  - openclaw_agent
-{% endif %}
 {% if host.features.get('nanoclaw', false) %}
   - nanoclaw
 {% endif %}

@@ -60,7 +60,7 @@
 
 ### REC-001: заменить захардкоженные `/run/user/1000` на `host.runtime_dir`
 
-**Scope**: `states/desktop.sls`, `states/openclaw_agent.sls`, `states/units/user/salt-monitor.service`
+**Scope**: `states/desktop.sls`, `states/units/user/salt-monitor.service`
 
 **Problem**: Несколько user-service и Hyprland-related путей всё ещё захардкожены в `/run/user/1000`, хотя остальной репозиторий уже использует `host.runtime_dir`.
 
@@ -79,7 +79,7 @@
 
 ### REC-002: ввести маленький `ensure_linger`-макрос для повторяющегося lingering
 
-**Scope**: `states/openclaw_agent.sls`, `states/telethon_bridge.sls`, `states/nanoclaw.sls`, `states/_macros_service.jinja`
+**Scope**: `states/telethon_bridge.sls`, `states/nanoclaw.sls`, `states/_macros_service.jinja`
 
 **Problem**: Один и тот же блок `loginctl enable-linger {{ user }}` + guard на `Linger=yes` повторяется три раза.
 
@@ -98,7 +98,7 @@
 
 ### REC-003: централизовать fallback-логику получения ProxyPilot credentials
 
-**Scope**: `states/openclaw_agent.sls`, `states/telethon_bridge.sls`, `states/nanoclaw.sls`, `states/opencode.sls`
+**Scope**: `states/telethon_bridge.sls`, `states/nanoclaw.sls`, `states/opencode.sls`
 
 **Problem**: Один и тот же паттерн получения ProxyPilot API key появляется в нескольких состояниях, но с небольшими отличиями в gopass/fallback логике.
 
@@ -117,7 +117,7 @@
 
 ### REC-004: вынести общие Telegram allowlist constants в declarative data
 
-**Scope**: `states/openclaw_agent.sls`, `states/telethon_bridge.sls`, новый entry в `states/data/*.yaml`
+**Scope**: `states/telethon_bridge.sls`, новый entry в `states/data/*.yaml`
 
 **Problem**: Одни и те же Telegram UID constants повторяются inline в нескольких состояниях.
 
@@ -309,7 +309,7 @@
 
 ### KEEP-003: сохранить `replace: False` seed-only deployment для self-mutating configs
 
-**Scope**: `states/openclaw_agent.sls`, `states/nanoclaw.sls`
+**Scope**: `states/nanoclaw.sls`
 
 **Current pattern**: Salt seed'ит initial config и дальше не борется с инструментами, которые переписывают своё состояние при старте.
 

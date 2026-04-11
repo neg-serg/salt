@@ -124,7 +124,7 @@ def _collect_known_services():
     for sls in os.listdir(states_dir):
         if sls.endswith(".sls"):
             known.add(sls[:-4])  # e.g., "mpd.sls" → "mpd"
-            known.add(sls[:-4].replace("_", "-"))  # "openclaw_agent" → "openclaw-agent"
+            known.add(sls[:-4].replace("_", "-"))  # "monitoring_alerts" → "monitoring-alerts"
 
     # Base OS services (always present, never Salt-managed)
     known.update({"sshd", "NetworkManager", "cronie"})

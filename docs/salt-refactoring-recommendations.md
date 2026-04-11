@@ -91,7 +91,7 @@ Latest verification pass on `071-salt-refactor-program`:
 
 ### REC-001: Replace hardcoded `/run/user/1000` references with `host.runtime_dir`
 
-**Scope**: `states/desktop.sls`, `states/openclaw_agent.sls`, `states/units/user/salt-monitor.service`
+**Scope**: `states/desktop.sls`, `states/units/user/salt-monitor.service`
 
 **Problem**: A few user-service and Hyprland-related paths are still hardcoded to `/run/user/1000`, while the rest of the repository already carries `host.runtime_dir`.
 
@@ -112,7 +112,7 @@ Latest verification pass on `071-salt-refactor-program`:
 
 ### REC-002: Introduce a small `ensure_linger` macro for repeated user-service lingering
 
-**Scope**: `states/openclaw_agent.sls`, `states/telethon_bridge.sls`, `states/nanoclaw.sls`, `states/_macros_service.jinja`
+**Scope**: `states/telethon_bridge.sls`, `states/nanoclaw.sls`, `states/_macros_service.jinja`
 
 **Problem**: The same `loginctl enable-linger {{ user }}` + `Linger=yes` guard is duplicated three times.
 
@@ -131,7 +131,7 @@ Latest verification pass on `071-salt-refactor-program`:
 
 ### REC-003: Centralize ProxyPilot credential fallback resolution
 
-**Scope**: `states/openclaw_agent.sls`, `states/telethon_bridge.sls`, `states/nanoclaw.sls`, `states/opencode.sls`
+**Scope**: `states/telethon_bridge.sls`, `states/nanoclaw.sls`, `states/opencode.sls`
 
 **Problem**: The same ProxyPilot API-key retrieval pattern appears in multiple states, with slight variations in how gopass and fallback parsing are handled.
 
@@ -150,7 +150,7 @@ Latest verification pass on `071-salt-refactor-program`:
 
 ### REC-004: Move shared Telegram allowlist constants into declarative data
 
-**Scope**: `states/openclaw_agent.sls`, `states/telethon_bridge.sls`, new `states/data/*.yaml` entry
+**Scope**: `states/telethon_bridge.sls`, new `states/data/*.yaml` entry
 
 **Problem**: The same hardcoded Telegram UID constants are repeated inline across multiple states.
 
@@ -365,7 +365,7 @@ Latest verification pass on `071-salt-refactor-program`:
 
 ### KEEP-003: Preserve `replace: False` seed-only deployment for self-mutating configs
 
-**Scope**: `states/openclaw_agent.sls`, `states/nanoclaw.sls`
+**Scope**: `states/nanoclaw.sls`
 
 **Current pattern**: Salt seeds initial config files and then avoids fighting tools that rewrite their own state on startup.
 

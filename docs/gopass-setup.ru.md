@@ -16,7 +16,7 @@ for key in \
     lastfm/username lastfm/password lastfm/api-key lastfm/api-secret \
     api/github-token api/brave-search api/context7 \
     api/proxypilot-local api/proxypilot-management \
-    api/anthropic api/openclaw-telegram api/openclaw-telegram-uid \
+    api/anthropic api/nanoclaw-telegram api/nanoclaw-telegram-uid \
     ssh-key yubikey-pin; do
   if gopass show -o "$key" >/dev/null 2>&1; then
     echo "  ✓ $key"
@@ -259,11 +259,11 @@ gopass insert api/context7
 
 ---
 
-## 7. ProxyPilot + OpenClaw (AI-инструментарий)
+## 7. ProxyPilot + AI-инструментарий
 
-Используются в: ProxyPilot (AI API прокси), OpenClaw (AI агент-шлюз), OpenCode (TUI-агент).
+Используются в: ProxyPilot (AI API прокси), NanoClaw (Telegram-агент), OpenCode (TUI-агент).
 Шаблоны: `dot_config/proxypilot/config.yaml.tmpl`, `dot_config/zsh/10-secrets.zsh.tmpl`
-Salt states: `opencode.sls`, `openclaw_agent.sls`
+Salt states: `opencode.sls`, `nanoclaw.sls`, `monitoring_alerts.sls`
 
 ### 7a. ProxyPilot API Key (клиентская авторизация)
 
@@ -285,22 +285,23 @@ gopass insert api/proxypilot-management
 
 ### 7c. Anthropic API Key (прямой доступ)
 
-Используется OpenClaw как основной провайдер (прямой доступ к Anthropic API).
+Используется как основной провайдер (прямой доступ к Anthropic API).
 
 ```bash
 gopass insert api/anthropic
 # Ввести: sk-ant-xxx (API-ключ Anthropic)
 ```
 
-### 7d. OpenClaw Telegram-бот
+### 7d. NanoClaw Telegram-бот
 
-Используется OpenClaw для интеграции с Telegram.
+Используется NanoClaw (Telegram-бот) и `monitoring_alerts.sls` (доставка
+Salt-алертов). Fallback credential-файлы лежат в `~/.nanoclaw/credentials/`.
 
 ```bash
-gopass insert api/openclaw-telegram
+gopass insert api/nanoclaw-telegram
 # Ввести: токен Telegram-бота (формат: 123456:ABC-DEF...)
 
-gopass insert api/openclaw-telegram-uid
+gopass insert api/nanoclaw-telegram-uid
 # Ввести: Telegram user ID для allowlist (например 109503498)
 ```
 

@@ -11,19 +11,6 @@
 {{ ensure_dir('salt_monitor_cache_dir', home ~ '/.cache/salt-monitor', mode='0755') }}
 {{ ensure_dir('salt_monitor_alerts_dir', home ~ '/.cache/salt-monitor/alerts', mode='0755') }}
 
-# ── Cleanup: remove old monitoring scripts and units ─────────────────
-{% set old_files = [
-    home ~ '/.local/bin/openclaw-health-check',
-    home ~ '/.config/systemd/user/openclaw-health.service',
-    home ~ '/.config/systemd/user/openclaw-health.timer',
-] %}
-
-{% for old_file in old_files %}
-old_monitoring_{{ loop.index }}:
-  file.absent:
-    - name: {{ old_file }}
-{% endfor %}
-
 # ── Deploy salt-alert script ─────────────────────────────────────────
 salt_alert_script:
   file.managed:

@@ -580,7 +580,6 @@ onlyif
 OOMKilled
 OOMs
 openai
-openclaw
 opencode
 openmp
 opensoundmeter

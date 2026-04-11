@@ -48,9 +48,7 @@ GITHUB_REPOS = {
 }
 
 # Mapping from versions.yaml keys to npm package names (for --check)
-NPM_PACKAGES = {
-    "openclaw": "openclaw",
-}
+NPM_PACKAGES = {}
 
 # Custom (non-YAML) tools from installers.sls: name -> (guard_path, sls_name)
 CUSTOM_TOOLS = {

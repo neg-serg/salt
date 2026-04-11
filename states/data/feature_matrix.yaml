@@ -68,7 +68,6 @@
       kanata: false
       flatpak: false
       opencode: false
-      openclaw: false
 
 - name: matrix-containerized
   description: All US1/US2 containerization flags enabled (exercises the Quadlet/container_service render path)

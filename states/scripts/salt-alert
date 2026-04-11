@@ -346,7 +346,7 @@ cmd_health() {
         printf '\n\033[1m━━━ User Services ━━━\033[0m\n'
     fi
 
-    local user_svcs=(proxypilot openclaw-gateway mpd imapnotify-gmail surfingkeys-server vicinae)
+    local user_svcs=(proxypilot mpd imapnotify-gmail surfingkeys-server vicinae)
     for svc in "${user_svcs[@]}"; do
         systemctl --user cat "${svc}.service" &>/dev/null || continue
 

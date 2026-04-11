@@ -263,11 +263,11 @@ Tracing a fresh deployment through the documented flow (steps from `docs/deploy-
   change before running Salt.
 - Fix: Document this behavior in `docs/adding-host.md` or remove the alias.
 
-**F22 — opencode.sls and openclaw_agent.sls have no feature gate**
+**F22 — opencode.sls has no feature gate** (openclaw_agent removed 2026-04-11)
 - Task: T4 (Feature Flags)
-- Files: `states/opencode.sls`, `states/openclaw_agent.sls`
-- Problem: These states always run regardless of host config. On a minimal host profile,
-  they would install npm packages and configure services unconditionally.
+- Files: `states/opencode.sls`
+- Problem: This state always runs regardless of host config. On a minimal host profile,
+  it would install npm packages and configure services unconditionally.
 - Severity: Low — currently intentional (single workstation), but limits multi-host flexibility.
 
 ---
@@ -296,8 +296,8 @@ AUR_PKGS (paru, mpdas, mpdris2, etc.), or Salt-installed binaries (via macros).
 | `api/proxypilot-local` | Salt + chezmoi | awk parse config | Degraded (empty key) |
 | `api/proxypilot-management` | Salt + chezmoi | awk parse config | Degraded (no dashboard) |
 | `api/anthropic` | Salt | empty string | Degraded (no Anthropic API) |
-| `api/openclaw-telegram` | Salt | empty string | Degraded (no Telegram bot) |
-| `api/openclaw-telegram-uid` | Salt | empty string | Degraded (same) |
+| `api/nanoclaw-telegram` | Salt | empty string | Degraded (no Telegram bot) |
+| `api/nanoclaw-telegram-uid` | Salt | empty string | Degraded (same) |
 | `lastfm/username` | Salt (raw!) | **NONE** | **BROKEN** (F02) |
 | `lastfm/password` | Salt (raw!) | **NONE** | **BROKEN** (F02) |
 | `lastfm/api-key` | chezmoi | **NONE** | **BROKEN** (chezmoi fails) |
@@ -364,7 +364,7 @@ AUR_PKGS (paru, mpdas, mpdris2, etc.), or Salt-installed binaries (via macros).
 | F19 | Pin versions for high-risk URLs (ongoing) | Variable |
 | F20 | Conditionalize Grafana Loki datasource | 5 min |
 | F21 | Document cachyos alias behavior | 5 min |
-| F22 | Consider feature flags for opencode/openclaw | 10 min |
+| F22 | Consider feature flag for opencode | 5 min |
 
 ---
 

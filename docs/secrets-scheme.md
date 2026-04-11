@@ -39,11 +39,11 @@ api/
   context7                # Context7 API key
   proxypilot-local        # ProxyPilot client auth key
   proxypilot-management   # ProxyPilot management API key
-  anthropic               # Anthropic API key (direct, for OpenClaw)
-  openclaw-telegram       # OpenClaw Telegram bot token
-  openclaw-telegram-uid   # OpenClaw Telegram allowlist user ID (primary)
-  telegram-uid-levra      # Telegram user ID for guest user levra
-  telegram-uid-guest2     # Telegram user ID for guest user guest2
+  anthropic               # Anthropic API key (direct)
+  nanoclaw-telegram       # NanoClaw Telegram bot token
+  nanoclaw-telegram-uid   # NanoClaw Telegram allowlist user ID (primary)
+  telegram-uid-levra      # Telegram user ID for guest user levra (telethon_bridge only)
+  telegram-uid-guest2     # Telegram user ID for guest user guest2 (telethon_bridge only)
   groq                    # Groq API key (free fallback provider)
   cerebras                # Cerebras API key (free fallback provider)
   openrouter              # OpenRouter API key (free fallback provider)
@@ -109,8 +109,10 @@ Salt states using `gopass_secret()` macro (graceful fallback if gopass unavailab
 |---|---|---|
 | `mpd.sls` | `lastfm/username`, `lastfm/password` | Empty string |
 | `opencode.sls` | `api/proxypilot-local`, `api/proxypilot-management`, `api/groq`, `api/cerebras`, `api/openrouter` | Parse existing ProxyPilot config (AWK fallback) |
-| `openclaw_agent.sls` | `api/proxypilot-local`, `api/openclaw-telegram`, `api/openclaw-telegram-uid`, `api/telegram-uid-levra`, `api/telegram-uid-guest2`, `api/groq` | Parse existing config / credential files |
-| `telethon_bridge.sls` | `api/proxypilot-local`, `api/telegram-telethon-id`, `api/telegram-telethon-hash`, `api/openclaw-telegram-uid`, `api/telegram-uid-levra`, `api/telegram-uid-guest2` | Credential files |
+| `nanoclaw.sls` | `api/proxypilot-local`, `api/nanoclaw-telegram`, `api/nanoclaw-telegram-uid` | Credential files in `~/.nanoclaw/credentials/` |
+| `monitoring_alerts.sls` | `api/nanoclaw-telegram`, `api/nanoclaw-telegram-uid` | Credential files in `~/.nanoclaw/credentials/` |
+| `opencode_telegram.sls` | `api/nanoclaw-telegram-uid` | Credential files |
+| `telethon_bridge.sls` | `api/proxypilot-local`, `api/telegram-telethon-id`, `api/telegram-telethon-hash`, `api/nanoclaw-telegram-uid`, `api/telegram-uid-levra`, `api/telegram-uid-guest2` | Credential files |
 
 ## Setup Steps
 

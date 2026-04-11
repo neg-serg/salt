@@ -181,7 +181,7 @@ See CLAUDE.md "Data file package lists" and "Package descriptions" conventions.
 
 **Rationale**: Some states should only run when optional software is present (onlyif) AND haven't been completed yet (unless). Combining guards handles both requirements.
 
-**This project**: Used in `network.sls` (firewall rules conditional on `firewall-cmd` being installed) and `openclaw_agent.sls` (config migration conditional on old config existing).
+**This project**: Used in `network.sls` (firewall rules conditional on `firewall-cmd` being installed).
 
 ---
 
@@ -339,24 +339,24 @@ install_tool:
 
 **Before** (wrong):
 ```yaml
-openclaw_config:
+self_modifying_config:
   file.managed:
-    - name: {{ home }}/.openclaw/openclaw.json
-    - source: salt://configs/openclaw.json.j2
+    - name: {{ home }}/.config/tool/config.json
+    - source: salt://configs/tool.json.j2
     - template: jinja
 ```
 
 **After** (correct):
 ```yaml
-openclaw_config:
+self_modifying_config:
   file.managed:
-    - name: {{ home }}/.openclaw/openclaw.json
-    - source: salt://configs/openclaw.json.j2
+    - name: {{ home }}/.config/tool/config.json
+    - source: salt://configs/tool.json.j2
     - template: jinja
     - replace: False
 ```
 
-**Why**: OpenClaw (and similar tools) rewrite their config at startup — adding defaults, metadata, reordering keys. Without `replace: False`, Salt overwrites the tool's changes on every apply, creating a restart loop.
+**Why**: Some tools rewrite their config at startup — adding defaults, metadata, reordering keys. Without `replace: False`, Salt overwrites the tool's changes on every apply, creating a restart loop. This anti-pattern bit this project on a prior Telegram bot gateway.
 
 ### AP-04: Hardcoding paths instead of using host_config
 

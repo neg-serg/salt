@@ -81,7 +81,6 @@ defaults:
     flatpak: true
     sudo_ssh_agent: false
     opencode: false
-    openclaw: false
     nanoclaw: false
     telethon_bridge: false
     opencode_telegram: false

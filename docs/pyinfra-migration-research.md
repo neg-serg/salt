@@ -165,7 +165,7 @@ Salt does not have this problem — each state sees the system state left by pre
 | Complexity | Files | Hours Each | Total Hours | Risk |
 |-----------|-------|------------|-------------|------|
 | **Hard** | 9 (ollama, video_ai, amnezia, monitoring, dns, services, desktop, fonts, custom_pkgs) | 8-24h | 72-216h | High — parallel loss, build logic, heavy macro usage |
-| **Medium** | 12 (user_services, kanata, mpd, floorp, installers_desktop, openclaw, opencode, greetd, steam, network, tidal, installers_themes) | 4-8h | 48-96h | Medium — watch/onchanges rewrite |
+| **Medium** | 11 (user_services, kanata, mpd, floorp, installers_desktop, opencode, greetd, steam, network, tidal, installers_themes) | 4-8h | 48-96h | Medium — watch/onchanges rewrite |
 | **Trivial** | 15 (packages, users, zsh, audio, mounts, sysctl, kernel_*, bind_mounts, snapshots, cachyos*, hardware, llama_embed, system_description) | 1-2h | 15-30h | Low — simple package/file/service |
 | **Macro library** | 5 files (35 macros) | — | 16-24h | Low — cleaner as Python |
 | **Testing** | — | — | 24-40h | Medium |

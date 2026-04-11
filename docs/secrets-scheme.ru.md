@@ -39,11 +39,11 @@ api/
   context7                # Context7 API key
   proxypilot-local        # API-ключ клиентской авторизации ProxyPilot
   proxypilot-management   # API-ключ management API ProxyPilot
-  anthropic               # API-ключ Anthropic (прямой, для OpenClaw)
-  openclaw-telegram       # Токен Telegram-бота OpenClaw
-  openclaw-telegram-uid   # Telegram user ID для allowlist OpenClaw (основной)
-  telegram-uid-levra      # Telegram user ID гостевого пользователя levra
-  telegram-uid-guest2     # Telegram user ID гостевого пользователя guest2
+  anthropic               # API-ключ Anthropic (прямой)
+  nanoclaw-telegram       # Токен Telegram-бота NanoClaw
+  nanoclaw-telegram-uid   # Telegram user ID для allowlist NanoClaw (основной)
+  telegram-uid-levra      # Telegram user ID гостевого пользователя levra (только для telethon_bridge)
+  telegram-uid-guest2     # Telegram user ID гостевого пользователя guest2 (только для telethon_bridge)
   groq                    # API-ключ Groq (бесплатный fallback-провайдер)
   cerebras                # API-ключ Cerebras (бесплатный fallback-провайдер)
   openrouter              # API-ключ OpenRouter (бесплатный fallback-провайдер)
@@ -109,8 +109,10 @@ Salt states, использующие макрос `gopass_secret()` (с gracefu
 |---|---|---|
 | `mpd.sls` | `lastfm/username`, `lastfm/password` | Пустая строка |
 | `opencode.sls` | `api/proxypilot-local`, `api/proxypilot-management`, `api/groq`, `api/cerebras`, `api/openrouter` | Парсинг существующего конфига ProxyPilot (AWK-фолбэк) |
-| `openclaw_agent.sls` | `api/proxypilot-local`, `api/openclaw-telegram`, `api/openclaw-telegram-uid`, `api/telegram-uid-levra`, `api/telegram-uid-guest2`, `api/groq` | Парсинг существующего конфига / credential-файлы |
-| `telethon_bridge.sls` | `api/proxypilot-local`, `api/telegram-telethon-id`, `api/telegram-telethon-hash`, `api/openclaw-telegram-uid`, `api/telegram-uid-levra`, `api/telegram-uid-guest2` | Credential-файлы |
+| `nanoclaw.sls` | `api/proxypilot-local`, `api/nanoclaw-telegram`, `api/nanoclaw-telegram-uid` | Credential-файлы в `~/.nanoclaw/credentials/` |
+| `monitoring_alerts.sls` | `api/nanoclaw-telegram`, `api/nanoclaw-telegram-uid` | Credential-файлы в `~/.nanoclaw/credentials/` |
+| `opencode_telegram.sls` | `api/nanoclaw-telegram-uid` | Credential-файлы |
+| `telethon_bridge.sls` | `api/proxypilot-local`, `api/telegram-telethon-id`, `api/telegram-telethon-hash`, `api/nanoclaw-telegram-uid`, `api/telegram-uid-levra`, `api/telegram-uid-guest2` | Credential-файлы |
 
 ## Шаги настройки
 

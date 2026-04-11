@@ -123,7 +123,7 @@
 **F19** — 26+ незафиксированных внешних URL (T5)
 **F20** — Grafana datasource Loki при loki=false (T4)
 **F21** — алиас `cachyos -> telfir` влияет на все свежие установки (T8)
-**F22** — opencode/openclaw без feature gate (T4)
+**F22** — opencode без feature gate (T4; openclaw удалён 2026-04-11)
 
 ---
 

@@ -509,7 +509,7 @@ test -e {{ _path }}
 {# Enable loginctl lingering for a user (services survive logout).
    Generates a single cmd.run with unless guard.
    Usage: {{ user_linger('nanoclaw_lingering') }}
-          {{ user_linger('openclaw_lingering', require=['cmd: install_openclaw']) }}
+          {{ user_linger('opencode_lingering', require=['cmd: install_opencode']) }}
 #}
 {%- macro user_linger(name, user=_user, require=None) -%}
 {{ name }}:

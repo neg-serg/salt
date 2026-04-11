@@ -22,7 +22,7 @@ just apply
 
 # Apply a single state
 just apply desktop
-just apply openclaw_agent
+just apply nanoclaw
 
 # Apply a state group (subset of related states)
 just group core
@@ -46,7 +46,7 @@ Groups let you apply a coherent slice of the system without running all
 | `desktop` | audio, desktop (hyprland, portals, packages), fonts | ~0.7 s |
 | `packages` | pacman packages, all installers, custom PKGBUILDs | ~0.6 s |
 | `services` | system services, monitoring, user systemd units | ~0.5 s |
-| `ai` | ollama, openclaw, nanoclaw, opencode, image_gen (feature-gated) | ~0.4 s |
+| `ai` | ollama, llama_embed, nanoclaw, opencode, image_gen (feature-gated) | ~0.4 s |
 
 Groups live in `states/group/*.sls`.  Each is a thin `include:` list — no
 new logic, just a convenient entry point.  Individual states still work:

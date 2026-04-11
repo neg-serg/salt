@@ -7,15 +7,6 @@ import yaml
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-def test_openclaw_runtime_dir_uses_host_model():
-    path = os.path.join(REPO_ROOT, "states", "openclaw_agent.sls")
-    with open(path) as fh:
-        source = fh.read()
-
-    assert "Environment=XDG_RUNTIME_DIR=/run/user/1000" not in source
-    assert "Environment=XDG_RUNTIME_DIR={{ host.runtime_dir }}" in source
-
-
 def test_salt_monitor_unit_is_templated_for_runtime_dir():
     state_path = os.path.join(REPO_ROOT, "states", "monitoring_alerts.sls")
     with open(state_path) as fh:
