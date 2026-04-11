@@ -2,6 +2,17 @@
 Description=Wayland wallpaper daemon (Vulkan)
 After=graphical-session.target
 PartOf=graphical-session.target
+# Rate-limit restarts so a real session teardown (wayland socket gone for
+# good) eventually lands in `failed` state instead of looping forever.
+# 5 restart attempts in 60s is enough to survive hotplug / reconfigure
+# races that manifest as clean exits via broken-pipe-on-flush handling
+# (see 4bb90eb — wl-daemon now exits cleanly instead of SIGABRT'ing on
+# double-free, which with Restart=on-failure meant no auto-recovery).
+# These keys live in [Unit] per systemd.unit(5); systemd-analyze rejects
+# them under [Service] with "Unknown key" and the rate-limit is silently
+# disabled when misplaced.
+StartLimitBurst=5
+StartLimitIntervalSec=60
 
 [Service]
 Type=simple
@@ -10,14 +21,6 @@ ExecStart=/usr/bin/wl-daemon
 ExecStartPost=/bin/sh -c 'for i in 1 2 3 4 5; do /usr/bin/wl restore && exit 0; sleep 0.5; done'
 Restart=always
 RestartSec=2
-# Rate-limit restarts so a real session teardown (wayland socket gone for
-# good) eventually lands in `failed` state instead of looping forever.
-# 5 restart attempts in 60s is enough to survive hotplug / reconfigure
-# races that manifest as clean exits via broken-pipe-on-flush handling
-# (see 4bb90eb — wl-daemon now exits cleanly instead of SIGABRT'ing on
-# double-free, which with Restart=on-failure meant no auto-recovery).
-StartLimitBurst=5
-StartLimitIntervalSec=60
 NoNewPrivileges=true
 RestrictNamespaces=yes
 RestrictRealtime=yes
