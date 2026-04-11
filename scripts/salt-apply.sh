@@ -185,7 +185,7 @@ run_direct() {
     salt_cmd=(
         "${SUDO_CMD[@]}" "$VENV_DIR/bin/python3" -u "$SALT_RUNNER"
         --config-dir="${RUNTIME_CONFIG_DIR}"
-        --local --log-level=warning
+        --local --log-level=warning --force-color
         --log-file="${LOG_FILE}" --log-file-level=debug
         state.sls "${SALT_STATE}"
     )

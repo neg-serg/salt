@@ -129,6 +129,25 @@ def load_salt(config_dir: str):
 # ── State runner ──────────────────────────────────────────────────────────────
 _LOG_FMT = "%(asctime)s [%(name)-17s:%(lineno)-4d][%(levelname)-8s][%(process)d] %(message)s"
 
+# Known-noisy Salt sub-loggers whose DEBUG records are dropped from the
+# per-run log file. Keeps "Executing state X for [name]" (from salt.state)
+# visible via tail -f while hiding LazyLoad / loader / renderer chatter.
+_NOISY_DEBUG_LOGGERS = (
+    "salt.utils.lazy",
+    "salt.loader",
+    "salt.template",
+    "salt.utils.jinja",
+    "salt.fileclient",
+    "salt.fileserver",
+)
+
+
+class _DropNoisyDebugFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        if record.levelno > logging.DEBUG:
+            return True
+        return not record.name.startswith(_NOISY_DEBUG_LOGGERS)
+
 
 def run_state(
     opts: dict,
@@ -165,6 +184,12 @@ def run_state(
         run_opts["state_output"] = kwargs["state_output"]
     if kwargs.get("test"):
         run_opts["test"] = True
+    # Force ANSI colors even though we capture stdout into a StringIO
+    # (which isn't a TTY, so Salt would otherwise auto-disable colors).
+    # The color codes get written to the log file and render correctly
+    # when streamed via tail -f to the operator's terminal.
+    run_opts["color"] = True
+    run_opts["force_color"] = True
 
     # ── Set up file logging ──────────────────────────────────────────────────
     # We need the root logger level at DEBUG so salt's "Executing state X for [name]"
@@ -178,6 +203,7 @@ def run_state(
             file_handler = logging.FileHandler(log_file, mode="a", encoding="utf-8")
             file_handler.setLevel(logging.DEBUG)
             file_handler.setFormatter(logging.Formatter(_LOG_FMT))
+            file_handler.addFilter(_DropNoisyDebugFilter())
             logging.root.addHandler(file_handler)
             # Lower root level so DEBUG records reach the file handler.
             # The stderr handler (basicConfig) retains its own level filter.
