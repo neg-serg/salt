@@ -1,14 +1,21 @@
 #!/usr/bin/env zsh
-# Audio sink switcher for PipeWire/WirePlumber
-# Based on hyprland-sink-switcher, adapted for rofi + notify-send
+# Audio sink switcher for PipeWire/WirePlumber.
+# Cycles through the RME ADI-2/4 Pro SE per-output-pair virtual sinks defined
+# in ~/.config/pipewire/pipewire.conf.d/98-adi2-remap.conf.
+#
+# Usage: sink-switch {next|prev|select}
+#   next / prev — cycle through ALLOWED_SINKS in definition order
+#   select      — pop a vicinae dmenu with human-friendly descriptions
 
-ALLOWED_SINKS=(rme-genelec rme-headphones)
+ALLOWED_SINKS=(rme-out-1-2 rme-out-3-4 rme-out-5-6 rme-out-7-8)
 
 get_sinks() {
     local all sink
     all=(${(f)"$(pactl list sinks short | awk '{print $2}')"})
-    for sink in "${all[@]}"; do
-        (( ${ALLOWED_SINKS[(Ie)$sink]} )) && print -- "$sink"
+    # Preserve ALLOWED_SINKS order rather than pactl order, so next/prev cycle
+    # through pairs in 1-2 → 3-4 → 5-6 → 7-8 → 1-2 sequence deterministically.
+    for sink in "${ALLOWED_SINKS[@]}"; do
+        (( ${all[(Ie)$sink]} )) && print -- "$sink"
     done
 }
 
@@ -26,7 +33,7 @@ set_sink() {
     # Restore hardware link chain first. PipeWire's policy does not auto-bind
     # the AUX2..AUX7 ports of the RME loopbacks to the hardware node (only
     # FL/FR positions get default routing), so without this step switching to
-    # rme-genelec (AUX4/5) or rme-headphones (AUX2/3) silently drops audio.
+    # any pair other than 1/2 silently drops audio.
     # pw-restore-links is idempotent — it no-ops when everything is already wired.
     if command -v pw-restore-links >/dev/null 2>&1; then
         pw-restore-links >/dev/null 2>&1 || true
@@ -51,7 +58,7 @@ cycle() {
     for i in {1..${#sinks[@]}}; do
         [[ "${sinks[$i]}" == "$current" ]] && idx=$i && break
     done
-    (( idx == 0 )) && return 1
+    (( idx == 0 )) && { set_sink "${sinks[1]}"; return; }
     local count=${#sinks[@]}
     local new_idx
     if [[ "$direction" == "next" ]]; then

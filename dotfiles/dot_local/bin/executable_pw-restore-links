@@ -4,36 +4,38 @@
 #
 # Problem:
 #   The PipeWire loopback modules defined in 98-adi2-remap.conf create virtual
-#   sinks (rme-genelec, rme-headphones) that remap stereo FL/FR to specific
-#   channels on the 8-channel USB device.  The config sets node.dont-reconnect=true
+#   sinks (rme-out-1-2 … rme-out-7-8) that remap stereo FL/FR to specific
+#   channel pairs on the 8-channel USB device. The config sets node.dont-reconnect=true
 #   to prevent accidental rerouting, but this means a momentary USB disconnect
 #   (suspend, hub reset, firmware hiccup) permanently breaks the link chain:
 #
-#     app → rme-genelec (virtual sink) → [BROKEN] → RME hardware output
+#     app → rme-out-N (virtual sink) → [BROKEN] → RME hardware output
 #
 #   Audio plays into the virtual sink but never reaches the DAC.
+#
+#   Additionally, PipeWire policy does not auto-link the AUX2..AUX7 positions
+#   of loopback outputs to the hardware node's AUX ports because it has no
+#   default routing rule for non-FL/FR positions. AUX0/AUX1 auto-links fine;
+#   anything higher needs manual wiring via pw-link, which this script does.
 #
 # Solution:
 #   This script discovers each virtual sink's link-group via pw-cli, then
 #   re-establishes the links from the loopback output to the correct hardware
-#   playback ports.  It is idempotent — safe to run at any time.
+#   playback ports. It is idempotent — safe to run at any time.
 #
-# Channel mapping (must match 98-adi2-remap.conf).
-# ADI-2/4 Pro SE USB multichannel mode, channel order per manual §17.4.2:
-#   USB 1/2 (AUX0/AUX1) → Line Out XLR 1/2 + PH 1/2 (shared DSP)
-#   USB 3/4 (AUX2/AUX3) → PH 3/4 / Pentaconn (independent, if Phones Out 3/4 Source = USB 3/4)
-#   USB 5/6 (AUX4/AUX5) → AES (if Dig Out Source = USB 5/6)
-#   USB 7/8 (AUX6/AUX7) → SPDIF optical/coaxial
-#
-#   rme-genelec    → AUX6, AUX7  (AES → Genelec monitors; USB 7/8 pair)
-#   rme-headphones → AUX0, AUX1  (PH 1/2, shares DSP with XLR Line Out)
+# Channel mapping (must match 98-adi2-remap.conf) per manual §17.4.2 p.43:
+#   rme-out-1-2 → AUX0, AUX1  (Line Out XLR + PH 1/2)
+#   rme-out-3-4 → AUX2, AUX3  (PH 3/4 / Pentaconn)
+#   rme-out-5-6 → AUX4, AUX5  (AES output)
+#   rme-out-7-8 → AUX6, AUX7  (SPDIF coaxial/optical)
 #
 # Usage:
 #   pw-restore-links          # restore all links, report status
 #
 # Integration:
-#   Runs automatically via pw-restore-links.service (after wireplumber.service)
-#   Can also be invoked manually when audio disappears.
+#   Runs automatically via pw-restore-links.service (after wireplumber.service).
+#   Also invoked by sink-switch before moving streams, to guarantee links exist
+#   before audio starts flowing through a newly-selected sink.
 #
 # Dependencies: pw-cli, pw-link (pipewire package)
 
@@ -42,8 +44,10 @@ setopt ERR_EXIT NO_UNSET PIPE_FAIL
 readonly hw_out="alsa_output.usb-RME_ADI-2_4_Pro_SE__53011083__B992903C2BD8DC8-00.pro-output-0"
 
 typeset -A sink_channels=(
-    [rme-genelec]="AUX6 AUX7"
-    [rme-headphones]="AUX0 AUX1"
+    [rme-out-1-2]="AUX0 AUX1"
+    [rme-out-3-4]="AUX2 AUX3"
+    [rme-out-5-6]="AUX4 AUX5"
+    [rme-out-7-8]="AUX6 AUX7"
 )
 
 err=0
