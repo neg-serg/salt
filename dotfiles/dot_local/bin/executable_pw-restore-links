@@ -18,9 +18,15 @@
 #   re-establishes the links from the loopback output to the correct hardware
 #   playback ports.  It is idempotent — safe to run at any time.
 #
-# Channel mapping (must match 98-adi2-remap.conf):
-#   rme-genelec    → AUX4, AUX5  (AES outputs → Genelec monitors)
-#   rme-headphones → AUX0, AUX1  (Phones 1/2)
+# Channel mapping (must match 98-adi2-remap.conf).
+# ADI-2/4 Pro SE USB multichannel mode, channel order per manual §17.4.2:
+#   USB 1/2 (AUX0/AUX1) → Line Out XLR 1/2 + PH 1/2 (shared DSP)
+#   USB 3/4 (AUX2/AUX3) → PH 3/4 / Pentaconn (independent, if Phones Out 3/4 Source = USB 3/4)
+#   USB 5/6 (AUX4/AUX5) → AES (if Dig Out Source = USB 5/6)
+#   USB 7/8 (AUX6/AUX7) → SPDIF optical/coaxial
+#
+#   rme-genelec    → AUX6, AUX7  (AES → Genelec monitors; USB 7/8 pair)
+#   rme-headphones → AUX0, AUX1  (PH 1/2, shares DSP with XLR Line Out)
 #
 # Usage:
 #   pw-restore-links          # restore all links, report status
@@ -36,7 +42,7 @@ setopt ERR_EXIT NO_UNSET PIPE_FAIL
 readonly hw_out="alsa_output.usb-RME_ADI-2_4_Pro_SE__53011083__B992903C2BD8DC8-00.pro-output-0"
 
 typeset -A sink_channels=(
-    [rme-genelec]="AUX4 AUX5"
+    [rme-genelec]="AUX6 AUX7"
     [rme-headphones]="AUX0 AUX1"
 )
 
