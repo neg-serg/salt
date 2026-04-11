@@ -25,13 +25,11 @@ systemctl --user enable --now ydotool.service
 Без этого инструменты автоматизации мыши/клавиатуры Hyprland MCP молча падают или выдают ошибки при click/type операциях. Скриншоты работают (используют `grim`/`slurp`, а не ydotool).
 
 
-## OpenClaw: косметические улучшения
+## Косметические улучшения
 
 **npmrc prefix**: глобальный npm prefix установлен на `/nonexistent` (из `/etc/npmrc`).
 Создать `~/.npmrc` с `prefix=$HOME/.local` через chezmoi (`dotfiles/dot_npmrc`).
 Без этого `npm list -g` и `npm outdated -g` не работают (Salt-установка обходит проблему через `--prefix`).
-
-**user_services.yaml**: `openclaw-gateway.service` управляется напрямую из `openclaw_agent.sls`, но не зарегистрирован в `data/user_services.yaml`. Для единообразия можно перенести `user_service_file` + `user_service_enable` туда, оставив в `openclaw_agent.sls` только npm install и конфиг.
 
 **Комментарий к alias ProxyPilot**: формат `name/alias` в `proxypilot.yaml.j2` неочевиден. Добавить комментарий, объясняющий направление маппинга (alias = что шлёт клиент, name = локальный ID модели).
 

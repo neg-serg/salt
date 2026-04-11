@@ -20,7 +20,7 @@ just apply
 
 # Применить один стейт
 just apply desktop
-just apply openclaw_agent
+just apply nanoclaw
 
 # Применить группу стейтов (подмножество связанных)
 just group core
@@ -45,7 +45,7 @@ just test group/network
 | `desktop` | audio, desktop (hyprland, portals, packages), fonts | ~0.7 с |
 | `packages` | pacman packages, все installers, custom PKGBUILDs | ~0.6 с |
 | `services` | system services, monitoring, user systemd units | ~0.5 с |
-| `ai` | ollama, openclaw, nanoclaw, opencode, image_gen (по feature flags) | ~0.4 с |
+| `ai` | ollama, llama_embed, nanoclaw, opencode, image_gen (по feature flags) | ~0.4 с |
 
 Группы лежат в `states/group/*.sls` — это обычные `include:` списки без
 новой логики. Отдельные стейты тоже работают: `just apply mpd`, `just apply steam` и т.д.

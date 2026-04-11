@@ -112,7 +112,7 @@ Two template sources must stay in sync:
 
 | Secret | gopass path | Used by |
 |--------|-------------|---------|
-| Client API key | `api/proxypilot-local` | Claude Code, OpenCode, OpenClaw |
+| Client API key | `api/proxypilot-local` | Claude Code, OpenCode, NanoClaw |
 | Management key | `api/proxypilot-management` | Web dashboard access |
 
 The client API key is also exported as `PROXYPILOT_API_KEY` and `OPENAI_API_KEY`

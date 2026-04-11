@@ -112,7 +112,7 @@ api-keys:
 
 | Секрет | Путь в gopass | Используется |
 |--------|---------------|--------------|
-| Клиентский API-ключ | `api/proxypilot-local` | Claude Code, OpenCode, OpenClaw |
+| Клиентский API-ключ | `api/proxypilot-local` | Claude Code, OpenCode, NanoClaw |
 | Ключ управления | `api/proxypilot-management` | Доступ к веб-дашборду |
 
 Клиентский API-ключ также экспортируется как `PROXYPILOT_API_KEY` и `OPENAI_API_KEY`
