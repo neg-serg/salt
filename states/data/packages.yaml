@@ -356,6 +356,7 @@ other:
   - valgrind  # memory debugging and profiling
   - vdirsyncer  # CalDAV/CardDAV synchronizer
   - virt-manager  # VM management GUI (libvirt)
+  - virt-viewer  # VM console viewer (spice/vnc)
   - viu  # terminal image viewer
   - vnstat  # network traffic monitor
   - w3m  # text-based web browser and pager
