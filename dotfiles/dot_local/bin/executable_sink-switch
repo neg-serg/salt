@@ -35,8 +35,14 @@ set_sink() {
     # FL/FR positions get default routing), so without this step switching to
     # any pair other than 1/2 silently drops audio.
     # pw-restore-links is idempotent — it no-ops when everything is already wired.
+    # If it fails (e.g. hardware node missing after USB disconnect), skip the
+    # switch entirely — moving streams to a sink with broken links = dead audio.
     if command -v pw-restore-links >/dev/null 2>&1; then
-        pw-restore-links >/dev/null 2>&1 || true
+        if ! pw-restore-links >/dev/null 2>&1; then
+            notify-send -t 3000 -u critical "Audio Switch Failed" \
+                "RME hardware node not ready — cannot switch to $sink"
+            return 1
+        fi
     fi
     pactl set-default-sink "$sink"
     # Move application streams to the new sink (skip PipeWire loopback internals)

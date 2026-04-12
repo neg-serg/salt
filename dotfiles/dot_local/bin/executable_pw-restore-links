@@ -50,6 +50,42 @@ typeset -A sink_channels=(
     [rme-out-7-8]="AUX6 AUX7"
 )
 
+# Wait for the hardware ALSA node to appear after USB reconnect.
+# PipeWire re-enumerates ALSA devices asynchronously — can take a few seconds.
+wait_for_hw_node() {
+    local max_wait=10 waited=0
+    while ! pw-cli list-objects Node | grep -qF "node.name = \"$hw_out\"" 2>/dev/null; do
+        if (( waited >= max_wait )); then
+            print -u2 "HW node '$hw_out' not found after ${max_wait}s"
+            return 1
+        fi
+        sleep 0.5
+        (( waited += 1 ))
+    done
+}
+
+# Wait for all virtual sinks to register with PipeWire.
+wait_for_sinks() {
+    local max_wait=10 waited=0 missing
+    while true; do
+        missing=()
+        for sink in ${(k)sink_channels}; do
+            pw-cli info "$sink" >/dev/null 2>&1 || missing+=("$sink")
+        done
+        (( ${#missing} == 0 )) && return 0
+        if (( waited >= max_wait )); then
+            print -u2 "Sinks not found after ${max_wait}s: ${missing[*]}"
+            return 1
+        fi
+        sleep 0.5
+        (( waited += 1 ))
+    done
+}
+
+# Wait for hardware node and virtual sinks to be ready (USB reconnect recovery).
+wait_for_hw_node || exit 1
+wait_for_sinks || exit 1
+
 err=0
 
 for sink in ${(k)sink_channels}; do
