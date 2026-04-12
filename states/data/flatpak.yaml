@@ -14,7 +14,7 @@ apps:
   - net.lutris.Lutris                           # game launcher/manager
   - net.pcsx2.PCSX2                             # PS2 emulator
   - net.sapples.LiveCaptions                    # real-time speech captioning
-  - net.veloren.airshipper                       # Veloren game launcher
+  - net.veloren.airshipper                      # Veloren game launcher
   - org.gimp.GIMP                               # image editor
   - org.libreoffice.LibreOffice                 # office suite
   - org.zdoom.UZDoom                            # UZDoom (successor of GZDoom, rebased)
