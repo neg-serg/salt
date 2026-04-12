@@ -15,3 +15,22 @@ vicinae_theme:
     - user: {{ user }}
     - group: {{ user }}
     - makedirs: True
+
+# Alkano-aio cursor theme (original source dead, mirror: github.com/neg-serg/Alkano-aio)
+alkano_aio_cursor:
+  cmd.run:
+    - name: |
+        set -eo pipefail
+        _td=$(mktemp -d)
+        trap 'rm -rf "$_td"' EXIT
+        git clone --depth=1 https://github.com/neg-serg/Alkano-aio.git "$_td/alkano"
+        sudo mkdir -p /usr/share/icons/Alkano-aio
+        sudo cp -r "$_td/alkano/Alkano-aio"/* /usr/share/icons/Alkano-aio/
+        sudo chmod 755 /usr/share/icons/Alkano-aio
+        sudo chmod 755 /usr/share/icons/Alkano-aio/cursors
+        sudo find /usr/share/icons/Alkano-aio/cursors -type f -exec chmod 644 {} +
+    - creates: /usr/share/icons/Alkano-aio/cursor.theme
+    - parallel: True
+    - retry:
+        attempts: 3
+        interval: 5
