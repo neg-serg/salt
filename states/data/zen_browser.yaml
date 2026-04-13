@@ -29,12 +29,13 @@ extensions:
     slug: single-file
   - id: addon@fastforward.team
     slug: fastforwardteam
-  - id: hide-scrollbars@qashto
-    slug: hide-scrollbars
-  - id: kellyc-show-youtube-dislikes@nradiowave
-    slug: return-youtube-dislikes
-  - id: "{4a311e5c-1ccc-49b7-9c23-3e2b47b6c6d5}"
-    slug: "\u0441\u043A\u0430\u0447\u0430\u0442\u044C-\u043C\u0443\u0437\u044B\u043A\u0443-\u0441-\u0432\u043A-vkd"
+  # AMO TLS unavailable — commented out until network access restored
+  # - id: hide-scrollbars@qashto
+  #   slug: hide-scrollbars
+  # - id: kellyc-show-youtube-dislikes@nradiowave
+  #   slug: return-youtube-dislikes
+  # - id: "{4a311e5c-1ccc-49b7-9c23-3e2b47b6c6d5}"
+  #   slug: "\u0441\u043A\u0430\u0447\u0430\u0442\u044C-\u043C\u0443\u0437\u044B\u043A\u0443-\u0441-\u0432\u043A-vkd"
   - id: chrome-mask@overengineer.dev
     slug: chrome-mask
   - id: "{036a55b4-5e72-4d05-a06c-cba2dfcc134a}"
