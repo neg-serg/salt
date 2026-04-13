@@ -150,8 +150,8 @@ network:
         - cmd: install_xray
     cleanup:
       paths:
-        - "{{ home }}/.local/bin/xray"  # legacy manually-installed binary
-      onlyif: test -f {{ home }}/.local/bin/xray
+        - /home/neg/.local/bin/xray  # legacy manually-installed binary
+      onlyif: test -f /home/neg/.local/bin/xray
 
   singbox:
     unit:

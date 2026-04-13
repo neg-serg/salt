@@ -33,6 +33,7 @@ pillar_cache: True
 pillar_cache_backend: disk
 pillar_cache_ttl: 3600
 file_client: local
+state_verbose: False
 file_roots:
   base:
     - ${project_dir}/states/
@@ -55,6 +56,7 @@ pki_dir: ${runtime_dir}/pki/minion
 log_file: /dev/null
 cachedir: ${runtime_dir}/var/cache/salt
 file_client: local
+state_verbose: False
 file_roots:
   base:
     - ${project_dir}/states/
