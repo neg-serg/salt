@@ -18,7 +18,7 @@
 # Dependencies: pw-cli, pw-link, pactl (pipewire package)
 # Optional: fzf (fuzzy selection with preview)
 
-setopt ERR_EXIT NO_UNSET PIPE_FAIL
+setopt NO_UNSET
 
 # ── RME virtual sink definitions ──────────────────────────────────────
 typeset -A rme_sink_channels=(
@@ -42,13 +42,13 @@ has_pactl() { command -v pactl >/dev/null 2>&1; }
 # Get node property value from pw-cli info output.
 node_prop() {
     local info="$1" prop="$2"
-    print -- "$info" | grep -m1 "$prop" | sed 's/.*"\(.*\)"/\1/' 2>/dev/null
+    print -- "$info" | grep -m1 "$prop" | sed 's/.*"\(.*\)"/\1/' 2>/dev/null || true
 }
 
 # Get all available RME sinks that actually exist in PipeWire.
 available_rme_sinks() {
     local existing
-    existing=$(pactl list sinks short 2>/dev/null | awk '{print $2}')
+    existing=$(pactl list sinks short 2>/dev/null | awk '{print $2}') || true
     local sink
     for sink in "${(@k)rme_sink_channels}"; do
         print -- "$existing" | grep -qxF "$sink" && print -- "$sink"
@@ -63,7 +63,14 @@ cmd_nodes() {
     printf "%-6s %-50s %s\n" "ID" "Name" "Media Class"
     printf "%-6s %-50s %s\n" "------" "--------------------------------------------------" "--------------------"
 
-    pw-cli list-objects Node 2>/dev/null | awk '
+    local output
+    output=$(pw-cli list-objects Node 2>/dev/null) || true
+    if [[ -z "$output" ]]; then
+        print "No nodes found."
+        return 0
+    fi
+
+    print -- "$output" | awk '
         /^id/ { id = $2 }
         /object\.serial/ { serial = $2 }
         /node\.name/ {
@@ -77,16 +84,16 @@ cmd_nodes() {
             display = (desc != "" && desc != name) ? desc : name
             printf "%-6s %-50s %s\n", id, display, class
         }
-    '
+    ' || true
 }
 
 # Show current port links.
 cmd_links() {
     local links
-    links=$(pw-link -l 2>/dev/null)
+    links=$(pw-link -l 2>/dev/null) || true
     if [[ -z "$links" ]]; then
         print "No active links."
-        return
+        return 0
     fi
     print "$links"
 }
@@ -95,7 +102,15 @@ cmd_links() {
 cmd_graph() {
     print "=== Audio Topology (Links) ==="
     print ""
-    pw-cli list-objects Link 2>/dev/null | awk '
+
+    local output
+    output=$(pw-cli list-objects Link 2>/dev/null) || true
+    if [[ -z "$output" ]]; then
+        print "No active links in graph."
+        return 0
+    fi
+
+    print -- "$output" | awk '
         /^id/ { id = $2 }
         /link\.output\.node/ {
             gsub(/.*link\.output\.node = "/, ""); gsub(/"/, ""); out_node = $0
@@ -110,13 +125,22 @@ cmd_graph() {
             gsub(/.*link\.input\.port = "/, ""); gsub(/"/, ""); in_port = $0
             printf "  [%s] %s:%s → %s:%s\n", id, out_node, out_port, in_node, in_port
         }
-    '
+    ' || true
 }
 
 # Show RME virtual sink status and channel mappings.
 cmd_sinks() {
     local default_sink
-    default_sink=$(pactl info 2>/dev/null | awk '/Default Sink:/{print $3}')
+    default_sink=$(pactl info 2>/dev/null | awk '/Default Sink:/{print $3}') || true
+
+    if [[ -z "$default_sink" ]]; then
+        # Could be no default sink set, or pactl failed entirely.
+        # Check if pactl is responsive at all.
+        if ! pactl info >/dev/null 2>&1; then
+            print -u2 "Error: PipeWire is not running or pactl is unavailable."
+            return 1
+        fi
+    fi
 
     print "=== RME Virtual Sinks ==="
     print ""
@@ -126,7 +150,7 @@ cmd_sinks() {
         label="${rme_sink_labels[$sink]}"
         channels="${rme_sink_channels[$sink]}"
 
-        if pactl list sinks short 2>/dev/null | awk '{print $2}' | grep -qxF "$sink"; then
+        if pactl list sinks short 2>/dev/null | awk '{print $2}' | grep -qxF "$sink" 2>/dev/null; then
             if [[ "$sink" == "$default_sink" ]]; then
                 status_marker=" [DEFAULT]"
             else
@@ -147,7 +171,7 @@ cmd_sinks() {
         local inputs
         inputs=$(pactl -f json list sink-inputs 2>/dev/null \
             | jq -r --arg sink "$rme_sink" \
-                '.[] | select(.sink == ($sink | tonumber)) | .properties["node.name"] // "unknown"' 2>/dev/null)
+                '.[] | select(.sink == ($sink | tonumber)) | .properties["node.name"] // "unknown"' 2>/dev/null) || true
         if [[ -n "$inputs" ]]; then
             print "  $rme_sink:"
             print -- "$inputs" | while read -r app; do
@@ -160,7 +184,7 @@ cmd_sinks() {
 # Run pw-restore-links.
 cmd_restore() {
     if command -v pw-restore-links >/dev/null 2>&1; then
-        pw-restore-links
+        pw-restore-links || true
     else
         print -u2 "pw-restore-links not found in PATH"
         return 1
@@ -186,7 +210,7 @@ cmd_move() {
         input_names+=("$inp_name")
         input_sinks+=("$inp_sink")
     done < <(pactl -f json list sink-inputs 2>/dev/null \
-        | jq -r '.[] | select(.properties["node.name"] | test("^output\\.loopback") | not) | "\(.index)|\(.properties["node.name"] // "unknown")|\(.sink)"' 2>/dev/null)
+        | jq -r '.[] | select(.properties["node.name"] | test("^output\\.loopback") | not) | "\(.index)|\(.properties["node.name"] // "unknown")|\(.sink)"' 2>/dev/null) || true
 
     if (( ${#input_ids} == 0 )); then
         print "No application streams to move."
@@ -196,25 +220,32 @@ cmd_move() {
     # Select stream
     local chosen_idx=0
     if has_fzf; then
-        local selection line_num=0
-        selection=$(for i in {1..${#input_ids[@]}}; do
-            print "${input_names[$i]} (sink: ${input_sinks[$i]})"
-        done | fzf --header="Select stream to move" --reverse)
-        [[ -z "$selection" ]] && return 0
-        # Find matching index
+        local selection
+        # Build numbered list for robust selection (handles special chars)
+        local -a menu_lines
+        local i
         for i in {1..${#input_ids[@]}}; do
-            if [[ "${input_names[$i]} (sink: ${input_sinks[$i]})" == "$selection" ]]; then
-                chosen_idx=$i
-                break
-            fi
+            menu_lines+=("${i}|${input_names[$i]} (sink: ${input_sinks[$i]})")
         done
+        selection=$(print -l -- "${menu_lines[@]}" | fzf --header="Select stream to move" --reverse) || true
+        [[ -z "$selection" ]] && return 0
+        # Extract the number before the pipe
+        chosen_idx="${selection%%|*}"
     else
         print "Select stream to move:"
         for i in {1..${#input_ids[@]}}; do
             print "  $i) ${input_names[$i]} (sink: ${input_sinks[$i]})"
         done
-        vared -p "Stream number: " -c chosen_idx
-        [[ -z "$chosen_idx" ]] && return 0
+        while true; do
+            local stream_num=""
+            read -p "Stream number: " stream_num
+            [[ -z "$stream_num" ]] && return 0
+            if [[ "$stream_num" =~ ^[0-9]+$ ]] && (( stream_num >= 1 && stream_num <= ${#input_ids} )); then
+                chosen_idx=$stream_num
+                break
+            fi
+            print -u2 "Invalid input. Enter a number between 1 and ${#input_ids}."
+        done
     fi
 
     # Select target sink
@@ -223,7 +254,7 @@ cmd_move() {
         local sink_selection
         sink_selection=$(for s in "${sinks[@]}"; do
             print "$s — ${rme_sink_labels[$s]}"
-        done | fzf --header="Select target sink" --reverse)
+        done | fzf --header="Select target sink" --reverse) || true
         [[ -z "$sink_selection" ]] && return 0
         target_sink="${sink_selection%% *}"
     else
@@ -233,16 +264,22 @@ cmd_move() {
             (( si++ ))
             print "  $si) $s — ${rme_sink_labels[$s]}"
         done
-        local sink_num=0
-        vared -p "Sink number: " -c sink_num
-        [[ -z "$sink_num" || $sink_num -lt 1 || $sink_num -gt ${#sinks} ]] && return 0
-        target_sink="${sinks[$sink_num]}"
+        while true; do
+            local sink_num=""
+            read -p "Sink number: " sink_num
+            [[ -z "$sink_num" ]] && return 0
+            if [[ "$sink_num" =~ ^[0-9]+$ ]] && (( sink_num >= 1 && sink_num <= ${#sinks} )); then
+                target_sink="${sinks[$sink_num]}"
+                break
+            fi
+            print -u2 "Invalid input. Enter a number between 1 and ${#sinks}."
+        done
     fi
 
     # Move the stream
     local inp_id="${input_ids[$chosen_idx]}"
     print "Moving stream #${inp_id} → ${target_sink}..."
-    pactl move-sink-input "$inp_id" "$target_sink"
+    pactl move-sink-input "$inp_id" "$target_sink" 2>/dev/null || true
     print "Done."
 }
 
@@ -263,16 +300,26 @@ show_menu() {
 
 interactive_loop() {
     local key
+
+    # SIGINT trap for clean Ctrl+C exit
+    trap 'print ""; return 0' INT
+
     while true; do
+        # Reset terminal state before each menu cycle
+        print -n '\e[0m'
+        stty sane 2>/dev/null || true
+
         show_menu
-        vared -p "Choice: " -c key
+        read -k 1 key || return 0  # EOF → exit
+        print ""  # consume the newline after keypress
+
         case "$key" in
-            n|nodes)   cmd_nodes ;;
-            l|links)   cmd_links ;;
-            g|graph)   cmd_graph ;;
-            m|move)    cmd_move ;;
-            s|sinks)   cmd_sinks ;;
-            r|restore) cmd_restore ;;
+            n|nodes)   cmd_nodes || true ;;
+            l|links)   cmd_links || true ;;
+            g|graph)   cmd_graph || true ;;
+            m|move)    cmd_move || true ;;
+            s|sinks)   cmd_sinks || true ;;
+            r|restore) cmd_restore || true ;;
             q|quit)    return 0 ;;
             *)         print "Unknown: $key" ;;
         esac
@@ -280,6 +327,22 @@ interactive_loop() {
 }
 
 # ── Entry point ───────────────────────────────────────────────────────
+
+# Detect non-interactive terminal (piped/redirected input)
+if [[ ! -t 0 && -z "$1" ]]; then
+    print "Usage: ${0##*/} [command]"
+    print ""
+    print "Commands:"
+    print "  nodes    List all PipeWire nodes"
+    print "  links    Show current port links"
+    print "  graph    Show audio topology"
+    print "  move     Move app streams between sinks (interactive)"
+    print "  sinks    Show RME virtual sink status"
+    print "  restore  Run pw-restore-links"
+    print "  (none)   Interactive menu"
+    exit 0
+fi
+
 case "${1:-}" in
     nodes)   cmd_nodes ;;
     links)   cmd_links ;;
