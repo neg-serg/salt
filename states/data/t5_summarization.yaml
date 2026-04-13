@@ -1,0 +1,20 @@
+# UrukHan/t5-russian-summarization GGUF model for llama.cpp text2text server
+# Changing the model is a YAML-only edit.
+#
+# ── Schema ────────────────────────────────────────────────────────────
+#
+# hf_repo:       HuggingFace repo (org/model)
+# hf_file:       safetensors filename to download from HF
+# gguf_file:     Output GGUF filename after conversion
+# context:       context window size (T5 has 512 tokens)
+# gpu_layers:    layers to offload to GPU (99 = all)
+# prefix:        T5 task prefix for summarization
+#
+# ─────────────────────────────────────────────────────────────────────
+
+hf_repo: UrukHan/t5-russian-summarization
+hf_file: model.safetensors
+gguf_file: t5-russian-summarization-Q5_K_M.gguf
+context: 512
+gpu_layers: 99
+prefix: "summarize: "

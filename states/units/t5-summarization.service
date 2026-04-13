@@ -1,0 +1,27 @@
+[Unit]
+Description=T5 Russian Summarization Server (llama.cpp, T5-base)
+After=network-online.target
+
+[Service]
+ExecStart=/usr/bin/llama-server \
+  --model {{ models_dir }}/{{ gguf_file }} \
+  --ctx-size {{ context }} \
+  --gpu-layers {{ gpu_layers }} \
+  --host 127.0.0.1 \
+  --port {{ port }}
+User={{ user }}
+Group={{ user }}
+Restart=always
+RestartSec=3
+WorkingDirectory={{ home }}
+Environment="HOME={{ home }}"
+NoNewPrivileges=true
+ProtectSystem=strict
+PrivateTmp=yes
+ReadWritePaths={{ models_dir }}
+RestrictNamespaces=yes
+RestrictRealtime=yes
+LockPersonality=yes
+
+[Install]
+WantedBy=multi-user.target

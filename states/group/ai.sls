@@ -27,3 +27,6 @@ include:
 {% if host.features.get('video_ai', False) %}
   - video_ai
 {% endif %}
+{% if host.features.get('t5_summarization', false) %}
+  - t5_summarization
+{% endif %}

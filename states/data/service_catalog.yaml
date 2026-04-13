@@ -142,6 +142,25 @@ llama_embed:                   # llama.cpp embedding server (Vulkan)
       mode: ro
   env_file: null
 
+t5_summarization:              # llama.cpp T5 summarization server (Vulkan)
+  port: 11436
+  health_path: /health
+  unit: t5_summarization
+  scope: system
+  packages: llama.cpp-vulkan
+  timeout: 90
+  manual_start: true
+  containerized: true
+  container_image: llama_embed   # reuses ggml-org/llama.cpp:server-vulkan
+  cutover_mode: in_place
+  cutover_date: "2026-04-13"
+  gpu: render_group              # Vulkan-only; no /dev/kfd needed
+  bind_mounts:
+    - host: /mnt/one/t5-summarization/models
+      container: /models
+      mode: ro
+  env_file: null
+
 jellyfin:                      # Media server
   port: 8096
   health_path: /health

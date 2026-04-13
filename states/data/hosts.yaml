@@ -58,6 +58,7 @@ defaults:
     mpd: true
     ollama: true
     llama_embed: true
+    t5_summarization: true
     # Containerization cutover toggles (feature 087-containerize-services).
     # Each flag is the rollback lever for its service per FR-006:
     #   - false → native deployment (current behaviour)
@@ -68,6 +69,7 @@ defaults:
     containers:
       ollama: true
       llama_embed: true
+      t5_summarization: true
       loki: false
       promtail: false
       grafana: false
