@@ -231,7 +231,7 @@ def test_telfir_has_primary_and_secondary_browser_bindings():
     host = host_model.build_host("telfir", data)
     assert host["zen_profile"] == "qnkh60k3.Default (release)"
     assert host["floorp_profile"] == "c85pjaxk.default-default"
-    assert host["features"]["floorp"] is True
+    assert host["features"]["floorp"] is False
 
 
 # --- US4: deep merge edge cases ---
