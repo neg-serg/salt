@@ -1,6 +1,13 @@
 {% from '_imports.jinja' import host %}
 {% from '_macros_service.jinja' import udev_rule, service_with_unit %}
 
+# --- RME USB device trigger script (deploys before udev rule can fire) ---
+rme_usb_trigger_script:
+  file.managed:
+    - name: /usr/local/bin/rme-usb-trigger
+    - source: salt://scripts/rme-usb-trigger.sh
+    - mode: '0755'
+
 # --- Custom udev rules: I/O schedulers, audio devices, SATA ALPM ---
 {{ udev_rule('custom_udev_rules', '/etc/udev/rules.d/99-custom.rules', source='salt://configs/udev-custom.rules') }}
 

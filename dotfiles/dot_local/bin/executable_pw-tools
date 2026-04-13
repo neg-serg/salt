@@ -1,0 +1,304 @@
+#!/usr/bin/env zsh
+#
+# pw-tools — Interactive PipeWire audio routing manager
+#
+# Menu-driven interface for inspecting and managing PipeWire nodes, links,
+# and stream routing. Designed around the RME ADI-2/4 Pro SE virtual sink
+# setup but works with any PipeWire configuration.
+#
+# Usage:
+#   pw-tools              # interactive menu
+#   pw-tools nodes        # list all nodes
+#   pw-tools links        # show current port links
+#   pw-tools graph        # show audio topology
+#   pw-tools move         # move streams between sinks (interactive)
+#   pw-tools sinks        # show RME virtual sink status
+#   pw-tools restore      # run pw-restore-links
+#
+# Dependencies: pw-cli, pw-link, pactl (pipewire package)
+# Optional: fzf (fuzzy selection with preview)
+
+setopt ERR_EXIT NO_UNSET PIPE_FAIL
+
+# ── RME virtual sink definitions ──────────────────────────────────────
+typeset -A rme_sink_channels=(
+    [rme-out-1-2]="AUX0, AUX1  (Line Out XLR + PH 1/2)"
+    [rme-out-3-4]="AUX2, AUX3  (PH 3/4 / Pentaconn)"
+    [rme-out-5-6]="AUX4, AUX5  (AES output)"
+    [rme-out-7-8]="AUX6, AUX7  (SPDIF coaxial/optical)"
+)
+
+typeset -A rme_sink_labels=(
+    [rme-out-1-2]="1-2  Line Out XLR + PH 1/2"
+    [rme-out-3-4]="3-4  PH 3/4 / Pentaconn"
+    [rme-out-5-6]="5-6  AES output"
+    [rme-out-7-8]="7-8  SPDIF coaxial/optical"
+)
+
+# ── Helpers ───────────────────────────────────────────────────────────
+has_fzf() { command -v fzf >/dev/null 2>&1; }
+has_pactl() { command -v pactl >/dev/null 2>&1; }
+
+# Get node property value from pw-cli info output.
+node_prop() {
+    local info="$1" prop="$2"
+    print -- "$info" | grep -m1 "$prop" | sed 's/.*"\(.*\)"/\1/' 2>/dev/null
+}
+
+# Get all available RME sinks that actually exist in PipeWire.
+available_rme_sinks() {
+    local existing
+    existing=$(pactl list sinks short 2>/dev/null | awk '{print $2}')
+    local sink
+    for sink in "${(@k)rme_sink_channels}"; do
+        print -- "$existing" | grep -qxF "$sink" && print -- "$sink"
+    done
+}
+
+# ── Subcommands ───────────────────────────────────────────────────────
+
+# List all PipeWire nodes in a formatted table.
+cmd_nodes() {
+    local id name desc class
+    printf "%-6s %-50s %s\n" "ID" "Name" "Media Class"
+    printf "%-6s %-50s %s\n" "------" "--------------------------------------------------" "--------------------"
+
+    pw-cli list-objects Node 2>/dev/null | awk '
+        /^id/ { id = $2 }
+        /object\.serial/ { serial = $2 }
+        /node\.name/ {
+            gsub(/.*node\.name = "/, ""); gsub(/"/, ""); name = $0
+        }
+        /node\.description/ {
+            gsub(/.*node\.description = "/, ""); gsub(/"/, ""); desc = $0
+        }
+        /media\.class/ {
+            gsub(/.*media\.class = "/, ""); gsub(/"/, ""); class = $0
+            display = (desc != "" && desc != name) ? desc : name
+            printf "%-6s %-50s %s\n", id, display, class
+        }
+    '
+}
+
+# Show current port links.
+cmd_links() {
+    local links
+    links=$(pw-link -l 2>/dev/null)
+    if [[ -z "$links" ]]; then
+        print "No active links."
+        return
+    fi
+    print "$links"
+}
+
+# Show audio topology as a link graph.
+cmd_graph() {
+    print "=== Audio Topology (Links) ==="
+    print ""
+    pw-cli list-objects Link 2>/dev/null | awk '
+        /^id/ { id = $2 }
+        /link\.output\.node/ {
+            gsub(/.*link\.output\.node = "/, ""); gsub(/"/, ""); out_node = $0
+        }
+        /link\.input\.node/ {
+            gsub(/.*link\.input\.node = "/, ""); gsub(/"/, ""); in_node = $0
+        }
+        /link\.output\.port/ {
+            gsub(/.*link\.output\.port = "/, ""); gsub(/"/, ""); out_port = $0
+        }
+        /link\.input\.port/ {
+            gsub(/.*link\.input\.port = "/, ""); gsub(/"/, ""); in_port = $0
+            printf "  [%s] %s:%s → %s:%s\n", id, out_node, out_port, in_node, in_port
+        }
+    '
+}
+
+# Show RME virtual sink status and channel mappings.
+cmd_sinks() {
+    local default_sink
+    default_sink=$(pactl info 2>/dev/null | awk '/Default Sink:/{print $3}')
+
+    print "=== RME Virtual Sinks ==="
+    print ""
+
+    local sink label channels status_marker
+    for sink in rme-out-1-2 rme-out-3-4 rme-out-5-6 rme-out-7-8; do
+        label="${rme_sink_labels[$sink]}"
+        channels="${rme_sink_channels[$sink]}"
+
+        if pactl list sinks short 2>/dev/null | awk '{print $2}' | grep -qxF "$sink"; then
+            if [[ "$sink" == "$default_sink" ]]; then
+                status_marker=" [DEFAULT]"
+            else
+                status_marker=""
+            fi
+            print "  ✓ $sink — $channels$status_marker"
+        else
+            print "  ✗ $sink — not found"
+        fi
+    done
+
+    print ""
+    print "=== Streams on RME Sinks ==="
+    print ""
+
+    local rme_sink
+    for rme_sink in $(available_rme_sinks); do
+        local inputs
+        inputs=$(pactl -f json list sink-inputs 2>/dev/null \
+            | jq -r --arg sink "$rme_sink" \
+                '.[] | select(.sink == ($sink | tonumber)) | .properties["node.name"] // "unknown"' 2>/dev/null)
+        if [[ -n "$inputs" ]]; then
+            print "  $rme_sink:"
+            print -- "$inputs" | while read -r app; do
+                print "    - $app"
+            done
+        fi
+    done
+}
+
+# Run pw-restore-links.
+cmd_restore() {
+    if command -v pw-restore-links >/dev/null 2>&1; then
+        pw-restore-links
+    else
+        print -u2 "pw-restore-links not found in PATH"
+        return 1
+    fi
+}
+
+# Interactive stream mover.
+cmd_move() {
+    # Get available sinks
+    local -a sinks
+    sinks=("${(@f)$(available_rme_sinks)}")
+    if (( ${#sinks} == 0 )); then
+        print -u2 "No RME sinks available. Run pw-restore-links first."
+        return 1
+    fi
+
+    # Get application sink inputs (exclude loopback internals)
+    local -a input_ids input_names input_sinks
+    local idx=0
+    while IFS='|' read -r inp_id inp_name inp_sink; do
+        (( idx++ ))
+        input_ids+=("$inp_id")
+        input_names+=("$inp_name")
+        input_sinks+=("$inp_sink")
+    done < <(pactl -f json list sink-inputs 2>/dev/null \
+        | jq -r '.[] | select(.properties["node.name"] | test("^output\\.loopback") | not) | "\(.index)|\(.properties["node.name"] // "unknown")|\(.sink)"' 2>/dev/null)
+
+    if (( ${#input_ids} == 0 )); then
+        print "No application streams to move."
+        return 0
+    fi
+
+    # Select stream
+    local chosen_idx=0
+    if has_fzf; then
+        local selection line_num=0
+        selection=$(for i in {1..${#input_ids[@]}}; do
+            print "${input_names[$i]} (sink: ${input_sinks[$i]})"
+        done | fzf --header="Select stream to move" --reverse)
+        [[ -z "$selection" ]] && return 0
+        # Find matching index
+        for i in {1..${#input_ids[@]}}; do
+            if [[ "${input_names[$i]} (sink: ${input_sinks[$i]})" == "$selection" ]]; then
+                chosen_idx=$i
+                break
+            fi
+        done
+    else
+        print "Select stream to move:"
+        for i in {1..${#input_ids[@]}}; do
+            print "  $i) ${input_names[$i]} (sink: ${input_sinks[$i]})"
+        done
+        vared -p "Stream number: " -c chosen_idx
+        [[ -z "$chosen_idx" ]] && return 0
+    fi
+
+    # Select target sink
+    local target_sink=""
+    if has_fzf; then
+        local sink_selection
+        sink_selection=$(for s in "${sinks[@]}"; do
+            print "$s — ${rme_sink_labels[$s]}"
+        done | fzf --header="Select target sink" --reverse)
+        [[ -z "$sink_selection" ]] && return 0
+        target_sink="${sink_selection%% *}"
+    else
+        print "Select target sink:"
+        local si=0
+        for s in "${sinks[@]}"; do
+            (( si++ ))
+            print "  $si) $s — ${rme_sink_labels[$s]}"
+        done
+        local sink_num=0
+        vared -p "Sink number: " -c sink_num
+        [[ -z "$sink_num" || $sink_num -lt 1 || $sink_num -gt ${#sinks} ]] && return 0
+        target_sink="${sinks[$sink_num]}"
+    fi
+
+    # Move the stream
+    local inp_id="${input_ids[$chosen_idx]}"
+    print "Moving stream #${inp_id} → ${target_sink}..."
+    pactl move-sink-input "$inp_id" "$target_sink"
+    print "Done."
+}
+
+# ── Interactive menu ──────────────────────────────────────────────────
+show_menu() {
+    print ""
+    print "=== PipeWire Audio Tools ==="
+    print ""
+    print "  [n] Nodes        — List all PipeWire nodes"
+    print "  [l] Links        — Show current port links"
+    print "  [g] Graph        — Show audio topology"
+    print "  [m] Move stream  — Move app streams between sinks"
+    print "  [s] Sink status  — RME virtual sinks + channel mappings"
+    print "  [r] Restore      — Run pw-restore-links"
+    print "  [q] Quit"
+    print ""
+}
+
+interactive_loop() {
+    local key
+    while true; do
+        show_menu
+        vared -p "Choice: " -c key
+        case "$key" in
+            n|nodes)   cmd_nodes ;;
+            l|links)   cmd_links ;;
+            g|graph)   cmd_graph ;;
+            m|move)    cmd_move ;;
+            s|sinks)   cmd_sinks ;;
+            r|restore) cmd_restore ;;
+            q|quit)    return 0 ;;
+            *)         print "Unknown: $key" ;;
+        esac
+    done
+}
+
+# ── Entry point ───────────────────────────────────────────────────────
+case "${1:-}" in
+    nodes)   cmd_nodes ;;
+    links)   cmd_links ;;
+    graph)   cmd_graph ;;
+    move)    cmd_move ;;
+    sinks)   cmd_sinks ;;
+    restore) cmd_restore ;;
+    -h|--help|help)
+        print "Usage: ${0##*/} [command]"
+        print ""
+        print "Commands:"
+        print "  nodes    List all PipeWire nodes"
+        print "  links    Show current port links"
+        print "  graph    Show audio topology"
+        print "  move     Move app streams between sinks (interactive)"
+        print "  sinks    Show RME virtual sink status"
+        print "  restore  Run pw-restore-links"
+        print "  (none)   Interactive menu"
+        ;;
+    "")      interactive_loop ;;
+    *)       print -u2 "Unknown command: $1"; exec ${0##*/} --help ;;
+esac
