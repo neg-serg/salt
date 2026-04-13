@@ -41,6 +41,12 @@ unbound_control_certs:
 {{ ensure_running('unbound', watch=['file: unbound_config', 'file: unbound_restart_override']) }}
 
 {{ service_with_healthcheck('unbound_ready', 'unbound', catalog=catalog, requires=['service: unbound_running']) }}
+
+# Reusable restart target for external configs (e.g. tailscale DNS stub)
+# that drop files into unbound.conf.d/ and need unbound to pick them up.
+unbound_restart_or_reload:
+  cmd.run:
+    - name: unbound-control reload 2>/dev/null || systemctl restart unbound 2>/dev/null || true
 {% endif %}
 
 # --- AdGuardHome: DNS filtering + ad blocking ---

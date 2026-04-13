@@ -1,5 +1,6 @@
 # Service definitions for services.sls.
-# Each entry is gated by host_config.jinja features.services.<key>.
+# Each entry is gated by host_config.jinja features.services.<key>
+# or features.network.<key> (for the network: section).
 #
 # ── Schema: simple ──────────────────────────────────────────────────
 #
@@ -14,6 +15,8 @@
 #   <name>:                        # key must match features.services.<name>
 #     # All fields optional; at least one actionable field must be present.
 #     packages: <string>           # space-separated pacman package names
+#     package_manager: pacman      # 'pacman' (default) or 'paru' (AUR)
+#     service: <string>            #   systemd service name (for simple enable)
 #     unit:                        # systemd unit management
 #       source: <salt:// path>     #   unit file source
 #       type: service              #   service|timer (default: service)
@@ -37,6 +40,7 @@
 #         template: jinja          #   template engine (default: jinja)
 #         context: {}              #   keys from known_vars (hostname, mnt_zero, etc.)
 #         makedirs: false          #   create parent dirs (default: false)
+#         onchanges_restart: null  #   restart this service on config change
 #     scripts:                     # executable scripts to deploy
 #       - dest: <absolute path>
 #         source: <salt:// path>
@@ -49,6 +53,14 @@
 #       paths: []                  #   absolute paths to remove
 #       onlyif: <shell command>    #   guard
 #     has_escape_hatch: false      # if true, inline .sls block handles extra logic
+#
+# ── Schema: network ─────────────────────────────────────────────────
+#
+# network:                         → orchestrator loop in services.sls
+#   <name>:                        # key must match features.network.<name>
+#     # Same fields as complex: above, plus:
+#     #   package_manager: paru    # AUR packages (xray uses paru)
+#     #   service: tailscaled      # for simple enable (no custom unit)
 #
 # ─────────────────────────────────────────────────────────────────────
 
@@ -117,3 +129,46 @@ complex:
       requires:
         - service: transmission_enabled
     has_escape_hatch: true  # ACLs + config replacements + stop/restart lifecycle
+
+# ===================================================================
+# Network services (data-driven: gated by features.network.<name>)
+# ===================================================================
+# Same schema as complex: above, plus:
+#   package_manager: 'paru' for AUR packages (default: 'pacman')
+
+network:
+  xray:
+    packages: xray
+    package_manager: paru
+    dirs:
+      - path: /etc/xray
+        mode: '0750'
+    unit:
+      source: salt://units/xray.service
+      enabled: false
+      requires:
+        - cmd: install_xray
+    cleanup:
+      paths:
+        - "{{ home }}/.local/bin/xray"  # legacy manually-installed binary
+      onlyif: test -f {{ home }}/.local/bin/xray
+
+  singbox:
+    unit:
+      source: salt://units/sing-box-tun.service
+      template: jinja
+      enabled: null  # skip enable/disable (enabled=None)
+      unit_context:
+        home: home
+        uid: uid
+
+  tailscale:
+    packages: tailscale
+    service: tailscaled  # enable package-provided service (no custom unit)
+    config_templates:
+      - dest: /etc/unbound/unbound.conf.d/tailscale.conf
+        source: salt://configs/tailscale-dns-stub.conf.j2
+        makedirs: true
+        require:
+          - cmd: install_unbound
+        onchanges_restart: unbound  # restart unbound on config change
