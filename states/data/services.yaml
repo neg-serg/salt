@@ -1,20 +1,119 @@
-# Service definitions for services.sls — simple pacman-install + service-enable pattern.
+# Service definitions for services.sls.
 # Each entry is gated by host_config.jinja features.services.<key>.
-# Complex services (samba, bitcoind, duckdns) have custom logic and stay inline in .sls.
 #
-# ── Schema ────────────────────────────────────────────────────────────
+# ── Schema: simple ──────────────────────────────────────────────────
 #
 # simple:                          → macro: simple_service(name, pkgs, service)
 #   <name>:
 #     packages: (required) space-separated pacman package names
 #     service:  (required) systemd service name to enable
 #
+# ── Schema: complex ─────────────────────────────────────────────────
+#
+# complex:                         → orchestrator loop in services.sls
+#   <name>:                        # key must match features.services.<name>
+#     # All fields optional; at least one actionable field must be present.
+#     packages: <string>           # space-separated pacman package names
+#     unit:                        # systemd unit management
+#       source: <salt:// path>     #   unit file source
+#       type: service              #   service|timer (default: service)
+#       enabled: true              #   enable at boot (default: true)
+#       running: false             #   ensure running + watch (default: false)
+#       companion: <salt:// path>  #   companion unit (timer↔service pair)
+#       template: null             #   'jinja' if unit needs rendering
+#       unit_context: {}           #   context for unit template
+#     manual_start:                # deploy but don't enable at boot
+#       service: <string>          #   systemd service name to disable
+#       stop: false                #   also stop the service (default: false)
+#     dirs:                        # directories to create
+#       - path: <absolute path>
+#         mode: null               #   optional file mode
+#         owner: null              #   optional owner override
+#         require: []              #   optional state requisites
+#     config_templates:            # config files to deploy
+#       - dest: <absolute path>
+#         source: <salt:// path>
+#         mode: '0644'             #   file mode (default: '0644')
+#         template: jinja          #   template engine (default: jinja)
+#         context: {}              #   keys from known_vars (hostname, mnt_zero, etc.)
+#         makedirs: false          #   create parent dirs (default: false)
+#     scripts:                     # executable scripts to deploy
+#       - dest: <absolute path>
+#         source: <salt:// path>
+#     healthcheck:                 # health check after service start
+#       command: <shell command>
+#       requires: []               #   state requisites
+#     logrotate:                   # logrotate config
+#       source: <salt:// path>
+#     cleanup:                     # one-time file removal
+#       paths: []                  #   absolute paths to remove
+#       onlyif: <shell command>    #   guard
+#     has_escape_hatch: false      # if true, inline .sls block handles extra logic
+#
 # ─────────────────────────────────────────────────────────────────────
 
 simple:
   jellyfin:
-    packages: jellyfin-server jellyfin-web
+    packages: jellyfin-server jellyfin-web  # media server
     service: jellyfin
   transmission:
-    packages: transmission-cli
+    packages: transmission-cli  # BitTorrent client
     service: transmission
+
+complex:
+  duckdns:
+    scripts:
+      - dest: /usr/local/bin/duckdns-update  # dynamic DNS update script
+        source: salt://scripts/duckdns-update.sh
+    unit:
+      source: salt://units/duckdns-update.timer
+      type: timer
+      enabled: false  # enable after creating /etc/duckdns.env
+      companion: salt://units/duckdns-update.service
+
+  samba:
+    packages: samba  # SMB file sharing
+    dirs:
+      - path: /mnt/zero/sync/smb  # shared directory
+        mode: '0755'
+        require:
+          - mount: mount_zero
+    config_templates:
+      - dest: /etc/samba/smb.conf  # Samba configuration
+        source: salt://configs/smb.conf.j2
+        template: jinja
+        makedirs: true
+        context:
+          hostname: hostname
+          mnt_zero: mnt_zero
+          user: user
+    manual_start:
+      service: smb  # manual start only: systemctl start smb
+      stop: false
+
+  bitcoind:
+    packages: bitcoin-daemon  # Bitcoin Core node
+    cleanup:
+      paths:
+        - /usr/local/bin/bitcoind   # legacy manually-installed binary
+        - /usr/local/bin/bitcoin-cli
+      onlyif: test -f /usr/local/bin/bitcoind
+    unit:
+      source: salt://units/bitcoind.service
+      enabled: false  # manual start: systemctl start bitcoind
+      requires:
+        - cmd: managed_service_accounts_ensure
+        - cmd: managed_service_paths_ensure
+    logrotate:
+      source: salt://configs/bitcoind-logrotate
+
+  transmission:
+    # packages + service enable handled by simple.transmission above
+    dirs:
+      - path: /home/neg/dw       # torrent watch directory
+      - path: /home/neg/torrent/data  # download directory
+    healthcheck:
+      command: curl -sf http://127.0.0.1:9091/transmission/web/ >/dev/null 2>&1
+      requires:
+        - service: transmission_enabled
+    has_escape_hatch: true  # ACLs + config replacements + stop/restart lifecycle

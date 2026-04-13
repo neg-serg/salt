@@ -21,58 +21,169 @@
 {{ service_with_healthcheck('jellyfin_start', 'jellyfin', catalog=catalog, requires=['service: jellyfin_enabled']) }}
 {% endif %}
 
-{% if svc.get('transmission', False) %}
-{{ service_with_healthcheck('transmission_start', 'transmission', catalog=catalog, requires=['service: transmission_enabled']) }}
-{% endif %}
-
 # ===================================================================
-# Complex services (custom logic, not data-driven)
+# Complex services (data-driven from services.yaml complex: section)
 # ===================================================================
 
-# --- Samba: SMB file sharing (manual start) ---
-{% if svc.samba %}
-{{ pacman_install('samba', 'samba') }}
+{% set known_vars = {
+    'hostname': host.hostname,
+    'mnt_zero': host.mnt_zero,
+    'mnt_one': host.mnt_one,
+    'user': user,
+    'home': home,
+} %}
 
-{{ ensure_dir('samba_share_dir', host.mnt_zero ~ '/sync/smb', mode='0755', require=['mount: mount_zero']) }}
+{% set _valid_fields = ['packages', 'unit', 'manual_start', 'dirs', 'config_templates', 'scripts',
+    'healthcheck', 'logrotate', 'cleanup', 'has_escape_hatch'] %}
+{% for name, opts in services.get('complex', {}).items() %}
+{# Schema validation: emit a fail state for invalid definitions #}
+{% set _actionable = opts.keys() | reject('equalto', 'has_escape_hatch') | list %}
+{% if not _actionable %}
+validate_{{ name }}_no_fields:
+  test.fail_without_changes:
+    - name: 'complex service "{{ name }}" has no actionable fields — add at least one of: {{ _valid_fields | join(", ") }}'
+{% endif %}
+{% for field in opts.keys() %}
+{% if field not in _valid_fields %}
+validate_{{ name }}_unknown_{{ field }}:
+  test.fail_without_changes:
+    - name: 'complex service "{{ name }}" has unknown field "{{ field }}" — valid fields: {{ _valid_fields | join(", ") }}'
+{% endif %}
+{% endfor %}
 
-samba_config:
-  file.managed:
-    - name: /etc/samba/smb.conf
-    - makedirs: True
-    - mode: '0644'
-    - source: salt://configs/smb.conf.j2
-    - template: jinja
-    - context:
-        hostname: {{ host.hostname }}
-        mnt_zero: {{ host.mnt_zero }}
-        user: {{ user }}
-    - require:
-      - cmd: install_samba
+{% if svc.get(name, False) %}
 
-# Don't enable at boot — manual start only: systemctl start smb
-{{ service_stopped('samba_not_enabled', 'smb', stop=False, requires=['file: samba_config']) }}
+# --- {{ name }} (data-driven) ---
+
+{# cleanup: one-time file removal #}
+{% if opts.cleanup is defined %}
+{{ name }}_cleanup:
+  file.absent:
+    - names:
+{% for p in opts.cleanup.paths %}
+      - {{ p }}
+{% endfor %}
+    - onlyif: {{ opts.cleanup.onlyif }}
 {% endif %}
 
-# --- DuckDNS: dynamic DNS updater ---
-{% if svc.duckdns %}
-duckdns_script:
+{# packages: pacman install #}
+{% if opts.packages is defined %}
+{{ pacman_install(name, opts.packages) }}
+{% endif %}
+
+{# dirs: create directories #}
+{% if opts.dirs is defined %}
+{% for d in opts.dirs %}
+{{ ensure_dir(name ~ '_dir_' ~ loop.index0, d.path, mode=d.get('mode'), require=d.get('require')) }}
+{% endfor %}
+{% endif %}
+
+{# scripts: deploy executable files #}
+{% if opts.scripts is defined %}
+{% for s in opts.scripts %}
+{{ name }}_script_{{ loop.index0 }}:
   file.managed:
-    - name: /usr/local/bin/duckdns-update
+    - name: {{ s.dest }}
     - mode: '0755'
-    - source: salt://scripts/duckdns-update.sh
-
-# Timer disabled by default — enable after creating /etc/duckdns.env
-{{ service_with_unit('duckdns-update', 'salt://units/duckdns-update.timer', unit_type='timer', enabled=False, companion='salt://units/duckdns-update.service') }}
+    - source: {{ s.source }}
+{% endfor %}
 {% endif %}
 
-# --- Transmission: directories, ACLs, settings ---
+{# config_templates: deploy config files with context resolution #}
+{% if opts.config_templates is defined %}
+{% for ct in opts.config_templates %}
+{% set resolved_ctx = {} %}
+{% for k, v in ct.get('context', {}).items() %}
+{% if v in known_vars %}
+{% do resolved_ctx.update({k: known_vars[v]}) %}
+{% else %}
+{% do resolved_ctx.update({k: v}) %}
+{% endif %}
+{% endfor %}
+{{ name }}_config_{{ loop.index0 }}:
+  file.managed:
+    - name: {{ ct.dest }}
+    - source: {{ ct.source }}
+    - mode: '{{ ct.get('mode', '0644') }}'
+{% if ct.get('makedirs', False) %}
+    - makedirs: True
+{% endif %}
+{% if ct.get('template', 'jinja') %}
+    - template: {{ ct.get('template', 'jinja') }}
+{% endif %}
+{% if resolved_ctx %}
+    - context:
+{% for k, v in resolved_ctx.items() %}
+        {{ k }}: {{ v }}
+{% endfor %}
+{% endif %}
+{% if opts.packages is defined %}
+    - require:
+      - cmd: install_{{ name }}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{# unit: systemd unit management #}
+{% if opts.unit is defined %}
+{% set u = opts.unit %}
+{% set unit_requires = [] %}
+{% if opts.packages is defined %}
+{% do unit_requires.append('cmd: install_' ~ name) %}
+{% endif %}
+{% if u.get('requires') is defined %}
+{% for r in u.requires %}
+{% do unit_requires.append(r) %}
+{% endfor %}
+{% endif %}
+{{ service_with_unit(name, u.source, unit_type=u.get('type', 'service'), enabled=u.get('enabled', True), running=u.get('running', False), companion=u.get('companion'), template=u.get('template'), context=u.get('unit_context'), requires=unit_requires if unit_requires else None) }}
+{% endif %}
+
+{# manual_start: disable service at boot #}
+{% if opts.manual_start is defined %}
+{% set ms = opts.manual_start %}
+{% set ms_requires = [] %}
+{% if opts.config_templates is defined %}
+{% for ct in opts.config_templates %}
+{% do ms_requires.append('file: ' ~ name ~ '_config_' ~ loop.index0) %}
+{% endfor %}
+{% endif %}
+{{ service_stopped(name ~ '_not_enabled', ms.service, stop=ms.get('stop', False), requires=ms_requires if ms_requires else None) }}
+{% endif %}
+
+{# logrotate: deploy logrotate config #}
+{% if opts.logrotate is defined %}
+{{ name }}_logrotate:
+  file.managed:
+    - name: /etc/logrotate.d/{{ name }}
+    - mode: '0644'
+    - source: {{ opts.logrotate.source }}
+{% endif %}
+
+{# healthcheck: poll health after service start #}
+{% if opts.healthcheck is defined %}
+{% set hc = opts.healthcheck %}
+{{ service_with_healthcheck(name ~ '_start', name, hc.command, requires=hc.get('requires')) }}
+{% endif %}
+
+{# escape_hatch marker #}
+{% if opts.get('has_escape_hatch', False) %}
+# --- {{ name }}: escape hatch (inline logic below loop) ---
+{% endif %}
+
+{% endif %}
+{% endfor %}
+
+# ===================================================================
+# Escape hatches + remaining inline services
+# ===================================================================
+
+# --- Transmission: escape hatch (ACLs, settings, stop/restart lifecycle) ---
+# Dirs and healthcheck handled by complex.transmission in the orchestrator loop.
 {% if svc.transmission %}
 {% set transmission_cfg = '/var/lib/transmission/.config/transmission-daemon/settings.json' %}
 {% set transmission_watch_dir = home ~ '/dw' %}
 {% set transmission_download_dir = home ~ '/torrent/data' %}
-
-{{ ensure_dir('transmission_watch_dir', transmission_watch_dir) }}
-{{ ensure_dir('transmission_download_dir', transmission_download_dir) }}
 
 transmission_acl_setup:
   cmd.run:
@@ -94,8 +205,8 @@ transmission_acl_setup:
         getfacl -d {{ transmission_download_dir }} | grep -q '^user:transmission:rwx$'
     - require:
       - cmd: install_transmission
-      - file: transmission_watch_dir
-      - file: transmission_download_dir
+      - file: transmission_dir_0
+      - file: transmission_dir_1
 
 {% set transmission_settings_replacements = [
   ('transmission_download_dir_setting', '^\\s*"download-dir"\\s*:\\s*".*"(?P<suffix>,?)', '    "download-dir": "' ~ transmission_download_dir ~ '"\\g<suffix>'),
@@ -129,27 +240,3 @@ transmission_acl_setup:
 {{ unit_override('netdata_override', 'netdata.service', 'salt://units/netdata-override.conf') }}
 {% endif %}
 
-# ===================================================================
-# Bitcoind: Bitcoin Core node (merged from services_bitcoind.sls)
-# ===================================================================
-
-{% if svc.bitcoind %}
-{{ pacman_install('bitcoind', 'bitcoin-daemon') }}
-
-# One-time cleanup: remove old manually-installed binaries
-bitcoind_legacy_cleanup:
-  file.absent:
-    - names:
-      - /usr/local/bin/bitcoind
-      - /usr/local/bin/bitcoin-cli
-    - onlyif: test -f /usr/local/bin/bitcoind
-
-# Don't enable at boot — manual start: systemctl start bitcoind
-{{ service_with_unit('bitcoind', 'salt://units/bitcoind.service', enabled=False, requires=['cmd: managed_service_accounts_ensure', 'cmd: managed_service_paths_ensure']) }}
-
-bitcoind_logrotate:
-  file.managed:
-    - name: /etc/logrotate.d/bitcoind
-    - mode: '0644'
-    - source: salt://configs/bitcoind-logrotate
-{% endif %}

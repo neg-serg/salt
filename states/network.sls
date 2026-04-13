@@ -64,6 +64,7 @@ xray_legacy_cleanup:
 tailscale_dns_stub:
   file.managed:
     - name: /etc/unbound/unbound.conf.d/tailscale.conf
+    - makedirs: True
     - mode: '0644'
     - contents: |
         # Tailscale MagicDNS — forward tailnet hostnames to Tailscale's resolver
