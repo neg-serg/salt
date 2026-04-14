@@ -28,7 +28,7 @@ Volume={{ m.host }}:{{ m.container }}:{{ m.mode }}
 {% endfor -%}
 AddDevice=/dev/dri/renderD128
 GroupAdd={{ salt['cmd.run_stdout']("getent group render | cut -d: -f3", python_shell=True) }}
-Exec=--model /models/{{ t5.gguf_file }} --ctx-size {{ t5.context }} --gpu-layers {{ t5.gpu_layers }} --host 0.0.0.0 --port {{ catalog_entry.port }}
+Exec=--model /models/{{ t5.gguf_file }} --ctx-size {{ t5.context }} --gpu-layers {{ t5.gpu_layers }} --prefix '{{ t5.prefix }}' --host 0.0.0.0 --port {{ catalog_entry.port }}
 HealthCmd=curl -sf http://127.0.0.1:{{ catalog_entry.port }}{{ catalog_entry.health_path }} || exit 1
 HealthInterval=2s
 HealthStartPeriod=60s

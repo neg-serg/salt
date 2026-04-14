@@ -47,6 +47,7 @@ t5_summarization_convert:
       - cmd: t5_summarization_spiece
       - cmd: t5_summarization_tokenizer
       - cmd: t5_summarization_config
+      - cmd: install_python_transformers
 
 {% if _containerized %}
 # ── Containerized form (Podman Quadlet) ────────────────────────────────
@@ -67,7 +68,7 @@ t5_summarization_native_unit_daemon_reload:
 {{ paru_install('llama_cpp_vulkan', 'llama.cpp-vulkan') }}
 {{ paru_install('python_transformers', 'python-transformers') }}
 
-{{ service_with_unit('t5_summarization', 'salt://units/t5-summarization.service', template='jinja', context={'user': user, 'home': home, 'models_dir': models_dir, 'gguf_file': t5.gguf_file, 'context': t5.context, 'gpu_layers': t5.gpu_layers, 'port': port}, requires=['cmd: t5_summarization_convert', 'cmd: install_llama_cpp_vulkan', 'cmd: install_python_transformers'], enabled=False) }}
+{{ service_with_unit('t5_summarization', 'salt://units/t5-summarization.service', template='jinja', context={'user': user, 'home': home, 'models_dir': models_dir, 'gguf_file': t5.gguf_file, 'context': t5.context, 'gpu_layers': t5.gpu_layers, 'port': port, 'prefix': t5.prefix}, requires=['cmd: t5_summarization_convert', 'cmd: install_llama_cpp_vulkan', 'cmd: install_python_transformers'], enabled=False) }}
 
 # Rollback cleanup: if containers.t5_summarization flips back to false
 t5_summarization_quadlet_absent:

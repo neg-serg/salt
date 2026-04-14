@@ -7,6 +7,7 @@ ExecStart=/usr/bin/llama-server \
   --model {{ models_dir }}/{{ gguf_file }} \
   --ctx-size {{ context }} \
   --gpu-layers {{ gpu_layers }} \
+  --prefix '{{ prefix }}' \
   --host 127.0.0.1 \
   --port {{ port }}
 User={{ user }}
@@ -18,7 +19,7 @@ Environment="HOME={{ home }}"
 NoNewPrivileges=true
 ProtectSystem=strict
 PrivateTmp=yes
-ReadWritePaths={{ models_dir }}
+ReadOnlyPaths={{ models_dir }}
 RestrictNamespaces=yes
 RestrictRealtime=yes
 LockPersonality=yes
