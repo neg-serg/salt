@@ -64,9 +64,10 @@ t5_summarization_native_unit_daemon_reload:
     requires=['file: t5_summarization_hf_dir', 'cmd: t5_summarization_convert', 'cmd: t5_summarization_native_unit_daemon_reload']) }}
 {% else %}
 # ── Native form ────────────────────────────────────────────────────────
+{{ paru_install('llama_cpp_vulkan', 'llama.cpp-vulkan') }}
 {{ paru_install('python_transformers', 'python-transformers') }}
 
-{{ service_with_unit('t5_summarization', 'salt://units/t5-summarization.service', template='jinja', context={'user': user, 'home': home, 'models_dir': models_dir, 'gguf_file': t5.gguf_file, 'context': t5.context, 'gpu_layers': t5.gpu_layers, 'port': port}, requires=['cmd: t5_summarization_convert', 'cmd: install_python_transformers'], enabled=False) }}
+{{ service_with_unit('t5_summarization', 'salt://units/t5-summarization.service', template='jinja', context={'user': user, 'home': home, 'models_dir': models_dir, 'gguf_file': t5.gguf_file, 'context': t5.context, 'gpu_layers': t5.gpu_layers, 'port': port}, requires=['cmd: t5_summarization_convert', 'cmd: install_llama_cpp_vulkan', 'cmd: install_python_transformers'], enabled=False) }}
 
 # Rollback cleanup: if containers.t5_summarization flips back to false
 t5_summarization_quadlet_absent:
