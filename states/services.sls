@@ -107,8 +107,8 @@ validate_{{ name }}_unknown_{{ field }}:
 {% if opts.packages is defined %}
 {% do _ct_requires.append('cmd: install_' ~ name) %}
 {% endif %}
-{% if ct.get('require') is defined %}
-{% for r in ct.require %}
+{% if ct.get('require') %}
+{% for r in ct.get('require') %}
 {% do _ct_requires.append(r) %}
 {% endfor %}
 {% endif %}
@@ -254,8 +254,8 @@ validate_{{ name }}_unknown_{{ field }}:
 {% do _ct_requires.append('cmd: install_' ~ name) %}
 {% endif %}
 {% endif %}
-{% if ct.get('require') is defined %}
-{% for r in ct.require %}
+{% if ct.get('require') %}
+{% for r in ct.get('require') %}
 {% do _ct_requires.append(r) %}
 {% endfor %}
 {% endif %}
@@ -397,8 +397,8 @@ validate_{{ name }}_unknown_{{ field }}:
 {% if opts.packages is defined %}
 {% do _ct_requires.append('cmd: install_' ~ name) %}
 {% endif %}
-{% if ct.get('require') is defined %}
-{% for r in ct.require %}
+{% if ct.get('require') %}
+{% for r in ct.get('require') %}
 {% do _ct_requires.append(r) %}
 {% endfor %}
 {% endif %}
@@ -491,7 +491,7 @@ validate_{{ name }}_unknown_{{ field }}:
 {# ensure_running: reset_failed + service.running with watches #}
 {% if opts.ensure_running is defined %}
 {% set er = opts.ensure_running %}
-{{ ensure_running(name ~ '_running', er.service, watch=er.get('watch')) }}
+{{ ensure_running(name, er.service, watch=er.get('watch')) }}
 {% endif %}
 
 {# healthcheck: poll health after service start #}

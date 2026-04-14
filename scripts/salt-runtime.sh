@@ -48,6 +48,10 @@ lazy_loader_strict_matching: True
 autoload_dynamic_modules: False
 fileserver_limit_traversal: True
 process_count_max: 16
+
+# --- Grains overrides: map Arch derivatives so pkg module loads ---
+grains:
+  os_family: Arch
 EOF
             ;;
         validate)

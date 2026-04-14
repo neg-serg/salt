@@ -100,10 +100,13 @@ idempotency STATE="system_description":
         echo "ERROR: no log file found"
         exit 1
     fi
-    if grep -q 'changed=' "$log"; then
+    # Salt summary lines look like: "Succeeded: N (changed=M)" or "Succeeded: N (unchanged=M)"
+    # Only check the summary, not echo statements inside rendered templates.
+    summary=$(grep -oP 'Succeeded: \d+ \(changed=\K\d+' "$log" || echo "0")
+    if [ "$summary" -gt 0 ]; then
         echo ""
-        echo "FAIL: non-idempotent states detected in $log"
-        grep 'changed=' "$log"
+        echo "FAIL: non-idempotent states detected ($summary changed states in $log)"
+        grep 'Succeeded:' "$log"
         exit 1
     fi
     echo "PASS: all states idempotent"
