@@ -67,16 +67,6 @@
 simple:
 
 complex:
-  duckdns:
-    scripts:
-      - dest: /usr/local/bin/duckdns-update  # dynamic DNS update script
-        source: salt://scripts/duckdns-update.sh
-    unit:
-      source: salt://units/duckdns-update.timer
-      type: timer
-      enabled: false  # enable after creating /etc/duckdns.env
-      companion: salt://units/duckdns-update.service
-
   samba:
     packages: samba  # SMB file sharing
     dirs:

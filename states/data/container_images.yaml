@@ -48,7 +48,14 @@ grafana:
   approved_at: "2026-04-10"
   note: "Grafana OSS; reads /etc/grafana* provisioning from host bind-mount"
 
-# ─── Media ───────────────────────────────────────────────────────────
+# ─── Utilities ───────────────────────────────────────────────────────
+duckdns:
+  registry: docker.io
+  image: linuxserver/duckdns
+  variant: null
+  digest: sha256:abbeb230a2d670c7b4182f3df92b98d5ce6874dd6459c8a640746940782bb68b
+  approved_at: "2026-04-16"
+  note: "DuckDNS dynamic DNS updater; runs on timer via Quadlet OnCalendar"
 adguardhome:
   registry: docker.io
   image: adguard/adguardhome

@@ -179,6 +179,18 @@ transmission:                  # BitTorrent client (containerized)
       mode: rw                 # download directory
   env_file: null
 
+duckdns:                       # Dynamic DNS updater (containerized)
+  unit: duckdns-update
+  scope: system
+  packages: null               # installed via container_service image pull
+  container_image: duckdns
+  gpu: none
+  bind_mounts:
+    - host: /etc/duckdns.env
+      container: /etc/duckdns.env
+      mode: ro                 # DUCKDNS_TOKEN and DUCKDNS_DOMAIN
+  env_file: null
+
 unbound:                       # Recursive DNS resolver
   health_cmd: "unbound-control status >/dev/null 2>&1"
   unit: unbound

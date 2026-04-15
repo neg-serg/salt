@@ -1,0 +1,46 @@
+{#- Quadlet container unit template for DuckDNS dynamic DNS updater
+    Rendered by container_service macro. Context:
+      catalog_entry:    dict from service_catalog.yaml[duckdns]
+      image:            fully-resolved registry/image@sha256:... reference
+      expanded_mounts:  list of {host, container, mode} with ~-expansion applied
+      user_scope:       False (system scope)
+-#}
+[Unit]
+Description=DuckDNS dynamic DNS updater (containerized)
+Documentation=https://github.com/linuxserver/docker-duckdns
+After=network-online.target
+Wants=network-online.target
+# StartLimit* keys belong in [Unit] per systemd.unit(5).
+StartLimitBurst=5
+StartLimitIntervalSec=60
+
+[Container]
+Image={{ image }}
+ContainerName=duckdns
+{% for m in expanded_mounts -%}
+Volume={{ m.host }}:{{ m.container }}:{{ m.mode }}
+{% endfor -%}
+{% if catalog_entry.env_file -%}
+EnvironmentFile={{ catalog_entry.env_file }}
+{% endif -%}
+# linuxserver/duckdns reads SUBDOMAINS and TOKEN from env
+Exec=/usr/bin/env bash -c 'curl -fsSL "https://www.duckdns.org/update?domains=${SUBDOMAINS}&token=${TOKEN}&ip=" | grep -q OK'
+# OnCalendar triggers timer mode — systemd generates a .timer unit
+OnCalendar=*:0/5
+Persistent=true
+# Health check — oneshot, no continuous health
+HealthCmd=/usr/bin/true
+HealthInterval=60s
+HealthRetries=1
+HealthTimeout=5s
+Notify=healthy
+
+[Service]
+Type=oneshot
+# Bounded restart policy
+Restart=on-failure
+RestartSec=10
+TimeoutStartSec=30
+
+[Install]
+WantedBy=multi-user.target
