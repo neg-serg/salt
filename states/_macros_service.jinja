@@ -11,7 +11,9 @@
 {# Render the _systemctl_env list as YAML env entries.
    Replaces the 14 identical for-loops scattered across user-service macros. #}
 {%- macro _env_block() -%}
-{{ _env_block() }}
+{%- for entry in _systemctl_env %}
+      - {{ entry }}
+{%- endfor %}
 {%- endmacro -%}
 
 {# Resolve symbolic inventory values for managed systemd resources.
