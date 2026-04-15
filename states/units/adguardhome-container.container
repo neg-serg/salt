@@ -1,0 +1,49 @@
+{#- Quadlet container unit template for AdGuard Home DNS filter
+    Rendered by container_service macro. Context:
+      catalog_entry:    dict from service_catalog.yaml[adguardhome]
+      image:            fully-resolved registry/image@sha256:... reference
+      expanded_mounts:  list of {host, container, mode} with ~-expansion applied
+      user_scope:       False (system scope)
+-#}
+[Unit]
+Description=AdGuard Home DNS filter (containerized)
+Documentation=https://adguard.com/en/adguard-home/overview.html
+After=network-online.target
+Wants=network-online.target
+# StartLimit* keys belong in [Unit] per systemd.unit(5).
+StartLimitBurst=5
+StartLimitIntervalSec=60
+
+[Container]
+Image={{ image }}
+ContainerName=adguardhome
+# AdGuard Home web UI (initial setup + management)
+PublishPort=127.0.0.1:{{ catalog_entry.port }}:3000
+# DNS — requires CAP_NET_BIND_SERVICE for port 53
+PublishPort=53:53/tcp
+PublishPort=53:53/udp
+{% for m in expanded_mounts -%}
+Volume={{ m.host }}:{{ m.container }}:{{ m.mode }}
+{% endfor -%}
+{% if catalog_entry.env_file -%}
+EnvironmentFile={{ catalog_entry.env_file }}
+{% endif -%}
+# AdGuard Home health endpoint
+HealthCmd=curl -sf http://127.0.0.1:3000/ >/dev/null 2>&1 || exit 1
+HealthInterval=5s
+HealthStartPeriod=15s
+HealthRetries=3
+HealthTimeout=10s
+Notify=healthy
+
+[Service]
+# Port 53 requires CAP_NET_BIND_SERVICE (ports < 1024)
+AmbientCapabilities=CAP_NET_BIND_SERVICE CAP_NET_RAW
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE CAP_NET_RAW
+# Bounded restart policy: up to 5 failures in 60s → unit enters failed state
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=60
+
+[Install]
+WantedBy=multi-user.target

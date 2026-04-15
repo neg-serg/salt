@@ -81,12 +81,19 @@ grafana:                       # Monitoring dashboard
       mode: rw
   env_file: null
 
-adguardhome:                   # DNS-level ad blocker
+adguardhome:                   # DNS-level ad blocker (containerized)
   port: 3000
   health_path: /
   unit: adguardhome
   scope: system
-  packages: adguardhome
+  packages: null               # installed via container_service image pull
+  container_image: adguardhome
+  gpu: none
+  bind_mounts:
+    - host: /var/lib/adguardhome-container
+      container: /opt/adguardhome/work
+      mode: rw                 # AdGuardHome work dir + config
+  env_file: null
 
 ollama:                        # Local LLM inference server
   port: 11434

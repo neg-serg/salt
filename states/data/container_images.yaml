@@ -49,6 +49,13 @@ grafana:
   note: "Grafana OSS; reads /etc/grafana* provisioning from host bind-mount"
 
 # ─── Media ───────────────────────────────────────────────────────────
+adguardhome:
+  registry: docker.io
+  image: adguard/adguardhome
+  variant: null
+  digest: sha256:7fbf01d73ecb7a32d2d9e6cef8bf88e64bd787889ca80a1e8bce30cd4c084442
+  approved_at: "2026-04-16"
+  note: "AdGuard Home DNS filter; work dir at /opt/adguardhome/work"
 bitcoind:
   registry: docker.io
   image: ruimarinho/bitcoin-core

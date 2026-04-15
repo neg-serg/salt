@@ -174,46 +174,6 @@ dns:
       requires:
         - service: unbound_running
 
-  adguardhome:
-    packages: adguardhome
-    cleanup:
-      paths:
-        - /usr/local/bin/AdGuardHome  # legacy manually-installed binary
-      onlyif: test -f /usr/local/bin/AdGuardHome
-    config_templates:
-      - dest: /var/lib/adguardhome/AdGuardHome.yaml
-        source: salt://configs/adguardhome-initial.yaml
-        makedirs: true
-        mode: '0640'
-        replace: false
-        user: adguardhome
-        group: adguardhome
-        require:
-          - cmd: managed_service_accounts_ensure
-          - cmd: managed_service_paths_ensure
-      - dest: /etc/systemd/resolved.conf.d/adguardhome.conf
-        source: salt://configs/resolved-adguardhome.conf
-        makedirs: true
-        mode: '0644'
-        require:
-          - cmd: adguardhome_start
-        onchanges_restart: systemd-resolved
-    unit:
-      source: salt://units/adguardhome.service.j2
-      template: jinja
-      unit_context:
-        dns_unbound: dns_unbound  # resolved at render time
-      enabled: true
-      running: true
-      requires:
-        - file: adguardhome_config_0
-        - cmd: managed_service_accounts_ensure
-        - cmd: managed_service_paths_ensure
-    healthcheck:
-      command: curl -sf http://127.0.0.1:3000/ >/dev/null 2>&1
-      requires:
-        - service: adguardhome_enabled
-
   avahi:
     packages: avahi avahi-tools nss-mdns
     service: avahi-daemon  # enable package-provided service

@@ -102,6 +102,9 @@ include:
 {% if host.features.services.get('bitcoind', false) %}
   - bitcoind
 {% endif %}
+{% if host.features.dns.get('adguardhome', false) %}
+  - adguardhome
+{% endif %}
 {% if host.features.get('proxypilot', True) %}
   - proxypilot
 {% endif %}
