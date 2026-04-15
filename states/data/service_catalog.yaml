@@ -135,12 +135,22 @@ t5_summarization:              # llama.cpp T5 summarization server (Vulkan)
       mode: ro
   env_file: null
 
-jellyfin:                      # Media server
+jellyfin:                      # Media server (containerized)
   port: 8096
   health_path: /health
   unit: jellyfin
   scope: system
-  packages: jellyfin-server jellyfin-web
+  packages: null               # installed via container_service image pull
+  container_image: jellyfin
+  gpu: render_group            # VA-API hardware transcoding
+  bind_mounts:
+    - host: /etc/jellyfin
+      container: /config
+      mode: rw                 # Jellyfin config + library database
+    - host: /var/cache/jellyfin
+      container: /cache
+      mode: rw                 # transcoding cache, thumbnails
+  env_file: null
 
 transmission:                  # BitTorrent client daemon
   port: 9091
