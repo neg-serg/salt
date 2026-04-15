@@ -32,10 +32,10 @@ models:
     enabled: true
     repo: Kijai/LTX2.3_comfy
     files:
-      - diffusion_models/ltx-2.3-22b-distilled_transformer_only_fp8_input_scaled_v3.safetensors  # 23.5 GB
+      - diffusion_models/ltx-2.3-22b-distilled-1.1_transformer_only_bf16.safetensors  # 23.5 GB, BF16 via fp8_e4m3fn dtype
     loader: diffusion_model  # UNETLoader with weight_dtype fp8_e4m3fn
     text_encoder: dual  # DualCLIPLoader: T5-XXL fp8 + LTX23 text projection
-    vae: ltx23-video  # LTX23_video_vae_bf16.safetensors
+    vae: taeltx2-3  # taeltx2_3.safetensors (Kijai's LTX-2.3 VAE)
     precision: fp8
     vram_gb: 22  # with lowvram offloading
     modes:
@@ -97,7 +97,7 @@ text_encoders:
 
   - id: ltx23_text_projection
     file: ltx-2.3_text_projection_bf16.safetensors  # LTX-2.3 text projection for DualCLIPLoader
-    repo: Lightricks/LTX-2.3
+    repo: Kijai/LTX2.3_comfy
     dir: text_encoders
 
   - id: gemma_tokenizer
@@ -110,4 +110,9 @@ vaes:
   - id: flux-ae
     file: ae.safetensors  # 335 MB, FLUX VAE (used by Chroma)
     repo: cocktailpeanut/xulf-dev  # public mirror, no auth required
+    dir: vae
+
+  - id: taeltx2-3
+    file: taeltx2_3.safetensors  # LTX-2.3 VAE from Kijai's Comfy-ready pack
+    repo: Kijai/LTX2.3_comfy
     dir: vae
