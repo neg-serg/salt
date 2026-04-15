@@ -1,9 +1,9 @@
-{#- Quadlet container unit template for Ollama (feature 087-containerize-services).
+{#- Quadlet container unit template for Ollama
     Rendered by container_service macro; context contains:
       catalog_entry:    dict from service_catalog.yaml[ollama]
       image:            fully-resolved registry/image@sha256:... reference
       expanded_mounts:  list of {host, container, mode} with ~-expansion applied
-      user_scope:       False (system scope per FR-017)
+      user_scope:       False (system scope)
 -#}
 [Unit]
 Description=Ollama LLM inference server (containerized)

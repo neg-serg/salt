@@ -17,10 +17,13 @@ base:
 
 desktop:
   - broot  # tree-based file manager and navigator
+  - chromium  # secondary browser for sites that break on Firefox/Gecko
   - dunst  # lightweight notification daemon
+  - grim  # Wayland screenshot tool
   - hypridle  # Hyprland idle daemon
   - hyprland  # dynamic tiling Wayland compositor
   - hyprlock  # GPU-accelerated screen locker for Hyprland
+  - hyprpicker  # Wayland color picker
   - hyprpolkitagent  # polkit agent for Hyprland (QML)
   - eza  # modern ls replacement (Rust)
   - matugen  # Material You color generation from images
@@ -28,17 +31,22 @@ desktop:
   - rofi  # app launcher and dmenu replacement
   - loupe  # GNOME image viewer
   - nyxt  # keyboard-driven extensible web browser
+  - satty  # screenshot annotation tool
+  - slurp  # Wayland region selector
+  - swayimg  # lightweight image viewer for Wayland
   - television  # general purpose terminal fuzzy finder (tv)
-  - yazi  # blazing fast terminal file manager (Rust)
-  - swayosd  # on-screen display for volume/caps/brightness
   - wl-clipboard  # Wayland clipboard utilities (wl-copy/wl-paste)
+  - wlr-randr  # Wayland output management tool
   - xdg-desktop-portal-gtk  # xdg-desktop-portal GTK backend
   - xdg-desktop-portal-hyprland  # xdg-desktop-portal Hyprland backend
+  - yazi  # blazing fast terminal file manager (Rust)
 
 dev:
   - clang  # C/C++ frontend for LLVM
   - cmake  # cross-platform build system
   - gdb  # GNU debugger
+  - meson  # build system (used for swayimg build)
+  - ninja  # small fast build system (meson backend)
   - fennel  # Lisp that compiles to Lua
   - git  # distributed version control
   - lua-language-server  # LSP for Lua
@@ -58,6 +66,7 @@ dev:
 network:
   - cloudflare-speed-cli  # CLI internet speed test via Cloudflare
   - curl  # CLI data transfer tool
+  - firewalld  # firewall management daemon (firewall-cmd)
   - networkmanager  # network connection manager
   - nmap  # network discovery and security auditing
   - openssh  # SSH protocol implementation
@@ -69,6 +78,7 @@ audio:
   - pipewire  # low-latency audio/video router
 
 media:
+  - ffmpeg  # audio/video processing toolkit
   - ffmpegthumbnailer  # video thumbnail generator
   - gst-libav  # GStreamer libav plugin
   - gst-plugins-bad  # GStreamer bad plugins
@@ -81,6 +91,8 @@ fonts:
   - noto-fonts-cjk  # Google Noto CJK fonts
 
 gaming:
+  - lutris  # open gaming platform
+  - wine  # Windows compatibility layer (dxvk, proton)
   - xorg-server  # X11 display server (VR session backend)
   - xorg-xinit  # startx launcher for X11
   - xf86-video-amdgpu  # Xorg DDX driver for AMD GPUs
@@ -408,6 +420,7 @@ aur:
   - ghgrab-bin  # download files from GitHub repos without cloning
   - gmap-bin  # Git repository analysis tool for churn and heatmap visualization
   - git-extras  # extra git utilities (summary, effort, etc)
+  - google-chrome  # Google Chrome stable (AUR)
   - gowall-bin  # wallpaper color scheme/palette converter
 # - gram-editor-bin  # minimal code editor
   - hishtory-bin  # synced, queryable shell history
@@ -417,6 +430,7 @@ aur:
   - instagram-cli  # Instagram DMs/stories TUI client
   - iosevka-neg-fonts  # custom Iosevka Nerd Fonts (neg-serg)
   - jdupes  # duplicate file finder and deduplicator
+  - localsend  # LAN file sharing (AirDrop alternative, AUR)
   - looking-glass  # low-latency VM display client (IVSHMEM frame relay)
   - lazytail-bin  # fast terminal log viewer with live filtering and MCP integration
   - lutgen-bin  # LUT-based color palette generator
@@ -437,6 +451,7 @@ aur:
   - par  # paragraph reformatter
   - patool  # portable archive file manager
   - paru  # AUR helper
+  - pipemixer-git  # TUI volume control app for pipewire
   - pup-bin  # CLI HTML parser (like jq for HTML)
   - python-ascii_magic  # ASCII art from images (songfetch dependency)
   - python-rapidgzip  # parallel gzip decompressor (Python)
@@ -450,6 +465,7 @@ aur:
   - richcolors  # render color palettes from hex files
   - rmlint  # duplicate and lint file remover
   - rofi-file-browser-extended-git  # rofi file browser plugin
+  - rustmission  # performant TUI for Transmission
   - salt  # remote execution and config management
   - scc  # fast code line counter with COCOMO
   - songfetch  # neofetch-style display for currently playing music (MPRIS)
@@ -469,6 +485,9 @@ aur:
   - witr-bin  # TUI process inspector — shows why a process is running
   - wget2  # next-gen wget with HTTP/2 and parallel downloads
   - wlogout  # Wayland logout menu
+  - wl  # Wayland wallpaper daemon (neg-serg fork, custom PKGBUILD in build/pkgbuilds/wl/)
+  - wlr-which-key  # on-screen keybinding cheatsheet for Hyprland (AUR)
   - xdg-ninja  # check for XDG Base Directory compliance
   - youtube-tui  # TUI YouTube browser with mpv playback and sixel/kitty preview
 # - ytsurf  # terminal YouTube client with fzf/rofi selection and mpv playback
+  - zen-browser-bin  # performance-oriented Firefox-based browser

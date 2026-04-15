@@ -80,14 +80,3 @@
         grafana: true
       ollama: true
       llama_embed: true
-      containers:
-        ollama: true
-        llama_embed: true
-        loki: true
-        promtail: true
-        grafana: true
-        # US3 bridge flags stay false — upstream images deferred per research Decision 7
-        telethon_bridge: false
-        opencode_serve: false
-        opencode_telegram_bot: false
-        telecode: false

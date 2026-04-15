@@ -18,3 +18,9 @@ gguf_file: t5-russian-summarization-Q5_K_M.gguf
 context: 512
 gpu_layers: 99
 prefix: "summarize: "
+tokenizer_files:
+  - tokenizer_config.json
+  - special_tokens_map.json
+  - spiece.model
+  - tokenizer.json
+  - config.json

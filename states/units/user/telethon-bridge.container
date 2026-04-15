@@ -1,18 +1,9 @@
 {#- Quadlet container unit template for the Telethon Telegram bridge
-    (feature 087-containerize-services, US3 structural scaffolding).
-
-    DIGEST PLACEHOLDER — this unit file ships with the feature but is inert
-    until container_images.yaml[telethon_bridge].digest is populated. See
-    research.md Decision 7 (upstream-image gate). The container_service
-    macro detects the null digest and emits only a `_container_deferred`
-    no-op state; this file is never actually deployed to disk until a
-    real digest is committed.
-
-    Rendered by container_service macro when digest is non-null. Context:
+    Rendered by container_service macro. Context:
       catalog_entry:    dict from service_catalog.yaml[telethon_bridge]
-      image:            fully-resolved registry/image@sha256:... reference
+      image:            fully-resolved registry/image reference
       expanded_mounts:  list of {host, container, mode} (tilde-expanded)
-      user_scope:       True (rootless user-scoped Quadlet per FR-017)
+      user_scope:       True (rootless user-scoped Quadlet)
 -#}
 [Unit]
 Description=Telethon Telegram bridge (containerized)
