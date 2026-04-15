@@ -191,6 +191,23 @@ bitcoind:                      # Bitcoin Core node
   manual_start: true
 
 # ─── Bridge tier (localhost images, built manually) ──────────────────
+proxypilot:                    # LLM proxy (containerized)
+  port: 8317
+  health_path: /health
+  unit: proxypilot
+  scope: user
+  packages: null               # installed via container_service image pull
+  container_image: proxypilot
+  gpu: none
+  bind_mounts:
+    - host: ~/.config/proxypilot
+      container: /config
+      mode: rw                 # ProxyPilot config.yaml
+    - host: ~/.cli-proxy-api
+      container: /root/.cli-proxy-api
+      mode: rw                 # auth directory
+  env_file: null
+
 telethon_bridge:               # Telegram bridge (python-telethon)
   unit: telethon-bridge
   scope: user

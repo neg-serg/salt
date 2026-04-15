@@ -65,6 +65,14 @@ jellyfin:
   note: "Jellyfin media server; VA-API hardware transcoding via /dev/dri"
 
 # ─── Bridge tier (localhost images, built manually) ──────────────────
+proxypilot:
+  registry: localhost
+  image: proxypilot
+  variant: null
+  digest: null
+  approved_at: null
+  note: "Local image — build: podman build -t localhost/proxypilot build/pkgbuilds/proxypilot/"
+
 telethon_bridge:
   registry: localhost
   image: telethon-bridge

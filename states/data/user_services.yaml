@@ -32,7 +32,6 @@ unit_files:
   - {id: vicinae_service, filename: vicinae.service}
   - {id: hyprscratch_service, filename: hyprscratch.service}
   - {id: gopass_age_agent_service, filename: gopass-age-agent.service}
-  - {id: proxypilot_service, filename: proxypilot.service}
   - {id: openrgb_profile_service, filename: openrgb-profile.service}
   - {id: salt_drift_service, filename: salt-drift.service}
   - {id: salt_drift_timer, filename: salt-drift.timer}
@@ -49,7 +48,6 @@ unit_files:
 enable_services:
   - {name: rclone-gdrive.service}
   - {name: rclone-yadisk.service}
-  - {name: proxypilot.service}
   - {name: imapnotify-gmail.service, features: [mail]}
   - {name: surfingkeys-server.service}
   - {name: pic-dirs-list.service}
