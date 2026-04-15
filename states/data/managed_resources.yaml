@@ -25,22 +25,6 @@
 #   __CURRENT_USER__ → current workstation user resolved from host config
 
 managed_service_identities:
-  adguardhome:
-    user: adguardhome
-    group: adguardhome
-    home: /var/lib/adguardhome
-    shell: /usr/sbin/nologin
-    gecos: Salt managed AdGuard Home service account
-    phase: phase1
-
-  bitcoind:
-    user: bitcoind
-    group: bitcoind
-    home: /var/lib/bitcoind
-    shell: /usr/sbin/nologin
-    gecos: Salt managed Bitcoin Core service account
-    phase: phase1
-
   greetd:
     user: greetd
     group: greetd
@@ -58,28 +42,6 @@ managed_service_identities:
     phase: phase1
 
 managed_service_paths:
-  adguardhome_root:
-    service: adguardhome
-    path: /var/lib/adguardhome
-    type: d
-    mode: "0755"
-    user: adguardhome
-    group: adguardhome
-    age: "-"
-    argument: "-"
-    phase: phase1
-
-  bitcoind_root:
-    service: bitcoind
-    path: /var/lib/bitcoind
-    type: d
-    mode: "0755"
-    user: bitcoind
-    group: bitcoind
-    age: "-"
-    argument: "-"
-    phase: phase1
-
   loki_root:
     service: loki
     path: /var/lib/loki
