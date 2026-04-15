@@ -92,6 +92,9 @@ mail_directories:
 # --- Enable user services: single daemon-reload + batch enable ---
 {{ user_service_enable('enable_user_services', filtered_services, start_now=filtered_timers, requires=_unit_reqs) }}
 
+# --- Disable network mount services (rclone) — require explicit mount ---
+{{ user_service_disable('disable_rclone_services', ['rclone-gdrive.service', 'rclone-yadisk.service']) }}
+
 # --- Disable services for disabled features ---
 {%- set _all_feature_units = us.enable_services + us.enable_now_timers -%}
 {%- for feature_name, is_enabled in feature_enabled.items() -%}

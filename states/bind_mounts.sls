@@ -19,7 +19,7 @@
     - name: {{ m.device }}
     - fs_file: {{ target }}
     - fs_vfstype: none
-    - fs_mntops: rbind,nofail,noauto
+    - fs_mntops: rbind,nofail,x-systemd.automount
     - mount: False
 
 {{ name }}_mount:

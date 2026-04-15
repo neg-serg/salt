@@ -46,8 +46,6 @@ unit_files:
 
 # Services/sockets to enable (systemctl --user enable)
 enable_services:
-  - {name: rclone-gdrive.service}
-  - {name: rclone-yadisk.service}
   - {name: imapnotify-gmail.service, features: [mail]}
   - {name: surfingkeys-server.service}
   - {name: pic-dirs-list.service}
