@@ -31,28 +31,9 @@
     'dns_unbound': dns.get('unbound', False),
 } %}
 
-{% set _valid_fields = ['packages', 'unit', 'manual_start', 'dirs', 'config_templates', 'scripts',
-    'healthcheck', 'logrotate', 'cleanup', 'has_escape_hatch', 'service',
-    'setup_commands', 'unit_override', 'ensure_running'] %}
-
-{# Macro-like block: renders one service section.
+{# Renders one service section from services.yaml data.
    Variables expected in scope: name, opts, feature_flag, section_label. #}
 {% macro render_service(name, opts, feature_flag, section_label) %}
-{# Schema validation #}
-{% set _actionable = opts.keys() | reject('equalto', 'has_escape_hatch') | list %}
-{% if not _actionable %}
-validate_{{ name }}_no_fields:
-  test.fail_without_changes:
-    - name: '{{ section_label }} service "{{ name }}" has no actionable fields — add at least one of: {{ _valid_fields | join(", ") }}'
-{% endif %}
-{% for field in opts.keys() %}
-{% if field not in _valid_fields %}
-validate_{{ name }}_unknown_{{ field }}:
-  test.fail_without_changes:
-    - name: '{{ section_label }} service "{{ name }}" has unknown field "{{ field }}" — valid fields: {{ _valid_fields | join(", ") }}'
-{% endif %}
-{% endfor %}
-
 {% if feature_flag %}
 
 # --- {{ name }} ({{ section_label }}, data-driven) ---

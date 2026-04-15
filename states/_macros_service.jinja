@@ -8,6 +8,12 @@
   'DBUS_SESSION_BUS_ADDRESS: unix:path=' ~ host.runtime_dir ~ '/bus',
 ] -%}
 
+{# Render the _systemctl_env list as YAML env entries.
+   Replaces the 14 identical for-loops scattered across user-service macros. #}
+{%- macro _env_block() -%}
+{{ _env_block() }}
+{%- endmacro -%}
+
 {# Resolve symbolic inventory values for managed systemd resources.
    Currently supports __CURRENT_USER__ for user-owned tmpfiles entries.
 #}
@@ -329,9 +335,7 @@ test -e {{ _path }}
     - name: systemctl --user daemon-reload
     - runas: {{ user }}
     - env:
-{%- for entry in _systemctl_env %}
-      - {{ entry }}
-{%- endfor %}
+{{ _env_block() }}
     - onchanges:
       - file: {{ name }}
 {%- endmacro -%}
@@ -368,9 +372,7 @@ test -e {{ _path }}
     - name: systemctl --user daemon-reload
     - runas: {{ user }}
     - env:
-{%- for entry in _systemctl_env %}
-      - {{ entry }}
-{%- endfor %}
+{{ _env_block() }}
     - onchanges:
       - file: {{ name }}
 {%- endmacro -%}
@@ -408,9 +410,7 @@ test -e {{ _path }}
     - shell: /bin/bash
     - runas: {{ user }}
     - env:
-{%- for entry in _systemctl_env %}
-      - {{ entry }}
-{%- endfor %}
+{{ _env_block() }}
 {%- if all_units %}
     - unless: |
         set -e
@@ -465,9 +465,7 @@ test -e {{ _path }}
     - name: systemctl --user restart {{ service }}
     - runas: {{ user }}
     - env:
-{%- for entry in _systemctl_env %}
-      - {{ entry }}
-{%- endfor %}
+{{ _env_block() }}
 {%- if onlyif %}
     - onlyif: {{ onlyif }}
 {%- endif %}
@@ -494,9 +492,7 @@ test -e {{ _path }}
     - name: systemctl --user disable --now {{ units | join(' ') }} 2>/dev/null || true
     - runas: {{ user }}
     - env:
-{%- for entry in _systemctl_env %}
-      - {{ entry }}
-{%- endfor %}
+{{ _env_block() }}
     - onlyif: |
         export XDG_RUNTIME_DIR={{ host.runtime_dir }}
         export DBUS_SESSION_BUS_ADDRESS=unix:path={{ host.runtime_dir }}/bus
@@ -771,9 +767,7 @@ container_service_PRECONDITION_FAILED_{{ name }}_{{ error_key }}:
 {%- if user_scope %}
     - runas: {{ _user }}
     - env:
-{%- for entry in _systemctl_env %}
-      - {{ entry }}
-{%- endfor %}
+{{ _env_block() }}
 {%- endif %}
 {%- if requires %}
     - require:
@@ -790,9 +784,7 @@ container_service_PRECONDITION_FAILED_{{ name }}_{{ error_key }}:
 {%- if user_scope %}
     - runas: {{ _user }}
     - env:
-{%- for entry in _systemctl_env %}
-      - {{ entry }}
-{%- endfor %}
+{{ _env_block() }}
 {%- endif %}
     - onchanges:
       - file: {{ name }}_container
@@ -806,9 +798,7 @@ container_service_PRECONDITION_FAILED_{{ name }}_{{ error_key }}:
     - name: systemctl --user is-enabled {{ _quadlet_name }}.service >/dev/null 2>&1 || systemctl --user enable {{ _quadlet_name }}.service
     - runas: {{ _user }}
     - env:
-{%- for entry in _systemctl_env %}
-      - {{ entry }}
-{%- endfor %}
+{{ _env_block() }}
     - unless: systemctl --user is-enabled {{ _quadlet_name }}.service >/dev/null 2>&1
     - require:
 {%- if _is_localhost %}
@@ -836,9 +826,7 @@ container_service_PRECONDITION_FAILED_{{ name }}_{{ error_key }}:
 {%- if user_scope %}
     - runas: {{ _user }}
     - env:
-{%- for entry in _systemctl_env %}
-      - {{ entry }}
-{%- endfor %}
+{{ _env_block() }}
 {%- endif %}
     - require:
 {%- if user_scope %}
@@ -853,9 +841,7 @@ container_service_PRECONDITION_FAILED_{{ name }}_{{ error_key }}:
     - name: systemctl --user is-active {{ _quadlet_name }}.service >/dev/null 2>&1 || systemctl --user start {{ _quadlet_name }}.service
     - runas: {{ _user }}
     - env:
-{%- for entry in _systemctl_env %}
-      - {{ entry }}
-{%- endfor %}
+{{ _env_block() }}
     - unless: systemctl --user is-active {{ _quadlet_name }}.service >/dev/null 2>&1
 {%- else %}
   service.running:

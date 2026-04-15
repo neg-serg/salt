@@ -1,19 +1,8 @@
 {% from '_imports.jinja' import user, home, pkg_list, retry_attempts, retry_interval %}
-{% from '_macros_install.jinja' import install_catalog %}
 {% from '_macros_pkg.jinja' import paru_install %}
 {% import_yaml 'data/installers_desktop.yaml' as apps %}
-{% import_yaml 'data/versions.yaml' as ver %}
-# Desktop application installers: GUI apps, AppImages, AUR packages
+# Desktop application installers: AUR packages
 # Definitions in data/installers_desktop.yaml; adding/updating is a YAML-only edit.
-
-# --- ZIP archives (app bundles + binaries) ---
-{{ install_catalog(apps.curl_extract_zip, ver, 'curl_extract_zip', user=user, home=home) }}
-
-# --- tar.gz archives ---
-{{ install_catalog(apps.curl_extract_tar, ver, 'curl_extract_tar', user=user, home=home) }}
-
-# --- Direct binary downloads ---
-{{ install_catalog(apps.curl_bin, ver, 'curl_bin', user=user, home=home) }}
 
 # --- AUR packages (v4l2loopback-dkms for droidcam installed via pacman outside Salt) ---
 {% for name, pkg in apps.paru_install.items() %}

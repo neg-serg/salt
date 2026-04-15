@@ -3,39 +3,10 @@
 #
 # ── Schema ────────────────────────────────────────────────────────────
 #
-# curl_extract_zip:                → macro: curl_extract_zip(name, url, binary_path)
-#   <name>:
-#     url:          (required) ZIP URL; may contain ${VER}
-#     binary_path:  (optional) path inside ZIP (default: ".")
-#     binaries:     (optional) list of binaries if >1 file needed
-#     dest:         (optional) install to custom dir instead of ~/.local/bin/
-#     symlink:      (optional) create symlink from dest/<symlink> → ~/.local/bin/<name>
-#     chmod:        (optional) bool — chmod +x extracted files
-#     hash:         (optional) sha256 checksum
-#
-# curl_extract_tar:                → macro: curl_extract_tar(name, url, binary_pattern)
-#   <name>:
-#     url:             (required) tar.gz URL; may contain ${VER}
-#     binary_pattern:  (required) glob/name to find binary after extraction
-#     bin:             (optional) override output binary name
-#     chmod:           (optional) bool — chmod +x extracted files
-#     hash:            (optional) sha256 checksum
-#
-# curl_bin:                        → macro: curl_bin(name, url)
-#   <name>:
-#     url:  (required) direct download URL; may contain ${VER}
-#     hash: (optional) sha256 checksum
-#
 # paru_install:                    → macro: paru_install(name, pkg) via paru
 #   <name>: <package_name>         — simple key: value pairs
 #
 # ─────────────────────────────────────────────────────────────────────
-
-curl_extract_zip: {}
-
-curl_extract_tar: {}
-
-curl_bin: {}
 
 paru_install:
   antigravity_tools: antigravity-tools-bin  # AI account manager & proxy for Google/Anthropic sessions (Tauri)
