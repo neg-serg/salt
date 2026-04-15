@@ -59,15 +59,6 @@ tdl_legacy_cleanup:
 # --- Hyprland tools (multi-binary) ---
 {{ curl_extract_tar('hyprevents', 'https://github.com/vilari-mickopf/hyprevents/archive/refs/heads/master.tar.gz', 'hyprevents-master', binaries=['hyprevents', 'event_handler', 'event_loader'], chmod=True) }}
 
-# --- aider (AI coding assistant) ---
-{# {{ paru_install('aider', 'aider-chat') }} #}
-
-# One-time cleanup: remove old uv-installed binary after package migration
-aider_legacy_cleanup:
-  file.absent:
-    - name: {{ home }}/.local/bin/aider
-    - onlyif: test -f {{ home }}/.local/bin/aider
-
 # --- pip: dr14_tmeter (custom git install, needs GIT_CONFIG_GLOBAL override) ---
 {{ pip_pkg('dr14_tmeter', pkg='git+https://github.com/simon-r/dr14_t.meter.git', env='GIT_CONFIG_GLOBAL=/dev/null') }}
 

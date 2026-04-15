@@ -1,10 +1,10 @@
-{% from '_macros_pkg.jinja' import pacman_install, paru_install %}
+{% from '_macros_pkg.jinja' import paru_install %}
 {% from '_macros_install.jinja' import curl_extract_tar %}
 {% import_yaml 'data/versions.yaml' as ver %}
 {% import_yaml 'data/installers.yaml' as tools %}
 
 # Python dependencies for Annoy-based analysis scripts
-{{ pacman_install('music_analysis_pydeps', 'python-orjson python-numpy') }}
+{{ paru_install('music_analysis_pydeps', 'python-orjson python-numpy') }}
 {{ paru_install('python_annoy', 'python-annoy') }}
 
 # Essentia streaming extractor (binary tarball)

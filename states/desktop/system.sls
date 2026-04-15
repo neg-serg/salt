@@ -1,6 +1,6 @@
 # Desktop environment: services, SSH, dconf themes
 {% from '_imports.jinja' import user, home %}
-{% from '_macros_pkg.jinja' import pacman_install %}
+{% from '_macros_pkg.jinja' import paru_install %}
 {% from '_macros_service.jinja' import ensure_dir, service_stopped %}
 {% import_yaml 'data/desktop.yaml' as desktop %}
 
@@ -64,7 +64,7 @@ sshd_restart:
 # libvirtd: socket-activated only. The service must be DISABLED so systemd doesn't
 # start the full daemon at boot (1.2s on critical path). The socket starts it
 # on-demand when a client connects; autostart VMs still trigger activation.
-{{ pacman_install('libvirt', 'libvirt') }}
+{{ paru_install('libvirt', 'libvirt') }}
 
 libvirtd_service_disabled:
   service.disabled:
@@ -81,7 +81,7 @@ libvirtd_socket_enabled:
 
 # swtpm: software TPM emulator — libvirt uses it automatically for VMs with TPM
 # devices (required for Windows 11). No daemon needed; libvirt spawns swtpm per-VM.
-{{ pacman_install('swtpm', 'swtpm') }}
+{{ paru_install('swtpm', 'swtpm') }}
 
 # Looking Glass: shared memory for IVSHMEM frame relay from Windows VM.
 # The tmpfiles.d entry creates /dev/shm/looking-glass owned by the user on boot.
@@ -100,7 +100,7 @@ looking_glass_shm_create:
       - file: looking_glass_shm
 
 # pcscd is socket-activated: scdaemon connects on demand for Yubikey smart card operations.
-{{ pacman_install('pcsclite', 'pcsclite') }}
+{{ paru_install('pcsclite', 'pcsclite') }}
 
 pcscd_socket_enabled:
   service.enabled:

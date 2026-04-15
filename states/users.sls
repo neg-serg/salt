@@ -1,6 +1,6 @@
 # User accounts, groups, sudo, and user lingering
 {% from '_imports.jinja' import host, user, home, sudo_timeout_minutes %}
-{% from '_macros_pkg.jinja' import pacman_install, paru_install %}
+{% from '_macros_pkg.jinja' import paru_install %}
 {% from '_macros_service.jinja' import user_linger %}
 {% set uid = host.uid %}
 
@@ -24,7 +24,7 @@ plugdev_group:
 
 # realtime-privileges: creates `realtime` group + rtprio/memlock limits,
 # required by pipewire loopback nodes on pro-audio profile devices (ADI-2)
-{{ pacman_install('realtime-privileges', 'realtime-privileges') }}
+{{ paru_install('realtime-privileges', 'realtime-privileges') }}
 
 # user.present groups broken on Python 3.14 (crypt module removed)
 neg_groups:

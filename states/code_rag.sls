@@ -4,7 +4,7 @@
 #}
 {% from '_imports.jinja' import home %}
 {% from '_macros_install.jinja' import pip_pkg %}
-{% from '_macros_pkg.jinja' import pacman_install %}
+{% from '_macros_pkg.jinja' import paru_install %}
 
 {% set _rag_shared = home ~ '/src/1st-level/@rag/rag-shared' %}
 {{ pip_pkg('code_rag', pkg=home ~ '/src/1st-level/@rag/code-rag', bin='code-rag-index', preinstall=_rag_shared) }}
@@ -20,5 +20,5 @@ replace_mandb_with_mandoc:
     - require:
       - cmd: pacman_db_warmup
 
-{{ pacman_install('mandoc', pkgs='mandoc') }}
+{{ paru_install('mandoc', 'mandoc') }}
 {{ pip_pkg('docs_rag', pkg=home ~ '/src/1st-level/@rag/docs-rag', bin='docs-import', preinstall=_rag_shared) }}
