@@ -1,61 +1,15 @@
-{# Package manager macros: pacman_install, simple_service, paru_install, pkgbuild_install, npm_pkg #}
+{# Package manager macros: paru_install (via paru, covers both official repos and AUR),
+   simple_service, pkgbuild_install, npm_pkg #}
 
 {% from '_macros_common.jinja' import user as _user, home as _home, retry_attempts as _retry_attempts, retry_interval as _retry_interval, host, ver_stamp %}
 
-{# Install packages via pacman (CachyOS/Arch).
+{# Install packages via paru (covers both official repos and AUR).
    check defaults to first package. requires is an optional list of requisites.
-   Usage: {{ pacman_install('unbound', 'unbound') }}
-          {{ pacman_install('jellyfin', 'jellyfin-server jellyfin-web') }}
-#}
-{%- macro pacman_install(name, pkgs, check=None, requires=None) -%}
-install_{{ name | replace('-', '_') }}:
-  cmd.run:
-    - name: pacman -S --noconfirm --needed {{ pkgs }}
-{%- if check == '__ALL__' %}
-    - unless: pacman -Qq {{ pkgs }} >/dev/null 2>&1
-{%- else %}
-    - unless: grep -qxF '{{ check or pkgs.split()[0] }}' {{ host.pkg_list }}
-{%- endif %}
-    - require:
-      - cmd: pacman_db_warmup
-{%- if requires %}
-{%- for req in requires %}
-      - {{ req }}
-{%- endfor %}
-{%- endif %}
-{%- endmacro -%}
-
-{# Install packages via pacman + enable the corresponding systemd service.
-   Shorthand for: pacman_install() + service.enabled with require on install.
-   service: systemd service name (defaults to name).
-   check: idempotency check override (passed to pacman_install).
-   requires: optional extra requisites for service.enabled beyond the install (e.g. config files).
-   Usage: {{ simple_service('unbound', 'unbound') }}
-          {{ simple_service('avahi', 'avahi avahi-tools nss-mdns', service='avahi-daemon', requires=['file: avahi_config']) }}
-          {{ simple_service('grafana', 'grafana', service='grafana-server', requires=['file: grafana_config']) }}
-#}
-{%- macro simple_service(name, pkgs, service=None, check=None, requires=None) -%}
-{{ pacman_install(name, pkgs, check=check) }}
-
-{{ name }}_enabled:
-  service.enabled:
-    - name: {{ service or name }}
-    - require:
-      - cmd: install_{{ name | replace('-', '_') }}
-{%- if requires %}
-{%- for req in requires %}
-      - {{ req }}
-{%- endfor %}
-{%- endif %}
-{%- endmacro -%}
-
-{# Install AUR packages via paru (CachyOS/Arch).
-   Runs as user (paru handles sudo internally for makepkg).
-   check defaults to pkg. requires is an optional list of requisites.
-   version: when set, uses version stamp for idempotency (useful for pinned AUR packages).
-   Usage: {{ paru_install('wlr-which-key', 'wlr-which-key') }}
-          {{ paru_install('material-design-icons', 'ttf-material-design-icons-extended') }}
-          {{ paru_install('my-tool', 'my-tool-git', version='1.2.3') }}
+   version: when set, uses version stamp for idempotency (useful for pinned packages).
+   Usage: {{ paru_install('unbound', 'unbound') }}
+          {{ paru_install('jellyfin', 'jellyfin-server jellyfin-web') }}
+          {{ paru_install('kanata', 'kanata-bin') }}
+          {{ paru_install('python_telethon', 'python-telethon', version='1.2.0') }}
 #}
 {%- macro paru_install(name, pkg, check=None, requires=None, version='') -%}
 {%- set _ver_dir = _home ~ '/.cache/salt-versions' -%}
@@ -73,6 +27,30 @@ install_{{ name | replace('-', '_') }}:
 {%- endif %}
     - require:
       - cmd: pacman_db_warmup
+{%- if requires %}
+{%- for req in requires %}
+      - {{ req }}
+{%- endfor %}
+{%- endif %}
+{%- endmacro -%}
+
+{# Install packages via paru + enable the corresponding systemd service.
+   Shorthand for: paru_install() + service.enabled with require on install.
+   service: systemd service name (defaults to name).
+   check: idempotency check override (passed to paru_install).
+   requires: optional extra requisites for service.enabled beyond the install (e.g. config files).
+   Usage: {{ simple_service('unbound', 'unbound') }}
+          {{ simple_service('avahi', 'avahi avahi-tools nss-mdns', service='avahi-daemon', requires=['file: avahi_config']) }}
+          {{ simple_service('grafana', 'grafana', service='grafana-server', requires=['file: grafana_config']) }}
+#}
+{%- macro simple_service(name, pkgs, service=None, check=None, requires=None) -%}
+{{ paru_install(name, pkgs, check=check) }}
+
+{{ name }}_enabled:
+  service.enabled:
+    - name: {{ service or name }}
+    - require:
+      - cmd: install_{{ name | replace('-', '_') }}
 {%- if requires %}
 {%- for req in requires %}
       - {{ req }}
