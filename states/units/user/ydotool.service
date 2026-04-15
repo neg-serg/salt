@@ -1,0 +1,20 @@
+[Unit]
+Description=ydotool daemon for Wayland input simulation
+Documentation=https://github.com/YaLTeR/ydotool
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/ydotoold
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+ProtectSystem=strict
+PrivateTmp=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+LockPersonality=yes
+
+[Install]
+WantedBy=graphical-session.target
