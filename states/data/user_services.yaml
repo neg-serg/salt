@@ -58,6 +58,7 @@ enable_services:
   - {name: ssh-agent.socket}
   - {name: wl.service}
   - {name: systemd-tmpfiles-setup.service}  # creates hashed GPG socket dirs from user-tmpfiles.d/
+  - {name: ydotool.service}  # input automation daemon for Hyprland MCP tools
 
 # Timers to enable and start immediately (systemctl --user enable --now)
 enable_now_timers:
