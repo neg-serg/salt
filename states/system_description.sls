@@ -99,6 +99,9 @@ include:
 {% if host.features.services.get('transmission', false) %}
   - transmission
 {% endif %}
+{% if host.features.services.get('bitcoind', false) %}
+  - bitcoind
+{% endif %}
 {% if host.features.get('proxypilot', True) %}
   - proxypilot
 {% endif %}

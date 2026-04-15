@@ -184,11 +184,18 @@ samba:                         # SMB file sharing
   packages: samba
   manual_start: true
 
-bitcoind:                      # Bitcoin Core node
+bitcoind:                      # Bitcoin Core node (containerized)
   unit: bitcoind
   scope: system
-  packages: bitcoin-daemon
+  packages: null               # installed via container_service image pull
   manual_start: true
+  container_image: bitcoind
+  gpu: none
+  bind_mounts:
+    - host: /var/lib/bitcoind-container
+      container: /var/lib/bitcoind
+      mode: rw                 # Bitcoin blockchain data
+  env_file: null
 
 # ─── Bridge tier (localhost images, built manually) ──────────────────
 proxypilot:                    # LLM proxy (containerized)

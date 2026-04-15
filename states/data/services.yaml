@@ -97,22 +97,6 @@ complex:
       service: smb  # manual start only: systemctl start smb
       stop: false
 
-  bitcoind:
-    packages: bitcoin-daemon  # Bitcoin Core node
-    cleanup:
-      paths:
-        - /usr/local/bin/bitcoind   # legacy manually-installed binary
-        - /usr/local/bin/bitcoin-cli
-      onlyif: test -f /usr/local/bin/bitcoind
-    unit:
-      source: salt://units/bitcoind.service
-      enabled: false  # manual start: systemctl start bitcoind
-      requires:
-        - cmd: managed_service_accounts_ensure
-        - cmd: managed_service_paths_ensure
-    logrotate:
-      source: salt://configs/bitcoind-logrotate
-
 # ===================================================================
 # Network services (data-driven: gated by features.network.<name>)
 # ===================================================================
