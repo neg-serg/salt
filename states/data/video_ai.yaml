@@ -90,6 +90,21 @@ text_encoders:
     repo: comfyanonymous/flux_text_encoders
     dir: text_encoders
 
+  - id: gemma_fp4
+    file: gemma_3_12B_it_fp4_mixed.safetensors  # ~8 GB, LTX-2.3 dual-clip text encoder
+    repo: Comfy-Org/gemma_3_repackaged
+    dir: text_encoders
+
+  - id: ltx23_text_projection
+    file: ltx-2.3_text_projection_bf16.safetensors  # LTX-2.3 text projection for DualCLIPLoader
+    repo: Lightricks/LTX-2.3
+    dir: text_encoders
+
+  - id: gemma_tokenizer
+    file: tokenizer.model  # Gemma 3 SentencePiece tokenizer, required for text encoding
+    repo: Comfy-Org/gemma_3_repackaged
+    dir: text_encoders
+
 # ── Shared VAE models ─────────────────────────────────────────────
 vaes:
   - id: flux-ae
