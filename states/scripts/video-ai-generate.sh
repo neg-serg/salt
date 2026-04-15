@@ -2,7 +2,7 @@
 # shellcheck disable=SC2034,SC1091  # vars used by sourced lib-comfyui.sh
 # Video AI generation runner: submit workflow to ComfyUI, encode output as MP4.
 # Usage: video-ai-generate.sh --model MODEL_ID --prompt "TEXT" [--image PATH] [--compat]
-#        [--width W] [--height H] [--frames N]
+#        [--width W] [--height H] [--frames N] [--lowvram]
 set -euo pipefail
 
 VIDEO_AI_DIR="${VIDEO_AI_DIR:-/mnt/one/video-ai}"
@@ -21,6 +21,8 @@ WIDTH=854
 HEIGHT=480
 FRAMES=97  # ~4 seconds at 24fps
 COMPAT=false
+LOWVRAM=false
+STEPS=0  # 0 = use workflow default
 
 usage() {
     cat >&2 <<'EOF'
@@ -34,6 +36,7 @@ Options:
   --height H      Output height (default: 480)
   --frames N      Number of frames (default: 97, ~4s at 24fps)
   --compat        Encode as H.264 instead of H.265
+  --lowvram       Enable ComfyUI low VRAM mode (for 24GB GPUs)
   --help          Show this help
 EOF
     exit 1
@@ -49,6 +52,7 @@ while [[ $# -gt 0 ]]; do
         --height) HEIGHT="$2"; shift 2 ;;
         --frames) FRAMES="$2"; shift 2 ;;
         --compat) COMPAT=true; shift ;;
+        --lowvram) LOWVRAM=true; shift ;;
         --help)   usage ;;
         *) echo "Unknown option: $1" >&2; usage ;;
     esac
@@ -111,6 +115,24 @@ fi
 [[ -n "${CKPT_NAME}" ]] || { echo "Error: No checkpoint found for model '${MODEL}'" >&2; exit 2; }
 echo "[video-ai] Checkpoint: ${CKPT_NAME}" >&2
 
+# ── Resolve diffusion model file (for UNETLoader workflows) ───────────
+MODEL_FILE=""
+DIFFUSION_DIR="${COMFYUI_DIR}/models/diffusion_models"
+if [[ -d "${DIFFUSION_DIR}" ]]; then
+    MODEL_PREFIX="${MODEL%%[-_]*}"
+    MODEL_FILE=$(find -L "${DIFFUSION_DIR}" -maxdepth 1 -name "*.safetensors" \
+        -iname "*${MODEL_PREFIX}*" -printf "%f\n" 2>/dev/null | head -1)
+fi
+if [[ -n "${MODEL_FILE}" ]]; then
+    echo "[video-ai] Diffusion model: ${MODEL_FILE}" >&2
+fi
+
+# ── Low VRAM flag ─────────────────────────────────────────────────────
+if [[ "${LOWVRAM}" == "true" ]]; then
+    COMFYUI_EXTRA_ARGS="--lowvram"
+    echo "[video-ai] ComfyUI: --lowvram enabled" >&2
+fi
+
 # ── Prepare workflow ─────────────────────────────────────────────────
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 SLUG=$(echo "${PROMPT}" | tr '[:upper:]' '[:lower:]' | tr -cs '[:alnum:]' '-' | head -c 40 | sed 's/-$//')
@@ -120,8 +142,10 @@ WORKFLOW_RESOLVED="${WORK_DIR}/workflow.json"
 # Substitute placeholders in workflow
 sed -e "s|__PROMPT__|${PROMPT//|/\\|}|g" \
     -e "s|__CKPT_NAME__|${CKPT_NAME}|g" \
+    -e "s|__MODEL_FILE__|${MODEL_FILE}|g" \
     -e "s|__WIDTH__|${WIDTH}|g" \
     -e "s|__HEIGHT__|${HEIGHT}|g" \
+    -e "s|__STEPS__|${STEPS}|g" \
     -e "s|__FRAMES__|${FRAMES}|g" \
     "${WORKFLOW_FILE}" > "${WORKFLOW_RESOLVED}"
 

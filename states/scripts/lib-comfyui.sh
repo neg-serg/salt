@@ -21,11 +21,13 @@ comfyui_start() {
     if ! curl -sf "${COMFYUI_URL}/system_stats" >/dev/null 2>&1; then
         echo "[${log_prefix}] Starting ComfyUI on port ${COMFYUI_PORT}..." >&2
         cd "${COMFYUI_DIR}" || exit 1
+        # shellcheck disable=SC2086  # intentional word splitting for extra args
         "${VENV_PYTHON}" main.py \
             --listen 127.0.0.1 \
             --port "${COMFYUI_PORT}" \
             --disable-auto-launch \
             --output-directory "${COMFYUI_OUTPUT}" \
+            ${COMFYUI_EXTRA_ARGS:-} \
             >/dev/null 2>&1 &
         COMFYUI_PID=$!
 
