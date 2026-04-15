@@ -93,6 +93,13 @@ include:
   - user_services
 # - code_rag
 
+{% if host.features.services.get('jellyfin', false) %}
+  - jellyfin
+{% endif %}
+{% if host.features.services.get('transmission', false) %}
+  - transmission
+{% endif %}
+
   # ── Feature-gated (skipped entirely when disabled) ──────────────────
 {% if host.features.amnezia %}
   - amnezia

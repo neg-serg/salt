@@ -1,0 +1,51 @@
+{#- Quadlet container unit template for Jellyfin media server
+    Rendered by container_service macro. Context:
+      catalog_entry:    dict from service_catalog.yaml[jellyfin]
+      image:            fully-resolved registry/image@sha256:... reference
+      expanded_mounts:  list of {host, container, mode} with ~-expansion applied
+      user_scope:       False (system scope)
+-#}
+[Unit]
+Description=Jellyfin media server (containerized)
+Documentation=https://jellyfin.org/docs/
+After=network-online.target local-fs.target
+Wants=network-online.target
+# StartLimit* keys belong in [Unit] per systemd.unit(5).
+StartLimitBurst=5
+StartLimitIntervalSec=60
+
+[Container]
+Image={{ image }}
+ContainerName=jellyfin
+PublishPort=127.0.0.1:{{ catalog_entry.port }}:8096
+{% for m in expanded_mounts -%}
+Volume={{ m.host }}:{{ m.container }}:{{ m.mode }}
+{% endfor -%}
+{% if catalog_entry.env_file -%}
+EnvironmentFile={{ catalog_entry.env_file }}
+{% endif -%}
+# VA-API hardware transcoding via /dev/dri
+AddDevice=/dev/dri/renderD128
+AddDevice=/dev/dri/card0
+# Numeric GID required: Podman resolves GroupAdd names against the
+# container's /etc/group, and the upstream Jellyfin image does not ship
+# a `render` group. Read the host's render GID at render time.
+GroupAdd={{ salt['cmd.run_stdout']("getent group render | cut -d: -f3", python_shell=True) }}
+# Jellyfin container's internal health endpoint
+HealthCmd=curl -sf http://127.0.0.1:8096/health >/dev/null 2>&1 || exit 1
+HealthInterval=5s
+HealthStartPeriod=30s
+HealthRetries=3
+HealthTimeout=10s
+Notify=healthy
+
+[Service]
+# GPU device preflight — fail loud if /dev/dri is missing
+ExecStartPre=/usr/bin/test -e /dev/dri/renderD128
+# Bounded restart policy: up to 5 failures in 60s → unit enters failed state
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=120
+
+[Install]
+WantedBy=multi-user.target

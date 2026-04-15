@@ -65,12 +65,6 @@
 # ─────────────────────────────────────────────────────────────────────
 
 simple:
-  jellyfin:
-    packages: jellyfin-server jellyfin-web  # media server
-    service: jellyfin
-  transmission:
-    packages: transmission-cli  # BitTorrent client
-    service: transmission
 
 complex:
   duckdns:
@@ -118,17 +112,6 @@ complex:
         - cmd: managed_service_paths_ensure
     logrotate:
       source: salt://configs/bitcoind-logrotate
-
-  transmission:
-    # packages + service enable handled by simple.transmission above
-    dirs:
-      - path: /home/neg/dw       # torrent watch directory
-      - path: /home/neg/torrent/data  # download directory
-    healthcheck:
-      command: curl -sf http://127.0.0.1:9091/transmission/web/ >/dev/null 2>&1
-      requires:
-        - service: transmission_enabled
-    has_escape_hatch: true  # ACLs + config replacements + stop/restart lifecycle
 
 # ===================================================================
 # Network services (data-driven: gated by features.network.<name>)

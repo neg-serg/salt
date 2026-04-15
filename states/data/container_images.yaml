@@ -48,6 +48,22 @@ grafana:
   approved_at: "2026-04-10"
   note: "Grafana OSS; reads /etc/grafana* provisioning from host bind-mount"
 
+# ─── Media ───────────────────────────────────────────────────────────
+transmission:
+  registry: docker.io
+  image: linuxserver/transmission
+  variant: null
+  digest: sha256:1bfdc7676c050109b599feb4ce1016d4b6977a0b2e45cee9b25a38c9134e769e
+  approved_at: "2026-04-15"
+  note: "Transmission BitTorrent client; config at /config, watch at /watch, downloads at /downloads"
+jellyfin:
+  registry: docker.io
+  image: jellyfin/jellyfin
+  variant: null
+  digest: sha256:1694ff069f0c9dafb283c36765175606866769f5d72f2ed56b6a0f1be922fc37
+  approved_at: "2026-04-15"
+  note: "Jellyfin media server; VA-API hardware transcoding via /dev/dri"
+
 # ─── Bridge tier (localhost images, built manually) ──────────────────
 telethon_bridge:
   registry: localhost

@@ -152,12 +152,25 @@ jellyfin:                      # Media server (containerized)
       mode: rw                 # transcoding cache, thumbnails
   env_file: null
 
-transmission:                  # BitTorrent client daemon
+transmission:                  # BitTorrent client (containerized)
   port: 9091
   health_path: /transmission/web/
   unit: transmission
   scope: system
-  packages: transmission-cli
+  packages: null               # installed via container_service image pull
+  container_image: transmission
+  gpu: none
+  bind_mounts:
+    - host: /etc/transmission
+      container: /config
+      mode: rw                 # transmission config (settings.json lives here)
+    - host: ~/dw
+      container: /watch
+      mode: rw                 # torrent watch directory
+    - host: ~/torrent/data
+      container: /downloads
+      mode: rw                 # download directory
+  env_file: null
 
 unbound:                       # Recursive DNS resolver
   health_cmd: "unbound-control status >/dev/null 2>&1"

@@ -1,5 +1,5 @@
 {% from '_imports.jinja' import host, user, home %}
-{% from '_macros_service.jinja' import config_replace_with_service_control, ensure_dir, ensure_running, service_stopped, service_with_healthcheck, service_with_unit, unit_override %}
+{% from '_macros_service.jinja' import ensure_dir, ensure_running, service_stopped, service_with_healthcheck, service_with_unit, unit_override %}
 {% from '_macros_pkg.jinja' import paru_install, simple_service %}
 {% import_yaml 'data/services.yaml' as services %}
 {% import_yaml 'data/service_catalog.yaml' as catalog %}
@@ -17,11 +17,6 @@
 {{ simple_service(name, opts.packages, service=opts.service) }}
 {% endif %}
 {% endfor %}
-
-# --- Health checks for network services ---
-{% if svc.get('jellyfin', False) %}
-{{ service_with_healthcheck('jellyfin_start', 'jellyfin', catalog=catalog, requires=['service: jellyfin_enabled']) }}
-{% endif %}
 
 # ===================================================================
 # Orchestrated services (complex, network, dns — shared template)
@@ -257,56 +252,6 @@ validate_{{ name }}_unknown_{{ field }}:
 {% for name, opts in services.get('dns', {}).items() %}
 {{ render_service(name, opts, dns.get(name, False), 'dns') }}
 {% endfor %}
-
-# ===================================================================
-# Escape hatches + remaining inline services
-# ===================================================================
-
-# --- Transmission: escape hatch (ACLs, settings, stop/restart lifecycle) ---
-# Dirs and healthcheck handled by complex.transmission in the orchestrator loop.
-{% if svc.transmission %}
-{% set transmission_cfg = '/var/lib/transmission/.config/transmission-daemon/settings.json' %}
-{% set transmission_watch_dir = home ~ '/dw' %}
-{% set transmission_download_dir = home ~ '/torrent/data' %}
-
-transmission_acl_setup:
-  cmd.run:
-    - name: |
-        set -e
-        setfacl -m u:transmission:rx {{ home }}
-        setfacl -m u:transmission:rx {{ home }}/torrent
-        setfacl -m u:transmission:rwX {{ transmission_watch_dir }}
-        setfacl -d -m u:transmission:rwX {{ transmission_watch_dir }}
-        setfacl -m u:transmission:rwX {{ transmission_download_dir }}
-        setfacl -d -m u:transmission:rwX {{ transmission_download_dir }}
-    - shell: /bin/bash
-    - unless: |
-        getfacl -p {{ home }} | grep -q '^user:transmission:r-x$' &&
-        getfacl -p {{ home }}/torrent | grep -q '^user:transmission:r-x$' &&
-        getfacl -p {{ transmission_watch_dir }} | grep -q '^user:transmission:rwx$' &&
-        getfacl -d {{ transmission_watch_dir }} | grep -q '^user:transmission:rwx$' &&
-        getfacl -p {{ transmission_download_dir }} | grep -q '^user:transmission:rwx$' &&
-        getfacl -d {{ transmission_download_dir }} | grep -q '^user:transmission:rwx$'
-    - require:
-      - cmd: install_transmission
-      - file: transmission_dir_0
-      - file: transmission_dir_1
-
-{% set transmission_settings_replacements = [
-  ('transmission_download_dir_setting', '^\\s*"download-dir"\\s*:\\s*".*"(?P<suffix>,?)', '    "download-dir": "' ~ transmission_download_dir ~ '"\\g<suffix>'),
-  ('transmission_watch_dir_setting', '^\\s*"watch-dir"\\s*:\\s*".*"(?P<suffix>,?)', '    "watch-dir": "' ~ transmission_watch_dir ~ '"\\g<suffix>'),
-  ('transmission_watch_dir_enabled', '^\\s*"watch-dir-enabled"\\s*:\\s*(true|false)(?P<suffix>,?)', '    "watch-dir-enabled": true\\g<suffix>'),
-] %}
-
-{{ config_replace_with_service_control(
-  'transmission_settings',
-  transmission_cfg,
-  'transmission',
-  transmission_settings_replacements,
-  requires=['cmd: install_transmission', 'cmd: transmission_acl_setup'],
-  service_require=['service: transmission_enabled', 'cmd: transmission_start']
-) }}
-{% endif %}
 
 # ===================================================================
 # Monitoring services (merged from monitoring.sls)
