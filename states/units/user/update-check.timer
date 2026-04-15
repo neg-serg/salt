@@ -1,0 +1,11 @@
+[Unit]
+Description=Weekly tool version update check
+
+[Timer]
+OnBootSec=10min
+OnUnitActiveSec=3d
+Persistent=true
+RandomizedDelaySec=2h
+
+[Install]
+WantedBy=timers.target

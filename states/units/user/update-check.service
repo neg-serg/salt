@@ -1,0 +1,7 @@
+[Unit]
+Description=Check for tool version updates and create GitHub issue if outdated
+
+[Service]
+Type=oneshot
+ExecStart=%h/src/salt/scripts/update-tools.py --check --ci
+WorkingDirectory=%h/src/salt

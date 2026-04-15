@@ -39,6 +39,8 @@ unit_files:
   - {id: gpu_unstick_service, filename: gpu-unstick.service}
   - {id: gpu_unstick_timer, filename: gpu-unstick.timer}
   - {id: chezmoi_watch_service, filename: chezmoi-watch.service}
+  - {id: update_check_service, filename: update-check.service}
+  - {id: update_check_timer, filename: update-check.timer}
   - {id: rclone_gdrive_service, filename: rclone-gdrive.service}
   - {id: rclone_yadisk_service, filename: rclone-yadisk.service}
   - {id: wl_service, filename: wl.service}
@@ -67,3 +69,4 @@ enable_now_timers:
   - {name: vdirsyncer.timer, features: [vdirsyncer]}
   - {name: salt-drift.timer}
   - {name: gpu-unstick.timer}
+  - {name: update-check.timer}
