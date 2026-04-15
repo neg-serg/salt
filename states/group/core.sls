@@ -6,6 +6,7 @@ include:
   - zsh
   - mounts
   - bind_mounts
+  - windows_mount
   - kernel_modules
   - kernel_params_limine
   - mkinitcpio
