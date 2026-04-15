@@ -24,12 +24,13 @@ def test_services_macro_exposes_config_replace_helper():
     assert "- reload: True" in source
 
 
-def test_transmission_uses_shared_config_replace_helper():
+def test_services_sls_no_longer_has_transmission_escape_hatch():
     source = (REPO_ROOT / "states" / "services.sls").read_text()
 
-    assert "config_replace_with_service_control" in source
-    assert "transmission_stop_before_settings_change:" not in source
-    assert "transmission_restart_after_settings_change:" not in source
+    # Transmission migrated to Quadlet — escape hatch (ACLs + config replacement) removed
+    assert "transmission_acl_setup" not in source
+    assert "transmission_settings" not in source
+    assert "config_replace_with_service_control" not in source
 
 
 def test_state_profiler_gate_statuses():
@@ -70,11 +71,4 @@ def test_state_profiler_compare_rows_honor_threshold(tmp_path):
     assert by_state["slow_state"]["regression"] is True
 
 
-def test_ci_workflow_wires_performance_gate_status_handling():
-    source = (REPO_ROOT / ".github" / "workflows" / "salt-ci.yaml").read_text()
-
-    assert "Detect performance-gate scope" in source
-    assert "python3 scripts/state-profiler.py \\" in source
-    assert "--gate \\" in source
-    assert 'echo "status=inconclusive"' in source
-    assert "Fail on performance regressions" in source
+# NOTE: CI workflow removed — state-profiler gate tested directly in test_state_profiler_gate_statuses

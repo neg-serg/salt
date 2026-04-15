@@ -102,11 +102,9 @@ def test_managed_resources_inventory_covers_phase1_services():
     identities = data["managed_service_identities"]
     paths = data["managed_service_paths"]
 
-    assert {"loki", "adguardhome", "bitcoind", "greetd"} <= set(identities)
+    assert {"loki", "greetd"} <= set(identities)
     assert {
         "loki_root",
-        "adguardhome_root",
-        "bitcoind_root",
         "greetd_root",
         "mpd_fifo",
     } <= set(paths)

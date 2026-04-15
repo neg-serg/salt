@@ -10,9 +10,9 @@ LTX 2.3 22B distilled FP8 works on 7900 XTX (24GB, `--lowvram`). Tested: 512x320
 Goal: Full HD (1920x1080) at maximum quality.
 
 **gen-video CLI integration:**
-- [ ] Update `generate.sh` for UNETLoader + DualCLIPLoader (Gemma FP4 + text_projection) + VAELoader — current code hardcoded for CheckpointLoaderSimple
-- [ ] Add `--lowvram` to ComfyUI startup when model needs it
-- [ ] Add `__MODEL_FILE__`, `__STEPS__` placeholder substitution
+- [x] `--lowvram` flag added to `video-ai-generate.sh`
+- [x] `__MODEL_FILE__`, `__STEPS__` placeholder substitution added
+- [x] `ltx23-distilled-i2v.json` workflow created
 - [ ] Update default model to `ltx-23-distilled-fp8`
 - [ ] Add 1080p (1920x1080) and 720p (1280x720) resolution presets
 
@@ -21,13 +21,9 @@ Goal: Full HD (1920x1080) at maximum quality.
 - [ ] Test CFG 3.0-5.0 for best quality
 - [ ] Width/height must be divisible by 32, frames = 8N+1 (9, 17, 25, 33...)
 
-**i2v workflow:**
-- [ ] Create `ltx23-distilled-i2v.json` (LoadImage + VAEEncode instead of EmptyLTXVLatentVideo)
-
 **Salt state updates:**
-- [ ] Gemma FP4 + text_projection + LTX23 VAE download states
-- [ ] GGUF pip deps state (gguf, sentencepiece, protobuf)
-- [ ] tokenizer.model download state
+- [x] Gemma FP4 + text_projection + tokenizer.model download states added to video_ai.yaml
+- [ ] LTX23 VAE download state (repo TBD)
 - [ ] Workflow deployment for ltx23-distilled-t2v.json
 
 ---
@@ -123,6 +119,36 @@ Evaluate [SaluteSpeech](https://developers.sber.ru/docs/ru/salutespeech/overview
 - Compare with local alternatives: `faster-whisper` (large-v3), Vosk
 - Decision: cloud API (SaluteSpeech) vs self-hosted (Whisper on GPU)
 - If adopted: Salt state for setup, API key in gopass, systemd service
+
+---
+
+## Test suite improvements
+
+Audit (2026-04-15): 106 tests across 19 files + 1 shell script. 3 failing, several gaps.
+
+### HIGH PRIORITY
+
+- [ ] **Fix 3 failing tests:**
+  - `test_managed_resources_inventory_covers_phase1_services` — remove `adguardhome`, `bitcoind` (now containerized)
+  - `test_transmission_uses_shared_config_replace_helper` — update to match consolidated services.sls pattern
+  - `test_ci_workflow_wires_performance_gate_status_handling` — `.github/workflows/salt-ci.yaml` doesn't exist
+- [ ] **Create `tests/conftest.py`** — shared `REPO_ROOT`, `sys.path` setup, fixtures, pytest markers (`@pytest.mark.slow`, `@pytest.mark.integration`)
+- [ ] **Move `cmd.run` audit from report-only to failing** — currently 70/499 unguarded states silently pass CI. Add threshold-based fail.
+- [ ] **Add `@pytest.mark.slow` to module-level render tests** — `test_macro_idempotency.py` and `test_cmdrun_audit.py` render ALL .sls at import time
+
+### MEDIUM PRIORITY
+
+- [ ] **Add service catalog consistency tests** — verify `service_catalog.yaml` entries have valid units, templates exist, packages resolve
+- [ ] **Add macro output tests** — test `_macros_service.jinja` helpers produce expected state structures with specific arguments
+- [ ] **Add tests for critical scripts:** `update-tools.py`, `salt-daemon.py`, `lint-jinja.py`
+- [ ] **Add containerized services tests** — verify Quadlet files exist for declared containers, bind-mounts match state paths
+- [ ] **Deduplicate REPO_ROOT** — remove ~15 copies of `REPO_ROOT = Path(__file__).resolve().parent.parent` after conftest.py exists
+
+### LOWER PRIORITY
+
+- [ ] Add tests for nanoclaw.sls and ollama.sls (key user-facing services)
+- [ ] Add YAML schema validation for packages.yaml, versions.yaml, hosts.yaml
+- [ ] Add idempotency test — render states twice, compare output
 
 ---
 
