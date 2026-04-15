@@ -1,6 +1,7 @@
 {% from '_imports.jinja' import user, home, retry_attempts, retry_interval, proxypilot_key, tg_secret %}
-{% from '_macros_service.jinja' import ensure_dir, user_service_enable, user_service_file, user_service_restart %}
-{% from '_macros_install.jinja' import npm_build_workflow %}
+{% from '_macros_service.jinja' import ensure_dir, container_service, user_service_restart %}
+{% import_yaml 'data/service_catalog.yaml' as catalog %}
+{% import_yaml 'data/container_images.yaml' as image_registry %}
 {% import_yaml 'data/versions.yaml' as ver %}
 
 # ── Secret resolution ─────────────────────────────────────────────────
@@ -22,6 +23,7 @@ nanoclaw_clone:
         interval: {{ retry_interval }}
 
 # ── npm install + build + version pin ─────────────────────────────────
+{% from '_macros_install.jinja' import npm_build_workflow %}
 {{ npm_build_workflow('nanoclaw', dir=_nanoclaw_dir, version=ver.nanoclaw, require=['cmd: nanoclaw_clone']) }}
 
 # ── Config directories ───────────────────────────────────────────────
@@ -31,8 +33,6 @@ nanoclaw_clone:
 {{ ensure_dir('nanoclaw_groups_dir', _nanoclaw_dir ~ '/groups') }}
 
 # ── .env (secrets injected at apply time) ─────────────────────────────
-# NanoClaw reads .env from its working directory (process.cwd()).
-# ANTHROPIC_BASE_URL points to ProxyPilot so all traffic goes through it.
 nanoclaw_env:
   file.managed:
     - name: {{ _nanoclaw_dir }}/.env
@@ -89,9 +89,27 @@ nanoclaw_mount_allowlist:
     - require:
       - file: nanoclaw_config_dir
 
-# ── Systemd user service ──────────────────────────────────────────────
-{{ user_service_file('nanoclaw_service', 'nanoclaw.service') }}
+# ── In-place cutover: remove native user unit ──
+nanoclaw_native_unit_absent:
+  file.absent:
+    - name: {{ home }}/.config/systemd/user/nanoclaw.service
 
-{{ user_service_enable('nanoclaw_enabled', start_now=['nanoclaw.service'], requires=['cmd: nanoclaw_version', 'file: nanoclaw_env', 'file: nanoclaw_service', 'file: nanoclaw_sender_allowlist']) }}
+nanoclaw_native_unit_daemon_reload:
+  cmd.run:
+    - name: systemctl --user daemon-reload
+    - runas: {{ user }}
+    - env:
+      - XDG_RUNTIME_DIR: {{ host.runtime_dir }}
+      - DBUS_SESSION_BUS_ADDRESS: unix:path={{ host.runtime_dir }}/bus
+    - onchanges:
+      - file: nanoclaw_native_unit_absent
 
-{{ user_service_restart('restart_nanoclaw_on_env_change', 'nanoclaw.service', onlyif='systemctl --user is-active nanoclaw.service >/dev/null 2>&1', onchanges=['file: nanoclaw_env']) }}
+# ── Container deployment ──
+{{ container_service('nanoclaw', catalog.nanoclaw, image_registry,
+    user_scope=True,
+    requires=['cmd: nanoclaw_version', 'file: nanoclaw_env', 'file: nanoclaw_sender_allowlist', 'file: nanoclaw_mount_allowlist', 'cmd: nanoclaw_native_unit_daemon_reload']) }}
+
+# ── Restart on env change ──
+{{ user_service_restart('restart_nanoclaw_on_env_change', 'nanoclaw.service',
+    onlyif='systemctl --user is-active nanoclaw.service >/dev/null 2>&1',
+    onchanges=['file: nanoclaw_env']) }}

@@ -222,6 +222,23 @@ proxypilot:                    # LLM proxy (containerized)
       mode: rw                 # auth directory
   env_file: null
 
+nanoclaw:                      # AI Telegram agent (containerized)
+  port: 8318
+  health_path: /health
+  unit: nanoclaw
+  scope: user
+  packages: null               # installed via container_service image pull
+  container_image: nanoclaw
+  gpu: none
+  bind_mounts:
+    - host: ~/.local/share/nanoclaw
+      container: /app
+      mode: rw                 # app data (store, data, groups, .env)
+    - host: ~/.config/nanoclaw
+      container: /config
+      mode: rw                 # sender/mount allowlists
+  env_file: null
+
 telethon_bridge:               # Telegram bridge (python-telethon)
   unit: telethon-bridge
   scope: user
