@@ -1,4 +1,4 @@
-# Ollama Model Selection
+# Ollama Models
 
 ## Source of Truth
 
