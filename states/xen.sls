@@ -5,7 +5,7 @@
 #   - "Plasma (X11)" — full KDE desktop with Breeze Dark theme
 
 {% from '_imports.jinja' import host, user, home %}
-{% from '_macros_pkg.jinja' import pacman_install %}
+{% from '_macros_pkg.jinja' import paru_install %}
 {% from '_macros_service.jinja' import ensure_dir %}
 
 {% set xen_user = 'xen' %}
@@ -16,15 +16,15 @@ include:
   - users
 
 # ── Xorg + i3 packages ──────────────────────────────────────────────
-{{ pacman_install('xorg_server', 'xorg-server xorg-xinit xf86-video-amdgpu') }}
-{{ pacman_install('i3_wm', 'i3-wm i3status') }}
+{{ paru_install('xorg_server', 'xorg-server xorg-xinit xf86-video-amdgpu') }}
+{{ paru_install('i3_wm', 'i3-wm i3status') }}
 
 # ── KDE Plasma X11 packages ───────────────────────────────────────
 # plasma-desktop: core KDE shell; plasma-workspace: startplasma-x11;
 # breeze: dark theme + icons; konsole: terminal emulator
-{{ pacman_install('plasma_desktop', 'plasma-desktop plasma-workspace') }}
-{{ pacman_install('breeze_theme', 'breeze breeze-icons') }}
-{{ pacman_install('konsole', 'konsole') }}
+{{ paru_install('plasma_desktop', 'plasma-desktop plasma-workspace') }}
+{{ paru_install('breeze_theme', 'breeze breeze-icons') }}
+{{ paru_install('konsole', 'konsole') }}
 
 # ── User account ────────────────────────────────────────────────────
 xen_group:

@@ -3,25 +3,15 @@
 {% import_yaml 'data/container_images.yaml' as image_registry %}
 {% from '_macros_pkg.jinja' import npm_pkg %}
 {% from '_macros_install.jinja' import curl_bin %}
-{% from '_macros_service.jinja' import ensure_dir, user_service_enable, user_service_file, container_service %}
+{% from '_macros_service.jinja' import ensure_dir, container_service %}
 {% import_yaml 'data/versions.yaml' as ver %}
-# Feature 087-containerize-services: three parallel conditional branches for
-# opencode-serve, opencode-telegram-bot, and telecode. All three are gated on
-# their respective features.containers.* flags. While the corresponding digest
-# in container_images.yaml is null (research Decision 7, upstream-image gate),
-# container_service emits only a _container_deferred no-op state and the
-# native deployment path continues unchanged.
-{% set _opencode_serve_containerized = host.features.get('containers', {}).get('opencode_serve', False) %}
-{% set _opencode_tg_bot_containerized = host.features.get('containers', {}).get('opencode_telegram_bot', False) %}
-{% set _telecode_containerized = host.features.get('containers', {}).get('telecode', False) %}
 
 # ── Secret resolution ─────────────────────────────────────────────────
 {% set _telegram_token_otb = tg_secret('api/opencode-telegram-bot', 'telegram-token', cred_base=home ~ '/.config/opencode-telegram-bot/credentials') %}
 {% set _telegram_token_tc = tg_secret('api/telecode-telegram', 'telegram-token', cred_base=home ~ '/.telecode/credentials') %}
 {% set _telegram_uid = tg_secret('api/nanoclaw-telegram-uid', 'telegram-uid') %}
 
-# Guards: deploy configs and enable services only when tokens are available.
-# Without tokens the binaries are still installed but services stay disabled.
+# Guards: deploy configs only when tokens are available.
 {% set _has_otb_token = _telegram_token_otb | length > 0 %}
 {% set _has_tc_token = _telegram_token_tc | length > 0 %}
 
@@ -51,46 +41,20 @@ opencode_telegram_bot_env:
       - file: opencode_telegram_bot_config_dir
 {% endif %}
 
-# ── OpenCode serve (API server for the bot) ────────────────────────────
-{{ user_service_file('opencode_serve_service', 'opencode-serve.service') }}
-
-{{ user_service_enable('opencode_serve_enabled',
-    start_now=['opencode-serve.service'],
-    onlyif='command -v opencode',
-    requires=['file: opencode_serve_service']) }}
-
-{% if _opencode_serve_containerized %}
+# ── OpenCode serve (API server for the bot) — containerized ──────────
 {{ container_service('opencode_serve', catalog.opencode_serve, image_registry,
     user_scope=True,
-    requires=['file: opencode_serve_service']) }}
-{% else %}
-opencode_serve_quadlet_absent:
-  file.absent:
-    - name: {{ home }}/.config/containers/systemd/opencode-serve.container
-{% endif %}
+    requires=['cmd: install_opencode_telegram']) }}
 
-# ── Bot systemd service ───────────────────────────────────────────────
-{{ user_service_file('opencode_telegram_bot_service', 'opencode-telegram-bot.service') }}
-
-{% if _has_otb_token %}
-{{ user_service_enable('opencode_telegram_bot_enabled',
-    start_now=['opencode-telegram-bot.service'],
-    onlyif='test -s ' ~ home ~ '/.config/opencode-telegram-bot/.env',
-    requires=['cmd: install_opencode_telegram', 'file: opencode_telegram_bot_env', 'file: opencode_telegram_bot_service', 'file: opencode_serve_service']) }}
-{% endif %}
-
-{% if _opencode_tg_bot_containerized %}
+# ── Bot container ─────────────────────────────────────────────────────
+{% set _bot_watch = (['file: opencode_telegram_bot_env'] if _has_otb_token else []) %}
 {{ container_service('opencode_telegram_bot', catalog.opencode_telegram_bot, image_registry,
     user_scope=True,
-    requires=['cmd: install_opencode_telegram', 'file: opencode_telegram_bot_service']) }}
-{% else %}
-opencode_telegram_bot_quadlet_absent:
-  file.absent:
-    - name: {{ home }}/.config/containers/systemd/opencode-telegram-bot.container
-{% endif %}
+    requires=['cmd: install_opencode_telegram'],
+    watch=_bot_watch) }}
 
 # ══════════════════════════════════════════════════════════════════════
-# 2. Telecode (Go binary, spawns CLI directly)
+# 2. Telecode (Go binary, spawns CLI directly) — containerized
 # ══════════════════════════════════════════════════════════════════════
 
 {{ curl_bin('telecode',
@@ -118,22 +82,6 @@ telecode_config:
       - file: telecode_config_dir
 {% endif %}
 
-# ── Systemd service ──────────────────────────────────────────────────
-{{ user_service_file('telecode_service', 'telecode.service') }}
-
-{% if _has_tc_token %}
-{{ user_service_enable('telecode_enabled',
-    start_now=['telecode.service'],
-    onlyif='test -s ' ~ home ~ '/.telecode/config.yml',
-    requires=['cmd: install_telecode', 'file: telecode_config', 'file: telecode_service']) }}
-{% endif %}
-
-{% if _telecode_containerized %}
+# ── Telecode container ───────────────────────────────────────────────
 {{ container_service('telecode', catalog.telecode, image_registry,
-    user_scope=True,
-    requires=['cmd: install_telecode', 'file: telecode_service']) }}
-{% else %}
-telecode_quadlet_absent:
-  file.absent:
-    - name: {{ home }}/.config/containers/systemd/telecode.container
-{% endif %}
+    user_scope=True) }}

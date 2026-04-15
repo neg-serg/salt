@@ -1,12 +1,12 @@
 {% from '_imports.jinja' import host, user, home, pkg_list, retry_attempts, retry_interval %}
 {% from '_macros_service.jinja' import ensure_dir %}
-{% from '_macros_pkg.jinja' import pacman_install %}
+{% from '_macros_pkg.jinja' import paru_install %}
 {% from '_macros_install.jinja' import curl_extract_7z %}
 {% from '_macros_config.jinja' import config_file_edit %}
 {% import_yaml 'data/versions.yaml' as ver %}
 # Steam + gaming tools (native pacman install)
 # Requires multilib repo for lib32 dependencies.
-# Inline cmd.run (not pacman_install macro): --ask 4 resolves CachyOS
+# Inline cmd.run (not paru_install macro): --ask 4 resolves CachyOS
 # lib32-mesa-git vs multilib lib32-mesa conflict; macro doesn't support extra args.
 
 {{ config_file_edit('multilib_repo',
@@ -31,7 +31,7 @@ steam_pkg:
       - cmd: vulkan_radeon_pkg
 
 {{ ensure_dir('steam_library_dir', host.mnt_zero ~ '/steam/steamapps', require=['mount: mount_zero']) }}
-{{ pacman_install('p7zip', '7zip') }}
+{{ paru_install('p7zip', '7zip') }}
 
 gamemode_config:
   file.managed:

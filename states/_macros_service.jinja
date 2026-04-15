@@ -650,41 +650,36 @@ test -e {{ _path }}
 {%- endif -%}
 {%- endmacro -%}
 
-{# Containerized-service supervisor (feature 087-containerize-services).
-   Parallel to service_with_unit: deploys a Podman Quadlet .container unit,
-   pulls the digest-pinned image, reloads systemd, enables/starts the unit,
-   delegates the catalog healthcheck, and schedules bounded native-package
-   teardown after the rollback window closes.
+{# Containerized-service supervisor — deploys a Podman Quadlet .container unit,
+   pulls the digest-pinned image (or skips pull for localhost images),
+   reloads systemd, enables/starts the unit, and delegates the catalog healthcheck.
 
    Arguments:
      name            - state ID prefix AND Quadlet unit basename; must match a
                        top-level key in service_catalog.yaml
      catalog_entry   - dict from service_catalog.yaml[name]; MUST include
-                       containerized: true
+                       container_image key
      image_registry  - parsed container_images.yaml map; the macro reads
                        image_registry[catalog_entry.container_image]
      user_scope      - True for rootless user-scoped Quadlet (must match
                        catalog_entry.scope == 'user')
      requires        - extra state requisites appended to the pull state
      watch           - extra state requisites appended to the running state
+     quadlet_unit_name - override the Quadlet file basename (default: name)
 
-   Emitted states (see specs/087-containerize-services/contracts/container_service_macro.md
-   for the authoritative contract):
-     {name}_container, {name}_image_pull, {name}_daemon_reload,
+   Emitted states:
+     {name}_container, {name}_image_pull (skipped for localhost),
+     {name}_daemon_reload,
      {name}_enabled (skipped if manual_start), {name}_reset_failed (skipped
      if manual_start), {name}_running (skipped if manual_start),
-     {name}_healthcheck (skipped if manual_start), {name}_native_teardown
-     (skipped if packages is empty).
+     {name}_healthcheck (skipped if manual_start).
 
    Render-time preconditions (fail loudly if violated):
-     1. catalog_entry.containerized == true
-     2. catalog_entry.container_image resolves to a key in image_registry
-     3. image_registry[...].digest matches sha256:<64 hex> (P1/P2 services);
-        null digest is allowed for P3 services but emits ZERO states (the
-        upstream-image gate pattern — FR-014 + research Decision 7)
-     4. catalog_entry.cutover_mode is 'in_place' or 'blue_green'
-     5. user_scope agreement with catalog_entry.scope (FR-017)
-     6. gpu == 'amdgpu' implies scope == 'system' (research Decision 2)
+     1. catalog_entry.container_image resolves to a key in image_registry
+     2. image_registry[...].digest matches sha256:<64 hex> (remote images)
+        OR registry == 'localhost' (local images, digest may be null)
+     3. user_scope agreement with catalog_entry.scope
+     4. gpu == 'amdgpu' implies scope == 'system'
 
    Usage:
      {{ container_service('ollama', catalog.ollama, image_registry,
@@ -692,12 +687,6 @@ test -e {{ _path }}
      {{ container_service('telethon_bridge', catalog.telethon_bridge, image_registry,
                           user_scope=True,
                           requires=['cmd: install_python_telethon']) }}
-#}
-{#- Helper: emit a fail_without_changes state that surfaces a precondition
-    error at apply time. Render always succeeds so `just validate` is unaffected;
-    the error fires only when Salt actually tries to apply a state tree that
-    invokes container_service with bad inputs. State-ID embeds the message for
-    visibility in `salt-call state.show_sls` output.
 #}
 {%- macro _cs_fail(name, error_key, message) -%}
 container_service_PRECONDITION_FAILED_{{ name }}_{{ error_key }}:
@@ -707,62 +696,36 @@ container_service_PRECONDITION_FAILED_{{ name }}_{{ error_key }}:
 {%- endmacro -%}
 
 {%- macro container_service(name, catalog_entry, image_registry, user_scope=False, requires=None, watch=None, quadlet_unit_name=None) -%}
-{#- quadlet_unit_name overrides the Quadlet file basename (and therefore the
-    generated systemd unit name) when set. Used for blue/green cases where the
-    containerized form must coexist with a still-running native unit of the
-    same logical service name (Loki is the canonical example). Defaults to
-    `name`, which gives the containerized form the same systemd unit name as
-    the native form — correct for hard-cutover cases (Ollama, llama_embed,
-    Promtail, Grafana, bridges) where only one form runs at a time. -#}
 {%- set _quadlet_name = quadlet_unit_name if quadlet_unit_name is not none else name -%}
-{#- Precondition 1: containerized flag -#}
-{%- if not catalog_entry.get('containerized', False) -%}
-{{ _cs_fail(name, 'not_containerized', 'catalog entry missing containerized: true') }}
-{%- else -%}
-{#- Precondition 2: image_registry lookup -#}
+{#- Precondition: image_registry lookup -#}
 {%- set _image_key = catalog_entry.get('container_image') -%}
 {%- if _image_key is none or _image_key not in image_registry -%}
 {{ _cs_fail(name, 'image_key_missing', 'container_image "' ~ (_image_key or 'null') ~ '" not found in container_images.yaml') }}
 {%- else -%}
 {%- set _img = image_registry[_image_key] -%}
-{#- Precondition 3: digest check (null digest → emit nothing, P3 upstream-image gate) -#}
-{%- if _img.get('digest') is none -%}
-{#- Null digest: emit a single no-op state so the branch has something to
-    anchor downstream require: chains to, and surface the gate status in the
-    apply log. This is the upstream-image gate pattern (research Decision 7). -#}
-{{ name }}_container_deferred:
-  test.succeed_without_changes:
-    - name: {{ name }}
-    - comment: >
-        container_service({{ name }}): image digest is null in container_images.yaml
-        — P3 upstream-image gate is active, no containerized states emitted.
-        Flipping features.containers.{{ name }} to true has no effect until a
-        non-null digest is committed.
-{%- else -%}
-{#- Full P1/P2 path: digest present, run remaining preconditions then emit the full state graph -#}
-{%- set _digest = _img.digest -%}
-{%- set _cutover_mode = catalog_entry.get('cutover_mode') -%}
+{%- set _digest = _img.get('digest') -%}
+{%- set _registry = _img.get('registry') -%}
+{%- set _is_localhost = (_registry == 'localhost') -%}
 {%- set _catalog_scope = catalog_entry.get('scope') -%}
 {%- set _gpu = catalog_entry.get('gpu', 'none') -%}
-{%- set _digest_ok = (_digest is string and _digest.startswith('sha256:') and _digest | length == 71) -%}
-{%- set _cutover_ok = _cutover_mode in ['in_place', 'blue_green'] -%}
+{%- set _digest_ok = (_is_localhost and _digest is none) or (_digest is string and _digest.startswith('sha256:') and _digest | length == 71) -%}
 {%- set _scope_ok = (user_scope and _catalog_scope == 'user') or ((not user_scope) and _catalog_scope == 'system') -%}
 {%- set _gpu_ok = not (_gpu == 'amdgpu' and user_scope) -%}
 {%- if not _digest_ok -%}
-{{ _cs_fail(name, 'bad_digest_format', 'image digest "' ~ _digest ~ '" does not match sha256:<64 hex>; FR-014 violation') }}
-{%- elif not _cutover_ok -%}
-{{ _cs_fail(name, 'bad_cutover_mode', 'cutover_mode must be in_place or blue_green, got "' ~ (_cutover_mode or 'null') ~ '"') }}
+{{ _cs_fail(name, 'bad_digest', 'image digest "' ~ (_digest or 'null') ~ '" does not match sha256:<64 hex> (or registry is not localhost)') }}
 {%- elif not _scope_ok -%}
-{{ _cs_fail(name, 'scope_mismatch', 'user_scope=' ~ user_scope ~ ' but catalog scope is "' ~ (_catalog_scope or 'null') ~ '" — FR-017 violation') }}
+{{ _cs_fail(name, 'scope_mismatch', 'user_scope=' ~ user_scope ~ ' but catalog scope is "' ~ (_catalog_scope or 'null') ~ '"') }}
 {%- elif not _gpu_ok -%}
-{{ _cs_fail(name, 'gpu_scope_violation', 'gpu=amdgpu requires system scope (research Decision 2)') }}
+{{ _cs_fail(name, 'gpu_scope_violation', 'gpu=amdgpu requires system scope') }}
 {%- else -%}
 {#- All preconditions passed: resolve paths and image reference -#}
+{%- if _is_localhost -%}
+{%- set _full_image = 'localhost/' ~ _img.image -%}
+{%- else -%}
 {%- set _full_image = _img.registry ~ '/' ~ _img.image ~ '@' ~ _digest -%}
+{%- endif -%}
 {%- set _manual_start = catalog_entry.get('manual_start', False) -%}
-{%- set _packages = catalog_entry.get('packages', '') -%}
-{%- set _cutover_date = catalog_entry.get('cutover_date') -%}
-{#- Quadlet file location depends on scope and on quadlet_unit_name override -#}
+{#- Quadlet file location depends on scope -#}
 {%- if user_scope -%}
 {%- set _quadlet_path = _home ~ '/.config/containers/systemd/' ~ _quadlet_name ~ '.container' -%}
 {%- set _quadlet_source = 'salt://units/user/' ~ _quadlet_name ~ '.container' -%}
@@ -795,6 +758,8 @@ container_service_PRECONDITION_FAILED_{{ name }}_{{ error_key }}:
         expanded_mounts: {{ _expanded_mounts | tojson }}
         user_scope: {{ user_scope | tojson }}
 
+{#- Image pull: skip for localhost (images must be built manually) -#}
+{% if not _is_localhost %}
 # container_service({{ name }}): digest-pinned image pull (idempotent via `podman image exists`)
 {{ name }}_image_pull:
   cmd.run:
@@ -816,6 +781,7 @@ container_service_PRECONDITION_FAILED_{{ name }}_{{ error_key }}:
       - {{ req }}
 {%- endfor %}
 {%- endif %}
+{% endif %}
 
 # container_service({{ name }}): daemon-reload so Quadlet regenerates the systemd unit
 {{ name }}_daemon_reload:
@@ -834,8 +800,6 @@ container_service_PRECONDITION_FAILED_{{ name }}_{{ error_key }}:
 {%- if not _manual_start %}
 
 # container_service({{ name }}): enable + reset_failed + running + healthcheck
-# (targeting systemd unit "{{ _quadlet_name }}.service" — may differ from state
-# ID prefix when quadlet_unit_name is overridden for blue/green coexistence)
 {{ name }}_enabled:
 {%- if user_scope %}
   cmd.run:
@@ -847,14 +811,22 @@ container_service_PRECONDITION_FAILED_{{ name }}_{{ error_key }}:
 {%- endfor %}
     - unless: systemctl --user is-enabled {{ _quadlet_name }}.service >/dev/null 2>&1
     - require:
+{%- if _is_localhost %}
+      - cmd: {{ name }}_daemon_reload
+{%- else %}
       - cmd: {{ name }}_image_pull
       - cmd: {{ name }}_daemon_reload
+{%- endif %}
 {%- else %}
   service.enabled:
     - name: {{ _quadlet_name }}
     - require:
+{%- if _is_localhost %}
+      - cmd: {{ name }}_daemon_reload
+{%- else %}
       - cmd: {{ name }}_image_pull
       - cmd: {{ name }}_daemon_reload
+{%- endif %}
 {%- endif %}
 
 {{ name }}_reset_failed:
@@ -903,39 +875,11 @@ container_service_PRECONDITION_FAILED_{{ name }}_{{ error_key }}:
       - cmd: {{ name }}_reset_failed
 {%- endif %}
 
-{#- Post-start healthcheck via service_with_healthcheck (skipped for manual_start).
-    Targets _quadlet_name systemd unit (may differ from logical name for
-    blue/green cases) but preserves state ID prefix based on logical name. -#}
+{#- Post-start healthcheck via service_with_healthcheck (skipped for manual_start). -#}
 {%- if not _manual_start %}
 
 {{ service_with_healthcheck(name ~ '_healthcheck', _quadlet_name, catalog={_quadlet_name: catalog_entry}, requires=['cmd: ' ~ name ~ '_running']) }}
 {%- endif %}
-
-{#- Bounded native-package teardown after rollback window close (research Decision 5, FR-006) -#}
-{%- if _packages %}
-
-# container_service({{ name }}): bounded native package teardown after 7-day rollback window
-{{ name }}_native_teardown:
-  pkg.removed:
-    - pkgs:
-{%- for p in _packages.split() %}
-      - {{ p }}
-{%- endfor %}
-{%- if _cutover_date %}
-    - onlyif: >-
-        test "$(( ( $(date +%s) - $(date -d '{{ _cutover_date }}' +%s) ) / 86400 ))" -ge 7
-{%- else %}
-    - onlyif: /bin/false    # cutover_date is null; teardown not yet armed
-{%- endif %}
-    - require:
-{%- if _manual_start %}
-      - cmd: {{ name }}_image_pull
-{%- else %}
-      - cmd: {{ name }}_healthcheck
-{%- endif %}
-{%- endif %}
-{%- endif %}{# close "all preconditions passed" else (Level 4) #}
-{%- endif %}{# close "digest is none" if (Level 3) #}
-{%- endif %}{# close "image key found in registry" else (Level 2) #}
-{%- endif %}{# close "containerized flag true" else (Level 1) #}
+{%- endif %}{# close "all preconditions passed" #}
+{%- endif %}{# close "image key found in registry" #}
 {%- endmacro -%}

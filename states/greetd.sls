@@ -1,12 +1,12 @@
 {% from '_imports.jinja' import host, user, home %}
-{% from '_macros_pkg.jinja' import pacman_install %}
+{% from '_macros_pkg.jinja' import paru_install %}
 {% from '_macros_service.jinja' import ensure_dir %}
 # greetd display manager: hyprland compositor + quickshell greeter
 
 include:
   - systemd_resources
 
-{{ pacman_install('greetd', 'greetd') }}
+{{ paru_install('greetd', 'greetd') }}
 
 {{ ensure_dir('greetd_config_dir', '/etc/greetd', mode='0755', user='root') }}
 

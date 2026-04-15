@@ -1,0 +1,17 @@
+# Windows NTFS partition — automount on access (not at boot).
+#
+# ── Schema ────────────────────────────────────────────────────────────
+#
+# <name>:
+#   device:        (required) /dev/disk/by-uuid/XXXX or /dev/...
+#   mount_point:   (required) absolute path where to mount
+#   fs_type:       (optional) ntfs3 (default), ntfs-3g, or other
+#   options:       (optional) comma-separated mount options
+#
+# ─────────────────────────────────────────────────────────────────────
+
+windows:
+  device: /dev/disk/by-uuid/86286AAE286A9CC5
+  mount_point: /mnt/windows
+  fs_type: ntfs3
+  options: rw,nofail,x-systemd.automount,x-systemd.idle-timeout=60

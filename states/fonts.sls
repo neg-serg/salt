@@ -1,7 +1,7 @@
 # All font installs: pacman, AUR, downloaded, custom PKGBUILD builds
 # Run: sudo salt-call --local state.apply fonts
 {% from '_imports.jinja' import user, home %}
-{% from '_macros_pkg.jinja' import pacman_install, paru_install, pkgbuild_install %}
+{% from '_macros_pkg.jinja' import paru_install, pkgbuild_install %}
 {% from '_macros_install.jinja' import download_font_zip %}
 {% import_yaml 'data/versions.yaml' as ver %}
 {% import_yaml 'data/fonts.yaml' as fonts %}
@@ -11,7 +11,7 @@
 # ===================================================================
 
 {% for name, pkg in fonts.pacman.items() %}
-{{ pacman_install(name, pkg) }}
+{{ paru_install(name, pkg) }}
 {% endfor %}
 
 # ===================================================================

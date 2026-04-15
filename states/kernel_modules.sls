@@ -15,6 +15,8 @@ kernel_modules_load:
         tcp_bbr
         # NT synchronization primitives (Wine/Proton)
         ntsync
+        # NTFS3 in-kernel driver (auto-loaded on mount, explicit for clarity)
+        ntfs3
 {% for mod in host.extra_modules %}
         # Host-specific: {{ mod }}
         {{ mod }}
@@ -30,7 +32,7 @@ kernel_modules_blacklist:
 
 # Load modules now (no reboot needed); ignore missing-device errors
 # (systemd-modules-load handles boot-time loading and is equally forgiving)
-{% set modules_to_load = [host.kvm_module, 'tcp_bbr', 'ntsync'] + host.extra_modules %}
+{% set modules_to_load = [host.kvm_module, 'tcp_bbr', 'ntsync', 'ntfs3'] + host.extra_modules %}
 {% for mod in modules_to_load %}
 load_{{ mod | replace('-', '_') }}:
   cmd.run:

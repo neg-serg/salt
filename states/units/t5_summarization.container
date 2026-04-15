@@ -1,10 +1,9 @@
 {#- Quadlet container unit template for T5 summarization server
-    (feature 087-containerize-services). Rendered by container_service macro.
-    Context:
+    Rendered by container_service macro. Context:
       catalog_entry:    dict from service_catalog.yaml[t5_summarization]
       image:            fully-resolved registry/image@sha256:... reference
       expanded_mounts:  list of {host, container, mode}
-      user_scope:       False (system scope per FR-017)
+      user_scope:       False (system scope)
 
     Reuses the same ggml-org/llama.cpp:server-vulkan image as llama_embed.
     T5 is a text2text model — no --embeddings or --pooling flags needed.

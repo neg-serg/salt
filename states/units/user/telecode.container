@@ -1,7 +1,5 @@
-{#- Quadlet container unit template for Telecode Telegram agent (Go binary)
-    (feature 087-containerize-services, US3 structural scaffolding).
-    DIGEST DEFERRED per research Decision 7 — upstream image pending.
-    Context: see telethon-bridge.container.
+{#- Quadlet container unit template for Telecode Telegram agent
+    Rendered by container_service macro. Context: see telethon-bridge.container.
 -#}
 [Unit]
 Description=Telecode Telegram agent (containerized)

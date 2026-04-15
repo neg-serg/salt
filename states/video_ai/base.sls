@@ -18,7 +18,7 @@
 {{ ensure_dir('video_ai_images_dir', images_dir, require=['file: video_ai_base_dir']) }}
 
 # NOTE: ffmpeg is a system dep (already installed), ROCm is pulled by PyTorch
-# wheels inside the venv (video-ai-setup.sh). No explicit pacman_install needed.
+# wheels inside the venv (video-ai-setup.sh). No explicit paru_install needed.
 
 # ── ComfyUI installation (bootstrap script) ──────────────────────────
 video_ai_comfyui_chown:

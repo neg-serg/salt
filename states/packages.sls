@@ -3,7 +3,7 @@
 # This state covers everything else: base system, desktop tools, dev tools, etc.
 #
 # Run: sudo salt-call --local state.apply packages
-{% from '_macros_pkg.jinja' import pacman_install, paru_install %}
+{% from '_macros_pkg.jinja' import paru_install %}
 {% from '_macros_common.jinja' import user %}
 {% import_yaml 'data/packages.yaml' as pkgs %}
 
@@ -15,7 +15,7 @@
 {%- set pkg_list = pkgs.get(category, []) -%}
 {%- if pkg_list %}
 {#- pacman -Qq checks ALL packages — fails if ANY is missing, triggering install #}
-{{ pacman_install('pkg_' ~ category, pkg_list | join(' '), check='__ALL__') }}
+{{ paru_install('pkg_' ~ category, pkg_list | join(' '), check='__ALL__') }}
 {% endif %}
 {%- endfor %}
 

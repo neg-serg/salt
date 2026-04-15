@@ -1,7 +1,5 @@
 {#- Quadlet container unit template for OpenCode HTTP API server
-    (feature 087-containerize-services, US3 structural scaffolding).
-    DIGEST DEFERRED per research Decision 7 — upstream image pending.
-    Context: see telethon-bridge.container.
+    Rendered by container_service macro. Context: see telethon-bridge.container.
 -#}
 [Unit]
 Description=OpenCode HTTP API server (containerized)

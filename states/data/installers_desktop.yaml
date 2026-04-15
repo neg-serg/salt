@@ -26,8 +26,8 @@
 #     url:  (required) direct download URL; may contain ${VER}
 #     hash: (optional) sha256 checksum
 #
-# paru_install:                    → macro: paru_install(name, pkg)
-#   <name>: <aur_package_name>     — simple key: value pairs
+# paru_install:                    → macro: paru_install(name, pkg) via paru
+#   <name>: <package_name>         — simple key: value pairs
 #
 # ─────────────────────────────────────────────────────────────────────
 
