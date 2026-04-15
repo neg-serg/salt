@@ -45,6 +45,7 @@ models:
     steps: 8  # distilled model: 4-8 steps optimal
     default: true
     comfyui_workflow: ltx23-distilled-t2v.json
+    comfyui_workflow_i2v: ltx23-distilled-i2v.json
     notes: "22B distilled, 4-8 step inference, uncensored, needs --lowvram on 24GB"
 
   - id: wan21-t2v-14b
